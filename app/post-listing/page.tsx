@@ -308,7 +308,15 @@ function PostListingPageContent() {
         }}
       />
 
-      <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1.75rem" }}>
+      <div
+        style={{
+          maxWidth: "1000px",
+          margin: "0 auto",
+          padding: "1rem",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
         <Link
           href={matchId ? `/matches/${matchId}` : "/"}
           style={{
@@ -374,14 +382,7 @@ function PostListingPageContent() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 360px",
-            gap: "16px",
-            alignItems: "start",
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 items-start lg:grid-cols-[1fr_360px]">
           <div style={card}>
             <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
               <div>
@@ -449,13 +450,7 @@ function PostListingPageContent() {
 
               <div>
                 <label style={lbl}>{t.category}</label>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4,1fr)",
-                    gap: "6px",
-                  }}
-                >
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {["Category 1", "Category 2", "Category 3", "Category 4"].map(
                     (c) => (
                       <button
@@ -484,13 +479,7 @@ function PostListingPageContent() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                }}
-              >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label style={lbl}>{t.quantity}</label>
                   <input
@@ -517,13 +506,7 @@ function PostListingPageContent() {
                 )}
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "10px",
-                }}
-              >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
                   { l: t.blockOptional, v: seatsBlock, set: setSeatsBlock, ph: "A / 101" },
                   { l: t.rowOptional, v: seatsRow, set: setSeatsRow, ph: "12" },
@@ -607,7 +590,7 @@ function PostListingPageContent() {
             </div>
           </div>
 
-          <div style={{ position: "sticky", top: "20px" }}>
+          <div className="relative lg:sticky lg:top-5">
             <div
               style={{
                 fontSize: "10px",
@@ -620,6 +603,7 @@ function PostListingPageContent() {
             >
               {isHe ? "תצוגה מקדימה" : "Live preview"}
             </div>
+
             <div
               style={{
                 background: "#fff",
@@ -665,6 +649,7 @@ function PostListingPageContent() {
                       ? "קנייה"
                       : "Buy"}
                   </span>
+
                   <span
                     style={{
                       fontSize: "9px",
