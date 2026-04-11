@@ -119,7 +119,7 @@ export default function Navbar() {
           style={{
             maxWidth: "1200px",
             margin: "0 auto",
-            padding: "0 1.5rem",
+            padding: "0 1rem",
             height: "60px",
             display: "flex",
             alignItems: "center",
@@ -139,7 +139,7 @@ export default function Navbar() {
           </Link>
 
           {/* RIGHT */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
 
             {/* LANGUAGE PILL */}
             <div
@@ -202,7 +202,7 @@ export default function Navbar() {
                 }}
               >
                 <span style={{ fontSize: "15px" }}>+</span>
-                {isHe ? "פרסם מודעה" : "Post listing"}
+                <span className="nav-post-btn-text">{isHe ? "פרסם מודעה" : "Post listing"}</span>
               </Link>
             )}
 

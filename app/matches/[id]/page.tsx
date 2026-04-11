@@ -84,8 +84,9 @@ function TrustBadge({ profile, isHe }: { profile: ProfileItem | null; isHe: bool
 }
 
 // ── Gold listing (G4 Spotlight) ───────────────────────────────────────────────
-function GoldListing({ item, isBestValue, isHe, onContact }: {
+function GoldListing({ item, isBestValue, isHe, viewerLoggedIn, viewerProfileComplete, onContact }: {
   item: EnrichedListing; isBestValue: boolean; isHe: boolean;
+  viewerLoggedIn: boolean; viewerProfileComplete: boolean;
   onContact: (item: EnrichedListing) => void;
 }) {
   const [hov, setHov] = useState(false);
@@ -187,10 +188,22 @@ function GoldListing({ item, isBestValue, isHe, onContact }: {
             </div>
           </div>
           <div style={{ marginInlineStart: "auto", display: "flex", gap: "8px", alignItems: "center" }}>
-            <button onClick={() => onContact(item)}
-              style={{ padding: "10px 20px", background: "#25D366", color: "#fff", fontSize: "12px", fontWeight: 700, border: "none", borderRadius: "5px", cursor: "pointer", letterSpacing: "0.02em" }}>
-              WhatsApp →
-            </button>
+            {!viewerLoggedIn ? (
+              <Link href="/auth" style={{ display: "block", padding: "10px 20px", textAlign: "center", background: "#1a3a6b", color: "#fff", fontSize: "12px", fontWeight: 700, borderRadius: "5px", textDecoration: "none" }}>
+                {isHe ? "התחבר ליצירת קשר" : "Login to contact"}
+              </Link>
+            ) : !viewerProfileComplete ? (
+              <Link href="/complete-profile" style={{ display: "block", padding: "10px 20px", textAlign: "center", background: "#1a3a6b", color: "#fff", fontSize: "12px", fontWeight: 700, borderRadius: "5px", textDecoration: "none" }}>
+                {isHe ? "השלם פרופיל" : "Complete profile"}
+              </Link>
+            ) : item.profile?.phone ? (
+              <button onClick={() => onContact(item)}
+                style={{ padding: "10px 20px", background: "#25D366", color: "#fff", fontSize: "12px", fontWeight: 700, border: "none", borderRadius: "5px", cursor: "pointer", letterSpacing: "0.02em", width: "100%" }}>
+                WhatsApp →
+              </button>
+            ) : (
+              <span style={{ fontSize: "11px", color: "#94a3b8" }}>{isHe ? "אין מספר" : "No number"}</span>
+            )}
           </div>
         </div>
       </div>
@@ -568,7 +581,7 @@ export default function MatchPage() {
                 const bv  = bestValueIds.has(item.id);
                 const isN = !!(item.first_published_at && Date.now() - new Date(item.first_published_at).getTime() < 86400000);
                 return item.is_featured ? (
-                  <GoldListing key={item.id} item={item} isBestValue={bv} isHe={isHe} onContact={handleContact} />
+                  <GoldListing key={item.id} item={item} isBestValue={bv} isHe={isHe} viewerLoggedIn={viewerLoggedIn} viewerProfileComplete={viewerProfileComplete} onContact={handleContact} />
                 ) : (
                   <RegularListing key={item.id} item={item} isBestValue={bv} isNew={isN} isHe={isHe} viewerLoggedIn={viewerLoggedIn} viewerProfileComplete={viewerProfileComplete} onContact={handleContact} />
                 );

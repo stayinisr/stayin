@@ -276,7 +276,7 @@ export default function Home() {
 
   const activeCount = listings.filter(isActive).length;
 
-  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 28px" };
+  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
   const smallCaps = { fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint } as React.CSSProperties;
 
   return (
@@ -305,7 +305,7 @@ export default function Home() {
             {isHe ? "מרקטפלייס מונדיאל 2026 · ארה״ב · קנדה · מקסיקו" : "World Cup 2026 · USA · Canada · México"}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "48px", alignItems: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "32px", alignItems: "center" }} className="hero-grid">
             {/* Left */}
             <div>
               {/* Eyebrow */}
@@ -315,12 +315,12 @@ export default function Home() {
 
               {/* H1 — same visual weight in both languages */}
               {isHe ? (
-                <h1 style={{ fontFamily: "var(--font-he,'Heebo',sans-serif)", fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1.0, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
+                <h1 className="hero-h1" style={{ fontFamily: "var(--font-he,'Heebo',sans-serif)", fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1.0, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
                   כל הכרטיסים<br />
                   <span style={{ color: C.usa }}>במקום אחד.</span>
                 </h1>
               ) : (
-                <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1.0, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
+                <h1 className="hero-h1" style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1.0, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
                   ALL TICKETS<br />
                   <span style={{ color: C.usa }}>IN ONE PLACE.</span>
                 </h1>
@@ -332,7 +332,7 @@ export default function Home() {
                   : "No repeated messages, no chaos — all listings in one place, contact directly on WhatsApp."}
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <div className="hero-btns" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 <a href="#matches"
                   style={{ padding: "12px 24px", background: "transparent", color: C.usa, fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", letterSpacing: "0.02em", border: `2px solid ${C.usa}`, transition: "all 150ms" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.usa; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
@@ -358,7 +358,7 @@ export default function Home() {
             </div>
 
             {/* Right: stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "6px", overflow: "hidden", minWidth: "260px" }}>
+            <div className="hero-stats" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "6px", overflow: "hidden" }}>
               {[
                 { val: `${matches.length || 64}`, lbl: isHe ? "משחקים" : "Matches", color: C.usa },
                 { val: activeCount,                lbl: isHe ? "מודעות חי" : "Live listings", color: C.text, live: true },

@@ -208,3 +208,74 @@ body {
 .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; animation: livePulse 2s infinite; }
 
 @keyframes shimmer { from { background-position: -600px 0; } to { background-position: 600px 0; } }
+
+/* ── Mobile Responsive ──────────────────────────────────── */
+@media (max-width: 640px) {
+  /* Navbar */
+  .nav-post-btn-text { display: none; }
+  .nav-lang-label { display: none; }
+
+  /* Page containers */
+  .page-container { padding: 1.5rem 1rem; }
+  .page-container-narrow { padding: 1.5rem 1rem; }
+
+  /* Hero grid → stack on mobile */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Stats row on mobile */
+  .hero-stats {
+    width: 100%;
+  }
+
+  /* Hero buttons → full width stack */
+  .hero-btns {
+    flex-direction: column !important;
+    width: 100%;
+  }
+  .hero-btns a, .hero-btns button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Filter chips → wrap nicely */
+  .filter-chips {
+    gap: 5px !important;
+  }
+  .filter-chips button {
+    font-size: 9px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* Price range row on mobile */
+  .price-range-row {
+    flex-wrap: wrap;
+  }
+
+  /* Match cards grid → single col on mobile */
+  .matches-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Match card font sizes */
+  .match-card-teams {
+    font-size: 13px !important;
+  }
+
+  /* Listing cards on mobile */
+  .listing-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even smaller screens */
+  .page-title {
+    font-size: clamp(22px, 7vw, 32px) !important;
+  }
+  .hero-h1 {
+    font-size: clamp(32px, 10vw, 52px) !important;
+  }
+}
