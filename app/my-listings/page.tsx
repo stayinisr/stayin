@@ -8,9 +8,15 @@ import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 
 const C = { usa: "#1a3a6b", canada: "#e63946", mexico: "#006847", gold: "#d4a017", border: "#e8edf5", text: "#0d1b3e", muted: "#64748b", hint: "#94a3b8", faint: "#cbd5e1", bg: "#f8f9fc" };
-const BUMP_HOURS = 4;
-const MAX_ACTIVE = 10;
-const MAX_FEATURED = 2;
+type Plan = "free" | "premium" | "unlimited";
+
+const PLAN_LIMITS = {
+  free:      { max_listings: 10,   max_featured: 2,  bump_hours: 4 },
+  premium:   { max_listings: 25,   max_featured: 5,  bump_hours: 1 },
+  unlimited: { max_listings: 9999, max_featured: 20, bump_hours: 1 },
+};
+
+function getPlanLimits(plan: Plan) { return PLAN_LIMITS[plan] ?? PLAN_LIMITS.free; }
 
 type Listing = {
   id: string; match_id: string; type: string; category: string; quantity: number; price: number;
@@ -19,13 +25,14 @@ type Listing = {
   match?: { fifa_match_number: number; home_team_name: string | null; away_team_name: string | null; city: string; match_date: string; } | null;
 };
 
-function BumpTimer({ lastBumped, isPremium, isHe, onBump }: { lastBumped?: string | null; isPremium: boolean; isHe: boolean; onBump: () => void; }) {
+function BumpTimer({ lastBumped, plan, isHe, onBump }: { lastBumped?: string | null; plan: Plan; isHe: boolean; onBump: () => void; }) {
   const [ms, setMs] = useState(0);
+  const bumpHours = getPlanLimits(plan).bump_hours;
   useEffect(() => {
-    if (isPremium || !lastBumped) { setMs(0); return; }
-    function tick() { setMs(Math.max(0, new Date(lastBumped!).getTime() + BUMP_HOURS * 3600000 - Date.now())); }
+    if (!lastBumped) { setMs(0); return; }
+    function tick() { setMs(Math.max(0, new Date(lastBumped!).getTime() + bumpHours * 3600000 - Date.now())); }
     tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
-  }, [lastBumped, isPremium]);
+  }, [lastBumped, bumpHours]);
 
   const canBump = ms === 0;
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
@@ -48,7 +55,8 @@ export default function MyListingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
+  const [plan, setPlan] = useState<Plan>("free");
+  const isPremium = plan !== "free";
 
   useEffect(() => { loadPage(); }, []);
 
@@ -58,8 +66,8 @@ export default function MyListingsPage() {
     if (error || !user) { router.push("/auth"); return; }
     setEmail(user.email ?? null);
 
-    const { data: profile } = await supabase.from("profiles").select("is_premium").eq("id", user.id).maybeSingle();
-    setIsPremium(!!profile?.is_premium);
+    const { data: profile } = await supabase.from("profiles").select("is_premium, plan").eq("id", user.id).maybeSingle();
+    setPlan((profile?.plan as Plan) ?? (profile?.is_premium ? "premium" : "free"));
 
     const { data: raw } = await supabase.from("listings").select("*").eq("user_id", user.id).is("archived_at", null).order("created_at", { ascending: false });
     const ids = [...new Set((raw || []).map((l: any) => l.match_id))];
@@ -96,7 +104,8 @@ export default function MyListingsPage() {
   }
 
   async function handleFeatureOn(listing: Listing) {
-    if (!isPremium && featuredCount >= MAX_FEATURED) { toast.warning(isHe ? "ניתן להדגיש עד 2 מודעות בלבד" : "Max 2 featured listings"); return; }
+    const maxFeat = getPlanLimits(plan).max_featured;
+    if (featuredCount >= maxFeat) { toast.warning(isHe ? \`ניתן להדגיש עד \${maxFeat} מודעות בלבד\` : \`Max \${maxFeat} featured listings\`); return; }
     const payload: any = { is_featured: true };
     if (!(listing as any).first_featured_at) payload.first_featured_at = new Date().toISOString();
     const { error } = await supabase.from("listings").update(payload).eq("id", listing.id);
@@ -135,7 +144,11 @@ export default function MyListingsPage() {
               <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(20px,3vw,28px)", fontWeight: 800, color: C.text, letterSpacing: "-0.3px", marginBottom: "4px" }}>
                 {isHe ? "המודעות שלי" : "My listings"}
               </h1>
-              <p style={{ fontSize: "12px", color: C.hint }}>{email} {isPremium && <span style={{ color: C.gold, fontWeight: 700 }}>· ⭐ Premium</span>}</p>
+              <p style={{ fontSize: "12px", color: C.hint }}>
+                {email}
+                {plan === "premium" && <span style={{ color: C.gold, fontWeight: 700, marginInlineStart: "6px" }}>⭐ Premium</span>}
+                {plan === "unlimited" && <span style={{ color: C.mexico, fontWeight: 700, marginInlineStart: "6px" }}>🚀 Unlimited</span>}
+              </p>
             </div>
 
             {/* Stats */}
@@ -225,7 +238,7 @@ export default function MyListingsPage() {
                           : <button onClick={() => handleFeatureOn(listing)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid rgba(212,160,23,0.4)`, borderRadius: "5px", background: "rgba(212,160,23,0.08)", color: "#92400e", cursor: "pointer", whiteSpace: "nowrap" }}>⭐ Gold</button>
                         }
 
-                        <BumpTimer lastBumped={listing.last_bumped_at} isPremium={isPremium} isHe={isHe} onBump={() => handleBump(listing.id)} />
+                        <BumpTimer lastBumped={listing.last_bumped_at} plan={plan} isHe={isHe} onBump={() => handleBump(listing.id)} />
 
                         {isActive
                           ? <button onClick={() => handleClose(listing.id)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "transparent", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "סגור" : "Close"}</button>

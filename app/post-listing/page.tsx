@@ -154,7 +154,7 @@ function PostListingPageContent() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name,phone,country,last_post_at,is_premium")
+      .select("full_name,phone,country,last_post_at,is_premium,plan")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -176,7 +176,8 @@ function PostListingPageContent() {
       return;
     }
 
-    const exp = new Date(Date.now() + 7 * 86400000).toISOString();
+    const validityDays = userPlan === "free" ? 7 : 14;
+    const exp = new Date(Date.now() + validityDays * 86400000).toISOString();
 
     const payload: Record<string, any> = {
       type,
@@ -225,7 +226,10 @@ function PostListingPageContent() {
       .is("archived_at", null)
       .gt("expires_at", new Date().toISOString());
 
-    if (!profile.is_premium && (active || []).length >= 10) {
+    const planLimits: Record<string, number> = { free: 10, premium: 25, unlimited: 9999 };
+    const userPlan = (profile.plan as string) ?? (profile.is_premium ? "premium" : "free");
+    const maxListings = planLimits[userPlan] ?? 10;
+    if ((active || []).length >= maxListings) {
       setSubmitting(false);
       toast.error(t.limitReached10);
       return;

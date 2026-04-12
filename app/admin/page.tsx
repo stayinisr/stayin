@@ -31,6 +31,8 @@ type Report = {
   created_at: string;
 };
 
+type Plan = "free" | "premium" | "unlimited";
+
 type Profile = {
   id: string;
   full_name: string | null;
@@ -39,8 +41,25 @@ type Profile = {
   country: string | null;
   is_admin?: boolean | null;
   is_premium?: boolean | null;
+  plan?: Plan | null;
+  auto_bump?: boolean | null;
   created_at?: string | null;
 };
+
+const PLAN_CONFIG = {
+  free:      { label: "Free",      color: "#94a3b8", bg: "#f1f5f9",                badge: "" },
+  premium:   { label: "Premium",   color: "#d4a017", bg: "rgba(212,160,23,0.1)",   badge: "⭐" },
+  unlimited: { label: "Unlimited", color: "#006847", bg: "rgba(0,104,71,0.08)",    badge: "🚀" },
+};
+
+function PlanBadge({ plan }: { plan: Plan }) {
+  const cfg = PLAN_CONFIG[plan] ?? PLAN_CONFIG.free;
+  return (
+    <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: cfg.bg, color: cfg.color, border: \`1px solid \${cfg.color}30\`, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+      {cfg.badge}{cfg.badge ? " " : ""}{cfg.label}
+    </span>
+  );
+}
 
 export default function AdminPage() {
   const { lang } = useLanguage();
@@ -102,7 +121,7 @@ export default function AdminPage() {
 
     const { data: profilesData, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, full_name, email, phone, country, is_admin, is_premium, created_at")
+      .select("id, full_name, email, phone, country, is_admin, is_premium, plan, auto_bump, created_at")
       .order("created_at", { ascending: false });
 
     if (profilesError) console.error(profilesError);
@@ -149,18 +168,26 @@ export default function AdminPage() {
     await loadData();
   }
 
-  async function togglePremium(userId: string, currentValue: boolean) {
+  async function updatePlan(userId: string, plan: Plan) {
     const { error } = await supabase
       .from("profiles")
-      .update({ is_premium: !currentValue })
+      .update({
+        plan,
+        is_premium: plan !== "free",
+        auto_bump: plan === "unlimited",
+      })
       .eq("id", userId);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
+    if (error) { console.error(error); return; }
     await loadData();
+  }
+
+  async function toggleAdmin(userId: string, current: boolean) {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_admin: !current })
+      .eq("id", userId);
+    if (!error) await loadData();
   }
 
   const listingsById = useMemo(() => {
@@ -483,8 +510,10 @@ export default function AdminPage() {
                       {u.phone || "-"} · {u.country || "-"}
                     </div>
 
-                    <div className="text-sm text-[var(--text-secondary)] mt-2">
-                      {u.is_admin ? "ADMIN" : "USER"} · {u.is_premium ? "PREMIUM" : "REGULAR"}
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "6px", flexWrap: "wrap" }}>
+                      <PlanBadge plan={(u.plan ?? "free") as Plan} />
+                      {u.is_admin && <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: "rgba(26,58,107,0.1)", color: "#1a3a6b", border: "1px solid rgba(26,58,107,0.2)", letterSpacing: "0.06em", textTransform: "uppercase" }}>ADMIN</span>}
+                      {u.auto_bump && <span style={{ fontSize: "9px", fontWeight: 700, color: "#006847" }}>⚡ auto-bump</span>}
                     </div>
 
                     <div className="text-xs text-[var(--text-muted)] mt-2">
@@ -498,18 +527,27 @@ export default function AdminPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-2 md:min-w-[180px]">
-                    <button
-                      onClick={() => togglePremium(u.id, !!u.is_premium)}
-                      className={u.is_premium ? "secondary-btn" : "primary-btn"}
-                    >
-                      {u.is_premium
-                        ? isHe
-                          ? "הסר פרימיום"
-                          : "Remove premium"
-                        : isHe
-                        ? "הפוך לפרימיום"
-                        : "Make premium"}
+                  <div className="flex flex-col gap-2 md:min-w-[260px]">
+                    <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                      {(["free", "premium", "unlimited"] as Plan[]).map(plan => (
+                        <button key={plan} onClick={() => updatePlan(u.id, plan)}
+                          disabled={u.plan === plan || (!u.plan && plan === "free")}
+                          style={{
+                            padding: "6px 12px", fontSize: "11px", fontWeight: 700,
+                            border: \`1px solid \${(u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#e8edf5"}\`,
+                            borderRadius: "5px",
+                            background: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].bg : "transparent",
+                            color: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#94a3b8",
+                            cursor: (u.plan ?? "free") === plan ? "default" : "pointer",
+                            textTransform: "uppercase" as const, letterSpacing: "0.04em",
+                          }}>
+                          {PLAN_CONFIG[plan].badge} {plan === "free" ? "Free" : plan === "premium" ? "Premium" : "Unlimited"}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => toggleAdmin(u.id, !!u.is_admin)}
+                      style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: \`1px solid \${u.is_admin ? "#e63946" : "#e8edf5"}\`, borderRadius: "5px", background: u.is_admin ? "rgba(230,57,70,0.07)" : "transparent", color: u.is_admin ? "#e63946" : "#94a3b8", cursor: "pointer", textTransform: "uppercase" as const }}>
+                      {u.is_admin ? (isHe ? "− הסר אדמין" : "− Remove admin") : (isHe ? "+ הפוך אדמין" : "+ Make admin")}
                     </button>
                   </div>
                 </div>
