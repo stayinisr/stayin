@@ -105,7 +105,7 @@ export default function MyListingsPage() {
 
   async function handleFeatureOn(listing: Listing) {
     const maxFeat = getPlanLimits(plan).max_featured;
-    if (featuredCount >= maxFeat) { toast.warning(isHe ? \`ניתן להדגיש עד \${maxFeat} מודעות בלבד\` : \`Max \${maxFeat} featured listings\`); return; }
+    if (featuredCount >= maxFeat) { toast.warning(isHe ? `ניתן להדגיש עד ${maxFeat} מודעות בלבד` : `Max ${maxFeat} featured listings`); return; }
     const payload: any = { is_featured: true };
     if (!(listing as any).first_featured_at) payload.first_featured_at = new Date().toISOString();
     const { error } = await supabase.from("listings").update(payload).eq("id", listing.id);

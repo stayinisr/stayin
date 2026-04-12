@@ -55,7 +55,7 @@ const PLAN_CONFIG = {
 function PlanBadge({ plan }: { plan: Plan }) {
   const cfg = PLAN_CONFIG[plan] ?? PLAN_CONFIG.free;
   return (
-    <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: cfg.bg, color: cfg.color, border: \`1px solid \${cfg.color}30\`, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+    <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: cfg.bg, color: cfg.color, border: `1px solid \${cfg.color}30`, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
       {cfg.badge}{cfg.badge ? " " : ""}{cfg.label}
     </span>
   );
@@ -534,7 +534,7 @@ export default function AdminPage() {
                           disabled={u.plan === plan || (!u.plan && plan === "free")}
                           style={{
                             padding: "6px 12px", fontSize: "11px", fontWeight: 700,
-                            border: \`1px solid \${(u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#e8edf5"}\`,
+                            border: `1px solid \${(u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#e8edf5"}`,
                             borderRadius: "5px",
                             background: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].bg : "transparent",
                             color: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#94a3b8",
@@ -546,7 +546,7 @@ export default function AdminPage() {
                       ))}
                     </div>
                     <button onClick={() => toggleAdmin(u.id, !!u.is_admin)}
-                      style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: \`1px solid \${u.is_admin ? "#e63946" : "#e8edf5"}\`, borderRadius: "5px", background: u.is_admin ? "rgba(230,57,70,0.07)" : "transparent", color: u.is_admin ? "#e63946" : "#94a3b8", cursor: "pointer", textTransform: "uppercase" as const }}>
+                      style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid \${u.is_admin ? "#e63946" : "#e8edf5"}`, borderRadius: "5px", background: u.is_admin ? "rgba(230,57,70,0.07)" : "transparent", color: u.is_admin ? "#e63946" : "#94a3b8", cursor: "pointer", textTransform: "uppercase" as const }}>
                       {u.is_admin ? (isHe ? "− הסר אדמין" : "− Remove admin") : (isHe ? "+ הפוך אדמין" : "+ Make admin")}
                     </button>
                   </div>
