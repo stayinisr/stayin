@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import ToastProvider from "../components/ToastProvider";
 import { LanguageProvider } from "../lib/LanguageContext";
 import { Heebo, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
+import type { Metadata } from "next";
 
 const heebo = Heebo({
   subsets: ["hebrew", "latin"],
@@ -25,9 +26,14 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Stayin — Stay in the Game",
   description: "Buy and sell World Cup 2026 tickets. Real listings from real fans.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
