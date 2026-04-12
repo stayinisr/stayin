@@ -155,8 +155,8 @@ export default function MyListingsPage() {
             <div style={{ display: "flex", gap: "1px", background: C.border, borderRadius: "8px", overflow: "hidden", border: `1px solid ${C.border}` }}>
               {[
                 { n: activeCount, l: isHe ? "פעילות" : "Active", c: C.mexico },
-                { n: isPremium ? "∞" : `${activeCount}/${MAX_ACTIVE}`, l: isHe ? "מגבלה" : "Limit", c: C.usa },
-                { n: `${featuredCount}/${isPremium ? "∞" : MAX_FEATURED}`, l: isHe ? "מוזהבות" : "Gold", c: C.gold },
+                { n: plan === "unlimited" ? "∞" : `${activeCount}/${getPlanLimits(plan).max_listings}`, l: isHe ? "מגבלה" : "Limit", c: C.usa },
+                { n: `${featuredCount}/${getPlanLimits(plan).max_featured}`, l: isHe ? "מוזהבות" : "Gold", c: C.gold },
               ].map((s, i) => (
                 <div key={i} style={{ background: "rgba(255,255,255,0.9)", padding: "12px 16px", textAlign: "center" }}>
                   <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "17px", fontWeight: 800, color: s.c }}>{s.n}</div>
