@@ -176,6 +176,7 @@ function PostListingPageContent() {
       return;
     }
 
+    const userPlan = (profile.plan as string) ?? (profile.is_premium ? "premium" : "free");
     const validityDays = userPlan === "free" ? 7 : 14;
     const exp = new Date(Date.now() + validityDays * 86400000).toISOString();
 
@@ -227,7 +228,6 @@ function PostListingPageContent() {
       .gt("expires_at", new Date().toISOString());
 
     const planLimits: Record<string, number> = { free: 10, premium: 25, unlimited: 9999 };
-    const userPlan = (profile.plan as string) ?? (profile.is_premium ? "premium" : "free");
     const maxListings = planLimits[userPlan] ?? 10;
     if ((active || []).length >= maxListings) {
       setSubmitting(false);
