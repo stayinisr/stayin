@@ -198,61 +198,100 @@ export default function MyListingsPage() {
 
                 return (
                   <div key={listing.id} style={{
-                    background: listing.is_featured ? "linear-gradient(135deg,rgba(255,248,215,0.97),rgba(255,240,180,0.9))" : "rgba(255,255,255,0.88)",
-                    border: `1px solid ${listing.is_featured ? "rgba(212,160,23,0.4)" : C.border}`,
-                    borderRadius: "10px", overflow: "hidden", backdropFilter: "blur(12px)",
-                    boxShadow: "0 1px 6px rgba(13,27,62,0.04)",
+                    background: "#ffffff",
+                    border: `1px solid ${C.border}`,
+                    borderRadius: "10px",
+                    overflow: "hidden",
+                    boxShadow: "0 2px 12px rgba(13,27,62,0.06)",
+                    position: "relative",
                   }}>
-                    <div style={{ height: "2px", background: listing.is_featured ? `linear-gradient(90deg,${C.gold},#fbbf24,${C.gold})` : listing.type === "sell" ? C.mexico : C.usa }} />
-                    <div style={{ padding: "14px 18px", display: "grid", gridTemplateColumns: "1fr auto", gap: "16px", alignItems: "start" }}>
+                    {/* Top bar — Gold: 3-color gradient | Regular: solid accent */}
+                    <div style={{ height: "3px", background: listing.is_featured ? `linear-gradient(90deg,${C.usa},${C.gold},${C.mexico})` : listing.type === "sell" ? C.mexico : C.usa }} />
 
-                      {/* Left */}
-                      <div>
-                        <div style={{ display: "flex", gap: "5px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" }}>
-                          {listing.is_featured && <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: "rgba(212,160,23,0.15)", color: "#92400e", border: "1px solid rgba(212,160,23,0.3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>⭐ Gold</span>}
-                          <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px", textTransform: "uppercase", letterSpacing: "0.05em", background: listing.type === "sell" ? "rgba(0,104,71,0.08)" : "rgba(26,58,107,0.07)", color: listing.type === "sell" ? C.mexico : C.usa, border: `1px solid ${listing.type === "sell" ? "rgba(0,104,71,0.2)" : "rgba(26,58,107,0.15)"}` }}>
-                            {listing.type === "sell" ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
+                    {/* Gold glow */}
+                    {listing.is_featured && (
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "120px", background: "radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+                    )}
+
+                    {/* Card body */}
+                    <div style={{ padding: "16px 20px", position: "relative" }}>
+
+                      {/* Badges row */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px", flexWrap: "wrap" }}>
+                        {listing.is_featured && (
+                          <span style={{ fontSize: "9px", fontWeight: 800, padding: "3px 10px", borderRadius: "3px", background: `linear-gradient(135deg,${C.gold},#fbbf24)`, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                            ⭐ GOLD LISTING
                           </span>
-                          <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px", background: "rgba(0,0,0,0.03)", color: statusColor, border: `1px solid rgba(0,0,0,0.07)`, textTransform: "uppercase", letterSpacing: "0.04em" }}>{statusLabel}</span>
-                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "3px", background: "#f1f5f9", color: C.hint }}>{listing.category}</span>
-                        </div>
-
-                        <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "15px", fontWeight: 700, color: C.text, marginBottom: "3px" }}>
-                          {listing.match ? `Match ${listing.match.fifa_match_number} · ${listing.match.home_team_name || "TBD"} vs ${listing.match.away_team_name || "TBD"}` : "—"}
-                        </div>
-                        <div style={{ fontSize: "12px", color: C.muted }}>
-                          {listing.match?.city} · {listing.quantity} {isHe ? "כרטיסים" : "tickets"} · <span style={{ color: C.usa, fontWeight: 700 }}>${listing.price}</span>
-                          {listing.expires_at && <span style={{ color: expired ? C.canada : C.faint, marginInlineStart: "8px" }}>· {isHe ? "תוקף" : "Exp"} {new Date(listing.expires_at).toLocaleDateString(isHe ? "he-IL" : "en-US", { month: "short", day: "numeric" })}</span>}
-                        </div>
+                        )}
+                        <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "3px", textTransform: "uppercase", letterSpacing: "0.05em", background: listing.type === "sell" ? "rgba(0,104,71,0.08)" : "rgba(26,58,107,0.07)", color: listing.type === "sell" ? C.mexico : C.usa, border: `1px solid ${listing.type === "sell" ? "rgba(0,104,71,0.2)" : "rgba(26,58,107,0.15)"}` }}>
+                          {listing.type === "sell" ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
+                        </span>
+                        <span style={{ fontSize: "9px", fontWeight: 600, padding: "2px 8px", borderRadius: "3px", background: "#f1f5f9", color: C.hint, border: `1px solid ${C.border}` }}>
+                          {listing.category}
+                        </span>
+                        <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px", background: isActive ? "rgba(0,104,71,0.07)" : "rgba(0,0,0,0.03)", color: statusColor, border: `1px solid ${isActive ? "rgba(0,104,71,0.18)" : "rgba(0,0,0,0.07)"}`, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                          {statusLabel}
+                        </span>
+                        {listing.expires_at && (
+                          <span style={{ fontSize: "9px", color: expired ? C.canada : C.hint, marginInlineStart: "2px" }}>
+                            · {isHe ? "תוקף" : "Exp"} {new Date(listing.expires_at).toLocaleDateString(isHe ? "he-IL" : "en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Right: actions */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-end" }}>
-                        <Link href={`/post-listing?listingId=${listing.id}`}
-                          style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "transparent", color: C.muted, textDecoration: "none", whiteSpace: "nowrap" }}>
-                          {isHe ? "ערוך" : "Edit"}
+                      {/* Match title */}
+                      <div style={{ fontSize: "13px", fontWeight: 600, color: C.muted, marginBottom: "6px" }}>
+                        {listing.match ? `Match ${listing.match.fifa_match_number} · ${listing.match.home_team_name || "TBD"} vs ${listing.match.away_team_name || "TBD"} · ${listing.match.city}` : "—"}
+                      </div>
+
+                      {/* Price — hero (matches page style) */}
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "10px" }}>
+                        <span style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: listing.is_featured ? "32px" : "24px", fontWeight: 800, color: C.text, letterSpacing: "-1px", lineHeight: 1 }}>
+                          {listing.type === "sell" ? `$${listing.price}` : (isHe ? `עד $${listing.price}` : `Up to $${listing.price}`)}
+                        </span>
+                        <span style={{ fontSize: "12px", color: C.hint }}>
+                          {isHe ? "לכרטיס" : "/ ticket"} × {listing.quantity}
+                        </span>
+                        {listing.quantity > 1 && listing.type === "sell" && (
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: C.gold }}>= ${listing.price * listing.quantity}</span>
+                        )}
+                      </div>
+
+                      {/* Notes — matches page style */}
+                      {listing.notes && (
+                        <p style={{ fontSize: "12px", color: C.muted, fontStyle: "italic", lineHeight: 1.65, marginBottom: "12px", borderLeft: `2px solid ${C.gold}`, paddingLeft: "10px" }}>
+                          "{listing.notes}"
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Management bar — separated visually */}
+                    <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px 20px", background: "#fafbfd", display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                      <Link href={`/post-listing?listingId=${listing.id}`}
+                        style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, textDecoration: "none", whiteSpace: "nowrap" }}>
+                        {isHe ? "ערוך" : "Edit"}
+                      </Link>
+
+                      {listing.is_featured
+                        ? <button onClick={() => handleFeatureOff(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "הסר gold" : "Remove gold"}</button>
+                        : <button onClick={() => handleFeatureOn(listing)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid rgba(212,160,23,0.4)`, borderRadius: "5px", background: "rgba(212,160,23,0.08)", color: "#92400e", cursor: "pointer", whiteSpace: "nowrap" }}>⭐ Gold</button>
+                      }
+
+                      <BumpTimer lastBumped={listing.last_bumped_at} plan={plan} isHe={isHe} onBump={() => handleBump(listing.id)} />
+
+                      {isActive
+                        ? <button onClick={() => handleClose(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "סגור" : "Close"}</button>
+                        : <button onClick={() => handleRenew(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid ${C.usa}`, borderRadius: "5px", background: "rgba(26,58,107,0.06)", color: C.usa, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "חדש 7 ימים" : "Renew 7d"}</button>
+                      }
+
+                      <div style={{ marginInlineStart: "auto", display: "flex", gap: "6px" }}>
+                        <Link href={`/matches/${listing.match_id}`}
+                          style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.hint, textDecoration: "none", whiteSpace: "nowrap" }}>
+                          {isHe ? "צפה במשחק" : "View match"}
                         </Link>
-
-                        {listing.is_featured
-                          ? <button onClick={() => handleFeatureOff(listing.id)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "transparent", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "הסר gold" : "Remove gold"}</button>
-                          : <button onClick={() => handleFeatureOn(listing)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid rgba(212,160,23,0.4)`, borderRadius: "5px", background: "rgba(212,160,23,0.08)", color: "#92400e", cursor: "pointer", whiteSpace: "nowrap" }}>⭐ Gold</button>
-                        }
-
-                        <BumpTimer lastBumped={listing.last_bumped_at} plan={plan} isHe={isHe} onBump={() => handleBump(listing.id)} />
-
-                        {isActive
-                          ? <button onClick={() => handleClose(listing.id)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "transparent", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "סגור" : "Close"}</button>
-                          : <button onClick={() => handleRenew(listing.id)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid ${C.usa}`, borderRadius: "5px", background: "rgba(26,58,107,0.06)", color: C.usa, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "חדש 7 ימים" : "Renew 7d"}</button>
-                        }
-
-                        <button onClick={() => handleDelete(listing.id)} style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid rgba(230,57,70,0.2)`, borderRadius: "5px", background: "rgba(230,57,70,0.05)", color: C.canada, cursor: "pointer", whiteSpace: "nowrap" }}>
+                        <button onClick={() => handleDelete(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid rgba(230,57,70,0.2)`, borderRadius: "5px", background: "rgba(230,57,70,0.05)", color: C.canada, cursor: "pointer", whiteSpace: "nowrap" }}>
                           {isHe ? "מחק" : "Delete"}
                         </button>
-
-                        <Link href={`/matches/${listing.match_id}`}
-                          style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "transparent", color: C.hint, textDecoration: "none", whiteSpace: "nowrap" }}>
-                          {isHe ? "צפה" : "View"}
-                        </Link>
                       </div>
                     </div>
                   </div>
