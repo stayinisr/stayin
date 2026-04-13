@@ -36,13 +36,23 @@ function BumpTimer({ lastBumped, plan, isHe, onBump }: { lastBumped?: string | n
 
   const canBump = ms === 0;
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000), s = Math.floor((ms % 60000) / 1000);
-  const label = canBump ? (isHe ? "הקפץ 🚀" : "Bump 🚀") : `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  const timer = `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 
   return (
-    <button onClick={canBump ? onBump : undefined}
-      style={{ padding: "7px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid ${canBump ? C.mexico : C.border}`, borderRadius: "5px", background: canBump ? "rgba(0,104,71,0.08)" : "transparent", color: canBump ? C.mexico : C.faint, cursor: canBump ? "pointer" : "not-allowed", transition: "all 150ms", whiteSpace: "nowrap" }}>
-      {label}
-    </button>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: "7px", border: `1px solid ${canBump ? "rgba(0,104,71,0.25)" : C.border}`, background: canBump ? "rgba(0,104,71,0.06)" : "rgba(0,0,0,0.02)", transition: "all 150ms" }}>
+      <div>
+        <div style={{ fontSize: "12px", fontWeight: 700, color: canBump ? C.mexico : C.hint }}>🚀 {isHe ? "הקפץ מודעה" : "Bump listing"}</div>
+        <div style={{ fontSize: "10px", color: C.muted, marginTop: "1px" }}>
+          {canBump ? (isHe ? "מעלה אותך לראש הרשימה" : "Moves you to top of list") : (isHe ? `זמין שוב בעוד` : "Available again in")}
+        </div>
+      </div>
+      {canBump
+        ? <button onClick={onBump} style={{ padding: "8px 16px", fontSize: "12px", fontWeight: 800, border: "none", borderRadius: "6px", background: C.mexico, color: "#fff", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+            {isHe ? "הקפץ עכשיו →" : "Bump now →"}
+          </button>
+        : <span style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "18px", fontWeight: 800, color: C.hint, letterSpacing: "1px" }}>{timer}</span>
+      }
+    </div>
   );
 }
 
@@ -265,32 +275,30 @@ export default function MyListingsPage() {
                       )}
                     </div>
 
-                    {/* Management bar — separated visually */}
-                    <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px 20px", background: "#fafbfd", display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-                      <Link href={`/post-listing?listingId=${listing.id}`}
-                        style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, textDecoration: "none", whiteSpace: "nowrap" }}>
-                        {isHe ? "ערוך" : "Edit"}
-                      </Link>
-
-                      {listing.is_featured
-                        ? <button onClick={() => handleFeatureOff(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "הסר gold" : "Remove gold"}</button>
-                        : <button onClick={() => handleFeatureOn(listing)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid rgba(212,160,23,0.4)`, borderRadius: "5px", background: "rgba(212,160,23,0.08)", color: "#92400e", cursor: "pointer", whiteSpace: "nowrap" }}>⭐ Gold</button>
-                      }
-
+                    {/* Management bar — Option 3: Bump hero */}
+                    <div style={{ borderTop: `1px solid ${C.border}`, padding: "10px 20px", background: "#fafbfd", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {/* Bump hero */}
                       <BumpTimer lastBumped={listing.last_bumped_at} plan={plan} isHe={isHe} onBump={() => handleBump(listing.id)} />
-
-                      {isActive
-                        ? <button onClick={() => handleClose(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "סגור" : "Close"}</button>
-                        : <button onClick={() => handleRenew(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid ${C.usa}`, borderRadius: "5px", background: "rgba(26,58,107,0.06)", color: C.usa, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "חדש 7 ימים" : "Renew 7d"}</button>
-                      }
-
-                      <div style={{ marginInlineStart: "auto", display: "flex", gap: "6px" }}>
+                      {/* Small actions row */}
+                      <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                        <Link href={`/post-listing?listingId=${listing.id}`}
+                          style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, textDecoration: "none", whiteSpace: "nowrap" }}>
+                          {isHe ? "✏️ ערוך" : "✏️ Edit"}
+                        </Link>
+                        {listing.is_featured
+                          ? <button onClick={() => handleFeatureOff(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "הסר Gold" : "Remove Gold"}</button>
+                          : <button onClick={() => handleFeatureOn(listing)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(212,160,23,0.4)", borderRadius: "5px", background: "rgba(212,160,23,0.08)", color: "#92400e", cursor: "pointer", whiteSpace: "nowrap" }}>⭐ Gold</button>
+                        }
+                        {isActive
+                          ? <button onClick={() => handleClose(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.muted, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "סגור" : "Close"}</button>
+                          : <button onClick={() => handleRenew(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid ${C.usa}`, borderRadius: "5px", background: "rgba(26,58,107,0.06)", color: C.usa, cursor: "pointer", whiteSpace: "nowrap" }}>{isHe ? "חדש 7 ימים" : "Renew 7d"}</button>
+                        }
                         <Link href={`/matches/${listing.match_id}`}
                           style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.hint, textDecoration: "none", whiteSpace: "nowrap" }}>
-                          {isHe ? "צפה במשחק" : "View match"}
+                          {isHe ? "👁 צפה" : "👁 View"}
                         </Link>
-                        <button onClick={() => handleDelete(listing.id)} style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid rgba(230,57,70,0.2)`, borderRadius: "5px", background: "rgba(230,57,70,0.05)", color: C.canada, cursor: "pointer", whiteSpace: "nowrap" }}>
-                          {isHe ? "מחק" : "Delete"}
+                        <button onClick={() => handleDelete(listing.id)} style={{ marginInlineStart: "auto", padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: "1px solid rgba(230,57,70,0.2)", borderRadius: "5px", background: "rgba(230,57,70,0.05)", color: C.canada, cursor: "pointer", whiteSpace: "nowrap" }}>
+                          {isHe ? "🗑 מחק" : "🗑 Delete"}
                         </button>
                       </div>
                     </div>
