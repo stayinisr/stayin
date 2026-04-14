@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
 import { useToast } from "../components/ToastProvider";
 import SkeletonCard from "../components/SkeletonCard";
-import { teamFlag, teamName } from "../lib/teams";
+import { teamFlag, teamName, flagImgSrc } from "../lib/teams";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -119,16 +119,10 @@ function MatchCard({
         {/* Teams */}
         <Link href={`/matches/${match.id}`} style={{ textDecoration: "none", display: "block", marginBottom: "7px" }}>
           <div style={{ fontFamily: "var(--font-dm,'DM Sans',sans-serif)", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.1px", color: C.text, lineHeight: 1.3 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ fontSize: "18px", lineHeight: 1 }}>{teamFlag(match.home_team_name)}</span>
-              {teamName(match.home_team_name, isHe)}
-            </span>
+            <img src={flagImgSrc(match.home_team_name)} alt="" style={{ width:"20px", height:"14px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"4px" }} /> {teamName(match.home_team_name, isHe)}
             <br />
-            <span style={{ color: C.hint, fontWeight: 400, fontSize: "12px" }}>vs </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ fontSize: "18px", lineHeight: 1 }}>{teamFlag(match.away_team_name)}</span>
-              {teamName(match.away_team_name, isHe)}
-            </span>
+            <span style={{ color: C.hint, fontWeight: 400 }}>vs </span>
+            <img src={flagImgSrc(match.away_team_name)} alt="" style={{ width:"20px", height:"14px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"4px" }} /> {teamName(match.away_team_name, isHe)}
           </div>
         </Link>
 

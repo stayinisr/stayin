@@ -7,7 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import SuccessModal from "../../components/SuccessModal";
-import { teamFlag, teamName } from "../../lib/teams";
+import { teamFlag, teamName, flagImgSrc } from "../../lib/teams";
 
 const C = {
   usa: "#1a3a6b",
@@ -446,7 +446,7 @@ function PostListingPageContent() {
                   <option value="">{loadingM ? t.loading : t.selectMatch}</option>
                   {matches.map((m) => (
                     <option key={m.id} value={m.id}>
-                      Match {m.fifa_match_number} · {teamFlag(m.home_team_name)} {teamName(m.home_team_name, isHe)} vs {teamFlag(m.away_team_name)} {teamName(m.away_team_name, isHe)} · {m.city}
+                      Match {m.fifa_match_number} · {teamName(m.home_team_name, isHe)} vs {teamName(m.away_team_name, isHe)} · {m.city}
                     </option>
                   ))}
                 </select>
@@ -785,8 +785,8 @@ function PostListingPageContent() {
                     }}
                   >
                     ⚽ Match {selectedMatch.fifa_match_number} ·{" "}
-                    <span style={{ fontSize: "14px" }}>{teamFlag(selectedMatch.home_team_name)}</span> {teamName(selectedMatch.home_team_name, isHe)} vs{" "}
-                    <span style={{ fontSize: "14px" }}>{teamFlag(selectedMatch.away_team_name)}</span> {teamName(selectedMatch.away_team_name, isHe)}
+                    <img src={flagImgSrc(selectedMatch.home_team_name)} alt="" style={{ width:"16px", height:"11px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"3px" }} /> {teamName(selectedMatch.home_team_name, isHe)} vs{" "}
+                    <img src={flagImgSrc(selectedMatch.away_team_name)} alt="" style={{ width:"16px", height:"11px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"3px" }} /> {teamName(selectedMatch.away_team_name, isHe)}
                     <br />
                     {selectedMatch.city} · {selectedMatch.match_date}
                   </div>
