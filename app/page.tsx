@@ -6,7 +6,6 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
 import { useToast } from "../components/ToastProvider";
 import SkeletonCard from "../components/SkeletonCard";
-import { teamCode } from "../lib/teams";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -119,10 +118,10 @@ function MatchCard({
         {/* Teams */}
         <Link href={`/matches/${match.id}`} style={{ textDecoration: "none", display: "block", marginBottom: "7px" }}>
           <div style={{ fontFamily: "var(--font-dm,'DM Sans',sans-serif)", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.1px", color: C.text, lineHeight: 1.3 }}>
-            <img src={`https://flagcdn.com/w20/${teamCode(match.home_team_name)}.png`} style={{ height: "13px", borderRadius: "2px", verticalAlign: "middle", marginRight: "5px" }} />{match.home_team_name || "TBD"}
+            {match.home_team_name || "TBD"}
             <br />
             <span style={{ color: C.hint, fontWeight: 400 }}>vs </span>
-            <img src={`https://flagcdn.com/w20/${teamCode(match.away_team_name)}.png`} style={{ height: "13px", borderRadius: "2px", verticalAlign: "middle", marginRight: "5px" }} />{match.away_team_name || "TBD"}
+            {match.away_team_name || "TBD"}
           </div>
         </Link>
 

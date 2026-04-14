@@ -7,7 +7,6 @@ import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import SuccessModal from "../../components/SuccessModal";
-import { teamCode } from "../../lib/teams";
 
 const C = {
   usa: "#1a3a6b",
@@ -786,9 +785,7 @@ function PostListingPageContent() {
                     }}
                   >
                     ⚽ Match {selectedMatch.fifa_match_number} ·{" "}
-                    <img src={`https://flagcdn.com/w20/${teamCode(selectedMatch.home_team_name)}.png`} style={{ height: "11px", borderRadius: "2px", verticalAlign: "middle", margin: "0 3px 1px 0" }} />
                     {selectedMatch.home_team_name || "TBD"} vs{" "}
-                    <img src={`https://flagcdn.com/w20/${teamCode(selectedMatch.away_team_name)}.png`} style={{ height: "11px", borderRadius: "2px", verticalAlign: "middle", margin: "0 3px 1px 0" }} />
                     {selectedMatch.away_team_name || "TBD"}
                     <br />
                     {selectedMatch.city} · {selectedMatch.match_date}
