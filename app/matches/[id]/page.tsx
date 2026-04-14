@@ -479,7 +479,7 @@ export default function MatchPage() {
                 </div>
 
                 {/* Teams */}
-                <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 800, color: C.text, letterSpacing: "-0.8px", lineHeight: 1.05, marginBottom: "10px" }}>
+                <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 800, whiteSpace: "nowrap", color: C.text, letterSpacing: "-0.8px", lineHeight: 1.05, marginBottom: "10px" }}>
                   <img src={flagImgSrc(match.home_team_name)} alt="" style={{ width:"28px", height:"20px", borderRadius:"3px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"6px" }} /> {teamName(match.home_team_name, isHe)}
                   <span style={{ color: C.faint, fontWeight: 300, margin: "0 10px", fontSize: "0.65em" }}>vs</span>
                   <img src={flagImgSrc(match.away_team_name)} alt="" style={{ width:"28px", height:"20px", borderRadius:"3px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"6px" }} /> {teamName(match.away_team_name, isHe)}
