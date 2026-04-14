@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
-import { teamFlag } from "../../lib/teams";
+import { teamCode } from "../../lib/teams";
 
 const C = { usa: "#1a3a6b", canada: "#e63946", mexico: "#006847", gold: "#d4a017", border: "#e8edf5", text: "#0d1b3e", muted: "#64748b", hint: "#94a3b8", faint: "#cbd5e1", bg: "#f8f9fc" };
 type Plan = "free" | "premium" | "unlimited";
@@ -252,7 +252,15 @@ export default function MyListingsPage() {
 
                       {/* Match title */}
                       <div style={{ fontSize: "13px", fontWeight: 600, color: C.muted, marginBottom: "6px" }}>
-                        {listing.match ? <>Match {listing.match.fifa_match_number} · {teamFlag(listing.match.home_team_name)} {listing.match.home_team_name || "TBD"} vs {teamFlag(listing.match.away_team_name)} {listing.match.away_team_name || "TBD"} · {listing.match.city}</> : "—"}
+                        {listing.match ? (
+                          <>
+                            Match {listing.match.fifa_match_number} ·{" "}
+                            <img src={`https://flagcdn.com/w20/${teamCode(listing.match.home_team_name)}.png`} style={{ height: "11px", borderRadius: "2px", verticalAlign: "middle", margin: "0 3px 1px 0" }} />
+                            {listing.match.home_team_name || "TBD"} vs{" "}
+                            <img src={`https://flagcdn.com/w20/${teamCode(listing.match.away_team_name)}.png`} style={{ height: "11px", borderRadius: "2px", verticalAlign: "middle", margin: "0 3px 1px 0" }} />
+                            {listing.match.away_team_name || "TBD"} · {listing.match.city}
+                          </>
+                        ) : "—"}
                       </div>
 
                       {/* Price — hero (matches page style) */}

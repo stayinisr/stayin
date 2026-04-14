@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/LanguageContext";
 import { useToast } from "../../../components/ToastProvider";
-import { teamFlag } from "../../../lib/teams";
+import { teamCode } from "../../../lib/teams";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -480,9 +480,9 @@ export default function MatchPage() {
 
                 {/* Teams */}
                 <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 800, color: C.text, letterSpacing: "-0.8px", lineHeight: 1.05, marginBottom: "10px" }}>
-                  {teamFlag(match.home_team_name)} {match.home_team_name || "TBD"}
+                  <img src={`https://flagcdn.com/w20/${teamCode(match.home_team_name)}.png`} style={{ height: "22px", borderRadius: "3px", verticalAlign: "middle", marginRight: "8px" }} />{match.home_team_name || "TBD"}
                   <span style={{ color: C.faint, fontWeight: 300, margin: "0 10px", fontSize: "0.65em" }}>vs</span>
-                  {teamFlag(match.away_team_name)} {match.away_team_name || "TBD"}
+                  <img src={`https://flagcdn.com/w20/${teamCode(match.away_team_name)}.png`} style={{ height: "22px", borderRadius: "3px", verticalAlign: "middle", marginRight: "8px" }} />{match.away_team_name || "TBD"}
                 </h1>
 
                 {/* Meta */}
