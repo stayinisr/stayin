@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
-import { teamFlag, teamName, flagImgSrc } from "../../lib/teams";
 
 const C = { usa: "#1a3a6b", canada: "#e63946", mexico: "#006847", gold: "#d4a017", border: "#e8edf5", text: "#0d1b3e", muted: "#64748b", hint: "#94a3b8", faint: "#cbd5e1", bg: "#f8f9fc" };
 type Plan = "free" | "premium" | "unlimited";
@@ -252,7 +251,7 @@ export default function MyListingsPage() {
 
                       {/* Match title */}
                       <div style={{ fontSize: "13px", fontWeight: 600, color: C.muted, marginBottom: "6px" }}>
-                        {listing.match ? <>Match {listing.match.fifa_match_number} · <img src={flagImgSrc(listing.match.home_team_name)} alt="" style={{ width:"16px", height:"11px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"3px" }} /> {teamName(listing.match.home_team_name, isHe)} vs <img src={flagImgSrc(listing.match.away_team_name)} alt="" style={{ width:"16px", height:"11px", borderRadius:"2px", objectFit:"cover", boxShadow:"0 0 0 0.5px rgba(0,0,0,0.12)", verticalAlign:"middle", marginLeft:"3px" }} /> {teamName(listing.match.away_team_name, isHe)} · {listing.match.city}</> : "—"}
+                        {listing.match ? `Match ${listing.match.fifa_match_number} · ${listing.match.home_team_name || "TBD"} vs ${listing.match.away_team_name || "TBD"} · ${listing.match.city}` : "—"}
                       </div>
 
                       {/* Price — hero (matches page style) */}
