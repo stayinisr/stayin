@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/LanguageContext";
 import { useToast } from "../../../components/ToastProvider";
-import { teamFlag, teamName } from "../../../lib/teams";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -391,7 +390,7 @@ export default function MatchPage() {
     if (!match || !item.profile?.phone) return;
     const phone = item.profile.phone.replace(/[^\d+]/g, "").replace(/^\+/, "");
     const text  = isHe
-      ? item.type === "sell" ? `היי, ראיתי את מודעת המכירה שלך למשחק ${match.fifa_match_number} (${teamName(match.home_team_name, true)} נגד ${teamName(match.away_team_name, true)}). זה עדיין זמין?` : `היי, ראיתי את בקשת הקנייה שלך למשחק ${match.fifa_match_number}. אולי יש לי כרטיסים.`
+      ? item.type === "sell" ? `היי, ראיתי את מודעת המכירה שלך למשחק ${match.fifa_match_number} (${match.home_team_name} נגד ${match.away_team_name}). זה עדיין זמין?` : `היי, ראיתי את בקשת הקנייה שלך למשחק ${match.fifa_match_number}. אולי יש לי כרטיסים.`
       : item.type === "sell" ? `Hi, I saw your sell listing for Match ${match.fifa_match_number} (${match.home_team_name} vs ${match.away_team_name}). Still available?` : `Hi, I saw your buy request for Match ${match.fifa_match_number}. I may have tickets.`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
   }
@@ -480,15 +479,9 @@ export default function MatchPage() {
 
                 {/* Teams */}
                 <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 800, color: C.text, letterSpacing: "-0.8px", lineHeight: 1.05, marginBottom: "10px" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "0.85em" }}>{teamFlag(match.home_team_name)}</span>
-                    {teamName(match.home_team_name, isHe)}
-                  </span>
+                  {match.home_team_name || "TBD"}
                   <span style={{ color: C.faint, fontWeight: 300, margin: "0 10px", fontSize: "0.65em" }}>vs</span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "0.85em" }}>{teamFlag(match.away_team_name)}</span>
-                    {teamName(match.away_team_name, isHe)}
-                  </span>
+                  {match.away_team_name || "TBD"}
                 </h1>
 
                 {/* Meta */}
