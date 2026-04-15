@@ -69,56 +69,6 @@ function stageLabel(stage: string, isHe: boolean) {
   return stage;
 }
 
-function cityLabel(city: string, isHe: boolean) {
-  if (!isHe) return city;
-
-  const cityMap: Record<string, string> = {
-    "Los Angeles": "לוס אנג'לס",
-    "New York": "ניו יורק",
-    "Miami": "מיאמי",
-    "Dallas": "דאלאס",
-    "Houston": "יוסטון",
-    "Atlanta": "אטלנטה",
-    "Seattle": "סיאטל",
-    "Boston": "בוסטון",
-    "Philadelphia": "פילדלפיה",
-    "Kansas City": "קנזס סיטי",
-    "San Francisco": "סן פרנסיסקו",
-    "Guadalajara": "גוודלחרה",
-    "Monterrey": "מונטריי",
-    "Mexico City": "מקסיקו סיטי",
-    "Toronto": "טורונטו",
-    "Vancouver": "ונקובר",
-  };
-
-  return cityMap[city] || city;
-}
-
-function formatMatchDate(dateString: string, isHe: boolean) {
-  if (!dateString) return "";
-  if (!isHe) return dateString;
-
-  const parts = dateString.split("-");
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    return `${day}.${month}.${year}`;
-  }
-
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-}
-
-function matchMetaLine(match: MatchItem, isHe: boolean) {
-  const city = cityLabel(match.city, isHe);
-  const date = formatMatchDate(match.match_date, isHe);
-  return [stageLabel(match.stage, isHe), city, date].filter(Boolean).join(" · ");
-}
-
 // ── Countdown hook ────────────────────────────────────────────────────────────
 function useCountdown(date: string, time: string, isHe: boolean) {
   const [left, setLeft] = useState<string | null>(null);
@@ -379,7 +329,7 @@ function MatchCard({
             lineHeight: 1.6,
           }}
         >
-          {matchMetaLine(match, isHe)}
+          {match.city} · {match.stadium} · {match.match_date}
         </div>
 
         {sell === 0 && buy === 0 ? (
@@ -652,8 +602,6 @@ export default function Home() {
         stageLabel(m.stage, true),
         stageLabel(m.stage, false),
         m.city,
-        cityLabel(m.city, true),
-        cityLabel(m.city, false),
         m.stadium,
       ]
         .join(" ")
