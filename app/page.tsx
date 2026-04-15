@@ -1286,7 +1286,9 @@ export default function Home() {
                   fontWeight: 300,
                 }}
               >
-                48 teams · 104 matches · 16 host cities
+                {isHe
+                  ? "48 נבחרות · 104 משחקים · 16 ערים מארחות"
+                  : "48 teams · 104 matches · 16 host cities"}
               </div>
             </div>
             <div
@@ -1307,9 +1309,21 @@ export default function Home() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border }}>
             {[
-              { dot: C.usa, name: isHe ? "ארצות הברית" : "United States", n: "78 matches" },
-              { dot: C.canada, name: isHe ? "קנדה" : "Canada", n: "13 matches" },
-              { dot: C.mexico, name: isHe ? "מקסיקו" : "México", n: "13 matches" },
+              {
+                dot: C.usa,
+                name: isHe ? "ארצות הברית" : "United States",
+                n: isHe ? "78 משחקים" : "78 matches",
+              },
+              {
+                dot: C.canada,
+                name: isHe ? "קנדה" : "Canada",
+                n: isHe ? "13 משחקים" : "13 matches",
+              },
+              {
+                dot: C.mexico,
+                name: isHe ? "מקסיקו" : "México",
+                n: isHe ? "13 משחקים" : "13 matches",
+              },
             ].map((c) => (
               <div
                 key={c.name}
