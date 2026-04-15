@@ -83,22 +83,16 @@ function stageLabel(stage: string | null | undefined, isHe: boolean) {
   return stage;
 }
 
-function formatMatchDate(dateString: string | null | undefined, isHe: boolean) {
+function formatMatchDate(dateString: string | null | undefined) {
   if (!dateString) return "";
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return dateString;
 
-  return isHe
-    ? date.toLocaleDateString("he-IL", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
 }
 
 function formatMatchMeta(
@@ -116,7 +110,7 @@ function formatMatchMeta(
   return [
     match.stage ? stageLabel(match.stage, isHe) : "",
     match.city,
-    formatMatchDate(match.match_date, isHe),
+    formatMatchDate(match.match_date),
   ]
     .filter(Boolean)
     .join(" · ");
