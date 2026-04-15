@@ -59,6 +59,61 @@ function stageLabel(stage: string | null | undefined, isHe: boolean) {
   return stage;
 }
 
+
+function formatMatchDate(dateString: string | null | undefined) {
+  if (!dateString) return "";
+
+  const parts = dateString.split("-");
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    if (year && month && day) return `${day}.${month}.${year}`;
+  }
+
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+function translateMatchCity(city: string | null | undefined, isHe: boolean) {
+  if (!city) return "";
+  if (!isHe) return city;
+
+  const cityMap: Record<string, string> = {
+    "Los Angeles": "לוס אנג'לס",
+    "New York": "ניו יורק",
+    "Miami": "מיאמי",
+    "Dallas": "דאלאס",
+    "Houston": "יוסטון",
+    "Atlanta": "אטלנטה",
+    "Seattle": "סיאטל",
+    "Boston": "בוסטון",
+    "Philadelphia": "פילדלפיה",
+    "Kansas City": "קנזס סיטי",
+    "San Francisco": "סן פרנסיסקו",
+    "Guadalajara": "גוודלחרה",
+    "Monterrey": "מונטריי",
+    "Mexico City": "מקסיקו סיטי",
+    "Toronto": "טורונטו",
+    "Vancouver": "ונקובר",
+  };
+
+  return cityMap[city] || city;
+}
+
+function formatMatchMeta(match: MatchItem | undefined, isHe: boolean) {
+  if (!match) return "";
+  return [
+    match.stage ? stageLabel(match.stage, isHe) : "",
+    translateMatchCity(match.city, isHe),
+    formatMatchDate(match.match_date),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
 function TeamInline({
   name,
   stage,
@@ -887,15 +942,9 @@ function PostListingPageContent() {
                       stage={selectedMatch.stage}
                       isHe={isHe}
                     />
-                    {selectedMatch.stage ? (
-                      <span style={{ flexBasis: "100%" }}>
-                        {stageLabel(selectedMatch.stage, isHe)} · {selectedMatch.city} · {selectedMatch.match_date}
-                      </span>
-                    ) : (
-                      <span style={{ flexBasis: "100%" }}>
-                        {selectedMatch.city} · {selectedMatch.match_date}
-                      </span>
-                    )}
+                    <span style={{ flexBasis: "100%" }}>
+                      {formatMatchMeta(selectedMatch, isHe)}
+                    </span>
                   </div>
                 ) : (
                   <div
