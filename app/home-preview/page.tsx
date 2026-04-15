@@ -1,703 +1,227 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronRight, Ticket, Trophy, Music2, Sparkles, Radio, Star } from "lucide-react";
 import { useLanguage } from "../../lib/LanguageContext";
 
-const C = {
-  usa: "#1a3a6b",
-  canada: "#e63946",
-  mexico: "#006847",
-  bg: "#f8f9fc",
-  white: "#ffffff",
-  border: "#e8edf5",
-  text: "#0d1b3e",
-  muted: "#64748b",
-  hint: "#94a3b8",
-} as const;
+export default function HomePreviewPremiumPage() {
+  const { language } = useLanguage();
+  const isHebrew = language === "he";
 
-function CategoryCard({
-  href,
-  eyebrow,
-  title,
-  description,
-  accent,
-  chip,
-  meta,
-  cta,
-  secondaryCta,
-  secondaryHref,
-  disabled = false,
-}: {
-  href: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  accent: string;
-  chip?: string;
-  meta?: string[];
-  cta: string;
-  secondaryCta?: string;
-  secondaryHref?: string;
-  disabled?: boolean;
-}) {
-  const content = (
-    <div
-      style={{
-        position: "relative",
-        padding: "28px",
-        minHeight: "320px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(248,249,252,0.98) 100%)",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "3px",
-          background: accent,
-        }}
-      />
-
-      <div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            marginBottom: "22px",
-            flexWrap: "wrap",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: C.hint,
-            }}
-          >
-            {eyebrow}
-          </span>
-
-          {chip ? (
-            <span
-              style={{
-                fontSize: "10px",
-                fontWeight: 700,
-                padding: "5px 10px",
-                borderRadius: "999px",
-                background: "rgba(26,58,107,0.06)",
-                color: accent,
-                border: `1px solid rgba(26,58,107,0.12)`,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {chip}
-            </span>
-          ) : null}
-        </div>
-
-        <h2
-          style={{
-            fontFamily: "var(--font-syne,'Syne',sans-serif)",
-            fontSize: "clamp(28px,4vw,42px)",
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
-            lineHeight: 1,
-            color: C.text,
-            marginBottom: "16px",
-          }}
-        >
-          {title}
-        </h2>
-
-        <p
-          style={{
-            fontSize: "14px",
-            lineHeight: 1.8,
-            color: C.muted,
-            maxWidth: "520px",
-            marginBottom: "22px",
-          }}
-        >
-          {description}
-        </p>
-
-        {meta?.length ? (
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {meta.map((item) => (
-              <span
-                key={item}
-                style={{
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: C.hint,
-                  border: `1px solid ${C.border}`,
-                  background: C.white,
-                  borderRadius: "999px",
-                  padding: "6px 10px",
-                }}
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          flexWrap: "wrap",
-          marginTop: "24px",
-        }}
-      >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "12px 22px",
-            background: disabled ? "#eef2f7" : accent,
-            color: disabled ? C.hint : "#fff",
-            fontSize: "13px",
-            fontWeight: 700,
-            borderRadius: "4px",
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {cta}
-        </span>
-
-        {secondaryCta && secondaryHref ? (
-          <Link
-            href={secondaryHref}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "12px 18px",
-              background: C.white,
-              color: C.text,
-              fontSize: "13px",
-              fontWeight: 600,
-              borderRadius: "4px",
-              textDecoration: "none",
-              border: `1px solid ${C.border}`,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {secondaryCta}
-          </Link>
-        ) : null}
-      </div>
-    </div>
-  );
-
-  if (disabled) {
-    return (
-      <div
-        style={{
-          border: `1px solid ${C.border}`,
-          borderRadius: "8px",
-          overflow: "hidden",
-          background: C.white,
-        }}
-      >
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      style={{
-        textDecoration: "none",
-        border: `1px solid ${C.border}`,
-        borderRadius: "8px",
-        overflow: "hidden",
-        background: C.white,
-        display: "block",
-      }}
-    >
-      {content}
-    </Link>
-  );
-}
-
-export default function HomePreviewPage() {
-  const { lang } = useLanguage();
-  const isHe = lang === "he";
-
-  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
-  const smallCaps = {
-    fontSize: "10px",
-    fontWeight: 600,
-    letterSpacing: "0.12em",
-    textTransform: "uppercase" as const,
-    color: C.hint,
+  const t = {
+    badge: isHebrew ? "תצוגה מקדימה" : "Preview",
+    title1: isHebrew ? "כרטיסים יד שנייה" : "Second-hand tickets",
+    title2: isHebrew ? "שמרגישים כמו פלטפורמה אמיתית" : "that feel like a real platform",
+    subtitle: isHebrew
+      ? "ספורט והופעות חיות במקום אחד ברור, מהיר ומדויק — עם כניסה לעולמות תוכן ולא לעוד רשימה יבשה."
+      : "Sports and live shows in one clear, fast place — built around content worlds, not another dry list.",
+    ctaPrimary: isHebrew ? "לחקור קטגוריות" : "Explore categories",
+    ctaSecondary: isHebrew ? "פרסום מודעה" : "Post listing",
+    stat1: isHebrew ? "עולמות תוכן" : "Content worlds",
+    stat2: isHebrew ? "כניסה ישירה" : "Direct entry",
+    stat3: isHebrew ? "עיצוב פרימיום" : "Premium feel",
+    sectionTitle: isHebrew ? "בחר עולם" : "Choose your world",
+    sectionSub: isHebrew
+      ? "לא עוד דף בית טכני — אלא כניסה שמרגישה כמו תוכן שאתה רוצה לפתוח."
+      : "Not a technical homepage — an entry point that feels like content you want to open.",
+    sports: isHebrew ? "כרטיסי ספורט" : "Sports Tickets",
+    sportsSub: isHebrew
+      ? "כדורגל, גמרים, משחקים גדולים וטורנירים"
+      : "Football, finals, big matches and tournaments",
+    sportsTag: isHebrew ? "העולם הפעיל עכשיו" : "Live now",
+    sportsCta: isHebrew ? "כניסה לספורט" : "Enter sports",
+    live: isHebrew ? "הופעות חיות" : "Live Shows",
+    liveSub: isHebrew
+      ? "הופעות, פסטיבלים ואירועים שחייבים להיות בהם"
+      : "Concerts, festivals and live events worth showing up for",
+    liveTag: isHebrew ? "בקרוב מתרחב" : "Growing soon",
+    liveCta: isHebrew ? "כניסה להופעות" : "Enter live shows",
+    spotlight: isHebrew ? "בולט עכשיו בספורט" : "Spotlight in sports",
+    wcTitle: isHebrew ? "FIFA World Cup 2026" : "FIFA World Cup 2026",
+    wcSub: isHebrew
+      ? "הכניסה הראשית שלך למשחקים, חיפוש מודעות וקנייה/מכירה בין אנשים."
+      : "Your main entry into matches, listings and direct buyer-seller contact.",
+    wcCta: isHebrew ? "כניסה למונדיאל" : "Open World Cup",
+    footer: isHebrew
+      ? "Preview בלבד — בלי חיבור לדאטה ובלי סיכון לעמוד הבית החי"
+      : "Preview only — no data connection and no risk to the live homepage",
   };
 
   return (
-    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
-      <style>{`
-        @media (max-width: 820px) {
-          .hero-grid,
-          .category-grid,
-          .bottom-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-
-      <div
-        style={{
-          height: "3px",
-          background: `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)`,
-        }}
-      />
-
-      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "22px",
-              ...smallCaps,
-            }}
-          >
-            <span style={{ display: "flex", gap: "4px" }}>
-              {[C.usa, C.canada, C.mexico].map((c) => (
-                <span
-                  key={c}
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    background: c,
-                    display: "inline-block",
-                  }}
-                />
-              ))}
-            </span>
-            {isHe
-              ? "כרטיסים יד שנייה · ספורט · הופעות חיות"
-              : "Second-hand tickets · Sports · Live shows"}
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.18),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(59,130,246,0.16),transparent_24%),linear-gradient(180deg,#06111f_0%,#081426_35%,#09111c_100%)] text-white">
+      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+        <header className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 shadow-[0_0_30px_rgba(45,212,191,0.18)] backdrop-blur-xl">
+              <Ticket className="h-5 w-5 text-teal-300" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold tracking-wide">Stayin</div>
+              <div className="text-xs text-white/45">{t.badge}</div>
+            </div>
           </div>
 
-          <div
-            className="hero-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              gap: "32px",
-              alignItems: "center",
-            }}
-          >
+          <div className="hidden items-center gap-2 md:flex">
+            <span className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs text-teal-200">
+              {t.footer}
+            </span>
+          </div>
+        </header>
+
+        <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.05] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_40%,rgba(45,212,191,0.08)_100%)]" />
+          <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -left-12 bottom-0 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
+
+          <div className="relative grid items-end gap-8 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  letterSpacing: "0.24em",
-                  textTransform: "uppercase",
-                  color: C.usa,
-                  marginBottom: "16px",
-                }}
-              >
-                STAY IN THE MOMENT
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-xs text-white/70">
+                <Sparkles className="h-3.5 w-3.5 text-teal-300" />
+                {isHebrew ? "דף בית קטגורי חדש" : "New category-driven homepage"}
               </div>
 
-              {isHe ? (
-                <h1
-                  style={{
-                    fontFamily: "var(--font-he,'Heebo',sans-serif)",
-                    fontSize: "clamp(40px,5.5vw,68px)",
-                    fontWeight: 900,
-                    lineHeight: 1,
-                    letterSpacing: "-0.5px",
-                    color: C.text,
-                    marginBottom: "18px",
-                  }}
-                >
-                  כל הכרטיסים
-                  <br />
-                  <span style={{ color: C.usa }}>במקום אחד.</span>
-                </h1>
-              ) : (
-                <h1
-                  style={{
-                    fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                    fontSize: "clamp(40px,5.5vw,68px)",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                    letterSpacing: "0.02em",
-                    color: C.text,
-                    marginBottom: "18px",
-                  }}
-                >
-                  ALL TICKETS
-                  <br />
-                  <span style={{ color: C.usa }}>IN ONE PLACE.</span>
-                </h1>
-              )}
+              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.02] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
+                {t.title1}
+                <span className="mt-2 block bg-gradient-to-r from-white via-teal-100 to-cyan-300 bg-clip-text text-transparent">
+                  {t.title2}
+                </span>
+              </h1>
 
-              <p
-                style={{
-                  fontSize: "15px",
-                  fontWeight: 400,
-                  color: C.muted,
-                  lineHeight: 1.8,
-                  maxWidth: "460px",
-                  marginBottom: "28px",
-                  letterSpacing: isHe ? "0" : "0.01em",
-                  fontFamily: isHe
-                    ? "var(--font-he,'Heebo',sans-serif)"
-                    : "var(--font-dm,'DM Sans',sans-serif)",
-                }}
-              >
-                {isHe
-                  ? "ספורט והופעות חיות — כל המודעות במקום אחד ברור, עם פנייה ישירה בין אנשים."
-                  : "Sports and live shows — all listings in one clear place, with direct contact between people."}
+              <p className="mt-5 max-w-2xl text-sm leading-6 text-white/68 sm:text-base">
+                {t.subtitle}
               </p>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                <a
-                  href="#categories"
-                  style={{
-                    padding: "12px 24px",
-                    background: "transparent",
-                    color: C.usa,
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    letterSpacing: "0.02em",
-                    border: `2px solid ${C.usa}`,
-                  }}
-                >
-                  {isHe ? "צפה בקטגוריות ↓" : "Browse categories ↓"}
-                </a>
-
-                <span
-                  style={{
-                    padding: "12px 22px",
-                    border: `1px solid ${C.border}`,
-                    color: C.muted,
-                    fontSize: "13px",
-                    fontWeight: 500,
-                    borderRadius: "4px",
-                    background: C.white,
-                  }}
-                >
-                  {isHe ? "+ פרסם מודעה" : "+ Post listing"}
-                </span>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <button className="rounded-2xl bg-white px-5 py-3 text-sm font-medium text-slate-900 transition hover:scale-[1.02]">
+                  {t.ctaPrimary}
+                </button>
+                <button className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 transition hover:bg-white/10">
+                  {t.ctaSecondary}
+                </button>
               </div>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3,1fr)",
-                gap: "1px",
-                background: C.border,
-                border: `1px solid ${C.border}`,
-                borderRadius: "6px",
-                overflow: "hidden",
-                minWidth: "320px",
-              }}
-            >
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
               {[
-                { val: "2", lbl: isHe ? "קטגוריות" : "Categories", color: C.usa },
-                { val: "128", lbl: isHe ? "מודעות לדוגמה" : "Preview listings", color: C.text },
-                { val: "64", lbl: isHe ? "אירועי ספורט לדוגמה" : "Preview sports events", color: C.mexico },
-              ].map((s, i) => (
-                <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
+                { icon: Trophy, label: t.stat1 },
+                { icon: Radio, label: t.stat2 },
+                { icon: Star, label: t.stat3 },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
                   <div
-                    style={{
-                      fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                      fontSize: "22px",
-                      fontWeight: 800,
-                      color: s.color,
-                      letterSpacing: "-0.5px",
-                    }}
+                    key={item.label}
+                    className="rounded-[26px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                   >
-                    {s.val}
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/8">
+                      <Icon className="h-4.5 w-4.5 text-teal-200" />
+                    </div>
+                    <div className="text-sm font-medium text-white/90">{item.label}</div>
                   </div>
-                  <div style={{ ...smallCaps, marginTop: "4px" }}>{s.lbl}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div id="categories" style={{ ...W, paddingTop: "28px", paddingBottom: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-            marginBottom: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div style={{ ...smallCaps, marginBottom: "6px" }}>
-              {isHe ? "קטגוריות" : "Categories"}
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                fontSize: "22px",
-                fontWeight: 800,
-                color: C.text,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {isHe ? "בחר עולם והמשך פנימה" : "Choose a world and dive in"}
-            </div>
-          </div>
-
-          <div style={{ fontSize: "12px", color: C.hint }}>
-            {isHe ? "כמו נטפליקס, אבל לכרטיסים" : "Like Netflix, but for tickets"}
-          </div>
-        </div>
-
-        <div
-          className="category-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2,minmax(0,1fr))",
-            gap: "16px",
-          }}
-        >
-          <CategoryCard
-            href="/sports"
-            eyebrow={isHe ? "כרטיסי ספורט" : "Sports tickets"}
-            title={isHe ? "כדורגל וטורנירים" : "Football & tournaments"}
-            description={
-              isHe
-                ? "מונדיאל 2026 וכל מה שיבוא אחריו. כניסה לעולם הספורט ומשם לטורנירים, משחקים ומודעות."
-                : "World Cup 2026 and whatever comes next. Enter the sports category and continue to tournaments, matches, and listings."
-            }
-            accent={C.usa}
-            chip="FIFA World Cup 2026"
-            meta={
-              isHe
-                ? ["מונדיאל 2026", "כדורגל", "מודעות יד שנייה"]
-                : ["World Cup 2026", "Football", "Second-hand listings"]
-            }
-            cta={isHe ? "כניסה לספורט →" : "Enter sports →"}
-            secondaryCta={isHe ? "ישר למונדיאל" : "Go to World Cup"}
-            secondaryHref="/sports/world-cup-2026"
-          />
-
-          <CategoryCard
-            href="/live-shows"
-            eyebrow={isHe ? "הופעות חיות" : "Live shows"}
-            title={isHe ? "אמנים, מופעים ופסטיבלים" : "Artists, shows & festivals"}
-            description={
-              isHe
-                ? "קטגוריה נפרדת להופעות חיות. בהמשך תוכל להוסיף אמנים, פסטיבלים ואירועים ספציפיים באותו מבנה בדיוק."
-                : "A separate category for live shows. Later you can add artists, festivals, and specific events in the same exact structure."
-            }
-            accent={C.canada}
-            chip={isHe ? "בקרוב" : "Coming soon"}
-            meta={
-              isHe
-                ? ["הופעות", "פסטיבלים", "כרטיסים יד שנייה"]
-                : ["Concerts", "Festivals", "Second-hand tickets"]
-            }
-            cta={isHe ? "כניסה להופעות →" : "Enter live shows →"}
-            disabled
-          />
-        </div>
-      </div>
-
-      <div style={{ ...W, marginTop: "8px" }}>
-        <div
-          className="bottom-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.2fr .8fr",
-            gap: "16px",
-            paddingBottom: "28px",
-          }}
-        >
-          <div style={{ borderRadius: "8px", overflow: "hidden", border: `1px solid ${C.border}` }}>
-            <div
-              style={{
-                background: C.usa,
-                padding: "16px 22px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
-                flexWrap: "wrap",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    color: "#fff",
-                  }}
-                >
-                  FIFA World Cup 2026
-                </div>
-                <div
-                  style={{
-                    fontSize: "11px",
-                    color: "rgba(255,255,255,.68)",
-                    marginTop: "2px",
-                    fontWeight: 300,
-                  }}
-                >
-                  {isHe ? "נמצא בתוך קטגוריית הספורט" : "Lives inside the sports category"}
-                </div>
-              </div>
-              <Link
-                href="/sports/world-cup-2026"
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#fff",
-                  background: "rgba(255,255,255,.12)",
-                  padding: "8px 12px",
-                  borderRadius: "3px",
-                  border: "1px solid rgba(255,255,255,.15)",
-                  whiteSpace: "nowrap",
-                  textDecoration: "none",
-                }}
-              >
-                {isHe ? "כניסה למונדיאל →" : "Open World Cup →"}
-              </Link>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3,1fr)",
-                gap: "1px",
-                background: C.border,
-              }}
-            >
-              {[
-                {
-                  dot: C.usa,
-                  name: isHe ? "כרטיסי ספורט" : "Sports tickets",
-                  n: isHe ? "הקטגוריה הפעילה עכשיו" : "The active category right now",
-                },
-                {
-                  dot: C.canada,
-                  name: isHe ? "מונדיאל 2026" : "World Cup 2026",
-                  n: isHe ? "התוכן הראשון בפנים" : "The first content inside",
-                },
-                {
-                  dot: C.mexico,
-                  name: isHe ? "הופעות חיות" : "Live shows",
-                  n: isHe ? "מוכן להתרחבות בהמשך" : "Ready to expand next",
-                },
-              ].map((c) => (
-                <div
-                  key={c.name}
-                  style={{
-                    background: "rgba(255,255,255,0.8)",
-                    padding: "14px 18px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: c.dot,
-                      flexShrink: 0,
-                      display: "inline-block",
-                    }}
-                  />
-                  <div>
-                    <div style={{ fontSize: "12px", fontWeight: 600, color: C.text }}>{c.name}</div>
-                    <div style={{ fontSize: "10px", color: C.hint, marginTop: "1px" }}>{c.n}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: "24px",
-              border: `1px solid ${C.border}`,
-              borderRadius: "8px",
-              background: "rgba(255,255,255,0.8)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              gap: "18px",
-            }}
-          >
+        <section className="mt-12">
+          <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <div style={{ ...smallCaps, marginBottom: "10px" }}>{isHe ? "למוכרים" : "For sellers"}</div>
-              <div
-                style={{
-                  fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                  fontSize: "20px",
-                  fontWeight: 800,
-                  color: C.text,
-                  letterSpacing: "-0.02em",
-                  marginBottom: "8px",
-                }}
-              >
-                {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+              <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t.sectionTitle}</h2>
+              <p className="mt-1 text-sm text-white/56">{t.sectionSub}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Link
+              href="/sports"
+              className="group relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(10,18,32,0.96),rgba(8,41,56,0.88)_55%,rgba(14,102,123,0.78))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.4)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/25"
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(103,232,249,0.18),transparent_28%),linear-gradient(180deg,transparent_0%,rgba(3,7,18,0.45)_100%)]" />
+              <div className="pointer-events-none absolute -right-10 bottom-0 h-48 w-48 rounded-full bg-cyan-300/12 blur-3xl transition duration-300 group-hover:scale-110" />
+              <div className="pointer-events-none absolute left-6 top-6 flex gap-2 opacity-80">
+                {[1,2,3].map((i) => (
+                  <span key={i} className="h-24 w-16 rounded-2xl border border-white/8 bg-white/6 shadow-lg backdrop-blur-sm" />
+                ))}
               </div>
-              <div style={{ fontSize: "13px", color: C.muted, lineHeight: 1.8 }}>
-                {isHe
-                  ? "זהו דף תצוגה בלבד. כשתאשר את המבנה, נחבר אותו לזרימה האמיתית של האתר."
-                  : "This is a preview-only page. Once you approve the structure, we can connect it to the live site flow."}
+
+              <div className="relative mt-28 flex items-end justify-between gap-6">
+                <div>
+                  <div className="mb-3 inline-flex items-center rounded-full border border-cyan-200/15 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">
+                    {t.sportsTag}
+                  </div>
+                  <h3 className="text-3xl font-semibold tracking-[-0.04em] sm:text-[2rem]">{t.sports}</h3>
+                  <p className="mt-3 max-w-md text-sm leading-6 text-white/70">{t.sportsSub}</p>
+                </div>
+
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/8 transition group-hover:bg-white/12">
+                  <ChevronRight className="h-5 w-5 text-white/85" />
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/live-shows"
+              className="group relative overflow-hidden rounded-[30px] border border-fuchsia-300/10 bg-[linear-gradient(135deg,rgba(18,8,28,0.96),rgba(53,18,68,0.9)_55%,rgba(123,39,87,0.78))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.4)] transition duration-300 hover:-translate-y-1 hover:border-fuchsia-300/25"
+            >
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,114,182,0.16),transparent_28%),linear-gradient(180deg,transparent_0%,rgba(3,7,18,0.45)_100%)]" />
+              <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-fuchsia-300/12 blur-3xl transition duration-300 group-hover:scale-110" />
+              <div className="pointer-events-none absolute left-6 top-6 flex items-end gap-3 opacity-85">
+                <div className="h-24 w-16 rounded-2xl border border-white/8 bg-white/6" />
+                <div className="h-28 w-20 rounded-[22px] border border-white/10 bg-white/8" />
+                <div className="h-20 w-14 rounded-2xl border border-white/8 bg-white/6" />
+              </div>
+
+              <div className="relative mt-28 flex items-end justify-between gap-6">
+                <div>
+                  <div className="mb-3 inline-flex items-center rounded-full border border-fuchsia-200/15 bg-fuchsia-300/10 px-3 py-1 text-xs text-fuchsia-100">
+                    {t.liveTag}
+                  </div>
+                  <h3 className="text-3xl font-semibold tracking-[-0.04em] sm:text-[2rem]">{t.live}</h3>
+                  <p className="mt-3 max-w-md text-sm leading-6 text-white/70">{t.liveSub}</p>
+                </div>
+
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/8 transition group-hover:bg-white/12">
+                  <ChevronRight className="h-5 w-5 text-white/85" />
+                </div>
+              </div>
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-12 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+          <Link
+            href="/sports/world-cup-2026"
+            className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-6 shadow-[0_18px_70px_rgba(0,0,0,0.32)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-teal-300/20"
+          >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(45,212,191,0.12),transparent_30%)]" />
+            <div className="relative flex h-full flex-col justify-between gap-8 sm:flex-row sm:items-end">
+              <div>
+                <div className="mb-3 inline-flex items-center rounded-full border border-teal-200/15 bg-teal-300/10 px-3 py-1 text-xs text-teal-100">
+                  {t.spotlight}
+                </div>
+                <h3 className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">{t.wcTitle}</h3>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-white/66">{t.wcSub}</p>
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white/88 transition group-hover:bg-white/12">
+                {t.wcCta}
+                <ChevronRight className="h-4 w-4" />
               </div>
             </div>
+          </Link>
 
-            <span
-              style={{
-                padding: "12px 20px",
-                background: C.usa,
-                color: "#fff",
-                fontSize: "13px",
-                fontWeight: 700,
-                borderRadius: "4px",
-                whiteSpace: "nowrap",
-                letterSpacing: "0.02em",
-                alignSelf: "flex-start",
-              }}
-            >
-              {isHe ? "Preview only" : "Preview only"}
-            </span>
+          <div className="rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
+            <div className="mb-4 text-sm font-medium text-white/90">
+              {isHebrew ? "למה זה נראה יותר טוב" : "Why this feels better"}
+            </div>
+            <div className="space-y-3 text-sm leading-6 text-white/62">
+              <p>{isHebrew ? "• הקטגוריות מרגישות כמו תוכן, לא כמו כפתורים רגילים." : "• Categories feel like content worlds, not standard buttons."}</p>
+              <p>{isHebrew ? "• לכל עולם יש אופי ויזואלי משלו, בלי לשבור את השפה של Stayin." : "• Each world has its own visual identity without breaking the Stayin language."}</p>
+              <p>{isHebrew ? "• המונדיאל נשאר בולט, אבל כבר לא כולא את המותג כולו." : "• The World Cup stays prominent without defining the whole brand."}</p>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
