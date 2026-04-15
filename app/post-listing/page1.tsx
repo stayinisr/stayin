@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import SuccessModal from "../../components/SuccessModal";
+import { teamName, flagImgSrc } from "../../lib/teams";
 
 const C = {
   usa: "#1a3a6b",
@@ -29,7 +30,151 @@ type MatchItem = {
   city: string;
   stadium: string;
   match_date: string;
+  stage?: string | null;
 };
+
+function isGroupStage(stage?: string | null) {
+  return !!stage && (stage.startsWith("Group") || stage === "Group Stage");
+}
+
+function hasRealTeam(name: string | null | undefined) {
+  return !!name && name !== "TBD" && name !== "TBC";
+}
+
+function stageLabel(stage: string | null | undefined, isHe: boolean) {
+  if (!stage) return "";
+  if (!isHe) return stage;
+
+  if (stage === "Group Stage") return "שלב הבתים";
+  if (stage === "Round of 32") return "32 האחרונות";
+  if (stage === "Round of 16") return "16 האחרונות";
+  if (stage === "Quarter Finals") return "רבע הגמר";
+  if (stage === "Semi Finals") return "חצי הגמר";
+  if (stage === "Third Place") return "מקום שלישי";
+  if (stage === "Final") return "הגמר";
+
+  const groupMatch = stage.match(/^Group\s+([A-Z])$/i);
+  if (groupMatch) return `בית ${groupMatch[1].toUpperCase()}`;
+
+  return stage;
+}
+
+
+function formatMatchDate(dateString: string | null | undefined) {
+  if (!dateString) return "";
+
+  const parts = dateString.split("-");
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    if (year && month && day) return `${day}.${month}.${year}`;
+  }
+
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+function translateMatchCity(city: string | null | undefined, isHe: boolean) {
+  if (!city) return "";
+  if (!isHe) return city;
+
+  const cityMap: Record<string, string> = {
+    "Los Angeles": "לוס אנג'לס",
+    "New York": "ניו יורק",
+    "Miami": "מיאמי",
+    "Dallas": "דאלאס",
+    "Houston": "יוסטון",
+    "Atlanta": "אטלנטה",
+    "Seattle": "סיאטל",
+    "Boston": "בוסטון",
+    "Philadelphia": "פילדלפיה",
+    "Kansas City": "קנזס סיטי",
+    "San Francisco": "סן פרנסיסקו",
+    "Guadalajara": "גוודלחרה",
+    "Monterrey": "מונטריי",
+    "Mexico City": "מקסיקו סיטי",
+    "Toronto": "טורונטו",
+    "Vancouver": "ונקובר",
+  };
+
+  return cityMap[city] || city;
+}
+
+function formatMatchMeta(match: MatchItem | undefined, isHe: boolean) {
+  if (!match) return "";
+  return [
+    match.stage ? stageLabel(match.stage, isHe) : "",
+    translateMatchCity(match.city, isHe),
+    formatMatchDate(match.match_date),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+function TeamInline({
+  name,
+  stage,
+  isHe,
+}: {
+  name: string | null;
+  stage?: string | null;
+  isHe: boolean;
+}) {
+  const showFlag = isGroupStage(stage) && hasRealTeam(name);
+  const imgSrc = showFlag ? flagImgSrc(name) : "";
+  const label = teamName(name, isHe);
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        fontFamily: isHe
+          ? "var(--font-he,'Heebo',sans-serif)"
+          : "var(--font-dm,'DM Sans',sans-serif)",
+        fontSize: "11px",
+        fontWeight: 600,
+        color: C.hint,
+        lineHeight: 1.45,
+        verticalAlign: "middle",
+      }}
+    >
+      {showFlag && imgSrc ? (
+        <span
+          style={{
+            width: "16px",
+            height: "11px",
+            borderRadius: "3px",
+            overflow: "hidden",
+            background: "#fff",
+            border: "1px solid rgba(13,27,62,0.10)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
+          }}
+        >
+          <img
+            src={imgSrc}
+            alt=""
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        </span>
+      ) : null}
+      <span>{label}</span>
+    </span>
+  );
+}
 
 function PostListingPageContent() {
   const router = useRouter();
@@ -78,7 +223,7 @@ function PostListingPageContent() {
     const { data } = await supabase
       .from("matches")
       .select(
-        "id,fifa_match_number,home_team_name,away_team_name,city,stadium,match_date"
+        "id,fifa_match_number,home_team_name,away_team_name,city,stadium,match_date,stage"
       )
       .order("fifa_match_number", { ascending: true });
 
@@ -227,7 +372,12 @@ function PostListingPageContent() {
       .is("archived_at", null)
       .gt("expires_at", new Date().toISOString());
 
-    const planLimits: Record<string, number> = { free: 10, premium: 25, unlimited: 9999 };
+    const planLimits: Record<string, number> = {
+      free: 10,
+      premium: 25,
+      unlimited: 9999,
+    };
+
     const maxListings = planLimits[userPlan] ?? 10;
     if ((active || []).length >= maxListings) {
       setSubmitting(false);
@@ -352,6 +502,7 @@ function PostListingPageContent() {
           >
             STAY IN THE GAME
           </div>
+
           <h1
             style={{
               fontFamily: "var(--font-syne,'Syne',sans-serif)",
@@ -367,13 +518,14 @@ function PostListingPageContent() {
                 ? "עריכת מודעה"
                 : "Edit listing"
               : type === "sell"
-              ? isHe
-                ? "מכירת כרטיסים"
-                : "Sell tickets"
-              : isHe
-              ? "חיפוש כרטיסים"
-              : "Looking to buy"}
+                ? isHe
+                  ? "מכירת כרטיסים"
+                  : "Sell tickets"
+                : isHe
+                  ? "חיפוש כרטיסים"
+                  : "Looking to buy"}
           </h1>
+
           <p
             style={{
               fontSize: "13px",
@@ -427,8 +579,8 @@ function PostListingPageContent() {
                           ? "🎟️ מכירה"
                           : "🎟️ Sell"
                         : isHe
-                        ? "🔍 קנייה"
-                        : "🔍 Buy"}
+                          ? "🔍 קנייה"
+                          : "🔍 Buy"}
                     </button>
                   ))}
                 </div>
@@ -445,8 +597,8 @@ function PostListingPageContent() {
                   <option value="">{loadingM ? t.loading : t.selectMatch}</option>
                   {matches.map((m) => (
                     <option key={m.id} value={m.id}>
-                      Match {m.fifa_match_number} · {m.home_team_name || "TBD"} vs{" "}
-                      {m.away_team_name || "TBD"} · {m.city}
+                      {isHe ? "משחק" : "Match"} {m.fifa_match_number} · {teamName(m.home_team_name, isHe)} {isHe ? "נגד" : "vs"}{" "}
+                      {teamName(m.away_team_name, isHe)} · {m.city}
                     </option>
                   ))}
                 </select>
@@ -455,31 +607,27 @@ function PostListingPageContent() {
               <div>
                 <label style={lbl}>{t.category}</label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {["Category 1", "Category 2", "Category 3", "Category 4"].map(
-                    (c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCategory(c)}
-                        style={{
-                          padding: "9px 4px",
-                          fontSize: "11px",
-                          fontWeight: 600,
-                          border: `1px solid ${category === c ? C.usa : C.border}`,
-                          borderRadius: "6px",
-                          background:
-                            category === c
-                              ? "rgba(26,58,107,0.07)"
-                              : "rgba(255,255,255,0.9)",
-                          color: category === c ? C.usa : C.muted,
-                          cursor: "pointer",
-                          transition: "all 150ms",
-                        }}
-                      >
-                        {c.replace("Category ", isHe ? "קטג' " : "Cat ")}
-                      </button>
-                    )
-                  )}
+                  {["Category 1", "Category 2", "Category 3", "Category 4"].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCategory(c)}
+                      style={{
+                        padding: "9px 4px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        border: `1px solid ${category === c ? C.usa : C.border}`,
+                        borderRadius: "6px",
+                        background:
+                          category === c ? "rgba(26,58,107,0.07)" : "rgba(255,255,255,0.9)",
+                        color: category === c ? C.usa : C.muted,
+                        cursor: "pointer",
+                        transition: "all 150ms",
+                      }}
+                    >
+                      {c.replace("Category ", isHe ? "קטג' " : "Cat ")}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -494,6 +642,7 @@ function PostListingPageContent() {
                     style={inp}
                   />
                 </div>
+
                 {quantity > 1 && (
                   <div>
                     <label style={lbl}>{t.seatsTogetherQuestion}</label>
@@ -566,9 +715,7 @@ function PostListingPageContent() {
                   style={{ ...inp, resize: "vertical", lineHeight: 1.7 }}
                 />
                 <p style={{ fontSize: "10px", color: C.faint, marginTop: "5px" }}>
-                  {isHe
-                    ? "הערות אלה יופיעו במודעה שלך"
-                    : "These notes will appear on your listing"}
+                  {isHe ? "הערות אלה יופיעו במודעה שלך" : "These notes will appear on your listing"}
                 </p>
               </div>
 
@@ -645,13 +792,7 @@ function PostListingPageContent() {
                       }`,
                     }}
                   >
-                    {type === "sell"
-                      ? isHe
-                        ? "מכירה"
-                        : "Sell"
-                      : isHe
-                      ? "קנייה"
-                      : "Buy"}
+                    {type === "sell" ? (isHe ? "מכירה" : "Sell") : isHe ? "קנייה" : "Buy"}
                   </span>
 
                   <span
@@ -782,13 +923,28 @@ function PostListingPageContent() {
                       color: C.hint,
                       paddingTop: "10px",
                       borderTop: `1px solid ${C.border}`,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "6px",
+                      lineHeight: 1.5,
                     }}
                   >
-                    ⚽ Match {selectedMatch.fifa_match_number} ·{" "}
-                    {selectedMatch.home_team_name || "TBD"} vs{" "}
-                    {selectedMatch.away_team_name || "TBD"}
-                    <br />
-                    {selectedMatch.city} · {selectedMatch.match_date}
+                    <span>⚽ {isHe ? "משחק" : "Match"} {selectedMatch.fifa_match_number} ·</span>
+                    <TeamInline
+                      name={selectedMatch.home_team_name}
+                      stage={selectedMatch.stage}
+                      isHe={isHe}
+                    />
+                    <span>{isHe ? "נגד" : "vs"}</span>
+                    <TeamInline
+                      name={selectedMatch.away_team_name}
+                      stage={selectedMatch.stage}
+                      isHe={isHe}
+                    />
+                    <span style={{ flexBasis: "100%" }}>
+                      {formatMatchMeta(selectedMatch, isHe)}
+                    </span>
                   </div>
                 ) : (
                   <div
