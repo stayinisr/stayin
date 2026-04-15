@@ -55,8 +55,22 @@ function hasRealTeam(name: string | null | undefined) {
   return !!name && name !== "TBD" && name !== "TBC";
 }
 
+function stageLabel(stage: string, isHe: boolean) {
+  if (!isHe) return stage;
+
+  if (stage === "Group Stage") return "שלב הבתים";
+  if (stage === "Round of 32") return "32 האחרונות";
+  if (stage === "Round of 16") return "16 האחרונות";
+  if (stage === "Quarter Finals") return "רבע הגמר";
+  if (stage === "Semi Finals") return "חצי הגמר";
+  if (stage === "Third Place") return "מקום שלישי";
+  if (stage === "Final") return "הגמר";
+
+  return stage;
+}
+
 // ── Countdown hook ────────────────────────────────────────────────────────────
-function useCountdown(date: string, time: string) {
+function useCountdown(date: string, time: string, isHe: boolean) {
   const [left, setLeft] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,13 +87,18 @@ function useCountdown(date: string, time: string) {
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
-      setLeft(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
+
+      if (isHe) {
+        setLeft(d > 0 ? `${d}י ${h}ש` : `${h}ש ${m}ד`);
+      } else {
+        setLeft(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
+      }
     }
 
     tick();
     const id = setInterval(tick, 60000);
     return () => clearInterval(id);
-  }, [date, time]);
+  }, [date, time, isHe]);
 
   return left;
 }
@@ -107,7 +126,7 @@ function MatchCard({
   isHe: boolean;
 }) {
   const accent = ACCENTS[idx % 3];
-  const countdown = useCountdown(match.match_date, match.match_time);
+  const countdown = useCountdown(match.match_date, match.match_time, isHe);
   const [hov, setHov] = useState(false);
   const showFlags = isGroupStage(match.stage);
 
@@ -205,7 +224,7 @@ function MatchCard({
                 color: C.faint,
               }}
             >
-              Match {String(match.fifa_match_number).padStart(2, "0")}
+              {isHe ? "משחק" : "Match"} {String(match.fifa_match_number).padStart(2, "0")}
             </span>
 
             {hot && (
@@ -222,7 +241,7 @@ function MatchCard({
                   border: "1px solid rgba(230,57,70,0.2)",
                 }}
               >
-                🔥 Hot
+                🔥 {isHe ? "חם" : "Hot"}
               </span>
             )}
 
@@ -276,7 +295,9 @@ function MatchCard({
         >
           <div
             style={{
-              fontFamily: "var(--font-dm,'DM Sans',sans-serif)",
+              fontFamily: isHe
+                ? "var(--font-he,'Heebo',sans-serif)"
+                : "var(--font-dm,'DM Sans',sans-serif)",
               fontSize: "15px",
               fontWeight: 600,
               letterSpacing: "-0.1px",
@@ -293,7 +314,7 @@ function MatchCard({
                 fontSize: "12px",
               }}
             >
-              vs{" "}
+              {isHe ? "נגד " : "vs "}
             </span>
             {renderTeam(match.away_team_name)}
           </div>
@@ -569,20 +590,24 @@ export default function Home() {
       if (savedOnly && !saved.has(m.id)) return false;
       if (!matchesStage(m)) return false;
 
-      if (
-        q &&
-        ![
-          m.fifa_match_number,
-          m.home_team_name,
-          m.away_team_name,
-          m.stage,
-          m.city,
-          m.stadium,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(q)
-      ) {
+      const searchText = [
+        m.fifa_match_number,
+        m.home_team_name,
+        m.away_team_name,
+        teamName(m.home_team_name, true),
+        teamName(m.away_team_name, true),
+        teamName(m.home_team_name, false),
+        teamName(m.away_team_name, false),
+        m.stage,
+        stageLabel(m.stage, true),
+        stageLabel(m.stage, false),
+        m.city,
+        m.stadium,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      if (q && !searchText.includes(q)) {
         return false;
       }
 
@@ -834,7 +859,7 @@ export default function Home() {
             >
               {[
                 { val: `${matches.length || 64}`, lbl: isHe ? "משחקים" : "Matches", color: C.usa },
-                { val: activeCount, lbl: isHe ? "מודעות חי" : "Live listings", color: C.text, live: true },
+                { val: activeCount, lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true },
                 { val: "WA", lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.mexico },
               ].map((s, i) => (
                 <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
@@ -1065,7 +1090,7 @@ export default function Home() {
                 fontFamily: "var(--font-dm),sans-serif",
               }}
             >
-              {stage}
+              {stageLabel(stage, isHe)}
             </button>
           ))}
 
