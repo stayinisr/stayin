@@ -41,6 +41,24 @@ function hasRealTeam(name: string | null | undefined) {
   return !!name && name !== "TBD" && name !== "TBC";
 }
 
+function stageLabel(stage: string | null | undefined, isHe: boolean) {
+  if (!stage) return "";
+  if (!isHe) return stage;
+
+  if (stage === "Group Stage") return "שלב הבתים";
+  if (stage === "Round of 32") return "32 האחרונות";
+  if (stage === "Round of 16") return "16 האחרונות";
+  if (stage === "Quarter Finals") return "רבע הגמר";
+  if (stage === "Semi Finals") return "חצי הגמר";
+  if (stage === "Third Place") return "מקום שלישי";
+  if (stage === "Final") return "הגמר";
+
+  const groupMatch = stage.match(/^Group\s+([A-Z])$/i);
+  if (groupMatch) return `בית ${groupMatch[1].toUpperCase()}`;
+
+  return stage;
+}
+
 function TeamInline({
   name,
   stage,
@@ -524,7 +542,7 @@ function PostListingPageContent() {
                   <option value="">{loadingM ? t.loading : t.selectMatch}</option>
                   {matches.map((m) => (
                     <option key={m.id} value={m.id}>
-                      Match {m.fifa_match_number} · {teamName(m.home_team_name, isHe)} vs{" "}
+                      {isHe ? "משחק" : "Match"} {m.fifa_match_number} · {teamName(m.home_team_name, isHe)} {isHe ? "נגד" : "vs"}{" "}
                       {teamName(m.away_team_name, isHe)} · {m.city}
                     </option>
                   ))}
@@ -857,21 +875,27 @@ function PostListingPageContent() {
                       lineHeight: 1.5,
                     }}
                   >
-                    <span>⚽ Match {selectedMatch.fifa_match_number} ·</span>
+                    <span>⚽ {isHe ? "משחק" : "Match"} {selectedMatch.fifa_match_number} ·</span>
                     <TeamInline
                       name={selectedMatch.home_team_name}
                       stage={selectedMatch.stage}
                       isHe={isHe}
                     />
-                    <span>vs</span>
+                    <span>{isHe ? "נגד" : "vs"}</span>
                     <TeamInline
                       name={selectedMatch.away_team_name}
                       stage={selectedMatch.stage}
                       isHe={isHe}
                     />
-                    <span style={{ flexBasis: "100%" }}>
-                      {selectedMatch.city} · {selectedMatch.match_date}
-                    </span>
+                    {selectedMatch.stage ? (
+                      <span style={{ flexBasis: "100%" }}>
+                        {stageLabel(selectedMatch.stage, isHe)} · {selectedMatch.city} · {selectedMatch.match_date}
+                      </span>
+                    ) : (
+                      <span style={{ flexBasis: "100%" }}>
+                        {selectedMatch.city} · {selectedMatch.match_date}
+                      </span>
+                    )}
                   </div>
                 ) : (
                   <div
