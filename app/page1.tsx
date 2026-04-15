@@ -69,18 +69,6 @@ function stageLabel(stage: string, isHe: boolean) {
   return stage;
 }
 
-function formatMatchDate(dateString: string | null | undefined) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
-
 // ── Countdown hook ────────────────────────────────────────────────────────────
 function useCountdown(date: string, time: string, isHe: boolean) {
   const [left, setLeft] = useState<string | null>(null);
@@ -341,7 +329,7 @@ function MatchCard({
             lineHeight: 1.6,
           }}
         >
-          {match.city} · {match.stadium} · {formatMatchDate(match.match_date)}
+          {match.city} · {match.stadium} · {match.match_date}
         </div>
 
         {sell === 0 && buy === 0 ? (
