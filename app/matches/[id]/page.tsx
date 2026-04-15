@@ -81,6 +81,24 @@ function hasRealTeam(name: string | null | undefined) {
   return !!name && name !== "TBD" && name !== "TBC";
 }
 
+function stageLabel(stage: string, isHe: boolean) {
+  if (!isHe) return stage;
+
+  if (stage === "Group Stage") return "שלב הבתים";
+  if (stage === "Round of 32") return "32 האחרונות";
+  if (stage === "Round of 16") return "16 האחרונות";
+  if (stage === "Quarter Finals") return "רבע הגמר";
+  if (stage === "Semi Finals") return "חצי הגמר";
+  if (stage === "Third Place") return "מקום שלישי";
+  if (stage === "Final") return "הגמר";
+
+  const groupMatch = stage.match(/^Group\s+([A-Z])$/i);
+  if (groupMatch) return `בית ${groupMatch[1].toUpperCase()}`;
+
+  return stage;
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────────
 function Countdown({
   date,
   time,
@@ -1185,7 +1203,7 @@ export default function MatchPage() {
                     marginBottom: "8px",
                   }}
                 >
-                  Match {String(match.fifa_match_number).padStart(2, "0")} · {match.stage}
+                  {isHe ? "משחק" : "Match"} {String(match.fifa_match_number).padStart(2, "0")} · {stageLabel(match.stage, isHe)}
                 </div>
 
                 <h1
@@ -1215,7 +1233,7 @@ export default function MatchPage() {
                       fontFamily: "inherit",
                     }}
                   >
-                    vs
+                    {isHe ? "נגד" : "vs"}
                   </span>
                   {renderMatchTeam(match.away_team_name)}
                 </h1>
