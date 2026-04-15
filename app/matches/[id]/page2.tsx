@@ -98,19 +98,6 @@ function stageLabel(stage: string, isHe: boolean) {
   return stage;
 }
 
-
-function formatMatchDate(dateString: string | null | undefined) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
-
 // ── Countdown ─────────────────────────────────────────────────────────────────
 function Countdown({
   date,
@@ -1263,7 +1250,7 @@ export default function MatchPage() {
                 >
                   <span>📍 {match.city}</span>
                   <span>🏟️ {match.stadium}</span>
-                  <span>📅 {formatMatchDate(match.match_date)}</span>
+                  <span>📅 {match.match_date}</span>
                   {match.match_time && <span>🕐 {match.match_time}</span>}
                 </div>
 
