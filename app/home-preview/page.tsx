@@ -3,237 +3,251 @@
 import Link from "next/link";
 import { useLanguage } from "../../lib/LanguageContext";
 
-const C = {
-  usa: "#1a3a6b",
-  canada: "#e63946",
-  mexico: "#006847",
-  bg: "#f8f9fc",
-  white: "#ffffff",
-  border: "#e8edf5",
+const COLORS = {
+  bg: "#f6f8fc",
+  card: "rgba(255,255,255,0.82)",
+  border: "rgba(13,27,62,0.08)",
   text: "#0d1b3e",
-  muted: "#64748b",
-  hint: "#94a3b8",
-  faint: "#cbd5e1",
-  aqua: "#17c8c0",
-} as const;
-
-type RailItem = {
-  titleHe: string;
-  titleEn: string;
-  subtitleHe: string;
-  subtitleEn: string;
-  badgeHe?: string;
-  badgeEn?: string;
-  href: string;
-  glow: string;
-  gradient: string;
-  accent: string;
+  muted: "#5f6f8f",
+  soft: "#8da0bd",
+  navy: "#10254e",
+  turquoise: "#28d7c5",
+  turquoiseSoft: "rgba(40,215,197,0.14)",
+  white: "#ffffff",
 };
 
-const sportsItems: RailItem[] = [
+const sportsCards = [
   {
-    titleHe: "מונדיאל 2026",
     titleEn: "World Cup 2026",
-    subtitleHe: "הדרך הכי נקייה למצוא ולפרסם כרטיסים למשחקים הגדולים.",
-    subtitleEn: "The cleanest way to find and post tickets for the biggest matches.",
-    badgeHe: "פופולרי עכשיו",
-    badgeEn: "Popular now",
+    titleHe: "מונדיאל 2026",
+    subtitleEn: "The biggest matches, all in one clear place",
+    subtitleHe: "המשחקים הכי גדולים במקום אחד ברור",
     href: "/sports/world-cup-2026",
-    glow: "rgba(26,58,107,0.16)",
-    gradient:
-      "radial-gradient(circle at 82% 18%, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0) 22%), linear-gradient(135deg, #183764 0%, #0d1b3e 58%, #081226 100%)",
-    accent: C.aqua,
+    badgeEn: "Featured now",
+    badgeHe: "בולט עכשיו",
+    image:
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    titleHe: "ליגת האלופות",
-    titleEn: "Champions League",
-    subtitleHe: "עוד רגע גם משחקים אירופיים, נוקאאוטים ולילות גדולים.",
-    subtitleEn: "Soon: European nights, knockouts, and the biggest fixtures.",
-    badgeHe: "בקרוב",
+    titleEn: "Football",
+    titleHe: "כדורגל",
+    subtitleEn: "Big matches, leagues and national teams",
+    subtitleHe: "משחקים גדולים, ליגות ונבחרות",
+    href: "/sports",
+    badgeEn: "Popular",
+    badgeHe: "פופולרי",
+    image:
+      "https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    titleEn: "Basketball",
+    titleHe: "כדורסל",
+    subtitleEn: "Coming next",
+    subtitleHe: "בקרוב",
+    href: "/sports",
     badgeEn: "Soon",
-    href: "/sports",
-    glow: "rgba(23,200,192,0.12)",
-    gradient:
-      "radial-gradient(circle at 20% 15%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 18%), linear-gradient(135deg, #0b1830 0%, #12305d 50%, #1f5d7c 100%)",
-    accent: "#7dd3fc",
-  },
-  {
-    titleHe: "ליגות ונבחרות",
-    titleEn: "Leagues & national teams",
-    subtitleHe: "בסיס אחד ברור לכל עולמות הספורט שייכנסו לפלטפורמה.",
-    subtitleEn: "One clean base for every sports world coming to the platform.",
-    badgeHe: "Stayin Sports",
-    badgeEn: "Stayin Sports",
-    href: "/sports",
-    glow: "rgba(13,27,62,0.10)",
-    gradient:
-      "radial-gradient(circle at 85% 15%, rgba(23,200,192,0.24) 0%, rgba(23,200,192,0) 20%), linear-gradient(135deg, #102240 0%, #1a3a6b 42%, #13314b 100%)",
-    accent: "#34d399",
+    badgeHe: "בקרוב",
+    image:
+      "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
-const liveItems: RailItem[] = [
+const liveCards = [
   {
-    titleHe: "הופעות ענק",
-    titleEn: "Major concerts",
-    subtitleHe: "האמנים, הפסטיבלים וההופעות שכולם מחפשים — במקום אחד ברור.",
-    subtitleEn: "The artists, festivals and live shows everyone is looking for — in one clear place.",
-    badgeHe: "Live",
-    badgeEn: "Live",
+    titleEn: "Live Shows",
+    titleHe: "הופעות חיות",
+    subtitleEn: "Concerts, tours and big live nights",
+    subtitleHe: "הופעות, טורים ולילות גדולים",
     href: "/live-shows",
-    glow: "rgba(230,57,70,0.12)",
-    gradient:
-      "radial-gradient(circle at 78% 18%, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0) 18%), linear-gradient(135deg, #22102e 0%, #4c214f 48%, #7b2d50 100%)",
-    accent: "#f472b6",
+    badgeEn: "New category",
+    badgeHe: "קטגוריה חדשה",
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    titleHe: "פסטיבלים",
     titleEn: "Festivals",
-    subtitleHe: "כרטיסים לאירועים עם ביקוש גבוה, בלי להיאבד בקבוצות ובהודעות.",
-    subtitleEn: "Tickets for high-demand events, without getting lost in groups and repeated messages.",
-    badgeHe: "בקרוב",
-    badgeEn: "Soon",
+    titleHe: "פסטיבלים",
+    subtitleEn: "Multi-day events and summer weekends",
+    subtitleHe: "אירועים מרובי ימים וסופי שבוע של קיץ",
     href: "/live-shows",
-    glow: "rgba(14,165,233,0.10)",
-    gradient:
-      "radial-gradient(circle at 18% 18%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 20%), linear-gradient(135deg, #131b35 0%, #25325f 45%, #45517e 100%)",
-    accent: "#a78bfa",
+    badgeEn: "Soon",
+    badgeHe: "בקרוב",
+    image:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    titleHe: "סטאנד־אפ ומופעים",
-    titleEn: "Shows & comedy",
-    subtitleHe: "כרטיסי יד שנייה לעוד עולמות תוכן שייכנסו בהמשך בצורה מסודרת.",
-    subtitleEn: "Second-hand tickets for more live categories arriving in a clean, structured way.",
-    badgeHe: "Soon on Stayin",
-    badgeEn: "Soon on Stayin",
+    titleEn: "Artists & Tours",
+    titleHe: "אמנים וטורים",
+    subtitleEn: "Find the right night, not endless posts",
+    subtitleHe: "למצוא את הערב הנכון בלי ללכת לאיבוד בפוסטים",
     href: "/live-shows",
-    glow: "rgba(99,102,241,0.10)",
-    gradient:
-      "radial-gradient(circle at 84% 14%, rgba(23,200,192,0.20) 0%, rgba(23,200,192,0) 18%), linear-gradient(135deg, #18162d 0%, #28284a 45%, #433f76 100%)",
-    accent: "#fb7185",
+    badgeEn: "Soon",
+    badgeHe: "בקרוב",
+    image:
+      "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
-function RailCard({ item, isHe, featured = false }: { item: RailItem; isHe: boolean; featured?: boolean }) {
+function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "end",
+        justifyContent: "space-between",
+        gap: 16,
+        marginBottom: 18,
+      }}
+    >
+      <div>
+        <div
+          style={{
+            fontFamily: "var(--font-dm,'DM Sans',sans-serif)",
+            fontSize: 28,
+            lineHeight: 1,
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            color: COLORS.text,
+          }}
+        >
+          {title}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 14,
+            color: COLORS.muted,
+            lineHeight: 1.5,
+          }}
+        >
+          {subtitle}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CategoryCard({
+  title,
+  subtitle,
+  badge,
+  href,
+  image,
+  large = false,
+}: {
+  title: string;
+  subtitle: string;
+  badge: string;
+  href: string;
+  image: string;
+  large?: boolean;
+}) {
   return (
     <Link
-      href={item.href}
-      style={{
-        textDecoration: "none",
-        color: "inherit",
-        display: "block",
-        flex: `0 0 ${featured ? "min(72vw, 540px)" : "min(54vw, 360px)"}`,
-        scrollSnapAlign: "start",
-      }}
+      href={href}
+      style={{ textDecoration: "none", color: "inherit", minWidth: large ? 560 : 320 }}
     >
       <div
         style={{
           position: "relative",
-          minHeight: featured ? "320px" : "270px",
-          borderRadius: "24px",
+          height: large ? 390 : 340,
+          borderRadius: 28,
           overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.14)",
-          background: item.gradient,
-          boxShadow: `0 22px 70px ${item.glow}`,
-          transform: "translateZ(0)",
+          background: `${COLORS.navy}`,
+          border: `1px solid ${COLORS.border}`,
+          boxShadow: "0 20px 60px rgba(15,23,42,0.10)",
         }}
       >
         <div
           style={{
             position: "absolute",
             inset: 0,
+            backgroundImage: `url(${image})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            transform: "scale(1.01)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
             background:
-              "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(13,27,62,0.06) 32%, rgba(8,18,38,0.40) 72%, rgba(8,18,38,0.74) 100%)",
+              "linear-gradient(180deg, rgba(9,18,38,0.10) 0%, rgba(9,18,38,0.26) 30%, rgba(9,18,38,0.88) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(135deg, rgba(40,215,197,0.14) 0%, rgba(40,215,197,0.00) 42%)",
           }}
         />
 
         <div
           style={{
             position: "absolute",
-            top: 18,
-            left: isHe ? "auto" : 18,
-            right: isHe ? 18 : "auto",
+            left: 22,
+            top: 22,
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
             padding: "8px 12px",
             borderRadius: 999,
-            background: "rgba(255,255,255,0.10)",
-            backdropFilter: "blur(14px)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            color: "rgba(255,255,255,0.92)",
-            fontSize: 11,
+            background: "rgba(255,255,255,0.14)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            color: "rgba(255,255,255,0.96)",
+            fontSize: 12,
             fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
+            letterSpacing: "0.02em",
           }}
         >
           <span
             style={{
-              width: 7,
-              height: 7,
+              width: 8,
+              height: 8,
               borderRadius: 999,
-              background: item.accent,
-              boxShadow: `0 0 18px ${item.accent}`,
+              background: COLORS.turquoise,
+              boxShadow: "0 0 20px rgba(40,215,197,0.8)",
             }}
           />
-          {isHe ? item.badgeHe : item.badgeEn}
+          {badge}
         </div>
 
         <div
           style={{
             position: "absolute",
-            insetInlineStart: 24,
-            insetInlineEnd: 24,
-            bottom: 22,
-            display: "grid",
-            gap: 10,
+            left: 24,
+            right: 24,
+            bottom: 24,
           }}
         >
           <div
             style={{
-              display: "inline-flex",
-              width: "fit-content",
-              padding: "6px 10px",
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(10px)",
-              color: "rgba(255,255,255,0.74)",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
+              fontFamily: "var(--font-dm,'DM Sans',sans-serif)",
+              color: COLORS.white,
+              fontSize: large ? 42 : 30,
+              lineHeight: 0.95,
+              fontWeight: 800,
+              letterSpacing: "-0.05em",
+              maxWidth: large ? 390 : 240,
+              textWrap: "balance",
             }}
           >
-            {featured ? "Featured" : "Explore"}
+            {title}
           </div>
-
           <div
             style={{
-              fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)",
-              fontSize: featured ? "clamp(30px, 4vw, 40px)" : "clamp(22px, 3vw, 30px)",
-              lineHeight: 1,
-              fontWeight: isHe ? 900 : 800,
-              letterSpacing: isHe ? "-0.02em" : "-0.02em",
-              color: "#fff",
-              maxWidth: featured ? "76%" : "84%",
-            }}
-          >
-            {isHe ? item.titleHe : item.titleEn}
-          </div>
-
-          <div
-            style={{
-              maxWidth: featured ? 360 : 280,
-              color: "rgba(255,255,255,0.72)",
+              marginTop: 12,
+              color: "rgba(255,255,255,0.80)",
               fontSize: 14,
-              lineHeight: 1.65,
-              fontWeight: 450,
-              fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)",
+              lineHeight: 1.55,
+              maxWidth: large ? 360 : 230,
             }}
           >
-            {isHe ? item.subtitleHe : item.subtitleEn}
+            {subtitle}
           </div>
         </div>
       </div>
@@ -241,485 +255,218 @@ function RailCard({ item, isHe, featured = false }: { item: RailItem; isHe: bool
   );
 }
 
-function Rail({
-  titleHe,
-  titleEn,
-  subHe,
-  subEn,
-  items,
-  isHe,
-}: {
-  titleHe: string;
-  titleEn: string;
-  subHe: string;
-  subEn: string;
-  items: RailItem[];
-  isHe: boolean;
-}) {
-  return (
-    <section style={{ marginTop: 38 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "end",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 18,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ display: "grid", gap: 8 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              color: C.hint,
-            }}
-          >
-            {isHe ? "קטגוריה" : "Category"}
-          </div>
-          <div
-            style={{
-              fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)",
-              fontSize: "clamp(26px, 3.4vw, 38px)",
-              lineHeight: 1,
-              fontWeight: isHe ? 900 : 800,
-              letterSpacing: "-0.03em",
-              color: C.text,
-            }}
-          >
-            {isHe ? titleHe : titleEn}
-          </div>
-          <div
-            style={{
-              maxWidth: 520,
-              color: C.muted,
-              fontSize: 14,
-              lineHeight: 1.8,
-              fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)",
-            }}
-          >
-            {isHe ? subHe : subEn}
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 10,
-            color: C.usa,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-          }}
-        >
-          <span>{isHe ? "גלילה אופקית" : "Horizontal rail"}</span>
-          <div style={{ display: "flex", gap: 6 }}>
-            <span style={{ width: 30, height: 2, background: C.usa, borderRadius: 999 }} />
-            <span style={{ width: 14, height: 2, background: C.border, borderRadius: 999 }} />
-          </div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 18,
-          overflowX: "auto",
-          paddingBottom: 6,
-          scrollSnapType: "x proximity",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-        className="stayin-rail"
-      >
-        {items.map((item, idx) => (
-          <RailCard key={idx} item={item} isHe={isHe} featured={idx === 0} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export default function HomePreviewEditorial() {
+export default function HomePreviewBLuxury() {
   const { lang } = useLanguage();
   const isHe = lang === "he";
 
-  const W = { maxWidth: "1220px", margin: "0 auto", padding: "0 20px" };
-
   return (
-    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
-      <style>{`
-        .stayin-rail::-webkit-scrollbar { display: none; }
-        .modern-card-hover { transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease; }
-        .modern-card-hover:hover { transform: translateY(-3px); filter: saturate(1.04); }
-        @media (max-width: 900px) {
-          .editorial-hero { grid-template-columns: 1fr !important; }
-          .editorial-actions { width: 100%; }
-          .editorial-actions a { flex: 1 1 auto; justify-content: center; }
-        }
-      `}</style>
-
-      <div
-        style={{
-          height: 3,
-          background: `linear-gradient(90deg, ${C.usa} 33.3%, ${C.canada} 33.3% 66.6%, ${C.mexico} 66.6%)`,
-        }}
-      />
-
-      <section style={{ borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ ...W, paddingTop: 44, paddingBottom: 32 }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(circle at top left, rgba(40,215,197,0.12), transparent 26%), linear-gradient(180deg, #fbfcfe 0%, #f6f8fc 100%)",
+      }}
+    >
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px 64px" }}>
+        <section
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            borderRadius: 32,
+            border: `1px solid ${COLORS.border}`,
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(247,250,255,0.92) 58%, rgba(240,255,252,0.92) 100%)",
+            boxShadow: "0 30px 80px rgba(15,23,42,0.08)",
+            padding: "42px 40px",
+          }}
+        >
           <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 22,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: C.hint,
+              position: "absolute",
+              top: -120,
+              right: -80,
+              width: 320,
+              height: 320,
+              borderRadius: 999,
+              background: "radial-gradient(circle, rgba(40,215,197,0.16), transparent 68%)",
             }}
-          >
-            <span style={{ display: "flex", gap: 4 }}>
-              {[C.usa, C.canada, C.mexico].map((c) => (
-                <span key={c} style={{ width: 6, height: 6, borderRadius: 999, background: c, display: "inline-block" }} />
-              ))}
-            </span>
-            {isHe ? "Stayin · קטגוריות כרטיסים" : "Stayin · Ticket categories"}
-          </div>
+          />
 
-          <div
-            className="editorial-hero"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.05fr) minmax(320px, 0.95fr)",
-              gap: 28,
-              alignItems: "stretch",
-            }}
-          >
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 760 }}>
             <div
               style={{
-                border: `1px solid ${C.border}`,
-                borderRadius: 30,
-                background: "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 100%)",
-                padding: "34px 32px 30px",
-                boxShadow: "0 20px 60px rgba(13,27,62,0.05)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 14px",
+                borderRadius: 999,
+                background: COLORS.turquoiseSoft,
+                border: "1px solid rgba(40,215,197,0.18)",
+                color: COLORS.navy,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.02em",
+                marginBottom: 18,
               }}
             >
-              <div
+              <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  letterSpacing: "0.22em",
-                  textTransform: "uppercase",
-                  color: C.usa,
-                  marginBottom: 16,
-                }}
-              >
-                STAY IN THE GAME
-              </div>
-
-              <h1
-                style={{
-                  margin: 0,
-                  marginBottom: 18,
-                  fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)",
-                  fontSize: "clamp(42px, 6vw, 76px)",
-                  lineHeight: 0.96,
-                  fontWeight: isHe ? 900 : 800,
-                  letterSpacing: "-0.04em",
-                  color: C.text,
-                }}
-              >
-                {isHe ? (
-                  <>
-                    כל הכרטיסים
-                    <br />
-                    <span style={{ color: C.usa }}>לפי עולמות תוכן.</span>
-                  </>
-                ) : (
-                  <>
-                    ALL TICKETS
-                    <br />
-                    <span style={{ color: C.usa }}>BY CATEGORY.</span>
-                  </>
-                )}
-              </h1>
-
-              <p
-                style={{
-                  maxWidth: 560,
-                  color: C.muted,
-                  fontSize: 15,
-                  lineHeight: 1.9,
-                  margin: 0,
-                  marginBottom: 26,
-                  fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)",
-                }}
-              >
-                {isHe
-                  ? "הכניסה החדשה ל-Stayin: גולשים לפי קטגוריות, מגיעים מהר לאירוע הנכון, וממשיכים למודעות בלי ללכת לאיבוד בדרך."
-                  : "The new Stayin entry point: browse by category, reach the right event faster, and move into listings without getting lost on the way."}
-              </p>
-
-              <div className="editorial-actions" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <a
-                  href="#category-rails"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "13px 24px",
-                    borderRadius: 999,
-                    textDecoration: "none",
-                    background: C.usa,
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    letterSpacing: "0.03em",
-                    boxShadow: "0 12px 28px rgba(26,58,107,0.18)",
-                  }}
-                >
-                  {isHe ? "גלישה לפי קטגוריות" : "Browse categories"}
-                </a>
-                <Link
-                  href="/post-listing"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "13px 22px",
-                    borderRadius: 999,
-                    textDecoration: "none",
-                    background: "rgba(255,255,255,0.88)",
-                    color: C.text,
-                    border: `1px solid ${C.border}`,
-                    fontSize: 13,
-                    fontWeight: 700,
-                  }}
-                >
-                  {isHe ? "+ פרסם מודעה" : "+ Post listing"}
-                </Link>
-              </div>
-            </div>
-
-            <div
-              className="modern-card-hover"
-              style={{
-                position: "relative",
-                borderRadius: 30,
-                overflow: "hidden",
-                minHeight: 360,
-                background:
-                  "radial-gradient(circle at 18% 16%, rgba(23,200,192,0.24) 0%, rgba(23,200,192,0) 22%), radial-gradient(circle at 82% 18%, rgba(255,255,255,0.46) 0%, rgba(255,255,255,0) 18%), linear-gradient(135deg, #102240 0%, #183764 42%, #091526 100%)",
-                border: "1px solid rgba(255,255,255,0.16)",
-                boxShadow: "0 34px 90px rgba(13,27,62,0.14)",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.00) 34%, rgba(9,21,38,0.42) 72%, rgba(9,21,38,0.82) 100%)",
+                  width: 8,
+                  height: 8,
+                  borderRadius: 999,
+                  background: COLORS.turquoise,
                 }}
               />
-
-              <div style={{ position: "absolute", top: 22, left: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {[isHe ? "ספורט" : "Sports", isHe ? "לייב" : "Live", "WA"].map((tag, i) => (
-                  <span
-                    key={tag}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 999,
-                      background: i === 0 ? "rgba(23,200,192,0.12)" : "rgba(255,255,255,0.10)",
-                      color: "rgba(255,255,255,0.9)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      backdropFilter: "blur(14px)",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div style={{ position: "absolute", insetInlineStart: 24, insetInlineEnd: 24, bottom: 22 }}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12,
-                    marginBottom: 18,
-                  }}
-                >
-                  {[
-                    {
-                      n: "01",
-                      tHe: "כרטיסי ספורט",
-                      tEn: "Sports tickets",
-                    },
-                    {
-                      n: "02",
-                      tHe: "הופעות חיות",
-                      tEn: "Live shows",
-                    },
-                  ].map((box) => (
-                    <div
-                      key={box.n}
-                      style={{
-                        borderRadius: 18,
-                        padding: "16px 16px 18px",
-                        background: "rgba(255,255,255,0.08)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        backdropFilter: "blur(16px)",
-                      }}
-                    >
-                      <div style={{ color: "rgba(255,255,255,0.44)", fontSize: 11, fontWeight: 700, letterSpacing: "0.16em" }}>
-                        {box.n}
-                      </div>
-                      <div
-                        style={{
-                          marginTop: 12,
-                          color: "#fff",
-                          fontSize: 20,
-                          fontWeight: 800,
-                          lineHeight: 1,
-                          letterSpacing: "-0.02em",
-                          fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)",
-                        }}
-                      >
-                        {isHe ? box.tHe : box.tEn}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  style={{
-                    color: "rgba(255,255,255,0.78)",
-                    fontSize: 14,
-                    lineHeight: 1.8,
-                    maxWidth: 470,
-                    fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)",
-                  }}
-                >
-                  {isHe
-                    ? "אותו DNA של Stayin — פשוט, מהיר, נקי — אבל עם כניסה חדשה לפי קטגוריות במקום להיכנס ישר רק למונדיאל."
-                    : "The same Stayin DNA — simple, fast, clean — but with a new category-led entry instead of jumping straight into only the World Cup."}
-                </div>
-              </div>
+              {isHe ? "פלטפורמת כרטיסים יד שנייה" : "Second-hand ticket platform"}
             </div>
-          </div>
-        </div>
-      </section>
 
-      <div id="category-rails" style={{ ...W, paddingTop: 34, paddingBottom: 44 }}>
-        <Rail
-          titleHe="כרטיסי ספורט"
-          titleEn="Sports tickets"
-          subHe="עולם הספורט נשאר הכניסה החזקה של Stayin — אבל עכשיו כחלק מפלטפורמה רחבה יותר, מסודרת יותר ועתידית יותר."
-          subEn="Sports stays the strongest Stayin entry point — now as part of a broader, cleaner and more future-ready platform."
-          items={sportsItems}
-          isHe={isHe}
-        />
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: isHe
+                  ? "var(--font-he,'Heebo',sans-serif)"
+                  : "var(--font-dm,'DM Sans',sans-serif)",
+                fontSize: "clamp(40px, 6vw, 72px)",
+                lineHeight: 0.92,
+                letterSpacing: "-0.06em",
+                color: COLORS.text,
+                fontWeight: 800,
+                maxWidth: 700,
+                textWrap: "balance",
+              }}
+            >
+              {isHe
+                ? "הכרטיסים הנכונים, במקום אחד ברור"
+                : "The right tickets, in one clear place"}
+            </h1>
 
-        <Rail
-          titleHe="הופעות חיות"
-          titleEn="Live shows"
-          subHe="קטגוריה מקבילה שתאפשר ל-Stayin לגדול מעבר לספורט, בלי לשבור את השפה ובלי להפוך את דף הבית לעמוס."
-          subEn="A parallel category that lets Stayin grow beyond sports without breaking the visual language or cluttering the homepage."
-          items={liveItems}
-          isHe={isHe}
-        />
+            <p
+              style={{
+                margin: "18px 0 0",
+                color: COLORS.muted,
+                fontSize: 17,
+                lineHeight: 1.7,
+                maxWidth: 640,
+              }}
+            >
+              {isHe
+                ? "ספורט והופעות חיות, עם חוויית גלישה מסודרת ונקייה שמחברת בין אנשים בלי ללכת לאיבוד בין פוסטים וקבוצות."
+                : "Sports and live shows, with a clean browsing experience that helps people connect without getting lost in endless posts and groups."}
+            </p>
 
-        <section style={{ marginTop: 44 }}>
-          <div
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              borderRadius: 28,
-              padding: "28px 26px",
-              background:
-                "radial-gradient(circle at 15% 20%, rgba(23,200,192,0.16) 0%, rgba(23,200,192,0) 16%), linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.90) 100%)",
-              border: `1px solid ${C.border}`,
-              boxShadow: "0 16px 44px rgba(13,27,62,0.04)",
-            }}
-          >
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", gap: 18, alignItems: "center" }}>
-              <div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: C.usa,
-                    marginBottom: 10,
-                  }}
-                >
-                  {isHe ? "מהלך המוצר" : "Product move"}
-                </div>
-                <div
-                  style={{
-                    fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)",
-                    fontSize: "clamp(24px, 3vw, 34px)",
-                    lineHeight: 1.05,
-                    fontWeight: isHe ? 900 : 800,
-                    letterSpacing: "-0.03em",
-                    color: C.text,
-                    marginBottom: 10,
-                  }}
-                >
-                  {isHe ? "המונדיאל נשאר הכוכב — אבל לא כל הסיפור." : "The World Cup stays the star — but not the whole story."}
-                </div>
-                <div
-                  style={{
-                    maxWidth: 700,
-                    color: C.muted,
-                    fontSize: 14,
-                    lineHeight: 1.9,
-                    fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)",
-                  }}
-                >
-                  {isHe
-                    ? "בדיוק אותה חוויית משתמש, רק עם היררכיה חכמה יותר: בית כללי, קטגוריה, תחרות או אמן, ואז אירוע ומודעות."
-                    : "The exact same UX, just with smarter hierarchy: general home, category, competition or artist, then event and listings."}
-                </div>
-              </div>
-
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 28 }}>
               <Link
-                href="/sports/world-cup-2026"
+                href="/sports"
                 style={{
-                  justifySelf: "start",
+                  textDecoration: "none",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "14px 20px",
+                  justifyContent: "center",
+                  padding: "14px 18px",
                   borderRadius: 999,
-                  textDecoration: "none",
-                  background: C.usa,
-                  color: "#fff",
-                  fontSize: 13,
+                  background: COLORS.navy,
+                  color: COLORS.white,
                   fontWeight: 700,
-                  letterSpacing: "0.03em",
-                  whiteSpace: "nowrap",
+                  fontSize: 14,
+                  boxShadow: "0 14px 30px rgba(16,37,78,0.18)",
                 }}
               >
-                {isHe ? "להיכנס למונדיאל" : "Enter World Cup"}
+                {isHe ? "לגלישה בקטגוריות" : "Browse categories"}
+              </Link>
+
+              <Link
+                href="/post-listing"
+                style={{
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "14px 18px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.72)",
+                  color: COLORS.text,
+                  border: `1px solid ${COLORS.border}`,
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
+              >
+                {isHe ? "פרסם מודעה" : "Post listing"}
               </Link>
             </div>
           </div>
         </section>
+
+        <div style={{ marginTop: 34 }}>
+          <SectionHeader
+            title={isHe ? "כרטיסי ספורט" : "Sports Tickets"}
+            subtitle={
+              isHe
+                ? "כרטיסיות גדולות, ברורות ומזמינות לעולמות הספורט המרכזיים"
+                : "Large, clear and inviting entry points into the biggest sports worlds"
+            }
+          />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.6fr 1fr 1fr",
+              gap: 18,
+              overflowX: "auto",
+              paddingBottom: 4,
+            }}
+          >
+            <CategoryCard
+              large
+              title={isHe ? sportsCards[0].titleHe : sportsCards[0].titleEn}
+              subtitle={isHe ? sportsCards[0].subtitleHe : sportsCards[0].subtitleEn}
+              badge={isHe ? sportsCards[0].badgeHe : sportsCards[0].badgeEn}
+              href={sportsCards[0].href}
+              image={sportsCards[0].image}
+            />
+            {sportsCards.slice(1).map((card) => (
+              <CategoryCard
+                key={card.titleEn}
+                title={isHe ? card.titleHe : card.titleEn}
+                subtitle={isHe ? card.subtitleHe : card.subtitleEn}
+                badge={isHe ? card.badgeHe : card.badgeEn}
+                href={card.href}
+                image={card.image}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 34 }}>
+          <SectionHeader
+            title={isHe ? "הופעות חיות" : "Live Shows"}
+            subtitle={
+              isHe
+                ? "הופעות, פסטיבלים ואירועים חיים — באותה חוויית גלישה יוקרתית ונקייה"
+                : "Concerts, festivals and live events — with the same refined browsing feel"
+            }
+          />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.2fr 1fr 1fr",
+              gap: 18,
+              overflowX: "auto",
+              paddingBottom: 4,
+            }}
+          >
+            {liveCards.map((card, index) => (
+              <CategoryCard
+                key={card.titleEn}
+                large={index === 0}
+                title={isHe ? card.titleHe : card.titleEn}
+                subtitle={isHe ? card.subtitleHe : card.subtitleEn}
+                badge={isHe ? card.badgeHe : card.badgeEn}
+                href={card.href}
+                image={card.image}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
