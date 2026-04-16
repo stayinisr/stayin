@@ -6,81 +6,11 @@ import { supabase } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
-import { teamName, flagImgSrc } from "../../lib/teams";
 
 const C = { usa: "#1a3a6b", canada: "#e63946", mexico: "#006847", gold: "#d4a017", border: "#e8edf5", text: "#0d1b3e", muted: "#64748b", hint: "#94a3b8", faint: "#cbd5e1" };
 
 type Profile = { full_name: string | null; phone: string | null; country: string | null; is_premium: boolean; is_admin: boolean; created_at: string | null; };
-type ListingSummary = { id: string; type: string; price: number; status: string; expires_at: string | null; match_id: string; match: { fifa_match_number: number; home_team_name: string | null; away_team_name: string | null; stage?: string | null; } | null; };
-
-
-
-function isGroupStage(stage?: string | null) {
-  return !!stage && (stage.startsWith("Group") || stage === "Group Stage");
-}
-
-function hasRealTeam(name: string | null | undefined) {
-  return !!name && name !== "TBD" && name !== "TBC";
-}
-
-function TeamInline({
-  name,
-  stage,
-  isHe,
-}: {
-  name: string | null;
-  stage?: string | null;
-  isHe: boolean;
-}) {
-  const showFlag = isGroupStage(stage) && hasRealTeam(name);
-  const imgSrc = showFlag ? flagImgSrc(name) : "";
-  const label = teamName(name, isHe);
-
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "6px",
-        fontSize: "12px",
-        fontWeight: 600,
-        color: C.text,
-        lineHeight: 1.35,
-        verticalAlign: "middle",
-      }}
-    >
-      {showFlag && imgSrc ? (
-        <span
-          style={{
-            width: "16px",
-            height: "11px",
-            borderRadius: "3px",
-            overflow: "hidden",
-            background: "#fff",
-            border: "1px solid rgba(13,27,62,0.10)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
-          }}
-        >
-          <img
-            src={imgSrc}
-            alt=""
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        </span>
-      ) : null}
-      <span>{label}</span>
-    </span>
-  );
-}
+type ListingSummary = { id: string; type: string; price: number; status: string; expires_at: string | null; match_id: string; match: { fifa_match_number: number; home_team_name: string | null; away_team_name: string | null; } | null; };
 
 export default function MyAccountPage() {
   const router = useRouter();
@@ -106,7 +36,7 @@ export default function MyAccountPage() {
 
     const [profileRes, listingsRes] = await Promise.all([
       supabase.from("profiles").select("full_name,phone,country,is_premium,is_admin,created_at").eq("id", session.user.id).maybeSingle(),
-      supabase.from("listings").select("id,type,price,status,expires_at,match_id,matches(fifa_match_number,home_team_name,away_team_name,stage)").eq("user_id", session.user.id).is("archived_at", null).order("created_at", { ascending: false }).limit(5),
+      supabase.from("listings").select("id,type,price,status,expires_at,match_id,matches(fifa_match_number,home_team_name,away_team_name)").eq("user_id", session.user.id).is("archived_at", null).order("created_at", { ascending: false }).limit(5),
     ]);
 
     if (profileRes.data) setProfile(profileRes.data as Profile);
@@ -244,15 +174,8 @@ export default function MyAccountPage() {
                       {l.type === "sell" ? "↑" : "↓"}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "12px", fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                        {l.match ? (
-                          <>
-                            <span>{isHe ? "משחק" : "Match"} {l.match.fifa_match_number} ·</span>
-                            <TeamInline name={l.match.home_team_name} stage={l.match.stage} isHe={isHe} />
-                            <span style={{ color: C.hint, fontWeight: 400 }}>{isHe ? "נגד" : "vs"}</span>
-                            <TeamInline name={l.match.away_team_name} stage={l.match.stage} isHe={isHe} />
-                          </>
-                        ) : "—"}
+                      <div style={{ fontSize: "12px", fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {l.match ? `Match ${l.match.fifa_match_number} · ${l.match.home_team_name ?? "TBD"} vs ${l.match.away_team_name ?? "TBD"}` : "—"}
                       </div>
                       <div style={{ fontSize: "11px", color: C.hint }}>
                         {l.type === "sell" ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")} · <span style={{ color: C.usa, fontWeight: 600 }}>${l.price}</span>

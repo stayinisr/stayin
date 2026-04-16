@@ -5,8 +5,8 @@ import { ChevronRight, Ticket, Trophy, Music2, Sparkles, Radio, Star } from "luc
 import { useLanguage } from "../../lib/LanguageContext";
 
 export default function HomePreviewPremiumPage() {
-  const { language } = useLanguage();
-  const isHebrew = language === "he";
+  const { lang } = useLanguage();
+  const isHebrew = lang === "he";
 
   const t = {
     badge: isHebrew ? "תצוגה מקדימה" : "Preview",
