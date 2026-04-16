@@ -1,207 +1,667 @@
-
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabase";
-import { useLanguage } from "../../lib/LanguageContext";
-import { useToast } from "../../components/ToastProvider";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { supabase } from "../lib/supabase";
+import { useLanguage } from "../lib/LanguageContext";
+import { useToast } from "../components/ToastProvider";
+import { teamName, flagImgSrc } from "../lib/teams";
 
-const OTP_LENGTH = 6;
-const RESEND_COOLDOWN = 300;
-type Mode = "login" | "signup";
+// ── Types ─────────────────────────────────────────────────────────────────────
+type MatchItem = {
+  id: string;
+  fifa_match_number: number;
+  home_team_name: string | null;
+  away_team_name: string | null;
+  stage: string;
+  city: string;
+  stadium: string;
+  match_date: string;
+  match_time: string;
+};
 
+type ListingItem = {
+  id?: string;
+  match_id: string;
+  price: number;
+  type: string;
+  status?: string;
+  expires_at?: string | null;
+  archived_at?: string | null;
+};
+
+// ── WC 2026 Colors ────────────────────────────────────────────────────────────
 const C = {
   usa: "#1a3a6b",
   canada: "#e63946",
   mexico: "#006847",
+  bg: "#f8f9fc",
+  white: "#ffffff",
   border: "#e8edf5",
   text: "#0d1b3e",
   muted: "#64748b",
   hint: "#94a3b8",
   faint: "#cbd5e1",
-  bg: "#f8f9fc",
-};
+} as const;
 
-const BENEFITS = [
-  { icon: "🎟️", en: "Free to join", he: "הרשמה בחינם" },
-  { icon: "📋", en: "Up to 10 listings", he: "עד 10 מודעות" },
-  { icon: "⭐", en: "2 gold listings", he: "2 מוזהבות" },
-  { icon: "💬", en: "Direct WhatsApp contact", he: "קשר ישיר בוואטסאפ" },
-];
+const ACCENTS = [C.usa, C.canada, C.mexico];
 
-export default function AuthPage() {
-  const { lang } = useLanguage();
-  const isHe = lang === "he";
-  const toast = useToast();
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function isGroupStage(stage: string) {
+  return stage?.startsWith("Group") || stage === "Group Stage";
+}
 
-  const [mode, setMode] = useState<Mode>("login");
-  const [step, setStep] = useState<"email" | "otp">("email");
-  const [email, setEmail] = useState("");
-  const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
-  const [loading, setLoading] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const refs = useRef<(HTMLInputElement | null)[]>([]);
+function hasRealTeam(name: string | null | undefined) {
+  return !!name && name !== "TBD" && name !== "TBC";
+}
+
+function stageLabel(stage: string, isHe: boolean) {
+  if (!isHe) return stage;
+
+  if (stage === "Group Stage") return "שלב הבתים";
+  if (stage === "Round of 32") return "32 האחרונות";
+  if (stage === "Round of 16") return "16 האחרונות";
+  if (stage === "Quarter Finals") return "רבע הגמר";
+  if (stage === "Semi Finals") return "חצי הגמר";
+  if (stage === "Third Place") return "מקום שלישי";
+  if (stage === "Final") return "הגמר";
+
+  return stage;
+}
+
+function formatMatchDate(dateString: string | null | undefined) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
+
+// ── Countdown hook ────────────────────────────────────────────────────────────
+function useCountdown(date: string, time: string, isHe: boolean) {
+  const [left, setLeft] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!secondsLeft) return;
-    const t = setInterval(
-      () => setSecondsLeft((p) => (p <= 1 ? (clearInterval(t), 0) : p - 1)),
-      1000
+    const cleanTime =
+      (time || "20:00").replace(/:\d\d$/, "").slice(0, 5) || "20:00";
+    const target = new Date(`${date}T${cleanTime}:00`);
+
+    function tick() {
+      const diff = target.getTime() - Date.now();
+      if (diff <= 0) {
+        setLeft(null);
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+
+      if (isHe) {
+        setLeft(d > 0 ? `${d}י ${h}ש` : `${h}ש ${m}ד`);
+      } else {
+        setLeft(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
+      }
+    }
+
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, [date, time, isHe]);
+
+  return left;
+}
+
+// ── Match Card ────────────────────────────────────────────────────────────────
+function MatchCard({
+  match,
+  idx,
+  sell,
+  buy,
+  priceRange,
+  hot,
+  saved,
+  onSave,
+  isHe,
+}: {
+  match: MatchItem;
+  idx: number;
+  sell: number;
+  buy: number;
+  priceRange: string | null;
+  hot: boolean;
+  saved: boolean;
+  onSave: (id: string) => void;
+  isHe: boolean;
+}) {
+  const accent = ACCENTS[idx % 3];
+  const countdown = useCountdown(match.match_date, match.match_time, isHe);
+  const [hov, setHov] = useState(false);
+  const showFlags = isGroupStage(match.stage);
+
+  function renderTeam(teamValue: string | null) {
+    const label = teamName(teamValue, isHe);
+    const canShowFlag = showFlags && hasRealTeam(teamValue);
+    const imgSrc = canShowFlag ? flagImgSrc(teamValue) : "";
+
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          fontFamily: isHe
+            ? "var(--font-he,'Heebo',sans-serif)"
+            : "var(--font-dm,'DM Sans',sans-serif)",
+          fontSize: "15px",
+          fontWeight: 600,
+          letterSpacing: "-0.1px",
+          lineHeight: 1.3,
+        }}
+      >
+        {canShowFlag && imgSrc ? (
+          <span
+            style={{
+              width: "20px",
+              height: "14px",
+              borderRadius: "4px",
+              overflow: "hidden",
+              background: "#fff",
+              border: "1px solid rgba(13,27,62,0.10)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
+            }}
+          >
+            <img
+              src={imgSrc}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </span>
+        ) : null}
+
+        <span>{label}</span>
+      </span>
     );
-    return () => clearInterval(t);
-  }, [secondsLeft]);
-
-  const fmt = (s: number) =>
-    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-
-  async function sendCode() {
-    if (!email.trim()) {
-      toast.error(isHe ? "יש להזין אימייל" : "Enter your email");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { data, error: rpcErr } = await supabase.rpc(
-        "check_auth_email_exists",
-        { p_email: email.trim().toLowerCase() }
-      );
-      if (rpcErr) throw rpcErr;
-      const exists = !!data;
-
-      if (mode === "login" && !exists) {
-        toast.warning(
-          isHe
-            ? "לא נמצא חשבון — אפשר להירשם בחינם"
-            : "No account found — sign up for free"
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (mode === "signup" && exists) {
-        toast.warning(
-          isHe ? "חשבון קיים — אפשר להתחבר" : "Account exists — log in instead"
-        );
-        setLoading(false);
-        return;
-      }
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { shouldCreateUser: mode === "signup" },
-      });
-
-      if (error) {
-        toast.error(isHe ? "שליחה נכשלה" : "Failed to send");
-        setLoading(false);
-        return;
-      }
-
-      setDigits(Array(OTP_LENGTH).fill(""));
-      setStep("otp");
-      setSecondsLeft(RESEND_COOLDOWN);
-      toast.success(isHe ? "קוד נשלח ✉️" : "Code sent ✉️");
-      setTimeout(() => refs.current[0]?.focus(), 80);
-    } catch {
-      toast.error(isHe ? "שגיאה, נסה שוב" : "Error, try again");
-    }
-    setLoading(false);
   }
-
-  async function verifyCode() {
-    const code = digits.join("");
-    if (code.length !== OTP_LENGTH) {
-      toast.error(isHe ? "הזן 6 ספרות" : "Enter 6 digits");
-      return;
-    }
-
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: code,
-      type: "email",
-    });
-    setLoading(false);
-
-    if (error) {
-      toast.error(isHe ? "קוד שגוי או פג תוקף" : "Invalid or expired code");
-      return;
-    }
-
-    toast.success(isHe ? "התחברת בהצלחה 🎉" : "Logged in 🎉");
-    window.location.href = mode === "signup" ? "/complete-profile" : "/";
-  }
-
-  function handleDigit(i: number, v: string) {
-    const c = v.replace(/\D/g, "").slice(-1);
-    const n = [...digits];
-    n[i] = c;
-    setDigits(n);
-    if (c && i < OTP_LENGTH - 1) refs.current[i + 1]?.focus();
-  }
-
-  function handleKeyDown(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (i >= 0) {
-      if (e.key === "Backspace" && !digits[i] && i > 0) refs.current[i - 1]?.focus();
-      if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1]?.focus();
-      if (e.key === "ArrowRight" && i < OTP_LENGTH - 1) refs.current[i + 1]?.focus();
-    }
-    if (e.key === "Enter") step === "email" ? sendCode() : verifyCode();
-  }
-
-  function handlePaste(e: React.ClipboardEvent) {
-    e.preventDefault();
-    const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
-    const n = Array(OTP_LENGTH).fill("");
-    p.split("").forEach((c, i) => {
-      n[i] = c;
-    });
-    setDigits(n);
-    refs.current[Math.min(p.length, OTP_LENGTH - 1)]?.focus();
-  }
-
-  function resetToEmail(m?: Mode) {
-    setStep("email");
-    setDigits(Array(OTP_LENGTH).fill(""));
-    setSecondsLeft(0);
-    if (m) setMode(m);
-  }
-
-  const cardStyle: React.CSSProperties = {
-    background: "rgba(255,255,255,0.9)",
-    border: `1px solid ${C.border}`,
-    borderRadius: "12px",
-    backdropFilter: "blur(12px)",
-    boxShadow: "0 10px 34px rgba(13,27,62,0.08)",
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "12px 14px",
-    background: "rgba(255,255,255,0.96)",
-    border: `1px solid ${C.border}`,
-    borderRadius: "8px",
-    fontSize: "13px",
-    color: C.text,
-    outline: "none",
-    boxSizing: "border-box",
-    fontFamily: "var(--font-dm),var(--font-he),sans-serif",
-    transition: "border-color 150ms, box-shadow 150ms",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    fontSize: "10px",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase" as const,
-    color: C.hint,
-    marginBottom: "7px",
-  };
 
   return (
-    <main style={{ minHeight: "100vh" }}>
+    <div
+      style={{
+        background: hov
+          ? "rgba(248,249,252,0.9)"
+          : "rgba(255,255,255,0.75)",
+        transition: "background 120ms",
+        position: "relative",
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+    >
+      <div style={{ height: "2px", background: accent }} />
+
+      <div style={{ padding: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "12px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              flexWrap: "wrap",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: C.faint,
+              }}
+            >
+              {isHe ? "משחק" : "Match"} {String(match.fifa_match_number).padStart(2, "0")}
+            </span>
+
+            {hot && (
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  padding: "2px 7px",
+                  borderRadius: "3px",
+                  background: "rgba(230,57,70,0.08)",
+                  color: C.canada,
+                  border: "1px solid rgba(230,57,70,0.2)",
+                }}
+              >
+                🔥 {isHe ? "חם" : "Hot"}
+              </span>
+            )}
+
+            {countdown && (
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  padding: "2px 7px",
+                  borderRadius: "3px",
+                  background: "rgba(26,58,107,0.07)",
+                  color: C.usa,
+                  border: "1px solid rgba(26,58,107,0.15)",
+                }}
+              >
+                {countdown}
+              </span>
+            )}
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onSave(match.id);
+            }}
+            style={{
+              width: "26px",
+              height: "26px",
+              border: `1px solid ${
+                saved ? "rgba(230,57,70,0.35)" : C.border
+              }`,
+              borderRadius: "3px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              color: saved ? C.canada : C.faint,
+              background: saved ? "rgba(230,57,70,0.06)" : "transparent",
+              cursor: "pointer",
+              transition: "all 150ms",
+              flexShrink: 0,
+            }}
+          >
+            {saved ? "♥" : "♡"}
+          </button>
+        </div>
+
+        <Link
+          href={`/matches/${match.id}`}
+          style={{ textDecoration: "none", display: "block", marginBottom: "7px" }}
+        >
+          <div
+            style={{
+              fontFamily: isHe
+                ? "var(--font-he,'Heebo',sans-serif)"
+                : "var(--font-dm,'DM Sans',sans-serif)",
+              fontSize: "15px",
+              fontWeight: 600,
+              letterSpacing: "-0.1px",
+              color: C.text,
+              lineHeight: 1.3,
+            }}
+          >
+            {renderTeam(match.home_team_name)}
+            <br />
+            <span
+              style={{
+                color: C.hint,
+                fontWeight: 400,
+                fontSize: "12px",
+              }}
+            >
+              {isHe ? "נגד " : "vs "}
+            </span>
+            {renderTeam(match.away_team_name)}
+          </div>
+        </Link>
+
+        <div
+          style={{
+            fontSize: "10px",
+            color: C.hint,
+            letterSpacing: "0.03em",
+            marginBottom: "16px",
+            lineHeight: 1.6,
+          }}
+        >
+          {match.city} · {match.stadium} · {formatMatchDate(match.match_date)}
+        </div>
+
+        {sell === 0 && buy === 0 ? (
+          <Link
+            href={`/post-listing?matchId=${match.id}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "9px 14px",
+              border: `1px solid ${C.border}`,
+              borderRadius: "3px",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: C.usa,
+              textDecoration: "none",
+              transition: "all 150ms",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background =
+                "rgba(26,58,107,0.05)";
+              (e.currentTarget as HTMLElement).style.borderColor = C.usa;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+              (e.currentTarget as HTMLElement).style.borderColor = C.border;
+            }}
+          >
+            + {isHe ? "היה הראשון לפרסם" : "Be first to post"}
+          </Link>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                fontSize: "14px",
+                fontWeight: 800,
+                color: priceRange ? C.usa : C.faint,
+                letterSpacing: "-0.2px",
+              }}
+            >
+              {priceRange || "—"}
+            </span>
+
+            <div style={{ display: "flex", gap: "4px" }}>
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: "2px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  background: "rgba(26,58,107,0.07)",
+                  color: C.usa,
+                }}
+              >
+                {sell} {isHe ? "מכירה" : "sell"}
+              </span>
+
+              <span
+                style={{
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  padding: "2px 8px",
+                  borderRadius: "2px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  background: "#f1f5f9",
+                  color: C.hint,
+                }}
+              >
+                {buy} {isHe ? "קנייה" : "buy"}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── All stages for filter chips ───────────────────────────────────────────────
+const STAGE_ORDER = [
+  "Round of 32",
+  "Round of 16",
+  "Quarter Finals",
+  "Semi Finals",
+  "Third Place",
+  "Final",
+];
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function Home() {
+  const [matches, setMatches] = useState<MatchItem[]>([]);
+  const [listings, setListings] = useState<ListingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [pulse, setPulse] = useState(false);
+
+  const [query, setQuery] = useState("");
+  const [activeStage, setActiveStage] = useState<string | null>(null);
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+
+  const { t, lang } = useLanguage();
+  const toast = useToast();
+  const isHe = lang === "he";
+
+  useEffect(() => {
+    try {
+      setSaved(new Set(JSON.parse(localStorage.getItem("saved_matches") || "[]")));
+    } catch {}
+
+    load();
+    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(!!data.user));
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, s) => setIsLoggedIn(!!s?.user));
+
+    const ch = supabase
+      .channel("home-rt")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "listings" },
+        (p) => {
+          setPulse(true);
+          setTimeout(() => setPulse(false), 1200);
+
+          if (p.eventType === "INSERT") {
+            setListings((prev) => [...prev, p.new as ListingItem]);
+            toast.success(isHe ? "מודעה חדשה נוספה!" : "New listing added!");
+          } else if (p.eventType === "DELETE") {
+            setListings((prev) => prev.filter((l) => l.id !== p.old.id));
+          } else if (p.eventType === "UPDATE") {
+            setListings((prev) =>
+              prev.map((l) => (l.id === p.new.id ? (p.new as ListingItem) : l))
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(ch);
+    };
+  }, [isHe, toast]);
+
+  async function load() {
+    setLoading(true);
+
+    const [{ data: m }, { data: l }] = await Promise.all([
+      supabase
+        .from("matches")
+        .select("*")
+        .order("fifa_match_number", { ascending: true }),
+      supabase
+        .from("listings")
+        .select("id,match_id,price,type,status,expires_at,archived_at")
+        .eq("status", "active")
+        .is("archived_at", null),
+    ]);
+
+    setMatches((m || []) as MatchItem[]);
+    setListings((l || []) as ListingItem[]);
+    setLoading(false);
+  }
+
+  const toggleSave = useCallback(
+    (id: string) => {
+      setSaved((prev) => {
+        const next = new Set(prev);
+
+        if (next.has(id)) {
+          next.delete(id);
+          toast.show(isHe ? "הוסר מהמועדפים" : "Removed", "info");
+        } else {
+          next.add(id);
+          toast.success(isHe ? "נשמר ❤️" : "Saved ❤️");
+        }
+
+        localStorage.setItem("saved_matches", JSON.stringify([...next]));
+        return next;
+      });
+    },
+    [isHe, toast]
+  );
+
+  function isActive(l: ListingItem) {
+    return l.status === "active" && (!l.expires_at || new Date(l.expires_at) > new Date());
+  }
+
+  const availableStages = useMemo(() => {
+    const found = [...new Set(matches.map((m) => m.stage).filter(Boolean))];
+    const hasGroups = found.some((s) => s.startsWith("Group"));
+    const nonGroups = STAGE_ORDER.filter((s) =>
+      found.some((f) => f.toLowerCase().includes(s.toLowerCase()))
+    );
+    return hasGroups ? ["Group Stage", ...nonGroups] : nonGroups;
+  }, [matches]);
+
+  function matchesStage(match: MatchItem) {
+    if (!activeStage) return true;
+    if (activeStage === "Group Stage") {
+      return match.stage?.startsWith("Group") || match.stage === "Group Stage";
+    }
+    return match.stage === activeStage;
+  }
+
+  function getSell(id: string) {
+    return listings.filter(
+      (l) => l.match_id === id && l.type === "sell" && isActive(l)
+    ).length;
+  }
+
+  function getBuy(id: string) {
+    return listings.filter(
+      (l) => l.match_id === id && l.type === "buy" && isActive(l)
+    ).length;
+  }
+
+  function isHot(id: string) {
+    return listings.filter((l) => l.match_id === id && isActive(l)).length >= 10;
+  }
+
+  function getPrice(id: string) {
+    const prices = listings
+      .filter((l) => l.match_id === id && l.type === "sell" && isActive(l))
+      .map((l) => Number(l.price))
+      .filter(Boolean);
+
+    if (!prices.length) return null;
+
+    const mn = Math.min(...prices);
+    const mx = Math.max(...prices);
+    return mn === mx ? `$${mn}` : `$${mn}–$${mx}`;
+  }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const mn = minPrice ? Number(minPrice) : null;
+    const mx = maxPrice ? Number(maxPrice) : null;
+
+    return matches.filter((m) => {
+      if (savedOnly && !saved.has(m.id)) return false;
+      if (!matchesStage(m)) return false;
+
+      const searchText = [
+        m.fifa_match_number,
+        m.home_team_name,
+        m.away_team_name,
+        teamName(m.home_team_name, true),
+        teamName(m.away_team_name, true),
+        teamName(m.home_team_name, false),
+        teamName(m.away_team_name, false),
+        m.stage,
+        stageLabel(m.stage, true),
+        stageLabel(m.stage, false),
+        m.city,
+        m.stadium,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      if (q && !searchText.includes(q)) {
+        return false;
+      }
+
+      if (mn !== null || mx !== null) {
+        const prices = listings
+          .filter((l) => l.match_id === m.id && l.type === "sell" && isActive(l))
+          .map((l) => Number(l.price));
+
+        if (
+          !prices.length ||
+          !prices.some(
+            (p) => (mn === null || p >= mn) && (mx === null || p <= mx)
+          )
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [matches, listings, query, activeStage, savedOnly, saved, minPrice, maxPrice]);
+
+  const activeCount = listings.filter(isActive).length;
+
+  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
+  const smallCaps = {
+    fontSize: "10px",
+    fontWeight: 600,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: C.hint,
+  } as React.CSSProperties;
+
+  return (
+    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
+      <style>{`
+        @keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}
+        .ld{animation:lp 2s infinite}
+        @keyframes shi{from{background-position:-600px 0}to{background-position:600px 0}}
+        .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:2px;}
+      `}</style>
+
       <div
         style={{
           height: "3px",
@@ -209,369 +669,800 @@ export default function AuthPage() {
         }}
       />
 
-      <div style={{ maxWidth: "520px", margin: "0 auto", padding: "2.5rem 1.5rem 3rem" }}>
-        <Link
-          href="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            fontSize: "11px",
-            fontWeight: 600,
-            color: C.hint,
-            textDecoration: "none",
-            marginBottom: "20px",
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-          }}
-        >
-          ← {isHe ? "דף הבית" : "Home"}
-        </Link>
-
-        <div
-          style={{
-            ...cardStyle,
-            padding: "22px 22px 18px",
-            marginBottom: "14px",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
+      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              background:
-                "radial-gradient(circle at top right, rgba(26,58,107,0.08), transparent 42%), radial-gradient(circle at bottom left, rgba(0,104,71,0.06), transparent 36%)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "22px",
+              ...smallCaps,
             }}
-          />
-          <div style={{ position: "relative" }}>
-            <div
-              style={{
-                fontSize: "10px",
-                fontWeight: 800,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: C.usa,
-                marginBottom: "10px",
-              }}
-            >
-              STAY IN THE GAME
-            </div>
-            <h1
-              style={{
-                fontFamily: isHe
-                  ? "var(--font-he,'Heebo',sans-serif)"
-                  : "var(--font-syne,'Syne',sans-serif)",
-                fontSize: "clamp(28px,4vw,38px)",
-                fontWeight: 800,
-                letterSpacing: isHe ? "-0.4px" : "-0.6px",
-                color: C.text,
-                marginBottom: "8px",
-                lineHeight: 1.08,
-              }}
-            >
-              {isHe ? "ברוך הבא ל־Stayin" : "Welcome to Stayin"}
-            </h1>
-            <p
-              style={{
-                fontSize: "13px",
-                color: C.muted,
-                lineHeight: 1.8,
-                fontWeight: 300,
-                marginBottom: "0",
-              }}
-            >
-              {isHe
-                ? "הפלטפורמה הפשוטה ביותר לקנייה ומכירה של כרטיסי מונדיאל 2026."
-                : "The simplest platform to buy and sell World Cup 2026 tickets."}
-            </p>
+          >
+            <span style={{ display: "flex", gap: "4px" }}>
+              {[C.usa, C.canada, C.mexico].map((c) => (
+                <span
+                  key={c}
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: c,
+                    display: "inline-block",
+                  }}
+                />
+              ))}
+            </span>
+            {isHe
+              ? "מרקטפלייס מונדיאל 2026 · ארה״ב · קנדה · מקסיקו"
+              : "World Cup 2026 · USA · Canada · México"}
           </div>
-        </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px",
-            marginBottom: "16px",
-          }}
-        >
-          {BENEFITS.map(({ icon, en, he }) => (
-            <div
-              key={en}
-              style={{
-                ...cardStyle,
-                padding: "12px 14px",
-                display: "flex",
-                alignItems: "center",
-                gap: "9px",
-              }}
-            >
-              <span style={{ fontSize: "16px", flexShrink: 0 }}>{icon}</span>
-              <span style={{ fontSize: "12px", fontWeight: 500, color: C.text }}>
-                {isHe ? he : en}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ ...cardStyle, padding: "24px" }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1px",
-              background: C.border,
-              borderRadius: "8px",
-              overflow: "hidden",
-              marginBottom: "22px",
+              gridTemplateColumns: "1fr auto",
+              gap: "32px",
+              alignItems: "center",
             }}
+            className="hero-grid"
           >
-            {(["login", "signup"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => resetToEmail(m)}
+            <div>
+              <div
                 style={{
-                  padding: "11px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all 150ms",
-                  background: mode === m ? C.usa : "rgba(255,255,255,0.95)",
-                  color: mode === m ? "#fff" : C.hint,
-                  letterSpacing: "0.02em",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  letterSpacing: "0.24em",
+                  textTransform: "uppercase",
+                  color: C.usa,
+                  marginBottom: "16px",
                 }}
               >
-                {m === "login"
-                  ? isHe
-                    ? "התחברות"
-                    : "Login"
-                  : isHe
-                  ? "הרשמה בחינם"
-                  : "Sign up free"}
-              </button>
-            ))}
-          </div>
+                STAY IN THE GAME
+              </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div>
-              <label style={labelStyle}>{isHe ? "כתובת אימייל" : "Email address"}</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={step === "otp"}
-                placeholder="you@example.com"
-                dir="ltr"
-                onKeyDown={(e) => handleKeyDown(-1, e as any)}
-                style={{ ...inputStyle, opacity: step === "otp" ? 0.6 : 1 }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = C.usa;
-                  e.target.style.boxShadow = "0 0 0 3px rgba(26,58,107,0.08)";
+              {isHe ? (
+                <h1
+                  className="hero-h1"
+                  style={{
+                    fontFamily: "var(--font-he,'Heebo',sans-serif)",
+                    fontSize: "clamp(40px,5.5vw,68px)",
+                    fontWeight: 900,
+                    lineHeight: 1,
+                    letterSpacing: "-0.5px",
+                    color: C.text,
+                    marginBottom: "18px",
+                  }}
+                >
+                  כל הכרטיסים
+                  <br />
+                  <span style={{ color: C.usa }}>במקום אחד.</span>
+                </h1>
+              ) : (
+                <h1
+                  className="hero-h1"
+                  style={{
+                    fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                    fontSize: "clamp(40px,5.5vw,68px)",
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    letterSpacing: "0.02em",
+                    color: C.text,
+                    marginBottom: "18px",
+                  }}
+                >
+                  ALL TICKETS
+                  <br />
+                  <span style={{ color: C.usa }}>IN ONE PLACE.</span>
+                </h1>
+              )}
+
+              <p
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 400,
+                  color: C.muted,
+                  lineHeight: 1.8,
+                  maxWidth: "420px",
+                  marginBottom: "28px",
+                  letterSpacing: isHe ? "0" : "0.01em",
+                  fontFamily: isHe
+                    ? "var(--font-he,'Heebo',sans-serif)"
+                    : "var(--font-dm,'DM Sans',sans-serif)",
                 }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = C.border;
-                  e.target.style.boxShadow = "none";
+              >
+                {isHe
+                  ? "בלי הודעות חוזרות ובלי בלאגן — כל המודעות במקום אחד, פנייה ישירה בוואטסאפ."
+                  : "No repeated messages, no chaos — all listings in one place, contact directly on WhatsApp."}
+              </p>
+
+              <div
+                className="hero-btns"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <a
+                  href="#matches"
+                  style={{
+                    padding: "12px 24px",
+                    background: "transparent",
+                    color: C.usa,
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    letterSpacing: "0.02em",
+                    border: `2px solid ${C.usa}`,
+                    transition: "all 150ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = C.usa;
+                    (e.currentTarget as HTMLElement).style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = C.usa;
+                  }}
+                >
+                  {isHe ? "צפה במשחקים ↓" : "Browse matches ↓"}
+                </a>
+
+                {isLoggedIn ? (
+                  <Link
+                    href="/post-listing"
+                    style={{
+                      padding: "12px 22px",
+                      border: `1px solid ${C.border}`,
+                      color: C.muted,
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      borderRadius: "4px",
+                      textDecoration: "none",
+                      background: C.white,
+                      transition: "border-color 150ms,color 150ms",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = C.usa;
+                      (e.currentTarget as HTMLElement).style.color = C.usa;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = C.border;
+                      (e.currentTarget as HTMLElement).style.color = C.muted;
+                    }}
+                  >
+                    {isHe ? "+ פרסם מודעה" : "+ Post listing"}
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/how-it-works"
+                      style={{
+                        padding: "12px 22px",
+                        border: `1px solid ${C.border}`,
+                        color: C.muted,
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        borderRadius: "4px",
+                        textDecoration: "none",
+                        background: C.white,
+                        transition: "border-color 150ms,color 150ms",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
+                        (e.currentTarget as HTMLElement).style.color = C.usa;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
+                        (e.currentTarget as HTMLElement).style.color = C.muted;
+                      }}
+                    >
+                      {isHe ? "איך זה עובד?" : "How it works"}
+                    </Link>
+
+                    <Link
+                      href="/auth"
+                      style={{
+                        padding: "12px 22px",
+                        border: `1px solid ${C.border}`,
+                        color: C.muted,
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        borderRadius: "4px",
+                        textDecoration: "none",
+                        background: C.white,
+                        transition: "border-color 150ms,color 150ms",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
+                        (e.currentTarget as HTMLElement).style.color = C.usa;
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
+                        (e.currentTarget as HTMLElement).style.color = C.muted;
+                      }}
+                    >
+                      {isHe ? "התחבר / הרשמה" : "Login / Sign up"}
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div
+              className="hero-stats"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3,1fr)",
+                gap: "1px",
+                background: C.border,
+                border: `1px solid ${C.border}`,
+                borderRadius: "6px",
+                overflow: "hidden",
+              }}
+            >
+              {[
+                { val: `${matches.length || 64}`, lbl: isHe ? "משחקים" : "Matches", color: C.usa },
+                { val: activeCount, lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true },
+                { val: "WA", lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.mexico },
+              ].map((s, i) => (
+                <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                      fontSize: "22px",
+                      fontWeight: 800,
+                      color: s.color,
+                      letterSpacing: "-0.5px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    {s.val}
+                    {s.live && (
+                      <span
+                        className="ld"
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          borderRadius: "50%",
+                          background: pulse ? "#34d399" : "#22c55e",
+                          display: "inline-block",
+                          transition: "background 400ms",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div style={{ ...smallCaps, marginTop: "4px" }}>{s.lbl}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="matches" style={{ ...W, paddingTop: "24px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            border: `1px solid ${C.border}`,
+            background: "rgba(255,255,255,0.8)",
+            borderRadius: "4px",
+            marginBottom: "10px",
+            backdropFilter: "blur(8px)",
+            transition: "border-color 150ms",
+          }}
+          onFocusCapture={(e) => (e.currentTarget.style.borderColor = C.usa)}
+          onBlurCapture={(e) => (e.currentTarget.style.borderColor = C.border)}
+        >
+          <span style={{ padding: "0 14px", fontSize: "16px", color: C.faint }}>⌕</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t.searchPlaceholder}
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              color: C.text,
+              fontSize: "13px",
+              padding: "12px 0",
+              fontFamily: "var(--font-dm),var(--font-he),sans-serif",
+            }}
+          />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              style={{
+                padding: "0 14px",
+                background: "none",
+                border: "none",
+                color: C.hint,
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+          <span
+            style={{
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: C.hint,
+              flexShrink: 0,
+            }}
+          >
+            {isHe ? "טווח מחיר" : "Price range"}
+          </span>
+
+          <div style={{ display: "flex", flex: 1, gap: "8px" }}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                border: `1px solid ${C.border}`,
+                borderRadius: "4px",
+                background: C.white,
+              }}
+            >
+              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>$</span>
+              <input
+                type="number"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                placeholder={isHe ? "מינימום" : "Min"}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: C.text,
+                  fontSize: "12px",
+                  padding: "10px 0",
+                  fontFamily: "var(--font-dm),var(--font-he),sans-serif",
                 }}
               />
             </div>
 
-            {step === "email" && (
-              <button
-                onClick={sendCode}
-                disabled={loading}
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                border: `1px solid ${C.border}`,
+                borderRadius: "4px",
+                background: C.white,
+              }}
+            >
+              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>$</span>
+              <input
+                type="number"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder={isHe ? "מקסימום" : "Max"}
                 style={{
-                  padding: "12px",
-                  background: C.usa,
-                  color: "#fff",
-                  fontSize: "13px",
-                  fontWeight: 700,
+                  flex: 1,
+                  background: "transparent",
                   border: "none",
-                  borderRadius: "8px",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  opacity: loading ? 0.7 : 1,
-                  letterSpacing: "0.02em",
-                  boxShadow: "0 8px 20px rgba(26,58,107,0.18)",
+                  outline: "none",
+                  color: C.text,
+                  fontSize: "12px",
+                  padding: "10px 0",
+                  fontFamily: "var(--font-dm),var(--font-he),sans-serif",
+                }}
+              />
+            </div>
+
+            {(minPrice || maxPrice) && (
+              <button
+                onClick={() => {
+                  setMinPrice("");
+                  setMaxPrice("");
+                }}
+                style={{
+                  padding: "0 12px",
+                  background: "none",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: "4px",
+                  color: C.hint,
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {loading
-                  ? isHe
-                    ? "שולח..."
-                    : "Sending..."
-                  : mode === "login"
-                  ? isHe
-                    ? "שלח קוד התחברות"
-                    : "Send login code"
-                  : isHe
-                  ? "הירשם בחינם"
-                  : "Sign up free"}
+                ✕
               </button>
             )}
+          </div>
+        </div>
 
-            {step === "otp" && (
-              <>
-                <div>
-                  <label style={labelStyle}>{isHe ? "קוד אימות" : "Verification code"}</label>
-                  <div
-                    style={{ display: "flex", gap: "8px", justifyContent: "space-between" }}
-                    dir="ltr"
-                  >
-                    {digits.map((d, i) => (
-                      <input
-                        key={i}
-                        ref={(el) => {
-                          refs.current[i] = el;
-                        }}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={d}
-                        onChange={(e) => handleDigit(i, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(i, e)}
-                        onPaste={handlePaste}
-                        style={{
-                          flex: 1,
-                          maxWidth: "48px",
-                          height: "54px",
-                          textAlign: "center",
-                          fontSize: "20px",
-                          fontWeight: 800,
-                          background: "rgba(255,255,255,0.96)",
-                          border: `2px solid ${d ? C.usa : C.border}`,
-                          borderRadius: "8px",
-                          color: C.text,
-                          outline: "none",
-                          transition: "border-color 150ms, transform 120ms",
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <p style={{ marginTop: "8px", fontSize: "11px", color: C.hint }}>
-                    {isHe ? "קוד נשלח אל " : "Code sent to "}
-                    <span style={{ color: C.text, fontWeight: 600 }}>{email}</span>
-                  </p>
-                </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px", flexWrap: "wrap" }}>
+          <button
+            onClick={() => {
+              setActiveStage(null);
+              setSavedOnly(false);
+            }}
+            style={{
+              padding: "5px 14px",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              border: `1px solid ${!activeStage && !savedOnly ? C.usa : C.border}`,
+              color: !activeStage && !savedOnly ? C.usa : C.hint,
+              background: !activeStage && !savedOnly ? "rgba(26,58,107,0.05)" : C.white,
+              cursor: "pointer",
+              borderRadius: "3px",
+              transition: "all 150ms",
+              fontFamily: "var(--font-dm),sans-serif",
+            }}
+          >
+            {isHe ? "הכל" : "All"}
+          </button>
 
-                <button
-                  onClick={verifyCode}
-                  disabled={loading}
-                  style={{
-                    padding: "12px",
-                    background: C.usa,
-                    color: "#fff",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    border: "none",
-                    borderRadius: "8px",
-                    cursor: loading ? "not-allowed" : "pointer",
-                    opacity: loading ? 0.7 : 1,
-                    boxShadow: "0 8px 20px rgba(26,58,107,0.18)",
-                  }}
-                >
-                  {loading
-                    ? isHe
-                      ? "מאמת..."
-                      : "Verifying..."
-                    : isHe
-                    ? "אמת קוד והתחבר"
-                    : "Verify & sign in"}
-                </button>
+          {availableStages.map((stage) => (
+            <button
+              key={stage}
+              onClick={() => {
+                setActiveStage(activeStage === stage ? null : stage);
+                setSavedOnly(false);
+              }}
+              style={{
+                padding: "5px 14px",
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                border: `1px solid ${activeStage === stage ? C.usa : C.border}`,
+                color: activeStage === stage ? C.usa : C.hint,
+                background: activeStage === stage ? "rgba(26,58,107,0.05)" : C.white,
+                cursor: "pointer",
+                borderRadius: "3px",
+                transition: "all 150ms",
+                whiteSpace: "nowrap",
+                fontFamily: "var(--font-dm),sans-serif",
+              }}
+            >
+              {stageLabel(stage, isHe)}
+            </button>
+          ))}
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "12px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {secondsLeft > 0 ? (
-                    <span style={{ fontSize: "11px", color: C.hint }}>
-                      {isHe ? `שלח שוב בעוד ${fmt(secondsLeft)}` : `Resend in ${fmt(secondsLeft)}`}
-                    </span>
-                  ) : (
-                    <button
-                      onClick={sendCode}
-                      disabled={loading}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        fontSize: "11px",
-                        color: C.usa,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                        padding: 0,
-                      }}
-                    >
-                      {isHe ? "שלח שוב" : "Resend code"}
-                    </button>
-                  )}
+          <button
+            onClick={() => {
+              setSavedOnly(!savedOnly);
+              setActiveStage(null);
+            }}
+            style={{
+              padding: "5px 14px",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              border: `1px solid ${savedOnly ? "rgba(230,57,70,0.4)" : C.border}`,
+              color: savedOnly ? C.canada : C.hint,
+              background: savedOnly ? "rgba(230,57,70,0.05)" : C.white,
+              cursor: "pointer",
+              borderRadius: "3px",
+              transition: "all 150ms",
+              fontFamily: "var(--font-dm),sans-serif",
+            }}
+          >
+            ♥ {isHe ? "שמורים" : "Saved"}
+            {saved.size > 0 && ` (${saved.size})`}
+          </button>
 
-                  <button
-                    onClick={() => resetToEmail()}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: "11px",
-                      color: C.muted,
-                      cursor: "pointer",
-                      fontWeight: 500,
-                      padding: 0,
-                    }}
-                  >
-                    {isHe ? "שנה אימייל" : "Change email"}
-                  </button>
-                </div>
-              </>
+          <div
+            style={{
+              marginInlineStart: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "11px",
+              color: C.hint,
+            }}
+          >
+            <span
+              className="ld"
+              style={{
+                width: "5px",
+                height: "5px",
+                borderRadius: "50%",
+                background: pulse ? "#34d399" : "#22c55e",
+                display: "inline-block",
+                transition: "background 400ms",
+              }}
+            />
+            {isHe ? "מתעדכן חי" : "Live updates"}
+            {!loading && (
+              <span style={{ color: C.usa, fontWeight: 600 }}>
+                · {filtered.length}{" "}
+                {filtered.length === 1 ? t.matchSingleFound : t.matchesFound}
+              </span>
             )}
           </div>
         </div>
 
         <div
           style={{
-            ...cardStyle,
-            padding: "14px 16px",
-            marginTop: "14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "10px",
+            marginBottom: "10px",
+          }}
+        >
+          <span style={{ ...smallCaps }}>{isHe ? "משחקים" : "Matches"}</span>
+          <span style={{ fontSize: "11px", color: C.usa, fontWeight: 600 }}>
+            {activeCount} {isHe ? "מודעות פעילות" : "active listings"} ●
+          </span>
+        </div>
+      </div>
+
+      <div style={W}>
+        {loading ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
+              gap: "1px",
+              background: C.border,
+              borderRadius: "6px",
+              overflow: "hidden",
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ background: C.white, padding: "20px" }}>
+                <div
+                  style={{
+                    height: "2px",
+                    background: ACCENTS[(i - 1) % 3],
+                    marginBottom: "16px",
+                    marginInline: "-20px",
+                    marginTop: "-20px",
+                  }}
+                />
+                {[60, 120, 90, 50].map((w, j) => (
+                  <div
+                    key={j}
+                    className="sk"
+                    style={{ height: "12px", width: `${w}%`, marginBottom: "12px" }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            style={{
+              padding: "60px 24px",
+              textAlign: "center",
+              background: C.white,
+              border: `1px solid ${C.border}`,
+              borderRadius: "6px",
+            }}
+          >
+            <div style={{ fontSize: "28px", marginBottom: "12px" }}>
+              {savedOnly ? "♡" : "⌕"}
+            </div>
+            <p style={{ fontSize: "14px", color: C.muted, marginBottom: "4px" }}>
+              {savedOnly
+                ? isHe
+                  ? "אין משחקים שמורים עדיין"
+                  : "No saved matches yet"
+                : t.noMatchesFound}
+            </p>
+            <p style={{ fontSize: "12px", color: C.hint }}>
+              {savedOnly
+                ? isHe
+                  ? "לחץ על ♡ בכרטיס להוסיף"
+                  : "Tap ♡ on any card"
+                : t.tryChangingFilters}
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
+              gap: "1px",
+              background: C.border,
+              borderRadius: "6px",
+              overflow: "hidden",
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            {filtered.map((match, i) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                idx={i}
+                sell={getSell(match.id)}
+                buy={getBuy(match.id)}
+                priceRange={getPrice(match.id)}
+                hot={isHot(match.id)}
+                saved={saved.has(match.id)}
+                onSave={toggleSave}
+                isHe={isHe}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div style={{ ...W, marginTop: "28px" }}>
+        <div style={{ borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
+          <div
+            style={{
+              background: C.usa,
+              padding: "16px 22px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: "#fff",
+                }}
+              >
+                FIFA World Cup 2026
+              </div>
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "rgba(255,255,255,.5)",
+                  marginTop: "2px",
+                  fontWeight: 300,
+                }}
+              >
+                {isHe
+                  ? "48 נבחרות · 104 משחקים · 16 ערים מארחות"
+                  : "48 teams · 104 matches · 16 host cities"}
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "#fff",
+                background: "rgba(255,255,255,.12)",
+                padding: "5px 12px",
+                borderRadius: "3px",
+                border: "1px solid rgba(255,255,255,.15)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Jun 11 – Jul 19
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border }}>
+            {[
+              {
+                dot: C.usa,
+                name: isHe ? "ארצות הברית" : "United States",
+                n: isHe ? "78 משחקים" : "78 matches",
+              },
+              {
+                dot: C.canada,
+                name: isHe ? "קנדה" : "Canada",
+                n: isHe ? "13 משחקים" : "13 matches",
+              },
+              {
+                dot: C.mexico,
+                name: isHe ? "מקסיקו" : "México",
+                n: isHe ? "13 משחקים" : "13 matches",
+              },
+            ].map((c) => (
+              <div
+                key={c.name}
+                style={{
+                  background: "rgba(255,255,255,0.8)",
+                  padding: "12px 18px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    background: c.dot,
+                    flexShrink: 0,
+                    display: "inline-block",
+                  }}
+                />
+                <div>
+                  <div style={{ fontSize: "12px", fontWeight: 600, color: C.text }}>
+                    {c.name}
+                  </div>
+                  <div style={{ fontSize: "10px", color: C.hint, marginTop: "1px" }}>
+                    {c.n}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...W, marginTop: "20px", paddingBottom: "52px" }}>
+        <div
+          style={{
+            padding: "24px",
+            border: `1px solid ${C.border}`,
+            borderRadius: "6px",
+            background: "rgba(255,255,255,0.8)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "20px",
             flexWrap: "wrap",
           }}
         >
-          <span style={{ fontSize: "11px", color: C.muted, lineHeight: 1.6 }}>
-            {isHe
-              ? "התחברות מהירה עם קוד חד־פעמי — בלי סיסמאות ובלי סיבוכים."
-              : "Fast one-time-code login — no passwords, no hassle."}
-          </span>
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              color: C.usa,
-              textTransform: "uppercase",
-            }}
-          >
-            OTP
-          </span>
-        </div>
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                fontSize: "16px",
+                fontWeight: 800,
+                color: C.text,
+                marginBottom: "4px",
+                letterSpacing: "-0.3px",
+              }}
+            >
+              {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+            </div>
+            <div style={{ fontSize: "12px", fontWeight: 300, color: C.muted, lineHeight: 1.75 }}>
+              {isHe
+                ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ."
+                : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp."}
+            </div>
+          </div>
 
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "11px",
-            color: C.faint,
-            marginTop: "16px",
-            lineHeight: 1.6,
-          }}
-        >
-          {isHe ? "בהתחברות אתה מסכים לתנאי השימוש" : "By continuing you agree to our terms of use"}
-        </p>
+          <Link
+            href={isLoggedIn ? "/post-listing" : "/auth"}
+            style={{
+              padding: "12px 26px",
+              background: C.usa,
+              color: "#fff",
+              fontSize: "13px",
+              fontWeight: 700,
+              borderRadius: "4px",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              letterSpacing: "0.02em",
+              transition: "opacity 150ms",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+          >
+            {isHe ? "פרסם מודעה →" : "Post listing →"}
+          </Link>
+        </div>
       </div>
     </main>
   );
