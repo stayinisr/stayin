@@ -1,225 +1,632 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Ticket, Trophy, Music2, Sparkles, Radio, Star } from "lucide-react";
 import { useLanguage } from "../../lib/LanguageContext";
 
-export default function HomePreviewPremiumPage() {
-  const { lang } = useLanguage();
-  const isHebrew = lang === "he";
+const C = {
+  usa: "#1a3a6b",
+  canada: "#e63946",
+  mexico: "#006847",
+  bg: "#f8f9fc",
+  white: "#ffffff",
+  border: "#e8edf5",
+  text: "#0d1b3e",
+  muted: "#64748b",
+  hint: "#94a3b8",
+  faint: "#cbd5e1",
+  accent: "#25c6c5",
+} as const;
 
-  const t = {
-    badge: isHebrew ? "תצוגה מקדימה" : "Preview",
-    title1: isHebrew ? "כרטיסים יד שנייה" : "Second-hand tickets",
-    title2: isHebrew ? "שמרגישים כמו פלטפורמה אמיתית" : "that feel like a real platform",
-    subtitle: isHebrew
-      ? "ספורט והופעות חיות במקום אחד ברור, מהיר ומדויק — עם כניסה לעולמות תוכן ולא לעוד רשימה יבשה."
-      : "Sports and live shows in one clear, fast place — built around content worlds, not another dry list.",
-    ctaPrimary: isHebrew ? "לחקור קטגוריות" : "Explore categories",
-    ctaSecondary: isHebrew ? "פרסום מודעה" : "Post listing",
-    stat1: isHebrew ? "עולמות תוכן" : "Content worlds",
-    stat2: isHebrew ? "כניסה ישירה" : "Direct entry",
-    stat3: isHebrew ? "עיצוב פרימיום" : "Premium feel",
-    sectionTitle: isHebrew ? "בחר עולם" : "Choose your world",
-    sectionSub: isHebrew
-      ? "לא עוד דף בית טכני — אלא כניסה שמרגישה כמו תוכן שאתה רוצה לפתוח."
-      : "Not a technical homepage — an entry point that feels like content you want to open.",
-    sports: isHebrew ? "כרטיסי ספורט" : "Sports Tickets",
-    sportsSub: isHebrew
-      ? "כדורגל, גמרים, משחקים גדולים וטורנירים"
-      : "Football, finals, big matches and tournaments",
-    sportsTag: isHebrew ? "העולם הפעיל עכשיו" : "Live now",
-    sportsCta: isHebrew ? "כניסה לספורט" : "Enter sports",
-    live: isHebrew ? "הופעות חיות" : "Live Shows",
-    liveSub: isHebrew
-      ? "הופעות, פסטיבלים ואירועים שחייבים להיות בהם"
-      : "Concerts, festivals and live events worth showing up for",
-    liveTag: isHebrew ? "בקרוב מתרחב" : "Growing soon",
-    liveCta: isHebrew ? "כניסה להופעות" : "Enter live shows",
-    spotlight: isHebrew ? "בולט עכשיו בספורט" : "Spotlight in sports",
-    wcTitle: isHebrew ? "FIFA World Cup 2026" : "FIFA World Cup 2026",
-    wcSub: isHebrew
-      ? "הכניסה הראשית שלך למשחקים, חיפוש מודעות וקנייה/מכירה בין אנשים."
-      : "Your main entry into matches, listings and direct buyer-seller contact.",
-    wcCta: isHebrew ? "כניסה למונדיאל" : "Open World Cup",
-    footer: isHebrew
-      ? "Preview בלבד — בלי חיבור לדאטה ובלי סיכון לעמוד הבית החי"
-      : "Preview only — no data connection and no risk to the live homepage",
+type RailCard = {
+  titleEn: string;
+  titleHe: string;
+  subEn: string;
+  subHe: string;
+  href: string;
+  badgeEn?: string;
+  badgeHe?: string;
+  tone: "sport" | "show" | "worldcup" | "placeholder";
+};
+
+const sportsCards: RailCard[] = [
+  {
+    titleEn: "FIFA World Cup 2026",
+    titleHe: "מונדיאל 2026",
+    subEn: "104 matches · direct fan-to-fan listings",
+    subHe: "104 משחקים · מודעות ישירות בין אוהדים",
+    href: "/sports/world-cup-2026",
+    badgeEn: "Live now",
+    badgeHe: "פעיל עכשיו",
+    tone: "worldcup",
+  },
+  {
+    titleEn: "Champions League",
+    titleHe: "ליגת האלופות",
+    subEn: "Big nights, knockout drama, premium demand",
+    subHe: "לילות גדולים, נוקאאוט וביקוש גבוה",
+    href: "/sports",
+    badgeEn: "Coming next",
+    badgeHe: "בדרך",
+    tone: "sport",
+  },
+  {
+    titleEn: "Israeli Football",
+    titleHe: "כדורגל ישראלי",
+    subEn: "League matches, finals and derby demand",
+    subHe: "ליגה, גמרים ודרבים במקום אחד",
+    href: "/sports",
+    badgeEn: "Future category",
+    badgeHe: "קטגוריה עתידית",
+    tone: "sport",
+  },
+  {
+    titleEn: "More Sports",
+    titleHe: "עוד ענפי ספורט",
+    subEn: "Basketball, national teams and major events",
+    subHe: "כדורסל, נבחרות ואירועים גדולים",
+    href: "/sports",
+    tone: "placeholder",
+  },
+];
+
+const showCards: RailCard[] = [
+  {
+    titleEn: "Live Concerts",
+    titleHe: "הופעות חיות",
+    subEn: "Arena shows, tours and premium tickets",
+    subHe: "הופעות, סיבובים וכרטיסים מבוקשים",
+    href: "/live-shows",
+    badgeEn: "Coming soon",
+    badgeHe: "יעלה בקרוב",
+    tone: "show",
+  },
+  {
+    titleEn: "Festivals",
+    titleHe: "פסטיבלים",
+    subEn: "Multi-day events and last-minute listings",
+    subHe: "אירועים מרובי ימים ומודעות של הרגע האחרון",
+    href: "/live-shows",
+    tone: "show",
+  },
+  {
+    titleEn: "Stand-Up & Stage",
+    titleHe: "סטנדאפ ובמות",
+    subEn: "Indoor venues, tours and city events",
+    subHe: "אולמות, סיבובים ואירועים עירוניים",
+    href: "/live-shows",
+    tone: "show",
+  },
+  {
+    titleEn: "More Live Events",
+    titleHe: "עוד אירועים חיים",
+    subEn: "A growing marketplace for every kind of night out",
+    subHe: "מרקטפלייס שיגדל לכל סוג של בילוי",
+    href: "/live-shows",
+    tone: "placeholder",
+  },
+];
+
+function Rail({
+  title,
+  subtitle,
+  cards,
+  isHe,
+}: {
+  title: string;
+  subtitle: string;
+  cards: RailCard[];
+  isHe: boolean;
+}) {
+  return (
+    <section style={{ marginTop: "26px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "end",
+          justifyContent: "space-between",
+          gap: "14px",
+          marginBottom: "14px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontSize: "12px",
+              fontWeight: 800,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: C.usa,
+              marginBottom: "4px",
+            }}
+          >
+            {title}
+          </div>
+          <div style={{ fontSize: "13px", color: C.muted, lineHeight: 1.6 }}>
+            {subtitle}
+          </div>
+        </div>
+
+        <div
+          style={{
+            fontSize: "11px",
+            color: C.hint,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
+          {isHe ? "גלילה אופקית" : "Horizontal rail"}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridAutoFlow: "column",
+          gridAutoColumns: "minmax(290px, 1fr)",
+          gap: "14px",
+          overflowX: "auto",
+          paddingBottom: "6px",
+          scrollbarWidth: "thin",
+        }}
+      >
+        {cards.map((card) => (
+          <Link
+            key={card.titleEn}
+            href={card.href}
+            style={{ textDecoration: "none" }}
+          >
+            <article
+              className="st-card"
+              style={{
+                minHeight: "220px",
+                borderRadius: "18px",
+                border: `1px solid ${C.border}`,
+                overflow: "hidden",
+                position: "relative",
+                background: C.white,
+                boxShadow: "0 12px 40px rgba(13,27,62,0.06)",
+              }}
+            >
+              <div style={toneBackground(card.tone)} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(13,27,62,0.10) 40%, rgba(13,27,62,0.82) 100%)",
+                }}
+              />
+
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 2,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  padding: "18px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "7px",
+                      padding: "7px 10px",
+                      borderRadius: "999px",
+                      background: "rgba(255,255,255,0.16)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      backdropFilter: "blur(10px)",
+                      color: "#fff",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background:
+                          card.tone === "show"
+                            ? "#b794f6"
+                            : card.tone === "worldcup"
+                            ? C.accent
+                            : "#fff",
+                        boxShadow: "0 0 18px rgba(255,255,255,0.45)",
+                      }}
+                    />
+                    {card.badgeEn ? (isHe ? card.badgeHe : card.badgeEn) : isHe ? "גלו" : "Explore"}
+                  </span>
+
+                  <span
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "12px",
+                      background: "rgba(255,255,255,0.14)",
+                      border: "1px solid rgba(255,255,255,0.16)",
+                      backdropFilter: "blur(10px)",
+                      display: "grid",
+                      placeItems: "center",
+                      color: "#fff",
+                      fontSize: "16px",
+                    }}
+                  >
+                    ↗
+                  </span>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      fontFamily: isHe
+                        ? "var(--font-he,'Heebo',sans-serif)"
+                        : "var(--font-syne,'Syne',sans-serif)",
+                      fontSize: "28px",
+                      fontWeight: isHe ? 900 : 800,
+                      lineHeight: 1.02,
+                      letterSpacing: isHe ? "-0.2px" : "-0.02em",
+                      color: "#fff",
+                      marginBottom: "9px",
+                      maxWidth: "85%",
+                    }}
+                  >
+                    {isHe ? card.titleHe : card.titleEn}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      lineHeight: 1.7,
+                      color: "rgba(255,255,255,0.82)",
+                      maxWidth: "90%",
+                    }}
+                  >
+                    {isHe ? card.subHe : card.subEn}
+                  </div>
+                </div>
+              </div>
+            </article>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function toneBackground(tone: RailCard["tone"]): React.CSSProperties {
+  if (tone === "worldcup") {
+    return {
+      position: "absolute",
+      inset: 0,
+      background: `
+        radial-gradient(circle at 18% 18%, rgba(37,198,197,0.34), transparent 34%),
+        radial-gradient(circle at 82% 22%, rgba(230,57,70,0.16), transparent 26%),
+        linear-gradient(135deg, #102447 0%, #17376a 50%, #0d1b3e 100%)`,
+    };
+  }
+
+  if (tone === "show") {
+    return {
+      position: "absolute",
+      inset: 0,
+      background: `
+        radial-gradient(circle at 18% 14%, rgba(183,148,246,0.34), transparent 34%),
+        radial-gradient(circle at 76% 20%, rgba(255,111,145,0.18), transparent 24%),
+        linear-gradient(135deg, #20113a 0%, #2f1659 48%, #12081f 100%)`,
+    };
+  }
+
+  if (tone === "sport") {
+    return {
+      position: "absolute",
+      inset: 0,
+      background: `
+        radial-gradient(circle at 20% 18%, rgba(37,198,197,0.18), transparent 34%),
+        radial-gradient(circle at 78% 26%, rgba(255,255,255,0.12), transparent 20%),
+        linear-gradient(135deg, #0f274d 0%, #163d76 58%, #102447 100%)`,
+    };
+  }
+
+  return {
+    position: "absolute",
+    inset: 0,
+    background: `
+      radial-gradient(circle at 20% 18%, rgba(37,198,197,0.15), transparent 28%),
+      linear-gradient(135deg, #44506a 0%, #25304a 100%)`,
+  };
+}
+
+export default function HomePreviewModern() {
+  const { lang } = useLanguage();
+  const isHe = lang === "he";
+
+  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
+  const smallCaps = {
+    fontSize: "10px",
+    fontWeight: 600,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: C.hint,
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.18),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(59,130,246,0.16),transparent_24%),linear-gradient(180deg,#06111f_0%,#081426_35%,#09111c_100%)] text-white">
-      <div className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-        <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 shadow-[0_0_30px_rgba(45,212,191,0.18)] backdrop-blur-xl">
-              <Ticket className="h-5 w-5 text-teal-300" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold tracking-wide">Stayin</div>
-              <div className="text-xs text-white/45">{t.badge}</div>
-            </div>
-          </div>
+    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
+      <style>{`
+        .st-card{transform:translateY(0);transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease}
+        .st-card:hover{transform:translateY(-4px);box-shadow:0 20px 55px rgba(13,27,62,.12);border-color:rgba(26,58,107,.18)}
+        .hero-cta{transition:transform .18s ease, opacity .18s ease, background .18s ease, color .18s ease, border-color .18s ease}
+        .hero-cta:hover{transform:translateY(-1px)}
+        @media (max-width: 820px){
+          .hero-grid{grid-template-columns:1fr !important}
+          .hero-actions{width:100%}
+          .hero-actions a{flex:1}
+        }
+      `}</style>
 
-          <div className="hidden items-center gap-2 md:flex">
-            <span className="rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1 text-xs text-teal-200">
-              {t.footer}
+      <div
+        style={{
+          height: "3px",
+          background: `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)`,
+        }}
+      />
+
+      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ ...W, paddingTop: "44px", paddingBottom: "34px" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "22px",
+              ...smallCaps,
+            }}
+          >
+            <span style={{ display: "flex", gap: "4px" }}>
+              {[C.usa, C.canada, C.mexico].map((c) => (
+                <span
+                  key={c}
+                  style={{ width: "6px", height: "6px", borderRadius: "50%", background: c, display: "inline-block" }}
+                />
+              ))}
             </span>
+            {isHe ? "פלטפורמת כרטיסים יד שנייה · ספורט · הופעות" : "Second-hand tickets platform · Sports · Live shows"}
           </div>
-        </header>
 
-        <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.05] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_40%,rgba(45,212,191,0.08)_100%)]" />
-          <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-12 bottom-0 h-56 w-56 rounded-full bg-blue-500/10 blur-3xl" />
-
-          <div className="relative grid items-end gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div
+            className="hero-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: "32px",
+              alignItems: "center",
+            }}
+          >
             <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-xs text-white/70">
-                <Sparkles className="h-3.5 w-3.5 text-teal-300" />
-                {isHebrew ? "דף בית קטגורי חדש" : "New category-driven homepage"}
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  letterSpacing: "0.24em",
+                  textTransform: "uppercase",
+                  color: C.usa,
+                  marginBottom: "16px",
+                }}
+              >
+                STAY IN THE MOMENT
               </div>
 
-              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.02] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
-                {t.title1}
-                <span className="mt-2 block bg-gradient-to-r from-white via-teal-100 to-cyan-300 bg-clip-text text-transparent">
-                  {t.title2}
-                </span>
-              </h1>
+              {isHe ? (
+                <h1
+                  style={{
+                    fontFamily: "var(--font-he,'Heebo',sans-serif)",
+                    fontSize: "clamp(40px,5.5vw,68px)",
+                    fontWeight: 900,
+                    lineHeight: 1,
+                    letterSpacing: "-0.5px",
+                    color: C.text,
+                    marginBottom: "18px",
+                  }}
+                >
+                  בוחרים קטגוריה.
+                  <br />
+                  <span style={{ color: C.usa }}>ממשיכים לאירוע.</span>
+                </h1>
+              ) : (
+                <h1
+                  style={{
+                    fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                    fontSize: "clamp(40px,5.5vw,68px)",
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    letterSpacing: "0.02em",
+                    color: C.text,
+                    marginBottom: "18px",
+                  }}
+                >
+                  PICK A CATEGORY.
+                  <br />
+                  <span style={{ color: C.usa }}>MOVE TO THE EVENT.</span>
+                </h1>
+              )}
 
-              <p className="mt-5 max-w-2xl text-sm leading-6 text-white/68 sm:text-base">
-                {t.subtitle}
+              <p
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 400,
+                  color: C.muted,
+                  lineHeight: 1.8,
+                  maxWidth: "560px",
+                  marginBottom: "28px",
+                  letterSpacing: isHe ? "0" : "0.01em",
+                  fontFamily: isHe
+                    ? "var(--font-he,'Heebo',sans-serif)"
+                    : "var(--font-dm,'DM Sans',sans-serif)",
+                }}
+              >
+                {isHe
+                  ? "עמוד בית בסגנון פלטפורמה: גולשים לפי קטגוריות, נכנסים לעולמות תוכן, ומשם ממשיכים לאירועים ולמודעות."
+                  : "A platform-style homepage: browse by category, enter content worlds, then continue to events and listings."}
               </p>
 
-              <div className="mt-7 flex flex-wrap gap-3">
-                <button className="rounded-2xl bg-white px-5 py-3 text-sm font-medium text-slate-900 transition hover:scale-[1.02]">
-                  {t.ctaPrimary}
-                </button>
-                <button className="rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-medium text-white/88 transition hover:bg-white/10">
-                  {t.ctaSecondary}
-                </button>
+              <div className="hero-actions" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <a
+                  href="#categories"
+                  className="hero-cta"
+                  style={{
+                    padding: "12px 24px",
+                    background: "transparent",
+                    color: C.usa,
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    letterSpacing: "0.02em",
+                    border: `2px solid ${C.usa}`,
+                  }}
+                >
+                  {isHe ? "צפה בקטגוריות ↓" : "Browse categories ↓"}
+                </a>
+
+                <Link
+                  href="/post-listing"
+                  className="hero-cta"
+                  style={{
+                    padding: "12px 22px",
+                    border: `1px solid ${C.border}`,
+                    color: C.muted,
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    background: C.white,
+                  }}
+                >
+                  {isHe ? "+ פרסם מודעה" : "+ Post listing"}
+                </Link>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3,1fr)",
+                gap: "1px",
+                background: C.border,
+                border: `1px solid ${C.border}`,
+                borderRadius: "8px",
+                overflow: "hidden",
+                minWidth: "280px",
+              }}
+            >
               {[
-                { icon: Trophy, label: t.stat1 },
-                { icon: Radio, label: t.stat2 },
-                { icon: Star, label: t.stat3 },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
+                { val: "2", lbl: isHe ? "קטגוריות" : "Categories", color: C.usa },
+                { val: "24/7", lbl: isHe ? "זמינות" : "Always on", color: C.text },
+                { val: "WA", lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.mexico },
+              ].map((s, i) => (
+                <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
                   <div
-                    key={item.label}
-                    className="rounded-[26px] border border-white/10 bg-black/20 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    style={{
+                      fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                      fontSize: "22px",
+                      fontWeight: 800,
+                      color: s.color,
+                      letterSpacing: "-0.5px",
+                    }}
                   >
-                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/8">
-                      <Icon className="h-4.5 w-4.5 text-teal-200" />
-                    </div>
-                    <div className="text-sm font-medium text-white/90">{item.label}</div>
+                    {s.val}
                   </div>
-                );
-              })}
+                  <div style={{ ...smallCaps, marginTop: "4px" }}>{s.lbl}</div>
+                </div>
+              ))}
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section className="mt-12">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.03em]">{t.sectionTitle}</h2>
-              <p className="mt-1 text-sm text-white/56">{t.sectionSub}</p>
-            </div>
-          </div>
+      <div id="categories" style={{ ...W, paddingTop: "22px", paddingBottom: "52px" }}>
+        <Rail
+          title={isHe ? "כרטיסי ספורט" : "Sports Tickets"}
+          subtitle={
+            isHe
+              ? "כניסות לעולמות הספורט עם דגש על אירועי ביקוש גדולים"
+              : "Entry points to sports worlds, focused on high-demand events"
+          }
+          cards={sportsCards}
+          isHe={isHe}
+        />
 
-          <div className="grid gap-5 lg:grid-cols-2">
-            <Link
-              href="/sports"
-              className="group relative overflow-hidden rounded-[30px] border border-cyan-300/10 bg-[linear-gradient(135deg,rgba(10,18,32,0.96),rgba(8,41,56,0.88)_55%,rgba(14,102,123,0.78))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.4)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/25"
-            >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(103,232,249,0.18),transparent_28%),linear-gradient(180deg,transparent_0%,rgba(3,7,18,0.45)_100%)]" />
-              <div className="pointer-events-none absolute -right-10 bottom-0 h-48 w-48 rounded-full bg-cyan-300/12 blur-3xl transition duration-300 group-hover:scale-110" />
-              <div className="pointer-events-none absolute left-6 top-6 flex gap-2 opacity-80">
-                {[1,2,3].map((i) => (
-                  <span key={i} className="h-24 w-16 rounded-2xl border border-white/8 bg-white/6 shadow-lg backdrop-blur-sm" />
-                ))}
-              </div>
+        <Rail
+          title={isHe ? "הופעות חיות" : "Live Shows"}
+          subtitle={
+            isHe
+              ? "עולם הופעות שיכול לגדול בהמשך לפסטיבלים, סיבובים ומופעים"
+              : "A live-entertainment world that can grow into festivals, tours and major shows"
+          }
+          cards={showCards}
+          isHe={isHe}
+        />
 
-              <div className="relative mt-28 flex items-end justify-between gap-6">
-                <div>
-                  <div className="mb-3 inline-flex items-center rounded-full border border-cyan-200/15 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">
-                    {t.sportsTag}
-                  </div>
-                  <h3 className="text-3xl font-semibold tracking-[-0.04em] sm:text-[2rem]">{t.sports}</h3>
-                  <p className="mt-3 max-w-md text-sm leading-6 text-white/70">{t.sportsSub}</p>
-                </div>
-
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/8 transition group-hover:bg-white/12">
-                  <ChevronRight className="h-5 w-5 text-white/85" />
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              href="/live-shows"
-              className="group relative overflow-hidden rounded-[30px] border border-fuchsia-300/10 bg-[linear-gradient(135deg,rgba(18,8,28,0.96),rgba(53,18,68,0.9)_55%,rgba(123,39,87,0.78))] p-6 shadow-[0_25px_90px_rgba(0,0,0,0.4)] transition duration-300 hover:-translate-y-1 hover:border-fuchsia-300/25"
-            >
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,114,182,0.16),transparent_28%),linear-gradient(180deg,transparent_0%,rgba(3,7,18,0.45)_100%)]" />
-              <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-fuchsia-300/12 blur-3xl transition duration-300 group-hover:scale-110" />
-              <div className="pointer-events-none absolute left-6 top-6 flex items-end gap-3 opacity-85">
-                <div className="h-24 w-16 rounded-2xl border border-white/8 bg-white/6" />
-                <div className="h-28 w-20 rounded-[22px] border border-white/10 bg-white/8" />
-                <div className="h-20 w-14 rounded-2xl border border-white/8 bg-white/6" />
-              </div>
-
-              <div className="relative mt-28 flex items-end justify-between gap-6">
-                <div>
-                  <div className="mb-3 inline-flex items-center rounded-full border border-fuchsia-200/15 bg-fuchsia-300/10 px-3 py-1 text-xs text-fuchsia-100">
-                    {t.liveTag}
-                  </div>
-                  <h3 className="text-3xl font-semibold tracking-[-0.04em] sm:text-[2rem]">{t.live}</h3>
-                  <p className="mt-3 max-w-md text-sm leading-6 text-white/70">{t.liveSub}</p>
-                </div>
-
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/12 bg-white/8 transition group-hover:bg-white/12">
-                  <ChevronRight className="h-5 w-5 text-white/85" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-12 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-          <Link
-            href="/sports/world-cup-2026"
-            className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03))] p-6 shadow-[0_18px_70px_rgba(0,0,0,0.32)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-teal-300/20"
+        <section style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              padding: "22px",
+              border: `1px solid ${C.border}`,
+              borderRadius: "18px",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.75))",
+              boxShadow: "0 12px 40px rgba(13,27,62,0.04)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "20px",
+              flexWrap: "wrap",
+            }}
           >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_right,rgba(45,212,191,0.12),transparent_30%)]" />
-            <div className="relative flex h-full flex-col justify-between gap-8 sm:flex-row sm:items-end">
-              <div>
-                <div className="mb-3 inline-flex items-center rounded-full border border-teal-200/15 bg-teal-300/10 px-3 py-1 text-xs text-teal-100">
-                  {t.spotlight}
-                </div>
-                <h3 className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">{t.wcTitle}</h3>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/66">{t.wcSub}</p>
+            <div>
+              <div
+                style={{
+                  fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                  fontSize: "16px",
+                  fontWeight: 800,
+                  color: C.text,
+                  marginBottom: "4px",
+                  letterSpacing: "-0.3px",
+                }}
+              >
+                {isHe ? "הכיוון החדש של דף הבית" : "New homepage direction"}
               </div>
-
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white/88 transition group-hover:bg-white/12">
-                {t.wcCta}
-                <ChevronRight className="h-4 w-4" />
+              <div style={{ fontSize: "13px", lineHeight: 1.75, color: C.muted, maxWidth: "720px" }}>
+                {isHe
+                  ? "אותו vibe של Stayin, אבל במקום רשימת משחקים ישר בדף הבית — חוויית גלישה לפי קטגוריות, עם rails נוחים, מודרניים ויותר מזמינים."
+                  : "The same Stayin vibe, but instead of dropping straight into matches, the homepage becomes a category-led browsing experience with cleaner, more inviting rails."}
               </div>
             </div>
-          </Link>
 
-          <div className="rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-            <div className="mb-4 text-sm font-medium text-white/90">
-              {isHebrew ? "למה זה נראה יותר טוב" : "Why this feels better"}
-            </div>
-            <div className="space-y-3 text-sm leading-6 text-white/62">
-              <p>{isHebrew ? "• הקטגוריות מרגישות כמו תוכן, לא כמו כפתורים רגילים." : "• Categories feel like content worlds, not standard buttons."}</p>
-              <p>{isHebrew ? "• לכל עולם יש אופי ויזואלי משלו, בלי לשבור את השפה של Stayin." : "• Each world has its own visual identity without breaking the Stayin language."}</p>
-              <p>{isHebrew ? "• המונדיאל נשאר בולט, אבל כבר לא כולא את המותג כולו." : "• The World Cup stays prominent without defining the whole brand."}</p>
-            </div>
+            <Link
+              href="/sports/world-cup-2026"
+              className="hero-cta"
+              style={{
+                padding: "12px 26px",
+                background: C.usa,
+                color: "#fff",
+                fontSize: "13px",
+                fontWeight: 700,
+                borderRadius: "4px",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                letterSpacing: "0.02em",
+                flexShrink: 0,
+              }}
+            >
+              {isHe ? "למונדיאל 2026 →" : "Go to World Cup 2026 →"}
+            </Link>
           </div>
         </section>
       </div>
