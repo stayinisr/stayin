@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -46,18 +47,119 @@ type Profile = {
   created_at?: string | null;
 };
 
-const PLAN_CONFIG = {
-  free:      { label: "Free",      color: "#94a3b8", bg: "#f1f5f9",                badge: "" },
-  premium:   { label: "Premium",   color: "#d4a017", bg: "rgba(212,160,23,0.1)",   badge: "⭐" },
-  unlimited: { label: "Unlimited", color: "#006847", bg: "rgba(0,104,71,0.08)",    badge: "🚀" },
+const PLAN_CONFIG: Record<Plan, { label: string; color: string; bg: string; badge: string }> = {
+  free:      { label: "Free",      color: "#94a3b8", bg: "#f1f5f9",              badge: "" },
+  premium:   { label: "Premium",   color: "#d4a017", bg: "rgba(212,160,23,0.1)", badge: "⭐" },
+  unlimited: { label: "Unlimited", color: "#006847", bg: "rgba(0,104,71,0.08)",  badge: "🚀" },
 };
 
 function PlanBadge({ plan }: { plan: Plan }) {
   const cfg = PLAN_CONFIG[plan] ?? PLAN_CONFIG.free;
   return (
-    <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: cfg.bg, color: cfg.color, border: `1px solid \${cfg.color}30`, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
-      {cfg.badge}{cfg.badge ? " " : ""}{cfg.label}
+    <span
+      style={{
+        fontSize: "9px",
+        fontWeight: 800,
+        padding: "3px 8px",
+        borderRadius: "999px",
+        background: cfg.bg,
+        color: cfg.color,
+        border: `1px solid ${cfg.color}30`,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+      }}
+    >
+      {cfg.badge}
+      {cfg.badge ? " " : ""}
+      {cfg.label}
     </span>
+  );
+}
+
+function fmtDate(v?: string | null) {
+  if (!v) return "-";
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v;
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year} · ${hours}:${minutes}`;
+}
+
+function StatusBadge({
+  kind,
+  text,
+}: {
+  kind: "neutral" | "success" | "warning" | "danger" | "highlight";
+  text: string;
+}) {
+  const map = {
+    neutral: { bg: "var(--bg-main)", fg: "var(--text-muted)", border: "var(--border-soft)" },
+    success: { bg: "rgba(34,197,94,0.08)", fg: "#15803d", border: "rgba(34,197,94,0.2)" },
+    warning: { bg: "rgba(245,158,11,0.08)", fg: "#b45309", border: "rgba(245,158,11,0.2)" },
+    danger: { bg: "rgba(230,57,70,0.08)", fg: "#e63946", border: "rgba(230,57,70,0.2)" },
+    highlight: { bg: "rgba(26,58,107,0.08)", fg: "#1a3a6b", border: "rgba(26,58,107,0.15)" },
+  } as const;
+  const s = map[kind];
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "3px 8px",
+        fontSize: "9px",
+        fontWeight: 800,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        borderRadius: "999px",
+        background: s.bg,
+        color: s.fg,
+        border: `1px solid ${s.border}`,
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  accent = "var(--wc-usa)",
+}: {
+  label: string;
+  value: string | number;
+  accent?: string;
+}) {
+  return (
+    <div className="card-static" style={{ padding: "16px 18px" }}>
+      <div
+        style={{
+          fontSize: "10px",
+          fontWeight: 700,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "var(--text-muted)",
+          marginBottom: "6px",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontFamily: "var(--font-syne), sans-serif",
+          fontSize: "26px",
+          fontWeight: 800,
+          lineHeight: 1,
+          color: accent,
+          letterSpacing: "-0.03em",
+        }}
+      >
+        {value}
+      </div>
+    </div>
   );
 }
 
@@ -139,9 +241,7 @@ export default function AdminPage() {
   }
 
   async function deleteListing(id: string) {
-    const confirmDelete = confirm(
-      isHe ? "למחוק את המודעה?" : "Delete this listing?"
-    );
+    const confirmDelete = confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?");
     if (!confirmDelete) return;
 
     const { error } = await supabase.from("listings").delete().eq("id", id);
@@ -154,9 +254,7 @@ export default function AdminPage() {
   }
 
   async function deleteReport(id: string) {
-    const confirmDelete = confirm(
-      isHe ? "למחוק את הדיווח?" : "Delete this report?"
-    );
+    const confirmDelete = confirm(isHe ? "למחוק את הדיווח?" : "Delete this report?");
     if (!confirmDelete) return;
 
     const { error } = await supabase.from("reports").delete().eq("id", id);
@@ -178,7 +276,10 @@ export default function AdminPage() {
       })
       .eq("id", userId);
 
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error(error);
+      return;
+    }
     await loadData();
   }
 
@@ -286,111 +387,228 @@ export default function AdminPage() {
     );
   }
 
+  const tabButtonClass = (name: typeof tab) =>
+    tab === name ? "primary-btn" : "secondary-btn";
+
   return (
     <main className="app-shell">
       <section className="page-container">
-        <h1 className="page-title mb-6">
-          {isHe ? "פאנל ניהול" : "Admin Panel"}
-        </h1>
+        <div
+          style={{
+            height: "3px",
+            background:
+              "linear-gradient(90deg,var(--wc-usa) 33.3%,var(--wc-canada) 33.3% 66.6%,var(--wc-mexico) 66.6%)",
+            borderRadius: "999px",
+            marginBottom: "18px",
+          }}
+        />
 
-        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
-            <button
-              onClick={() => setTab("listings")}
-              className={tab === "listings" ? "primary-btn" : "secondary-btn"}
+        <div className="fade-up">
+          <div
+            className="card-static"
+            style={{
+              padding: "22px 24px",
+              marginBottom: "16px",
+              background: "rgba(255,255,255,0.88)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "10px",
+                fontWeight: 800,
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: "var(--wc-usa)",
+                marginBottom: "8px",
+              }}
             >
-              {isHe ? "מודעות" : "Listings"}
-            </button>
+              STAY IN THE GAME
+            </div>
 
-            <button
-              onClick={() => setTab("reports")}
-              className={tab === "reports" ? "primary-btn" : "secondary-btn"}
-            >
-              {isHe ? "דיווחים" : "Reports"}
-            </button>
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h1 className="page-title" style={{ marginBottom: "6px" }}>
+                  {isHe ? "פאנל ניהול" : "Admin Panel"}
+                </h1>
+                <p className="page-subtitle">
+                  {isHe
+                    ? "ניהול מודעות, דיווחים ומשתמשים באותו קו עיצובי של האתר."
+                    : "Manage listings, reports, and users with the same product style."}
+                </p>
+              </div>
 
-            <button
-              onClick={() => setTab("users")}
-              className={tab === "users" ? "primary-btn" : "secondary-btn"}
-            >
-              {isHe ? "משתמשים" : "Users"}
-            </button>
+              <div className="w-full md:max-w-sm">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={
+                    isHe
+                      ? "חפש מודעות / דיווחים / משתמשים"
+                      : "Search listings / reports / users"
+                  }
+                  className="input-field"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="w-full md:max-w-sm">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={
-                isHe
-                  ? "חפש מודעות / דיווחים / משתמשים"
-                  : "Search listings / reports / users"
-              }
-              className="input-field"
-            />
-          </div>
+        <div
+          className="fade-up-delay-1"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+            gap: "12px",
+            marginBottom: "16px",
+          }}
+        >
+          <StatCard
+            label={isHe ? "מודעות" : "Listings"}
+            value={listings.length}
+            accent="var(--wc-usa)"
+          />
+          <StatCard
+            label={isHe ? "דיווחים" : "Reports"}
+            value={reports.length}
+            accent="var(--wc-canada)"
+          />
+          <StatCard
+            label={isHe ? "משתמשים" : "Users"}
+            value={profiles.length}
+            accent="var(--wc-mexico)"
+          />
+          <StatCard
+            label={isHe ? "אדמינים" : "Admins"}
+            value={profiles.filter((p) => !!p.is_admin).length}
+            accent="var(--text-primary)"
+          />
+        </div>
+
+        <div
+          className="fade-up-delay-2"
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+            marginBottom: "18px",
+          }}
+        >
+          <button onClick={() => setTab("listings")} className={tabButtonClass("listings")}>
+            {isHe ? "מודעות" : "Listings"}
+          </button>
+          <button onClick={() => setTab("reports")} className={tabButtonClass("reports")}>
+            {isHe ? "דיווחים" : "Reports"}
+          </button>
+          <button onClick={() => setTab("users")} className={tabButtonClass("users")}>
+            {isHe ? "משתמשים" : "Users"}
+          </button>
         </div>
 
         {tab === "listings" && (
           <div className="grid gap-4">
             {filteredListings.length === 0 ? (
-              <div className="card-static">
-                {isHe ? "אין מודעות" : "No listings"}
-              </div>
+              <div className="card-static">{isHe ? "אין מודעות" : "No listings"}</div>
             ) : (
               filteredListings.map((l) => {
                 const uploader = l.user_id ? profilesMap[l.user_id] : null;
+                const typeLabel =
+                  l.type === "sell" ? (isHe ? "מכירה" : "Sell") : isHe ? "קנייה" : "Buy";
+                const statusKind =
+                  l.archived_at ? "danger" : l.status === "active" ? "success" : "neutral";
 
                 return (
-                  <div
-                    key={l.id}
-                    className="card-static flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <div className="font-bold text-[var(--text-primary)]">
-                        {l.type} · ${l.price} · {l.quantity || 0} {isHe ? "כרטיסים" : "tickets"}
-                      </div>
-
-                      <div className="text-sm text-[var(--text-secondary)]">
-                        {l.category || "-"} · {l.status}
-                        {l.is_featured ? " · GOLD" : ""}
-                        {l.archived_at ? " · ARCHIVED" : ""}
-                      </div>
-
-                      <div className="text-sm text-[var(--text-secondary)] mt-2">
-                        {isHe ? "שם המעלה" : "Uploader name"}: {uploader?.full_name || "-"}
-                      </div>
-
-                      <div className="text-sm text-[var(--text-secondary)]">
-                        {isHe ? "מייל המעלה" : "Uploader email"}: {uploader?.email || "-"}
-                      </div>
-
-                      <div className="text-xs text-[var(--text-muted)] mt-2">
-                        listing: {l.id}
-                      </div>
-
-                      <div className="text-xs text-[var(--text-muted)]">
-                        {new Date(l.created_at).toLocaleString()}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2 md:min-w-[180px]">
-                      {l.match_id && (
-                        <Link
-                          href={`/matches/${l.match_id}`}
-                          className="secondary-btn text-center"
+                  <div key={l.id} className="card-static" style={{ padding: "18px 20px" }}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            flexWrap: "wrap",
+                            marginBottom: "8px",
+                          }}
                         >
-                          {isHe ? "צפייה במודעה" : "View listing"}
-                        </Link>
-                      )}
+                          <StatusBadge kind="highlight" text={typeLabel} />
+                          <StatusBadge
+                            kind={statusKind}
+                            text={
+                              l.archived_at
+                                ? isHe
+                                  ? "Archived"
+                                  : "Archived"
+                                : l.status || "-"
+                            }
+                          />
+                          {l.is_featured ? (
+                            <StatusBadge kind="warning" text="Gold" />
+                          ) : null}
+                          {l.category ? (
+                            <StatusBadge kind="neutral" text={l.category} />
+                          ) : null}
+                        </div>
 
-                      <button
-                        onClick={() => deleteListing(l.id)}
-                        className="danger-btn"
-                      >
-                        {isHe ? "מחק מודעה" : "Delete listing"}
-                      </button>
+                        <div
+                          style={{
+                            fontFamily: "var(--font-syne), sans-serif",
+                            fontSize: "28px",
+                            fontWeight: 800,
+                            lineHeight: 1,
+                            color: "var(--text-primary)",
+                            letterSpacing: "-0.04em",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          ${l.price}
+                          <span
+                            style={{
+                              fontFamily: "var(--font-dm), var(--font-he), sans-serif",
+                              fontSize: "13px",
+                              fontWeight: 500,
+                              color: "var(--text-muted)",
+                              marginInlineStart: "10px",
+                            }}
+                          >
+                            × {l.quantity || 0} {isHe ? "כרטיסים" : "tickets"}
+                          </span>
+                        </div>
+
+                        <div className="text-sm text-[var(--text-secondary)]">
+                          {isHe ? "שם המעלה" : "Uploader"}: {uploader?.full_name || "-"}
+                        </div>
+                        <div className="text-sm text-[var(--text-secondary)]">
+                          {isHe ? "מייל" : "Email"}: {uploader?.email || "-"}
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "16px",
+                            flexWrap: "wrap",
+                            marginTop: "10px",
+                            fontSize: "12px",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          <span>listing: {l.id}</span>
+                          <span>match: {l.match_id || "-"}</span>
+                          <span>{fmtDate(l.created_at)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 md:min-w-[190px]">
+                        {l.match_id && (
+                          <Link href={`/matches/${l.match_id}`} className="secondary-btn text-center">
+                            {isHe ? "צפייה במודעה" : "View listing"}
+                          </Link>
+                        )}
+
+                        <button onClick={() => deleteListing(l.id)} className="danger-btn">
+                          {isHe ? "מחק מודעה" : "Delete listing"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -402,81 +620,64 @@ export default function AdminPage() {
         {tab === "reports" && (
           <div className="grid gap-4">
             {filteredReports.length === 0 ? (
-              <div className="card-static">
-                {isHe ? "אין דיווחים" : "No reports"}
-              </div>
+              <div className="card-static">{isHe ? "אין דיווחים" : "No reports"}</div>
             ) : (
               filteredReports.map((r) => {
                 const reporter = r.reporter_user_id ? profilesMap[r.reporter_user_id] : null;
                 const uploader = getUploaderProfileByListing(r.listing_id);
 
                 return (
-                  <div key={r.id} className="card-static">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="badge badge-warning">
-                        {r.status === "open"
-                          ? isHe
-                            ? "פתוח"
-                            : "Open"
-                          : isHe
-                          ? "סגור"
-                          : "Closed"}
-                      </span>
+                  <div key={r.id} className="card-static" style={{ padding: "18px 20px" }}>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <StatusBadge
+                        kind={r.status === "open" ? "warning" : "neutral"}
+                        text={r.status === "open" ? (isHe ? "פתוח" : "Open") : isHe ? "סגור" : "Closed"}
+                      />
+                      <StatusBadge kind="neutral" text={`listing: ${r.listing_id || "-"}`} />
+                      <StatusBadge kind="neutral" text={`match: ${r.match_id || "-"}`} />
                     </div>
 
-                    <div className="text-sm text-[var(--text-secondary)] mb-1">
-                      {isHe ? "שם המדווח" : "Reporter name"}: {reporter?.full_name || "-"}
-                    </div>
+                    <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+                      <div>
+                        <div className="text-sm text-[var(--text-secondary)] mb-1">
+                          {isHe ? "מדווח" : "Reporter"}: {reporter?.full_name || "-"} · {reporter?.email || "-"}
+                        </div>
+                        <div className="text-sm text-[var(--text-secondary)] mb-1">
+                          {isHe ? "מעלה" : "Uploader"}: {uploader?.full_name || "-"} · {uploader?.email || "-"}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] mb-3">{fmtDate(r.created_at)}</div>
 
-                    <div className="text-sm text-[var(--text-secondary)] mb-1">
-                      {isHe ? "מייל המדווח" : "Reporter email"}: {reporter?.email || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-secondary)] mb-1">
-                      {isHe ? "שם המעלה" : "Uploader name"}: {uploader?.full_name || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-secondary)] mb-1">
-                      {isHe ? "מייל המעלה" : "Uploader email"}: {uploader?.email || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-secondary)] mb-1">
-                      listing: {r.listing_id || "-"} · match: {r.match_id || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-muted)] mb-3">
-                      {new Date(r.created_at).toLocaleString()}
-                    </div>
-
-                    <div className="rounded-xl bg-[var(--bg-main)] p-4 text-[var(--text-primary)] whitespace-pre-wrap mb-4">
-                      {r.reason}
-                    </div>
-
-                    <div className="flex flex-col gap-2 md:flex-row">
-                      {r.match_id && (
-                        <Link
-                          href={`/matches/${r.match_id}`}
-                          className="secondary-btn text-center"
+                        <div
+                          style={{
+                            border: "1px solid var(--border-soft)",
+                            background: "var(--bg-main)",
+                            borderRadius: "6px",
+                            padding: "14px",
+                            color: "var(--text-primary)",
+                            whiteSpace: "pre-wrap",
+                            lineHeight: 1.7,
+                            fontSize: "14px",
+                          }}
                         >
-                          {isHe ? "צפייה במודעה" : "View listing"}
-                        </Link>
-                      )}
+                          {r.reason}
+                        </div>
+                      </div>
 
-                      {r.listing_id && (
-                        <button
-                          onClick={() => deleteListing(r.listing_id!)}
-                          className="danger-btn"
-                        >
-                          {isHe ? "הסר מודעה" : "Remove listing"}
+                      <div className="flex flex-col gap-2 md:min-w-[190px]">
+                        {r.match_id && (
+                          <Link href={`/matches/${r.match_id}`} className="secondary-btn text-center">
+                            {isHe ? "צפייה במודעה" : "View listing"}
+                          </Link>
+                        )}
+                        {r.listing_id && (
+                          <button onClick={() => deleteListing(r.listing_id!)} className="danger-btn">
+                            {isHe ? "הסר מודעה" : "Remove listing"}
+                          </button>
+                        )}
+                        <button onClick={() => deleteReport(r.id)} className="secondary-btn">
+                          {isHe ? "מחק דיווח" : "Delete report"}
                         </button>
-                      )}
-
-                      <button
-                        onClick={() => deleteReport(r.id)}
-                        className="secondary-btn"
-                      >
-                        {isHe ? "מחק דיווח" : "Delete report"}
-                      </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -488,67 +689,114 @@ export default function AdminPage() {
         {tab === "users" && (
           <div className="grid gap-4">
             {filteredUsers.length === 0 ? (
-              <div className="card-static">
-                {isHe ? "אין משתמשים" : "No users"}
-              </div>
+              <div className="card-static">{isHe ? "אין משתמשים" : "No users"}</div>
             ) : (
               filteredUsers.map((u) => (
-                <div
-                  key={u.id}
-                  className="card-static flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-                >
-                  <div>
-                    <div className="font-bold text-[var(--text-primary)]">
-                      {u.full_name || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-secondary)]">
-                      {u.email || "-"}
-                    </div>
-
-                    <div className="text-sm text-[var(--text-secondary)]">
-                      {u.phone || "-"} · {u.country || "-"}
-                    </div>
-
-                    <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "6px", flexWrap: "wrap" }}>
-                      <PlanBadge plan={(u.plan ?? "free") as Plan} />
-                      {u.is_admin && <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: "rgba(26,58,107,0.1)", color: "#1a3a6b", border: "1px solid rgba(26,58,107,0.2)", letterSpacing: "0.06em", textTransform: "uppercase" }}>ADMIN</span>}
-                      {u.auto_bump && <span style={{ fontSize: "9px", fontWeight: 700, color: "#006847" }}>⚡ auto-bump</span>}
-                    </div>
-
-                    <div className="text-xs text-[var(--text-muted)] mt-2">
-                      user: {u.id}
-                    </div>
-
-                    {u.created_at && (
-                      <div className="text-xs text-[var(--text-muted)]">
-                        {new Date(u.created_at).toLocaleString()}
+                <div key={u.id} className="card-static" style={{ padding: "18px 20px" }}>
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          fontFamily: "var(--font-syne), sans-serif",
+                          fontSize: "24px",
+                          fontWeight: 800,
+                          lineHeight: 1.05,
+                          color: "var(--text-primary)",
+                          letterSpacing: "-0.03em",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {u.full_name || "-"}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="flex flex-col gap-2 md:min-w-[260px]">
-                    <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-                      {(["free", "premium", "unlimited"] as Plan[]).map(plan => (
-                        <button key={plan} onClick={() => updatePlan(u.id, plan)}
-                          disabled={u.plan === plan || (!u.plan && plan === "free")}
-                          style={{
-                            padding: "6px 12px", fontSize: "11px", fontWeight: 700,
-                            border: `1px solid \${(u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#e8edf5"}`,
-                            borderRadius: "5px",
-                            background: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].bg : "transparent",
-                            color: (u.plan ?? "free") === plan ? PLAN_CONFIG[plan].color : "#94a3b8",
-                            cursor: (u.plan ?? "free") === plan ? "default" : "pointer",
-                            textTransform: "uppercase" as const, letterSpacing: "0.04em",
-                          }}>
-                          {PLAN_CONFIG[plan].badge} {plan === "free" ? "Free" : plan === "premium" ? "Premium" : "Unlimited"}
-                        </button>
-                      ))}
+                      <div className="text-sm text-[var(--text-secondary)]">{u.email || "-"}</div>
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {u.phone || "-"} · {u.country || "-"}
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                          marginTop: "10px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <PlanBadge plan={(u.plan ?? "free") as Plan} />
+                        {u.is_admin ? <StatusBadge kind="highlight" text="Admin" /> : null}
+                        {u.auto_bump ? <StatusBadge kind="success" text="Auto-bump" /> : null}
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "16px",
+                          flexWrap: "wrap",
+                          marginTop: "10px",
+                          fontSize: "12px",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        <span>user: {u.id}</span>
+                        <span>{fmtDate(u.created_at)}</span>
+                      </div>
                     </div>
-                    <button onClick={() => toggleAdmin(u.id, !!u.is_admin)}
-                      style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: `1px solid \${u.is_admin ? "#e63946" : "#e8edf5"}`, borderRadius: "5px", background: u.is_admin ? "rgba(230,57,70,0.07)" : "transparent", color: u.is_admin ? "#e63946" : "#94a3b8", cursor: "pointer", textTransform: "uppercase" as const }}>
-                      {u.is_admin ? (isHe ? "− הסר אדמין" : "− Remove admin") : (isHe ? "+ הפוך אדמין" : "+ Make admin")}
-                    </button>
+
+                    <div className="flex flex-col gap-2 md:min-w-[280px]">
+                      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                        {(["free", "premium", "unlimited"] as Plan[]).map((plan) => {
+                          const activePlan = (u.plan ?? "free") === plan;
+                          return (
+                            <button
+                              key={plan}
+                              onClick={() => updatePlan(u.id, plan)}
+                              disabled={activePlan}
+                              style={{
+                                padding: "7px 12px",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                border: `1px solid ${activePlan ? PLAN_CONFIG[plan].color : "#e8edf5"}`,
+                                borderRadius: "6px",
+                                background: activePlan ? PLAN_CONFIG[plan].bg : "transparent",
+                                color: activePlan ? PLAN_CONFIG[plan].color : "#94a3b8",
+                                cursor: activePlan ? "default" : "pointer",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.04em",
+                              }}
+                            >
+                              {PLAN_CONFIG[plan].badge}
+                              {PLAN_CONFIG[plan].badge ? " " : ""}
+                              {PLAN_CONFIG[plan].label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => toggleAdmin(u.id, !!u.is_admin)}
+                        style={{
+                          padding: "8px 12px",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          border: `1px solid ${u.is_admin ? "#e63946" : "#e8edf5"}`,
+                          borderRadius: "6px",
+                          background: u.is_admin ? "rgba(230,57,70,0.07)" : "transparent",
+                          color: u.is_admin ? "#e63946" : "#94a3b8",
+                          cursor: "pointer",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        {u.is_admin
+                          ? isHe
+                            ? "− הסר אדמין"
+                            : "− Remove admin"
+                          : isHe
+                          ? "+ הפוך אדמין"
+                          : "+ Make admin"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
