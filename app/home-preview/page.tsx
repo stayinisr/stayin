@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { useLanguage } from "../lib/LanguageContext";
+import { supabase } from "../../lib/supabase";
+import { useLanguage } from "../../lib/LanguageContext";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -283,7 +283,7 @@ export default function HomePage() {
       .from("listings")
       .select("id", { count: "exact", head: true })
       .eq("status", "active")
-      .then(({ count }) => setListingCount(count ?? null));
+      .then(({ count }: { count: number | null }) => setListingCount(count ?? null));
   }, []);
 
   return (
