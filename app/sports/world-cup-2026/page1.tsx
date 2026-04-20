@@ -81,14 +81,6 @@ function formatMatchDate(dateString: string | null | undefined) {
   return `${day}/${month}/${year}`;
 }
 
-function getTodayDateString() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 // ── Countdown hook ────────────────────────────────────────────────────────────
 function useCountdown(date: string, time: string, isHe: boolean) {
   const [left, setLeft] = useState<string | null>(null);
@@ -514,32 +506,20 @@ export default function Home() {
   async function load() {
     setLoading(true);
 
-    const today = getTodayDateString();
-    const { data: m } = await supabase
-      .from("matches")
-      .select("*")
-      .order("fifa_match_number", { ascending: true });
-
-    const matchesData = (m || []) as MatchItem[];
-    const publicMatchIds = matchesData
-      .filter((match) => match.match_date >= today)
-      .map((match) => match.id);
-
-    let listingsData: ListingItem[] = [];
-
-    if (publicMatchIds.length) {
-      const { data: l } = await supabase
+    const [{ data: m }, { data: l }] = await Promise.all([
+      supabase
+        .from("matches")
+        .select("*")
+        .order("fifa_match_number", { ascending: true }),
+      supabase
         .from("listings")
         .select("id,match_id,price,type,status,expires_at,archived_at")
         .eq("status", "active")
-        .is("archived_at", null)
-        .in("match_id", publicMatchIds);
+        .is("archived_at", null),
+    ]);
 
-      listingsData = (l || []) as ListingItem[];
-    }
-
-    setMatches(matchesData);
-    setListings(listingsData);
+    setMatches((m || []) as MatchItem[]);
+    setListings((l || []) as ListingItem[]);
     setLoading(false);
   }
 

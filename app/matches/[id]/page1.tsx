@@ -1485,6 +1485,23 @@ export default function MatchPage() {
           </span>
         </div>
 
+        <div
+          style={{
+            marginBottom: "10px",
+            fontSize: "11px",
+            color: C.muted,
+            background: "rgba(255,255,255,0.72)",
+            border: `1px solid ${C.border}`,
+            borderRadius: "8px",
+            padding: "10px 12px",
+            boxShadow: "0 1px 4px rgba(13,27,62,0.04)",
+          }}
+        >
+          {isHe
+            ? "Stayin היא פלטפורמה לחיבור בין משתמשים בלבד. האתר אינו צד לעסקה, ואינו אחראי לתוכן המודעות, למחיר, לתשלום או להעברת הכרטיסים."
+            : "Stayin is a platform that only connects users. The platform is not a party to any transaction and is not responsible for listing content, pricing, payment, or ticket transfer."}
+        </div>
+
         <div className="fsu fsu2">
           {filtered.length === 0 ? (
             <div
