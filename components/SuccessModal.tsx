@@ -5,10 +5,13 @@ import { useLanguage } from "../lib/LanguageContext";
 
 export default function SuccessModal({
   matchId,
+  redirectUrl,
 }: {
   matchId: string;
+  redirectUrl?: string;
 }) {
   const { t } = useLanguage();
+  const href = redirectUrl || `/matches/${matchId}`;
 
   return (
     <div className="modal-overlay">
@@ -22,7 +25,7 @@ export default function SuccessModal({
         </p>
 
         <div className="flex flex-col gap-3">
-          <Link href={`/matches/${matchId}`} className="primary-btn">
+          <Link href={href} className="primary-btn">
             {t.viewListing}
           </Link>
 
