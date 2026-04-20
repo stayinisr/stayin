@@ -530,7 +530,7 @@ export default function Home() {
     if (publicMatchIds.length) {
       const { data: l } = await supabase
         .from("listings")
-        .select("id,match_id,price,type,status,expires_at,archived_at")
+        .select("id,match_id,price,type,status,archived_at")
         .eq("status", "active")
         .is("archived_at", null)
         .in("match_id", publicMatchIds);
@@ -564,7 +564,7 @@ export default function Home() {
   );
 
   function isActive(l: ListingItem) {
-    return l.status === "active" && (!l.expires_at || new Date(l.expires_at) > new Date());
+    return l.status === "active";
   }
 
   const availableStages = useMemo(() => {

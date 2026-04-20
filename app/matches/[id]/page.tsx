@@ -982,8 +982,7 @@ export default function MatchPage() {
       .select("*")
       .eq("match_id", matchId)
       .eq("status", "active")
-      .is("archived_at", null)
-      .gt("expires_at", new Date().toISOString());
+      .is("archived_at", null);
 
     const ids = [...new Set((listingsData || []).map((l: any) => l.user_id))];
     const profilesMap: Record<string, ProfileItem> = {};
