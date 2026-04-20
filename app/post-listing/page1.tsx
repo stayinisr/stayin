@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../lib/supabase";
@@ -54,7 +54,7 @@ function stageLabel(stage: string | null | undefined, isHe: boolean) {
   if (stage === "Final") return "הגמר";
 
   const groupMatch = stage.match(/^Group\s+([A-Z])$/i);
-  if (groupMatch) return `בית ${groupMatch[1].toUpperCase()}`;
+  if (groupMatch) return `בית \u2068${groupMatch[1].toUpperCase()}\u2069`;
 
   return stage;
 }
@@ -119,6 +119,14 @@ function TeamInline({
       <span>{label}</span>
     </span>
   );
+}
+
+function matchOptionLabel(m: MatchItem, isHe: boolean) {
+  const home = teamName(m.home_team_name, isHe);
+  const away = teamName(m.away_team_name, isHe);
+  return isHe
+    ? `משחק ${m.fifa_match_number} — ${home} / ${away}`
+    : `Match ${m.fifa_match_number} — ${home} / ${away}`;
 }
 
 function PostListingPageContent() {
@@ -366,7 +374,7 @@ function PostListingPageContent() {
     setShowSuccess(true);
   }
 
-  const card: React.CSSProperties = {
+  const card: CSSProperties = {
     background: "rgba(255,255,255,0.88)",
     border: `1px solid ${C.border}`,
     borderRadius: "10px",
@@ -375,7 +383,7 @@ function PostListingPageContent() {
     padding: "22px",
   };
 
-  const lbl: React.CSSProperties = {
+  const lbl: CSSProperties = {
     display: "block",
     fontSize: "10px",
     fontWeight: 700,
@@ -385,7 +393,7 @@ function PostListingPageContent() {
     marginBottom: "7px",
   };
 
-  const inp: React.CSSProperties = {
+  const inp: CSSProperties = {
     width: "100%",
     padding: "11px 14px",
     background: "rgba(255,255,255,0.9)",
@@ -534,6 +542,7 @@ function PostListingPageContent() {
               <div>
                 <label style={lbl}>{t.match}</label>
                 <select
+                  dir={isHe ? "rtl" : "ltr"}
                   value={matchId}
                   onChange={(e) => setMatchId(e.target.value)}
                   disabled={loadingM}
@@ -542,8 +551,7 @@ function PostListingPageContent() {
                   <option value="">{loadingM ? t.loading : t.selectMatch}</option>
                   {matches.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {isHe ? "משחק" : "Match"} {m.fifa_match_number} · {teamName(m.home_team_name, isHe)} {isHe ? "נגד" : "vs"}{" "}
-                      {teamName(m.away_team_name, isHe)} · {m.city}
+                      {matchOptionLabel(m, isHe)}
                     </option>
                   ))}
                 </select>

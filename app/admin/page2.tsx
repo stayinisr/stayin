@@ -291,23 +291,6 @@ export default function AdminPage() {
     if (!error) await loadData();
   }
 
-  async function reactivateListing(id: string) {
-    const confirmReactivate = confirm(isHe ? "להפעיל מחדש את המודעה?" : "Reactivate this listing?");
-    if (!confirmReactivate) return;
-
-    const { error } = await supabase
-      .from("listings")
-      .update({ status: "active", archived_at: null })
-      .eq("id", id);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    await loadData();
-  }
-
   const listingsById = useMemo(() => {
     return Object.fromEntries(listings.map((l) => [l.id, l]));
   }, [listings]);
@@ -620,26 +603,6 @@ export default function AdminPage() {
                           <Link href={`/matches/${l.match_id}`} className="secondary-btn text-center">
                             {isHe ? "צפייה במודעה" : "View listing"}
                           </Link>
-                        )}
-
-                        {l.archived_at && (
-                          <button
-                            onClick={() => reactivateListing(l.id)}
-                            style={{
-                              padding: "8px 12px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              border: "1px solid rgba(34,197,94,0.4)",
-                              borderRadius: "6px",
-                              background: "rgba(34,197,94,0.08)",
-                              color: "#15803d",
-                              cursor: "pointer",
-                              textTransform: "uppercase",
-                              letterSpacing: "0.04em",
-                            }}
-                          >
-                            {isHe ? "♻ הפעל מחדש" : "♻ Reactivate"}
-                          </button>
                         )}
 
                         <button onClick={() => deleteListing(l.id)} className="danger-btn">

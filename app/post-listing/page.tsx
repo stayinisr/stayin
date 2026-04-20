@@ -275,8 +275,10 @@ function PostListingPageContent() {
     }
 
     const userPlan = (profile.plan as string) ?? (profile.is_premium ? "premium" : "free");
-    const validityDays = userPlan === "free" ? 7 : 14;
-    const exp = new Date(Date.now() + validityDays * 86400000).toISOString();
+    const matchForExpiry = matches.find((m) => m.id === matchId);
+    const exp = matchForExpiry?.match_date
+      ? new Date(matchForExpiry.match_date + "T23:59:59").toISOString()
+      : new Date(Date.now() + 7 * 86400000).toISOString();
 
     const payload: Record<string, any> = {
       type,
@@ -931,8 +933,8 @@ function PostListingPageContent() {
             >
               <p style={{ fontSize: "11px", color: C.muted, lineHeight: 1.7 }}>
                 {isHe
-                  ? "המודעה תהיה פעילה 7 ימים. תוכל לחדש, לערוך או למחוק אותה בכל עת מהאזור האישי."
-                  : "Your listing stays live for 7 days. You can renew, edit or delete it anytime from My Listings."}
+                  ? "המודעה תהיה פעילה עד לאחר המשחק. תוכל לערוך או למחוק אותה בכל עת מהאזור האישי."
+                  : "Your listing stays live until after the match. You can edit or delete it anytime from My Listings."}
               </p>
             </div>
           </div>
