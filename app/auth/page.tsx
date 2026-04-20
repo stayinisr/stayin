@@ -42,6 +42,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [legalError, setLegalError] = useState(false);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -58,9 +59,15 @@ export default function AuthPage() {
 
   async function sendCode() {
     if (mode === "signup" && !acceptedLegal) {
-      toast.error(isHe ? "יש לאשר את תנאי השימוש ומדיניות הפרטיות" : "Please accept the Terms of Use and Privacy Policy");
+      setLegalError(true);
+      toast.error(
+        isHe
+          ? "יש לאשר את תנאי השימוש ומדיניות הפרטיות כדי להירשם"
+          : "Please accept the Terms of Use and Privacy Policy to sign up"
+      );
       return;
     }
+    setLegalError(false);
     if (!email.trim()) {
       toast.error(isHe ? "יש להזין אימייל" : "Enter your email");
       return;
@@ -170,6 +177,7 @@ export default function AuthPage() {
     setStep("email");
     setDigits(Array(OTP_LENGTH).fill(""));
     setSecondsLeft(0);
+    setLegalError(false);
     if (m) setMode(m);
   }
 
@@ -367,7 +375,10 @@ export default function AuthPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (legalError) setLegalError(false);
+                }}
                 disabled={step === "otp"}
                 placeholder="you@example.com"
                 dir="ltr"
@@ -386,53 +397,80 @@ export default function AuthPage() {
 
             {step === "email" && (
               <>
-                <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "11px", color: C.muted, lineHeight: 1.7 }}>
-                  <input
-                    type="checkbox"
-                    checked={acceptedLegal}
-                    onChange={(e) => setAcceptedLegal(e.target.checked)}
-                    style={{ marginTop: "3px" }}
-                  />
-                  <span>
-                    {isHe ? "אני מאשר/ת את " : "I agree to the "}
-                    <Link href="/terms-of-use" style={{ color: C.usa, fontWeight: 700 }}>
-                      {isHe ? "תנאי השימוש" : "Terms of Use"}
-                    </Link>
-                    {isHe ? " ואת " : " and the "}
-                    <Link href="/privacy-policy" style={{ color: C.usa, fontWeight: 700 }}>
-                      {isHe ? "מדיניות הפרטיות" : "Privacy Policy"}
-                    </Link>
-                  </span>
-                </label>
-              <button
-                onClick={sendCode}
-                disabled={loading || (mode === "signup" && !acceptedLegal)}
-                style={{
-                  padding: "12px",
-                  background: C.usa,
-                  color: "#fff",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  opacity: loading ? 0.7 : 1,
-                  letterSpacing: "0.02em",
-                  boxShadow: "0 8px 20px rgba(26,58,107,0.18)",
-                }}
-              >
-                {loading
-                  ? isHe
-                    ? "שולח..."
-                    : "Sending..."
-                  : mode === "login"
-                  ? isHe
-                    ? "שלח קוד התחברות"
-                    : "Send login code"
-                  : isHe
-                  ? "הירשם בחינם"
-                  : "Sign up free"}
-              </button>
+                {mode === "signup" && (
+                  <div>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "10px",
+                        fontSize: "11px",
+                        color: legalError ? "#b42318" : C.muted,
+                        lineHeight: 1.7,
+                        padding: "10px 12px",
+                        border: `1px solid ${legalError ? "#fda29b" : C.border}`,
+                        borderRadius: "10px",
+                        background: legalError ? "#fff5f4" : "rgba(255,255,255,0.72)",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={acceptedLegal}
+                        onChange={(e) => {
+                          setAcceptedLegal(e.target.checked);
+                          if (e.target.checked) setLegalError(false);
+                        }}
+                        style={{ marginTop: "3px" }}
+                      />
+                      <span>
+                        {isHe ? "אני מאשר/ת את " : "I agree to the "}
+                        <Link href="/terms-of-use" style={{ color: C.usa, fontWeight: 700 }}>
+                          {isHe ? "תנאי השימוש" : "Terms of Use"}
+                        </Link>
+                        {isHe ? " ואת " : " and the "}
+                        <Link href="/privacy-policy" style={{ color: C.usa, fontWeight: 700 }}>
+                          {isHe ? "מדיניות הפרטיות" : "Privacy Policy"}
+                        </Link>
+                      </span>
+                    </label>
+                    {legalError && (
+                      <p style={{ marginTop: "7px", fontSize: "11px", color: "#b42318" }}>
+                        {isHe
+                          ? "יש לאשר את תנאי השימוש ומדיניות הפרטיות כדי להירשם"
+                          : "Please accept the Terms of Use and Privacy Policy to sign up"}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={sendCode}
+                  disabled={loading}
+                  style={{
+                    padding: "12px",
+                    background: C.usa,
+                    color: "#fff",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.7 : 1,
+                    letterSpacing: "0.02em",
+                    boxShadow: "0 8px 20px rgba(26,58,107,0.18)",
+                  }}
+                >
+                  {loading
+                    ? isHe
+                      ? "שולח..."
+                      : "Sending..."
+                    : mode === "login"
+                    ? isHe
+                      ? "שלח קוד התחברות"
+                      : "Send login code"
+                    : isHe
+                    ? "הירשם בחינם"
+                    : "Sign up free"}
+                </button>
               </>
             )}
 

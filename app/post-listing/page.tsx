@@ -144,7 +144,6 @@ function PostListingPageContent() {
   const [loadingM, setLoadingM] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [acceptedListingTerms, setAcceptedListingTerms] = useState(false);
 
   const [type, setType] = useState(preType);
   const [matchId, setMatchId] = useState(preMatchId);
@@ -156,6 +155,8 @@ function PostListingPageContent() {
   const [seatsBlock, setSeatsBlock] = useState("");
   const [seatsRow, setSeatsRow] = useState("");
   const [seatsNums, setSeatsNums] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showTermsError, setShowTermsError] = useState(false);
 
   useEffect(() => {
     fetchMatches();
@@ -225,10 +226,16 @@ function PostListingPageContent() {
   );
 
   async function handleSubmit() {
-    if (!acceptedListingTerms) {
-      toast.error(isHe ? "יש לאשר את תנאי הפרסום לפני המשך" : "Please accept the listing terms before continuing");
+    if (!acceptedTerms) {
+      setShowTermsError(true);
+      toast.error(
+        isHe
+          ? "יש לאשר את התנאים כדי לפרסם מודעה"
+          : "You must accept the terms to publish a listing"
+      );
       return;
     }
+
     if (!matchId) {
       toast.error(t.selectMatchAlert);
       return;
@@ -681,45 +688,87 @@ function PostListingPageContent() {
 
               <div
                 style={{
-                  padding: "12px 14px",
-                  background: "rgba(26,58,107,0.04)",
-                  border: `1px solid ${C.border}`,
+                  border: `1px solid ${showTermsError ? "#ef4444" : C.border}`,
                   borderRadius: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
+                  background: showTermsError ? "rgba(239,68,68,0.04)" : "rgba(255,255,255,0.7)",
+                  padding: "12px 14px",
                 }}
               >
-                <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "12px", color: C.muted, lineHeight: 1.7 }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "10px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    color: showTermsError ? "#b91c1c" : C.text,
+                    lineHeight: 1.6,
+                  }}
+                >
                   <input
                     type="checkbox"
-                    checked={acceptedListingTerms}
-                    onChange={(e) => setAcceptedListingTerms(e.target.checked)}
-                    style={{ marginTop: "3px" }}
+                    checked={acceptedTerms}
+                    onChange={(e) => {
+                      setAcceptedTerms(e.target.checked);
+                      if (e.target.checked) setShowTermsError(false);
+                    }}
+                    style={{
+                      marginTop: "2px",
+                      accentColor: showTermsError ? "#ef4444" : C.usa,
+                      width: "16px",
+                      height: "16px",
+                      flexShrink: 0,
+                    }}
                   />
                   <span>
-                    {isHe
-                      ? "אני מאשר/ת שהמידע, המחיר והחוקיות של המודעה הם באחריותי בלבד, וש-Stayin אינו צד לעסקה."
-                      : "I confirm that the listing information, price, and legality are solely my responsibility, and that Stayin is not a party to the transaction."}
+                    {isHe ? (
+                      <>
+                        אני מאשר/ת את{" "}
+                        <Link href="/terms-of-use" style={{ textDecoration: "underline" }}>
+                          תנאי השימוש
+                        </Link>{" "}
+                        ואת{" "}
+                        <Link href="/privacy-policy" style={{ textDecoration: "underline" }}>
+                          מדיניות הפרטיות
+                        </Link>
+                        , ומבין/ה שהאתר אינו צד לעסקה והאחריות על המחיר, תוכן המודעה וחוקיותה היא על המפרסם בלבד.
+                      </>
+                    ) : (
+                      <>
+                        I agree to the{" "}
+                        <Link href="/terms-of-use" style={{ textDecoration: "underline" }}>
+                          Terms of Use
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy-policy" style={{ textDecoration: "underline" }}>
+                          Privacy Policy
+                        </Link>
+                        , and understand that the platform is not a party to the transaction and that responsibility for the listing content, price, and legality rests solely with the publisher.
+                      </>
+                    )}
                   </span>
                 </label>
-                <p style={{ fontSize: "11px", color: C.hint, margin: 0 }}>
-                  {isHe ? "בהמשך הפרסום אתה מסכים גם ל" : "By publishing, you also agree to the "}
-                  <Link href="/terms-of-use" style={{ color: C.usa, fontWeight: 700 }}>
-                    {isHe ? "תנאי השימוש" : "Terms of Use"}
-                  </Link>
-                  {isHe ? " ול" : " and "}
-                  <Link href="/privacy-policy" style={{ color: C.usa, fontWeight: 700 }}>
-                    {isHe ? "מדיניות הפרטיות" : "Privacy Policy"}
-                  </Link>
-                  .
-                </p>
+
+                {showTermsError ? (
+                  <p
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#b91c1c",
+                    }}
+                  >
+                    {isHe
+                      ? "כדי לפרסם מודעה צריך לאשר את תנאי השימוש."
+                      : "You must accept the Terms of Use before publishing a listing."}
+                  </p>
+                ) : null}
               </div>
 
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={submitting || !acceptedListingTerms}
+                disabled={submitting}
                 style={{
                   padding: "13px",
                   background: C.usa,
@@ -728,8 +777,8 @@ function PostListingPageContent() {
                   fontWeight: 700,
                   border: "none",
                   borderRadius: "6px",
-                  cursor: submitting || !acceptedListingTerms ? "not-allowed" : "pointer",
-                  opacity: submitting || !acceptedListingTerms ? 0.7 : 1,
+                  cursor: submitting ? "not-allowed" : "pointer",
+                  opacity: submitting ? 0.7 : 1,
                   letterSpacing: "0.02em",
                 }}
               >

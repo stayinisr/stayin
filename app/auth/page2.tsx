@@ -41,6 +41,7 @@ export default function AuthPage() {
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -56,6 +57,10 @@ export default function AuthPage() {
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   async function sendCode() {
+    if (mode === "signup" && !acceptedLegal) {
+      toast.error(isHe ? "יש לאשר את תנאי השימוש ומדיניות הפרטיות" : "Please accept the Terms of Use and Privacy Policy");
+      return;
+    }
     if (!email.trim()) {
       toast.error(isHe ? "יש להזין אימייל" : "Enter your email");
       return;
@@ -380,9 +385,28 @@ export default function AuthPage() {
             </div>
 
             {step === "email" && (
+              <>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "11px", color: C.muted, lineHeight: 1.7 }}>
+                  <input
+                    type="checkbox"
+                    checked={acceptedLegal}
+                    onChange={(e) => setAcceptedLegal(e.target.checked)}
+                    style={{ marginTop: "3px" }}
+                  />
+                  <span>
+                    {isHe ? "אני מאשר/ת את " : "I agree to the "}
+                    <Link href="/terms-of-use" style={{ color: C.usa, fontWeight: 700 }}>
+                      {isHe ? "תנאי השימוש" : "Terms of Use"}
+                    </Link>
+                    {isHe ? " ואת " : " and the "}
+                    <Link href="/privacy-policy" style={{ color: C.usa, fontWeight: 700 }}>
+                      {isHe ? "מדיניות הפרטיות" : "Privacy Policy"}
+                    </Link>
+                  </span>
+                </label>
               <button
                 onClick={sendCode}
-                disabled={loading}
+                disabled={loading || (mode === "signup" && !acceptedLegal)}
                 style={{
                   padding: "12px",
                   background: C.usa,
@@ -409,6 +433,7 @@ export default function AuthPage() {
                   ? "הירשם בחינם"
                   : "Sign up free"}
               </button>
+              </>
             )}
 
             {step === "otp" && (
