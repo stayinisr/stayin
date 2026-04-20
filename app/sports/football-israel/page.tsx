@@ -55,23 +55,22 @@ const C = {
 
 const ACCENTS = [C.blue, C.green, C.teal];
 
-// ── Team colors (for accent line cycling fallback) ────────────────────────────
 const TEAM_COLORS: Record<string, string> = {
-  "מכבי תל אביב":        "#FDE400",
-  "מכבי חיפה":           "#007B40",
-  "הפועל תל אביב":       "#E63946",
-  "הפועל באר שבע":       "#C0392B",
-  'בית"ר ירושלים':       "#FFCE00",
-  "הפועל ירושלים":       "#E67E22",
-  "הפועל חיפה":          "#E63946",
-  "הפועל פתח תקוה":      "#E63946",
-  "מכבי נתניה":          "#F4C430",
-  "בני סכנין":           "#006400",
-  "מכבי בני ריינה":      "#FDE400",
-  "מ.ס. אשדוד":          "#1a3a8f",
-  "עירוני טבריה":        "#9B59B6",
-  "עירוני קריית שמונה":  "#6B2D8B",
-  "בני יהודה תל אביב":   "#E63946",
+  "מכבי תל אביב":       "#FDE400",
+  "מכבי חיפה":          "#007B40",
+  "הפועל תל אביב":      "#E63946",
+  "הפועל באר שבע":      "#C0392B",
+  'בית"ר ירושלים':      "#FFCE00",
+  "הפועל ירושלים":      "#E67E22",
+  "הפועל חיפה":         "#E63946",
+  "הפועל פתח תקוה":     "#E63946",
+  "מכבי נתניה":         "#F4C430",
+  "בני סכנין":          "#006400",
+  "מכבי בני ריינה":     "#FDE400",
+  "מ.ס. אשדוד":         "#1a3a8f",
+  "עירוני טבריה":       "#9B59B6",
+  "עירוני קריית שמונה": "#6B2D8B",
+  "בני יהודה תל אביב":  "#E63946",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -107,100 +106,62 @@ function useCountdown(date: string, time: string | null, isHe: boolean) {
   return left;
 }
 
-// ── Team Logo ─────────────────────────────────────────────────────────────────
 function TeamLogo({ name, size = 24 }: { name: string; size?: number }) {
   const [err, setErr] = useState(false);
   const src = getTeamLogo(name);
   const color = TEAM_COLORS[name] ?? C.hint;
-
   if (err || !src) {
-    // fallback: colored circle with initials
     return (
-      <span style={{
-        width: size, height: size, borderRadius: "50%", flexShrink: 0,
-        background: `${color}22`, border: `1.5px solid ${color}55`,
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.35, fontWeight: 800, color,
-        fontFamily: "var(--font-syne,'Syne',sans-serif)",
-      }}>
+      <span style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: `${color}22`, border: `1.5px solid ${color}55`, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.35, fontWeight: 800, color, fontFamily: "var(--font-syne,'Syne',sans-serif)" }}>
         {name.slice(0, 1)}
       </span>
     );
   }
-
-  return (
-    <Image
-      src={src}
-      alt={name}
-      width={size}
-      height={size}
-      style={{ objectFit: "contain", flexShrink: 0 }}
-      onError={() => setErr(true)}
-    />
-  );
+  return <Image src={src} alt={name} width={size} height={size} style={{ objectFit: "contain", flexShrink: 0 }} onError={() => setErr(true)} />;
 }
 
 // ── Match Card ────────────────────────────────────────────────────────────────
-function MatchCard({
-  match, idx, sell, buy, priceRange, hot, saved, onSave, isHe,
-}: {
+function MatchCard({ match, idx, sell, buy, priceRange, hot, saved, onSave, isHe }: {
   match: ILMatch; idx: number; sell: number; buy: number;
-  priceRange: string | null; hot: boolean;
-  saved: boolean; onSave: (id: string) => void; isHe: boolean;
+  priceRange: string | null; hot: boolean; saved: boolean;
+  onSave: (id: string) => void; isHe: boolean;
 }) {
-  const accent = ACCENTS[idx % 3];
+  const accent   = ACCENTS[idx % 3];
   const countdown = useCountdown(match.match_date, match.match_time, isHe);
   const [hov, setHov] = useState(false);
-  const isCup      = match.competition === "state_cup";
-  const isFinished = match.status === "finished";
+  const isCup = match.competition === "state_cup";
 
   return (
     <div
-      style={{
-        background: hov ? "rgba(248,249,252,0.9)" : "rgba(255,255,255,0.75)",
-        transition: "background 120ms",
-        position: "relative",
-        opacity: isFinished ? 0.6 : 1,
-      }}
+      style={{ background: hov ? "rgba(248,249,252,0.9)" : "rgba(255,255,255,0.75)", transition: "background 120ms", position: "relative" }}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
     >
-      {/* Top accent */}
       <div style={{ height: "2px", background: accent }} />
-
       <div style={{ padding: "20px" }}>
-        {/* Row 1: round + badges + save */}
+
+        {/* Row 1: badges + save */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" as const }}>
             <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.faint }}>
               {isHe ? match.round : match.round_en}
             </span>
-
             {isCup && (
               <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, padding: "2px 7px", borderRadius: "3px", background: "rgba(212,160,23,0.1)", color: "#b8860b", border: "1px solid rgba(212,160,23,0.25)" }}>
                 {isHe ? "גביע" : "Cup"}
               </span>
             )}
-
-            {isFinished && (
-              <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, padding: "2px 7px", borderRadius: "3px", background: "rgba(148,163,184,0.12)", color: C.hint, border: `1px solid ${C.faint}` }}>
-                {isHe ? "הסתיים" : "Finished"}
-              </span>
-            )}
-
-            {hot && !isFinished && (
+            {hot && (
               <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, padding: "2px 7px", borderRadius: "3px", background: "rgba(230,57,70,0.08)", color: C.red, border: "1px solid rgba(230,57,70,0.2)" }}>
                 🔥 {isHe ? "חם" : "Hot"}
               </span>
             )}
-
-            {countdown && !isFinished && (
+            {countdown && (
               <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px", background: "rgba(26,58,143,0.07)", color: C.blue, border: "1px solid rgba(26,58,143,0.15)" }}>
                 {countdown}
               </span>
             )}
           </div>
-
           <button
             onClick={(e) => { e.preventDefault(); onSave(match.id); }}
             style={{ width: "26px", height: "26px", border: `1px solid ${saved ? "rgba(230,57,70,0.35)" : C.border}`, borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: saved ? C.red : C.faint, background: saved ? "rgba(230,57,70,0.06)" : "transparent", cursor: "pointer", transition: "all 150ms", flexShrink: 0 }}
@@ -209,48 +170,31 @@ function MatchCard({
           </button>
         </div>
 
-        {/* Row 2: teams with logos */}
+        {/* Row 2: teams */}
         <Link href={`/sports/football-israel/${match.id}`} style={{ textDecoration: "none", display: "block", marginBottom: "7px" }}>
           <div style={{ fontFamily: "var(--font-dm,'DM Sans',sans-serif)", fontSize: "15px", fontWeight: 600, letterSpacing: "-0.1px", color: C.text, lineHeight: 1.4 }}>
-
-            {/* Home team */}
             <span style={{ display: "inline-flex", alignItems: "center", gap: "7px" }}>
               <TeamLogo name={match.home_team} size={20} />
               {isHe ? match.home_team : match.home_team_en}
             </span>
-
             <br />
-            <span style={{ color: C.hint, fontWeight: 400, fontSize: "12px" }}>
-              {isHe ? "נגד " : "vs "}
-            </span>
-
-            {/* Away team */}
+            <span style={{ color: C.hint, fontWeight: 400, fontSize: "12px" }}>{isHe ? "נגד " : "vs "}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "7px" }}>
               <TeamLogo name={match.away_team} size={20} />
               {isHe ? match.away_team : match.away_team_en}
             </span>
-
           </div>
         </Link>
 
         {/* Row 3: meta */}
         <div style={{ fontSize: "10px", color: C.hint, letterSpacing: "0.03em", marginBottom: "16px", lineHeight: 1.6 }}>
-          {match.city || match.city_en
-            ? `${isHe ? (match.city ?? match.city_en) : (match.city_en ?? match.city)} · `
-            : ""}
-          {match.stadium || match.stadium_en
-            ? `${isHe ? (match.stadium ?? match.stadium_en) : (match.stadium_en ?? match.stadium)} · `
-            : ""}
-          {formatDate(match.match_date)}
-          {match.match_time ? ` · ${match.match_time.slice(0, 5)}` : ""}
+          {match.city || match.city_en ? `${isHe ? (match.city ?? match.city_en) : (match.city_en ?? match.city)} · ` : ""}
+          {match.stadium || match.stadium_en ? `${isHe ? (match.stadium ?? match.stadium_en) : (match.stadium_en ?? match.stadium)} · ` : ""}
+          {formatDate(match.match_date)}{match.match_time ? ` · ${match.match_time.slice(0,5)}` : ""}
         </div>
 
         {/* Row 4: listings */}
-        {isFinished ? (
-          <div style={{ fontSize: "10px", color: C.hint, textAlign: "center" as const, padding: "8px 0" }}>
-            {isHe ? "המשחק הסתיים" : "Match finished"}
-          </div>
-        ) : sell === 0 && buy === 0 ? (
+        {sell === 0 && buy === 0 ? (
           <Link
             href={`/post-listing?matchId=${match.id}`}
             onClick={(e) => e.stopPropagation()}
@@ -311,6 +255,7 @@ export default function FootballIsraelPage() {
       supabase
         .from("israeli_matches")
         .select("*")
+        .neq("status", "finished")           // ← הסתר משחקים שהסתיימו
         .order("match_date", { ascending: true }),
       supabase
         .from("listings")
@@ -333,13 +278,11 @@ export default function FootballIsraelPage() {
     });
   }, []);
 
-  function getSell(id: string)   { return listings.filter(l => l.israeli_match_id === id && l.type === "sell" && isActiveL(l)).length; }
-  function getBuy(id: string)    { return listings.filter(l => l.israeli_match_id === id && l.type === "buy"  && isActiveL(l)).length; }
-  function isHot(id: string)     { return listings.filter(l => l.israeli_match_id === id && isActiveL(l)).length >= 5; }
+  function getSell(id: string)  { return listings.filter(l => l.israeli_match_id === id && l.type === "sell" && isActiveL(l)).length; }
+  function getBuy(id: string)   { return listings.filter(l => l.israeli_match_id === id && l.type === "buy"  && isActiveL(l)).length; }
+  function isHot(id: string)    { return listings.filter(l => l.israeli_match_id === id && isActiveL(l)).length >= 5; }
   function getPrice(id: string) {
-    const prices = listings
-      .filter(l => l.israeli_match_id === id && l.type === "sell" && isActiveL(l))
-      .map(l => Number(l.price)).filter(Boolean);
+    const prices = listings.filter(l => l.israeli_match_id === id && l.type === "sell" && isActiveL(l)).map(l => Number(l.price)).filter(Boolean);
     if (!prices.length) return null;
     const mn = Math.min(...prices), mx = Math.max(...prices);
     return mn === mx ? `₪${mn}` : `₪${mn}–₪${mx}`;
@@ -367,7 +310,7 @@ export default function FootballIsraelPage() {
   const cupCount    = matches.filter(m => m.competition === "state_cup").length;
 
   const W        = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" } as const;
-  const smallCaps = { fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint } as React.CSSProperties;
+  const smallCaps: React.CSSProperties = { fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: C.hint };
 
   return (
     <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
@@ -380,62 +323,44 @@ export default function FootballIsraelPage() {
         .il-tab.off:hover{background:rgba(26,58,143,0.05);border-color:${C.blue};color:${C.blue}}
       `}</style>
 
-      {/* 3px tri-color top bar */}
+      {/* 3px top bar */}
       <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <div style={{ borderBottom: `1px solid ${C.border}` }}>
         <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
 
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "22px", ...smallCaps }}>
             <span style={{ display: "flex", gap: "4px" }}>
-              {[C.blue, C.green, C.teal].map(c => (
-                <span key={c} style={{ width: "6px", height: "6px", borderRadius: "50%", background: c, display: "inline-block" }} />
-              ))}
+              {[C.blue, C.green, C.teal].map(c => <span key={c} style={{ width: "6px", height: "6px", borderRadius: "50%", background: c, display: "inline-block" }} />)}
             </span>
             {isHe ? "כדורגל ישראלי · ליגת העל · גביע המדינה" : "Israeli Football · Ligat Ha'Al · State Cup"}
           </div>
 
           <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(28px,5vw,42px)", fontWeight: 900, letterSpacing: "-1.5px", color: C.text, margin: "0 0 10px", lineHeight: 1 }}>
-            {isHe
-              ? <><span style={{ color: C.blue }}>כדורגל </span><span style={{ color: C.green }}>ישראלי</span></>
-              : <><span style={{ color: C.blue }}>Israeli </span><span style={{ color: C.green }}>Football</span></>}
+            {isHe ? <><span style={{ color: C.blue }}>כדורגל </span><span style={{ color: C.green }}>ישראלי</span></> : <><span style={{ color: C.blue }}>Israeli </span><span style={{ color: C.green }}>Football</span></>}
           </h1>
-
           <p style={{ fontSize: "14px", color: C.muted, margin: "0 0 28px", lineHeight: 1.6, maxWidth: "480px" }}>
-            {isHe
-              ? "כרטיסים לליגת העל וגביע המדינה — ישירות בין מוכר לקונה. אפס עמלות."
-              : "Tickets for Ligat Ha'Al and the State Cup — directly between buyer and seller. Zero fees."}
+            {isHe ? "כרטיסים לליגת העל וגביע המדינה — ישירות בין מוכר לקונה. אפס עמלות." : "Tickets for Ligat Ha'Al and the State Cup — directly between buyer and seller. Zero fees."}
           </p>
 
-          {/* Competition tabs */}
+          {/* Tabs */}
           <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
-            {([
-              ["ligat_haal", isHe ? "ליגת העל"    : "Ligat Ha'Al", ligatCount],
-              ["state_cup",  isHe ? "גביע המדינה" : "State Cup",   cupCount],
-            ] as [Competition, string, number][]).map(([id, label, count]) => (
+            {([["ligat_haal", isHe ? "ליגת העל" : "Ligat Ha'Al", ligatCount], ["state_cup", isHe ? "גביע המדינה" : "State Cup", cupCount]] as [Competition, string, number][]).map(([id, label, count]) => (
               <button key={id} className={`il-tab ${tab === id ? "on" : "off"}`} onClick={() => setTab(id)}>
-                {label}
-                <span style={{ marginInlineStart: "6px", fontSize: "9px", opacity: 0.7 }}>({loading ? "–" : count})</span>
+                {label}<span style={{ marginInlineStart: "6px", fontSize: "9px", opacity: 0.7 }}>({loading ? "–" : count})</span>
               </button>
             ))}
           </div>
 
           {/* Filters */}
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" as const, alignItems: "center" }}>
-            <input
-              value={query} onChange={e => setQuery(e.target.value)}
-              placeholder={isHe ? "חיפוש קבוצה, סיבוב..." : "Search team, round..."}
-              style={{ padding: "7px 12px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "12px", background: C.white, color: C.text, outline: "none", width: "200px", fontFamily: "inherit" }}
-            />
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder={isHe ? "חיפוש קבוצה, סיבוב..." : "Search team, round..."} style={{ padding: "7px 12px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "12px", background: C.white, color: C.text, outline: "none", width: "200px", fontFamily: "inherit" }} />
             <span style={{ fontSize: "10px", color: C.hint, fontWeight: 600 }}>₪</span>
             <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder={isHe ? "מינ׳" : "min"} style={{ width: "60px", padding: "7px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.white, color: C.text, outline: "none" }} />
             <span style={{ fontSize: "10px", color: C.faint }}>—</span>
             <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder={isHe ? "מקס׳" : "max"} style={{ width: "60px", padding: "7px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.white, color: C.text, outline: "none" }} />
-            <button
-              onClick={() => setSavedOnly(p => !p)}
-              style={{ padding: "7px 12px", border: `1px solid ${savedOnly ? "rgba(230,57,70,0.35)" : C.border}`, borderRadius: "4px", fontSize: "11px", fontWeight: 700, background: savedOnly ? "rgba(230,57,70,0.06)" : "transparent", color: savedOnly ? C.red : C.muted, cursor: "pointer", transition: "all 150ms" }}
-            >
+            <button onClick={() => setSavedOnly(p => !p)} style={{ padding: "7px 12px", border: `1px solid ${savedOnly ? "rgba(230,57,70,0.35)" : C.border}`, borderRadius: "4px", fontSize: "11px", fontWeight: 700, background: savedOnly ? "rgba(230,57,70,0.06)" : "transparent", color: savedOnly ? C.red : C.muted, cursor: "pointer", transition: "all 150ms" }}>
               {savedOnly ? "♥" : "♡"} {isHe ? "שמורים" : "Saved"}
             </button>
             <Link href={isLoggedIn ? "/post-listing" : "/auth"} style={{ marginInlineStart: "auto", padding: "7px 18px", background: C.blue, color: "#fff", fontSize: "12px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const }}>
@@ -445,13 +370,11 @@ export default function FootballIsraelPage() {
         </div>
       </div>
 
-      {/* ── GRID ── */}
+      {/* GRID */}
       <div style={{ ...W, marginTop: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
           <span style={smallCaps}>{isHe ? "משחקים" : "Matches"}</span>
-          <span style={{ fontSize: "11px", color: C.blue, fontWeight: 600 }}>
-            {activeCount} {isHe ? "מודעות פעילות" : "active listings"} ●
-          </span>
+          <span style={{ fontSize: "11px", color: C.blue, fontWeight: 600 }}>{activeCount} {isHe ? "מודעות פעילות" : "active listings"} ●</span>
         </div>
       </div>
 
@@ -460,7 +383,7 @@ export default function FootballIsraelPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
             {[1,2,3,4].map(i => (
               <div key={i} style={{ background: C.white, padding: "20px" }}>
-                <div style={{ height: "2px", background: ACCENTS[(i-1) % 3], marginBottom: "16px", marginInline: "-20px", marginTop: "-20px" }} />
+                <div style={{ height: "2px", background: ACCENTS[(i-1)%3], marginBottom: "16px", marginInline: "-20px", marginTop: "-20px" }} />
                 {[60,120,90,50].map((w,j) => <div key={j} className="sk" style={{ height: "12px", width: `${w}%`, marginBottom: "12px" }} />)}
               </div>
             ))}
@@ -469,37 +392,28 @@ export default function FootballIsraelPage() {
           <div style={{ padding: "60px 24px", textAlign: "center" as const, background: C.white, border: `1px solid ${C.border}`, borderRadius: "6px" }}>
             <div style={{ fontSize: "28px", marginBottom: "12px" }}>{savedOnly ? "♡" : "⚽"}</div>
             <p style={{ fontSize: "14px", color: C.muted, marginBottom: "4px" }}>
-              {savedOnly ? (isHe ? "אין משחקים שמורים עדיין" : "No saved matches yet") : (isHe ? "לא נמצאו משחקים" : "No matches found")}
+              {savedOnly ? (isHe ? "אין משחקים שמורים" : "No saved matches") : (isHe ? "לא נמצאו משחקים" : "No matches found")}
             </p>
             <p style={{ fontSize: "12px", color: C.hint }}>
-              {savedOnly ? (isHe ? "לחץ על ♡ בכרטיס להוסיף" : "Tap ♡ on any card") : (isHe ? "נסה לשנות את הפילטרים" : "Try changing the filters")}
+              {savedOnly ? (isHe ? "לחץ על ♡ בכרטיס" : "Tap ♡ on any card") : (isHe ? "נסה לשנות פילטרים" : "Try changing filters")}
             </p>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
             {filtered.map((match, i) => (
-              <MatchCard
-                key={match.id} match={match} idx={i}
-                sell={getSell(match.id)} buy={getBuy(match.id)}
-                priceRange={getPrice(match.id)} hot={isHot(match.id)}
-                saved={saved.has(match.id)} onSave={toggleSave} isHe={isHe}
-              />
+              <MatchCard key={match.id} match={match} idx={i} sell={getSell(match.id)} buy={getBuy(match.id)} priceRange={getPrice(match.id)} hot={isHot(match.id)} saved={saved.has(match.id)} onSave={toggleSave} isHe={isHe} />
             ))}
           </div>
         )}
       </div>
 
-      {/* ── INFO STRIP ── */}
+      {/* INFO STRIP */}
       <div style={{ ...W, marginTop: "28px" }}>
         <div style={{ borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
           <div style={{ background: C.blue, padding: "16px 22px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "13px", fontWeight: 700, color: "#fff" }}>
-                {isHe ? "כדורגל ישראלי" : "Israeli Football"}
-              </div>
-              <div style={{ fontSize: "11px", color: "rgba(255,255,255,.5)", marginTop: "2px", fontWeight: 300 }}>
-                {isHe ? "ליגת העל + גביע המדינה · עונת 2025–26" : "Ligat Ha'Al + State Cup · Season 2025–26"}
-              </div>
+              <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "13px", fontWeight: 700, color: "#fff" }}>{isHe ? "כדורגל ישראלי" : "Israeli Football"}</div>
+              <div style={{ fontSize: "11px", color: "rgba(255,255,255,.5)", marginTop: "2px", fontWeight: 300 }}>{isHe ? "ליגת העל + גביע המדינה · עונת 2025–26" : "Ligat Ha'Al + State Cup · Season 2025–26"}</div>
             </div>
             <div style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(255,255,255,.12)", padding: "5px 12px", borderRadius: "3px", border: "1px solid rgba(255,255,255,.15)", whiteSpace: "nowrap" as const }}>
               {isHe ? "אוג׳ 2025 – מאי 2026" : "Aug 2025 – May 2026"}
@@ -507,9 +421,9 @@ export default function FootballIsraelPage() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border }}>
             {[
-              { dot: C.blue,    name: isHe ? "ליגת העל"      : "Ligat Ha'Al", n: isHe ? `${ligatCount} משחקים` : `${ligatCount} matches`  },
-              { dot: "#b8860b", name: isHe ? "גביע המדינה"   : "State Cup",   n: isHe ? `${cupCount} משחקים`   : `${cupCount} matches`    },
-              { dot: C.teal,    name: isHe ? "מודעות פעילות" : "Listings",    n: isHe ? `${activeCount} פעילות` : `${activeCount} active`  },
+              { dot: C.blue,    name: isHe ? "ליגת העל"      : "Ligat Ha'Al", n: isHe ? `${ligatCount} משחקים` : `${ligatCount} matches` },
+              { dot: "#b8860b", name: isHe ? "גביע המדינה"   : "State Cup",   n: isHe ? `${cupCount} משחקים`   : `${cupCount} matches`  },
+              { dot: C.teal,    name: isHe ? "מודעות פעילות" : "Listings",    n: isHe ? `${activeCount} פעילות` : `${activeCount} active` },
             ].map(c => (
               <div key={c.name} style={{ background: "rgba(255,255,255,0.8)", padding: "12px 18px", display: "flex", alignItems: "center", gap: "10px" }}>
                 <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: c.dot, flexShrink: 0, display: "inline-block" }} />
@@ -523,7 +437,7 @@ export default function FootballIsraelPage() {
         </div>
       </div>
 
-      {/* ── CTA ── */}
+      {/* CTA */}
       <div style={{ ...W, marginTop: "20px", paddingBottom: "52px" }}>
         <div style={{ padding: "24px", border: `1px solid ${C.border}`, borderRadius: "6px", background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" as const }}>
           <div>
@@ -534,9 +448,7 @@ export default function FootballIsraelPage() {
               {isHe ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ." : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp."}
             </div>
           </div>
-          <Link
-            href={isLoggedIn ? "/post-listing" : "/auth"}
-            style={{ padding: "12px 26px", background: C.blue, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+          <Link href={isLoggedIn ? "/post-listing" : "/auth"} style={{ padding: "12px 26px", background: C.blue, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0 }}
             onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
           >
