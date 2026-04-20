@@ -144,6 +144,7 @@ function PostListingPageContent() {
   const [loadingM, setLoadingM] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [acceptedListingTerms, setAcceptedListingTerms] = useState(false);
 
   const [type, setType] = useState(preType);
   const [matchId, setMatchId] = useState(preMatchId);
@@ -224,6 +225,10 @@ function PostListingPageContent() {
   );
 
   async function handleSubmit() {
+    if (!acceptedListingTerms) {
+      toast.error(isHe ? "יש לאשר את תנאי הפרסום לפני המשך" : "Please accept the listing terms before continuing");
+      return;
+    }
     if (!matchId) {
       toast.error(t.selectMatchAlert);
       return;
@@ -674,10 +679,47 @@ function PostListingPageContent() {
                 </p>
               </div>
 
+              <div
+                style={{
+                  padding: "12px 14px",
+                  background: "rgba(26,58,107,0.04)",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "12px", color: C.muted, lineHeight: 1.7 }}>
+                  <input
+                    type="checkbox"
+                    checked={acceptedListingTerms}
+                    onChange={(e) => setAcceptedListingTerms(e.target.checked)}
+                    style={{ marginTop: "3px" }}
+                  />
+                  <span>
+                    {isHe
+                      ? "אני מאשר/ת שהמידע, המחיר והחוקיות של המודעה הם באחריותי בלבד, וש-Stayin אינו צד לעסקה."
+                      : "I confirm that the listing information, price, and legality are solely my responsibility, and that Stayin is not a party to the transaction."}
+                  </span>
+                </label>
+                <p style={{ fontSize: "11px", color: C.hint, margin: 0 }}>
+                  {isHe ? "בהמשך הפרסום אתה מסכים גם ל" : "By publishing, you also agree to the "}
+                  <Link href="/terms-of-use" style={{ color: C.usa, fontWeight: 700 }}>
+                    {isHe ? "תנאי השימוש" : "Terms of Use"}
+                  </Link>
+                  {isHe ? " ול" : " and "}
+                  <Link href="/privacy-policy" style={{ color: C.usa, fontWeight: 700 }}>
+                    {isHe ? "מדיניות הפרטיות" : "Privacy Policy"}
+                  </Link>
+                  .
+                </p>
+              </div>
+
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || !acceptedListingTerms}
                 style={{
                   padding: "13px",
                   background: C.usa,
@@ -686,8 +728,8 @@ function PostListingPageContent() {
                   fontWeight: 700,
                   border: "none",
                   borderRadius: "6px",
-                  cursor: submitting ? "not-allowed" : "pointer",
-                  opacity: submitting ? 0.7 : 1,
+                  cursor: submitting || !acceptedListingTerms ? "not-allowed" : "pointer",
+                  opacity: submitting || !acceptedListingTerms ? 0.7 : 1,
                   letterSpacing: "0.02em",
                 }}
               >

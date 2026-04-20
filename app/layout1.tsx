@@ -1,7 +1,6 @@
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import ToastProvider from "../components/ToastProvider";
-import SiteFooter from "../components/SiteFooter";
 import { LanguageProvider } from "../lib/LanguageContext";
 import { Heebo, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
 import type { Metadata } from "next";
@@ -45,7 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastProvider>
             <Navbar />
             {children}
-            <SiteFooter />
           </ToastProvider>
         </LanguageProvider>
       </body>
