@@ -207,87 +207,63 @@ export default function HomePage() {
 
         <Ticker isHe={isHe} />
 
-        {/* ── HERO ── */}
-        <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "44px 16px 40px" }}>
+        {/* ── HERO — colorful gradient ── */}
+        <div style={{ background: "linear-gradient(135deg,#eef2ff 0%,#fdf0f2 52%,#edfff8 100%)", padding: "72px 16px 64px", position: "relative", overflow: "hidden" }}>
+          {[
+            { w: 400, t: -120, r: -80,   c: "rgba(230,57,70,.06)"  },
+            { w: 320, b: -100, l: -60,   c: "rgba(26,58,143,.06)"  },
+            { w: 260, t: 40,   r: "30%", c: "rgba(0,104,71,.05)"   },
+          ].map((b, i) => (
+            <div key={i} style={{ position: "absolute", width: b.w, height: b.w, borderRadius: "50%", background: `radial-gradient(circle,${b.c},transparent 70%)`, top: (b as any).t, bottom: (b as any).b, left: (b as any).l, right: (b as any).r, pointerEvents: "none" as const }} />
+          ))}
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "22px", fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint }}>
-              <span style={{ display: "flex", gap: "4px" }}>
-                {[C.navy, C.red, C.teal].map(c => <span key={c} style={{ width: "6px", height: "6px", borderRadius: "50%", background: c, display: "inline-block" }} />)}
-              </span>
-              {isHe ? "מרקטפלייס הכרטיסים יד שנייה של ישראל" : "Israel's secondary ticket marketplace"}
+          <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr auto", gap: "52px", alignItems: "center", position: "relative" }} className="hero-grid">
+            <div>
+              <div className="su1" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 14px", borderRadius: 999, background: "rgba(26,58,143,.07)", border: "1px solid rgba(26,58,143,.14)", fontSize: 11, fontWeight: 700, color: C.navy, marginBottom: 22 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.navy, display: "inline-block" }} />
+                {isHe ? "מרקטפלייס הכרטיסים יד שנייה של ישראל" : "Israel's secondary ticket marketplace"}
+              </div>
+
+              {isHe ? (
+                <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
+                  כל הכרטיסים<br /><span style={{ color: C.navy }}>במקום אחד.</span>
+                </h1>
+              ) : (
+                <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
+                  ALL TICKETS<br /><span style={{ color: C.navy }}>IN ONE PLACE.</span>
+                </h1>
+              )}
+
+              <p className="su3" style={{ fontSize: "15px", fontWeight: 400, color: C.muted, lineHeight: 1.8, maxWidth: "420px", marginBottom: "28px", fontFamily: fBody(isHe) }}>
+                {isHe ? "ספורט, הופעות ופסטיבלים — הכל במקום אחד. קונים ומוכרים מתחברים ישירות. בלי עמלות, בלי תיווך." : "Sports, concerts and festivals — all in one place. Buyers and sellers connect directly. No fees, no middlemen."}
+              </p>
+
+              <div className="hero-btns su3" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
+                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 24px rgba(26,58,143,.24)", transition: "opacity 150ms" }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+                >
+                  {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
+                </Link>
+                <Link href="/sports/football-israel" style={{ padding: "12px 22px", border: "1px solid rgba(26,191,176,.3)", color: C.teal, fontSize: "13px", fontWeight: 600, borderRadius: "4px", textDecoration: "none", background: "rgba(26,191,176,.08)", transition: "all 150ms" }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.15)")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.08)")}
+                >
+                  {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
+                </Link>
+              </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "40px", alignItems: "center" }} className="hero-grid">
-              <div>
-                {/* "STAY IN THE GAME" label */}
-                <div className="su1" style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.24em", textTransform: "uppercase" as const, color: C.navy, marginBottom: "16px" }}>
-                  STAY IN THE GAME
+            {/* Value props — glass cards on gradient */}
+            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flexShrink: 0, minWidth: 220 }}>
+              {VALUE_PROPS.map((v) => (
+                <div key={v.num} style={{ padding: "18px 16px", borderRadius: 12, textAlign: "center" as const, background: "rgba(255,255,255,.72)", border: "1px solid rgba(255,255,255,.95)", backdropFilter: "blur(8px)", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: v.color }} />
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint, marginBottom: 8 }}>{v.num}</div>
+                  <div style={{ fontFamily: fSyne, fontSize: 13, fontWeight: 800, color: C.text, letterSpacing: "-0.3px", marginBottom: 4 }}>{isHe ? v.titleHe : v.titleEn}</div>
+                  <div style={{ fontSize: 10, color: C.hint, lineHeight: 1.4, fontFamily: fBody(isHe) }}>{isHe ? v.subHe : v.subEn}</div>
                 </div>
-
-                {/* H1 — matches WC exactly */}
-                {isHe ? (
-                  <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
-                    כל הכרטיסים
-                    <br />
-                    <span style={{ color: C.navy }}>במקום אחד.</span>
-                  </h1>
-                ) : (
-                  <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
-                    ALL TICKETS
-                    <br />
-                    <span style={{ color: C.navy }}>IN ONE PLACE.</span>
-                  </h1>
-                )}
-
-                <p className="su3" style={{ fontSize: "15px", fontWeight: 400, color: C.muted, lineHeight: 1.8, maxWidth: "420px", marginBottom: "28px", fontFamily: fBody(isHe) }}>
-                  {isHe
-                    ? "ספורט, הופעות ופסטיבלים — הכל במקום אחד. קונים ומוכרים מתחברים ישירות. בלי עמלות, בלי תיווך."
-                    : "Sports, concerts and festivals — all in one place. Buyers and sellers connect directly. No fees, no middlemen."}
-                </p>
-
-                <div className="hero-btns su3" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
-                  <Link href="/sports/world-cup-2026" style={{
-                    padding: "12px 24px", background: "transparent", color: C.navy,
-                    fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none",
-                    letterSpacing: "0.02em", border: `2px solid ${C.navy}`, transition: "all 150ms",
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = C.navy; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = C.navy; }}
-                  >
-                    {isHe ? "מונדיאל 2026 ↓" : "World Cup 2026 ↓"}
-                  </Link>
-                  <Link href="/sports/football-israel" style={{
-                    padding: "12px 22px", border: `1px solid ${C.border}`, color: C.muted,
-                    fontSize: "13px", fontWeight: 500, borderRadius: "4px", textDecoration: "none",
-                    background: C.white, transition: "border-color 150ms,color 150ms",
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = C.navy; (e.currentTarget as HTMLElement).style.color = C.navy; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.muted; }}
-                  >
-                    {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
-                  </Link>
-                </div>
-              </div>
-
-              {/* Value props — redesigned WC style */}
-              <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "6px", overflow: "hidden", flexShrink: 0 }}>
-                {VALUE_PROPS.map((v) => (
-                  <div key={v.num} style={{ background: C.white, padding: "20px 18px", position: "relative" }}>
-                    {/* top accent line */}
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: v.color }} />
-                    <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint, marginBottom: "10px" }}>
-                      {v.num}
-                    </div>
-                    <div style={{ fontFamily: fSyne, fontSize: "15px", fontWeight: 800, color: C.text, letterSpacing: "-0.3px", marginBottom: "6px" }}>
-                      {isHe ? v.titleHe : v.titleEn}
-                    </div>
-                    <div style={{ fontSize: "12px", color: C.muted, lineHeight: 1.6, fontFamily: fBody(isHe) }}>
-                      {isHe ? v.subHe : v.subEn}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>

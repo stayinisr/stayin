@@ -373,8 +373,8 @@ function PostListingPageContent() {
                 </select>
               </div>
 
-              {/* ── CATEGORY ── */}
-              <div>
+              {/* ── CATEGORY — WC only ── */}
+              {league === "wc" && <div>
                 <label style={lbl}>{t.category}</label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {["Category 1", "Category 2", "Category 3", "Category 4"].map((c) => (
@@ -383,7 +383,7 @@ function PostListingPageContent() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div>}
 
               {/* ── QUANTITY ── */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
