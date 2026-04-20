@@ -1,1469 +1,497 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { supabase } from "../lib/supabase";
+import { useState } from "react";
 import { useLanguage } from "../lib/LanguageContext";
-import { useToast } from "../components/ToastProvider";
-import { teamName, flagImgSrc } from "../lib/teams";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-type MatchItem = {
-  id: string;
-  fifa_match_number: number;
-  home_team_name: string | null;
-  away_team_name: string | null;
-  stage: string;
-  city: string;
-  stadium: string;
-  match_date: string;
-  match_time: string;
-};
-
-type ListingItem = {
-  id?: string;
-  match_id: string;
-  price: number;
-  type: string;
-  status?: string;
-  expires_at?: string | null;
-  archived_at?: string | null;
-};
-
-// ── WC 2026 Colors ────────────────────────────────────────────────────────────
+// ── Tokens ────────────────────────────────────────────────────────────────────
 const C = {
-  usa: "#1a3a6b",
-  canada: "#e63946",
-  mexico: "#006847",
-  bg: "#f8f9fc",
-  white: "#ffffff",
+  navy:   "#1a3a8f",
+  red:    "#e63946",
+  green:  "#006847",
+  teal:   "#1abfb0",
+  text:   "#0d1b3e",
+  muted:  "#5a6a88",
+  hint:   "#9aaac4",
   border: "#e8edf5",
-  text: "#0d1b3e",
-  muted: "#64748b",
-  hint: "#94a3b8",
-  faint: "#cbd5e1",
+  white:  "#ffffff",
 } as const;
 
-const ACCENTS = [C.usa, C.canada, C.mexico];
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function isGroupStage(stage: string) {
-  return stage?.startsWith("Group") || stage === "Group Stage";
-}
-
-function hasRealTeam(name: string | null | undefined) {
-  return !!name && name !== "TBD" && name !== "TBC";
-}
-
-function stageLabel(stage: string, isHe: boolean) {
-  if (!isHe) return stage;
-
-  if (stage === "Group Stage") return "שלב הבתים";
-  if (stage === "Round of 32") return "32 האחרונות";
-  if (stage === "Round of 16") return "16 האחרונות";
-  if (stage === "Quarter Finals") return "רבע הגמר";
-  if (stage === "Semi Finals") return "חצי הגמר";
-  if (stage === "Third Place") return "מקום שלישי";
-  if (stage === "Final") return "הגמר";
-
-  return stage;
-}
-
-function formatMatchDate(dateString: string | null | undefined) {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return dateString;
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
-
-// ── Countdown hook ────────────────────────────────────────────────────────────
-function useCountdown(date: string, time: string, isHe: boolean) {
-  const [left, setLeft] = useState<string | null>(null);
-
-  useEffect(() => {
-    const cleanTime =
-      (time || "20:00").replace(/:\d\d$/, "").slice(0, 5) || "20:00";
-    const target = new Date(`${date}T${cleanTime}:00`);
-
-    function tick() {
-      const diff = target.getTime() - Date.now();
-      if (diff <= 0) {
-        setLeft(null);
-        return;
-      }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-
-      if (isHe) {
-        setLeft(d > 0 ? `${d}י ${h}ש` : `${h}ש ${m}ד`);
-      } else {
-        setLeft(d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`);
-      }
-    }
-
-    tick();
-    const id = setInterval(tick, 60000);
-    return () => clearInterval(id);
-  }, [date, time, isHe]);
-
-  return left;
-}
-
-// ── Match Card ────────────────────────────────────────────────────────────────
-function MatchCard({
-  match,
-  idx,
-  sell,
-  buy,
-  priceRange,
-  hot,
-  saved,
-  onSave,
-  isHe,
-}: {
-  match: MatchItem;
-  idx: number;
-  sell: number;
-  buy: number;
-  priceRange: string | null;
-  hot: boolean;
-  saved: boolean;
-  onSave: (id: string) => void;
-  isHe: boolean;
-}) {
-  const accent = ACCENTS[idx % 3];
-  const countdown = useCountdown(match.match_date, match.match_time, isHe);
-  const [hov, setHov] = useState(false);
-  const showFlags = isGroupStage(match.stage);
-
-  function renderTeam(teamValue: string | null) {
-    const label = teamName(teamValue, isHe);
-    const canShowFlag = showFlags && hasRealTeam(teamValue);
-    const imgSrc = canShowFlag ? flagImgSrc(teamValue) : "";
-
-    return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "8px",
-          fontFamily: isHe
-            ? "var(--font-he,'Heebo',sans-serif)"
-            : "var(--font-dm,'DM Sans',sans-serif)",
-          fontSize: "15px",
-          fontWeight: 600,
-          letterSpacing: "-0.1px",
-          lineHeight: 1.3,
-        }}
-      >
-        {canShowFlag && imgSrc ? (
-          <span
-            style={{
-              width: "20px",
-              height: "14px",
-              borderRadius: "4px",
-              overflow: "hidden",
-              background: "#fff",
-              border: "1px solid rgba(13,27,62,0.10)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
-            }}
-          >
-            <img
-              src={imgSrc}
-              alt=""
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
-          </span>
-        ) : null}
-
-        <span>{label}</span>
-      </span>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        background: hov
-          ? "rgba(248,249,252,0.9)"
-          : "rgba(255,255,255,0.75)",
-        transition: "background 120ms",
-        position: "relative",
-      }}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-    >
-      <div style={{ height: "2px", background: accent }} />
-
-      <div style={{ padding: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "12px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              flexWrap: "wrap",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "10px",
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: C.faint,
-              }}
-            >
-              {isHe ? "משחק" : "Match"} {String(match.fifa_match_number).padStart(2, "0")}
-            </span>
-
-            {hot && (
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  padding: "2px 7px",
-                  borderRadius: "3px",
-                  background: "rgba(230,57,70,0.08)",
-                  color: C.canada,
-                  border: "1px solid rgba(230,57,70,0.2)",
-                }}
-              >
-                🔥 {isHe ? "חם" : "Hot"}
-              </span>
-            )}
-
-            {countdown && (
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  padding: "2px 7px",
-                  borderRadius: "3px",
-                  background: "rgba(26,58,107,0.07)",
-                  color: C.usa,
-                  border: "1px solid rgba(26,58,107,0.15)",
-                }}
-              >
-                {countdown}
-              </span>
-            )}
-          </div>
-
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              onSave(match.id);
-            }}
-            style={{
-              width: "26px",
-              height: "26px",
-              border: `1px solid ${
-                saved ? "rgba(230,57,70,0.35)" : C.border
-              }`,
-              borderRadius: "3px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "12px",
-              color: saved ? C.canada : C.faint,
-              background: saved ? "rgba(230,57,70,0.06)" : "transparent",
-              cursor: "pointer",
-              transition: "all 150ms",
-              flexShrink: 0,
-            }}
-          >
-            {saved ? "♥" : "♡"}
-          </button>
-        </div>
-
-        <Link
-          href={`/matches/${match.id}`}
-          style={{ textDecoration: "none", display: "block", marginBottom: "7px" }}
-        >
-          <div
-            style={{
-              fontFamily: isHe
-                ? "var(--font-he,'Heebo',sans-serif)"
-                : "var(--font-dm,'DM Sans',sans-serif)",
-              fontSize: "15px",
-              fontWeight: 600,
-              letterSpacing: "-0.1px",
-              color: C.text,
-              lineHeight: 1.3,
-            }}
-          >
-            {renderTeam(match.home_team_name)}
-            <br />
-            <span
-              style={{
-                color: C.hint,
-                fontWeight: 400,
-                fontSize: "12px",
-              }}
-            >
-              {isHe ? "נגד " : "vs "}
-            </span>
-            {renderTeam(match.away_team_name)}
-          </div>
-        </Link>
-
-        <div
-          style={{
-            fontSize: "10px",
-            color: C.hint,
-            letterSpacing: "0.03em",
-            marginBottom: "16px",
-            lineHeight: 1.6,
-          }}
-        >
-          {match.city} · {match.stadium} · {formatMatchDate(match.match_date)}
-        </div>
-
-        {sell === 0 && buy === 0 ? (
-          <Link
-            href={`/post-listing?matchId=${match.id}`}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "9px 14px",
-              border: `1px solid ${C.border}`,
-              borderRadius: "3px",
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: C.usa,
-              textDecoration: "none",
-              transition: "all 150ms",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "rgba(26,58,107,0.05)";
-              (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-              (e.currentTarget as HTMLElement).style.borderColor = C.border;
-            }}
-          >
-            + {isHe ? "היה הראשון לפרסם" : "Be first to post"}
-          </Link>
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                fontSize: "14px",
-                fontWeight: 800,
-                color: priceRange ? C.usa : C.faint,
-                letterSpacing: "-0.2px",
-              }}
-            >
-              {priceRange || "—"}
-            </span>
-
-            <div style={{ display: "flex", gap: "4px" }}>
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  padding: "2px 8px",
-                  borderRadius: "2px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                  background: "rgba(26,58,107,0.07)",
-                  color: C.usa,
-                }}
-              >
-                {sell} {isHe ? "מכירה" : "sell"}
-              </span>
-
-              <span
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 700,
-                  padding: "2px 8px",
-                  borderRadius: "2px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                  background: "#f1f5f9",
-                  color: C.hint,
-                }}
-              >
-                {buy} {isHe ? "קנייה" : "buy"}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── All stages for filter chips ───────────────────────────────────────────────
-const STAGE_ORDER = [
-  "Round of 32",
-  "Round of 16",
-  "Quarter Finals",
-  "Semi Finals",
-  "Third Place",
-  "Final",
+// ── Ticker data ───────────────────────────────────────────────────────────────
+const TICKER = [
+  { en: "2× Argentina vs France · $420",         he: "2× ארגנטינה נגד צרפת · ₪1,550" },
+  { en: "WANTED · 4× USA vs Mexico",              he: "מחפש · 4× ארה\"ב נגד מקסיקו" },
+  { en: "1× Brazil vs Spain · $310",              he: "1× ברזיל נגד ספרד · ₪1,140" },
+  { en: "3× Canada Quarter Final · $280",         he: "3× קנדה רבע גמר · ₪1,030" },
+  { en: "WANTED · 2× World Cup Final",            he: "מחפש · 2× גמר המונדיאל" },
+  { en: "1× Maccabi TA vs Hapoel · ₪180",        he: "1× מכבי ת\"א נגד הפועל · ₪180" },
+  { en: "2× Morocco vs Portugal · $260",          he: "2× מרוקו נגד פורטוגל · ₪960" },
+  { en: "WANTED · 1× Semi Final seat",            he: "מחפש · 1× מושב חצי גמר" },
+  { en: "2× Maccabi Haifa vs Beitar · ₪220",     he: "2× מכבי חיפה נגד בית\"ר · ₪220" },
 ];
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-export default function Home() {
-  const [matches, setMatches] = useState<MatchItem[]>([]);
-  const [listings, setListings] = useState<ListingItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [saved, setSaved] = useState<Set<string>>(new Set());
-  const [pulse, setPulse] = useState(false);
+// ── Bands ─────────────────────────────────────────────────────────────────────
+const BANDS = [
+  {
+    id: "wc2026",
+    en: "World Cup 2026",    he: "מונדיאל 2026",
+    subEn: "104 matches · USA, Canada & México",
+    subHe: "104 משחקים · ארה\"ב, קנדה ומקסיקו",
+    tagEn: "01 · Sports",   tagHe: "01 · ספורט",
+    ctaEn: "Browse matches", ctaHe: "לגלישה במשחקים",
+    href: "/sports/world-cup-2026",
+    img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+    accent: "rgba(230,57,70,0.32)", top: "#e63946", live: true,
+  },
+  {
+    id: "israel",
+    en: "Israeli Football",  he: "כדורגל ישראלי",
+    subEn: "Ligat Ha'Al & State Cup",
+    subHe: "ליגת העל וגביע המדינה",
+    tagEn: "02 · Sports",   tagHe: "02 · ספורט",
+    ctaEn: "Explore",        ctaHe: "לגלישה",
+    href: "/sports/football-israel",
+    img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
+    accent: "rgba(26,191,176,0.24)", top: "#1abfb0",
+  },
+  {
+    id: "concerts",
+    en: "Live Concerts",     he: "הופעות חיות",
+    subEn: "Artists, tours & big nights",
+    subHe: "אמנים, טורים ולילות גדולים",
+    tagEn: "03 · Live",     tagHe: "03 · הופעות",
+    ctaEn: "Explore",        ctaHe: "לגלישה",
+    href: "/live-shows",
+    img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
+    accent: "rgba(212,160,23,0.24)", top: "#d4a017", isNew: true,
+  },
+  {
+    id: "festivals",
+    en: "Festivals",         he: "פסטיבלים",
+    subEn: "Multi-day events & summer weekends",
+    subHe: "אירועים מרובי ימים וסופי שבוע",
+    tagEn: "04 · Live",     tagHe: "04 · הופעות",
+    ctaEn: "Notify me",      ctaHe: "עדכנו אותי",
+    href: "/live-shows",
+    img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1400&q=80",
+    accent: "rgba(26,191,176,0.2)", top: "#1abfb0", soon: true,
+  },
+  {
+    id: "basketball",
+    en: "Basketball",        he: "כדורסל",
+    subEn: "Courts, leagues & playoff nights",
+    subHe: "קורטים, ליגות ולילות פלייאוף",
+    tagEn: "05 · Sports",   tagHe: "05 · ספורט",
+    ctaEn: "Notify me",      ctaHe: "עדכנו אותי",
+    href: "/sports",
+    img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
+    accent: "rgba(212,160,23,0.2)", top: "#d4a017", soon: true,
+  },
+];
 
-  const [query, setQuery] = useState("");
-  const [activeStage, setActiveStage] = useState<string | null>(null);
-  const [savedOnly, setSavedOnly] = useState(false);
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+const VALUE_PROPS = [
+  { icon: "✓",  titleEn: "0% fees",       titleHe: "0% עמלות", subEn: "No fees for anyone",     subHe: "בלי עמלות לאף אחד" },
+  { icon: "💬", titleEn: "WhatsApp",       titleHe: "וואטסאפ",  subEn: "Direct, fast, simple",   subHe: "ישיר, מהיר, פשוט" },
+  { icon: "🆓", titleEn: "Free to post",   titleHe: "חינמי",    subEn: "Always, for everyone",   subHe: "פרסום ללא עלות" },
+  { icon: "🤝", titleEn: "No middlemen",   titleHe: "ישיר",     subEn: "You set the price",      subHe: "בין אנשים בלבד" },
+];
 
-  const { t, lang } = useLanguage();
-  const toast = useToast();
-  const isHe = lang === "he";
+const STEPS = [
+  {
+    n: "01", icon: "🔍",
+    en: "Find your event",   he: "מצאו את האירוע",
+    dEn: "Browse by category, tournament or show. Every listing sorted by exact match or night — no endless scrolling.",
+    dHe: "גלשו לפי קטגוריה, תחרות או הופעה. כל מודעה ממוינת לפי משחק או ערב ספציפי.",
+    color: C.navy,
+  },
+  {
+    n: "02", icon: "🎟️",
+    en: "Read the listings",  he: "קראו את המודעות",
+    dEn: "Clear prices, seat info and quantities. Sell & buy listings side by side. No hidden fees, ever.",
+    dHe: "מחירים ברורים, פרטי מושבים וכמויות. מודעות קנייה ומכירה זו לצד זו. ללא עמלות.",
+    color: C.teal,
+  },
+  {
+    n: "03", icon: "💬",
+    en: "Contact directly",   he: "פנו ישירות",
+    dEn: "Tap WhatsApp and talk to the seller. No middlemen, no platform fees. Just people.",
+    dHe: "לחצו על וואטסאפ ודברו ישירות. בלי תיווך, בלי עמלות, פשוט אנשים.",
+    color: "#25D366",
+  },
+];
 
-  useEffect(() => {
-    try {
-      setSaved(new Set(JSON.parse(localStorage.getItem("saved_matches") || "[]")));
-    } catch {}
-
-    load();
-    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(!!data.user));
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, s) => setIsLoggedIn(!!s?.user));
-
-    const ch = supabase
-      .channel("home-rt")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "listings" },
-        (p) => {
-          setPulse(true);
-          setTimeout(() => setPulse(false), 1200);
-
-          if (p.eventType === "INSERT") {
-            setListings((prev) => [...prev, p.new as ListingItem]);
-            toast.success(isHe ? "מודעה חדשה נוספה!" : "New listing added!");
-          } else if (p.eventType === "DELETE") {
-            setListings((prev) => prev.filter((l) => l.id !== p.old.id));
-          } else if (p.eventType === "UPDATE") {
-            setListings((prev) =>
-              prev.map((l) => (l.id === p.new.id ? (p.new as ListingItem) : l))
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-      supabase.removeChannel(ch);
-    };
-  }, [isHe, toast]);
-
-  async function load() {
-    setLoading(true);
-
-    const [{ data: m }, { data: l }] = await Promise.all([
-      supabase
-        .from("matches")
-        .select("*")
-        .order("fifa_match_number", { ascending: true }),
-      supabase
-        .from("listings")
-        .select("id,match_id,price,type,status,expires_at,archived_at")
-        .eq("status", "active")
-        .is("archived_at", null),
-    ]);
-
-    setMatches((m || []) as MatchItem[]);
-    setListings((l || []) as ListingItem[]);
-    setLoading(false);
-  }
-
-  const toggleSave = useCallback(
-    (id: string) => {
-      setSaved((prev) => {
-        const next = new Set(prev);
-
-        if (next.has(id)) {
-          next.delete(id);
-          toast.show(isHe ? "הוסר מהמועדפים" : "Removed", "info");
-        } else {
-          next.add(id);
-          toast.success(isHe ? "נשמר ❤️" : "Saved ❤️");
-        }
-
-        localStorage.setItem("saved_matches", JSON.stringify([...next]));
-        return next;
-      });
-    },
-    [isHe, toast]
+// ── Ticker ────────────────────────────────────────────────────────────────────
+function Ticker({ isHe }: { isHe: boolean }) {
+  const items = [...TICKER, ...TICKER];
+  return (
+    <>
+      <style>{`@keyframes stayin-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
+      <div style={{ overflow: "hidden", borderBottom: `1px solid ${C.border}`, padding: "10px 0" }}>
+        <div style={{ display: "flex", animation: "stayin-tick 36s linear infinite", whiteSpace: "nowrap" }}>
+          {items.map((t, i) => (
+            <span key={i} style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted,
+              borderRight: `1px solid ${C.border}`,
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: "50%", flexShrink: 0,
+                background: i % 3 === 0 ? C.red : i % 3 === 1 ? C.navy : C.teal,
+                display: "inline-block",
+              }} />
+              {isHe ? t.he : t.en}
+            </span>
+          ))}
+        </div>
+      </div>
+    </>
   );
+}
 
-  function isActive(l: ListingItem) {
-    return l.status === "active" && (!l.expires_at || new Date(l.expires_at) > new Date());
-  }
+// ── ExpandBands ───────────────────────────────────────────────────────────────
+function ExpandBands({ isHe }: { isHe: boolean }) {
+  const [active, setActive] = useState("wc2026");
+  return (
+    <>
+      <style>{`
+        .sb{flex:1;position:relative;overflow:hidden;cursor:pointer;transition:flex 420ms cubic-bezier(.4,0,.2,1);border-right:1px solid rgba(255,255,255,.05)}
+        .sb:last-child{border-right:none}
+        .sb.on{flex:3.8}
+        .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.15;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}
+        .sb.on .sb-img{opacity:.48;transform:scale(1)}
+        .sb-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 10%,rgba(4,8,18,.96) 100%)}
+        .sb-acc{position:absolute;inset:0;opacity:0;transition:opacity 400ms}.sb.on .sb-acc{opacity:1}
+        .sb-top{position:absolute;top:0;left:0;right:0;height:3px;width:0;transition:width 420ms}.sb.on .sb-top{width:100%}
+        .sb-badge{position:absolute;top:14px;left:14px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity 250ms 80ms}.sb.on .sb-badge{opacity:1}
+        .sb-body{position:absolute;bottom:0;left:0;right:0;padding:22px 18px}
+        .sb-tag{font-size:8px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:8px;transition:color 280ms}.sb.on .sb-tag{color:rgba(255,255,255,.4)}
+        .sb-title{font-family:var(--font-syne,'Syne',sans-serif);font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1;font-size:13px;transition:font-size 380ms cubic-bezier(.4,0,.2,1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sb.on .sb-title{font-size:24px;white-space:normal;text-overflow:unset}
+        .sb-sub{font-size:12px;color:rgba(255,255,255,.48);line-height:1.5;margin-top:7px;max-height:0;overflow:hidden;opacity:0;transition:max-height 340ms,opacity 280ms}.sb.on .sb-sub{max-height:56px;opacity:1}
+        .sb-cta{display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:11px;font-weight:800;color:#1abfb0;letter-spacing:.04em;max-height:0;overflow:hidden;opacity:0;transition:max-height 300ms 70ms,opacity 260ms 70ms}.sb.on .sb-cta{max-height:30px;opacity:1}
+        .sb-soon{position:absolute;inset:0;background:rgba(4,8,18,.42);transition:opacity 300ms}.sb.on .sb-soon{opacity:0}
+        @media(max-width:640px){.sb.on{flex:4}.sb.on .sb-title{font-size:18px}}
+      `}</style>
+      <div style={{
+        display: "flex", height: 380, borderRadius: 16,
+        overflow: "hidden", background: "#06090f",
+        boxShadow: "0 18px 52px rgba(6,10,20,.2)",
+      }}>
+        {BANDS.map((b) => {
+          const on = active === b.id;
+          const badge = b.live
+            ? { bg: "rgba(230,57,70,.18)", border: "1px solid rgba(230,57,70,.34)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
+            : b.isNew
+            ? { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" }
+            : { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" };
+          return (
+            <Link
+              key={b.id}
+              href={b.href}
+              className={`sb${on ? " on" : ""}`}
+              onMouseEnter={() => setActive(b.id)}
+              style={{ textDecoration: "none" }}
+            >
+              <div className="sb-img" style={{ backgroundImage: `url(${b.img})` }} />
+              <div className="sb-grad" />
+              <div className="sb-acc" style={{ background: `linear-gradient(155deg,${b.accent},transparent 55%)` }} />
+              <div className="sb-top" style={{ background: b.top }} />
+              {b.soon && <div className="sb-soon" />}
+              <div className="sb-badge" style={{ background: badge.bg, border: badge.border, color: badge.color }}>
+                {badge.label}
+              </div>
+              <div className="sb-body">
+                <div className="sb-tag">{isHe ? b.tagHe : b.tagEn}</div>
+                <div className="sb-title">{isHe ? b.he : b.en}</div>
+                <div className="sb-sub">{isHe ? b.subHe : b.subEn}</div>
+                <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} →</div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </>
+  );
+}
 
-  const availableStages = useMemo(() => {
-    const found = [...new Set(matches.map((m) => m.stage).filter(Boolean))];
-    const hasGroups = found.some((s) => s.startsWith("Group"));
-    const nonGroups = STAGE_ORDER.filter((s) =>
-      found.some((f) => f.toLowerCase().includes(s.toLowerCase()))
-    );
-    return hasGroups ? ["Group Stage", ...nonGroups] : nonGroups;
-  }, [matches]);
-
-  function matchesStage(match: MatchItem) {
-    if (!activeStage) return true;
-    if (activeStage === "Group Stage") {
-      return match.stage?.startsWith("Group") || match.stage === "Group Stage";
-    }
-    return match.stage === activeStage;
-  }
-
-  function getSell(id: string) {
-    return listings.filter(
-      (l) => l.match_id === id && l.type === "sell" && isActive(l)
-    ).length;
-  }
-
-  function getBuy(id: string) {
-    return listings.filter(
-      (l) => l.match_id === id && l.type === "buy" && isActive(l)
-    ).length;
-  }
-
-  function isHot(id: string) {
-    return listings.filter((l) => l.match_id === id && isActive(l)).length >= 10;
-  }
-
-  function getPrice(id: string) {
-    const prices = listings
-      .filter((l) => l.match_id === id && l.type === "sell" && isActive(l))
-      .map((l) => Number(l.price))
-      .filter(Boolean);
-
-    if (!prices.length) return null;
-
-    const mn = Math.min(...prices);
-    const mx = Math.max(...prices);
-    return mn === mx ? `$${mn}` : `$${mn}–$${mx}`;
-  }
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const mn = minPrice ? Number(minPrice) : null;
-    const mx = maxPrice ? Number(maxPrice) : null;
-
-    return matches.filter((m) => {
-      if (savedOnly && !saved.has(m.id)) return false;
-      if (!matchesStage(m)) return false;
-
-      const searchText = [
-        m.fifa_match_number,
-        m.home_team_name,
-        m.away_team_name,
-        teamName(m.home_team_name, true),
-        teamName(m.away_team_name, true),
-        teamName(m.home_team_name, false),
-        teamName(m.away_team_name, false),
-        m.stage,
-        stageLabel(m.stage, true),
-        stageLabel(m.stage, false),
-        m.city,
-        m.stadium,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (q && !searchText.includes(q)) {
-        return false;
-      }
-
-      if (mn !== null || mx !== null) {
-        const prices = listings
-          .filter((l) => l.match_id === m.id && l.type === "sell" && isActive(l))
-          .map((l) => Number(l.price));
-
-        if (
-          !prices.length ||
-          !prices.some(
-            (p) => (mn === null || p >= mn) && (mx === null || p <= mx)
-          )
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [matches, listings, query, activeStage, savedOnly, saved, minPrice, maxPrice]);
-
-  const activeCount = listings.filter(isActive).length;
-
-  const W = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
-  const smallCaps = {
-    fontSize: "10px",
-    fontWeight: 600,
-    letterSpacing: "0.12em",
-    textTransform: "uppercase" as const,
-    color: C.hint,
-  } as React.CSSProperties;
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function HomePage() {
+  const { lang } = useLanguage();
+  const isHe = lang === "he";
+  const dir  = isHe ? "rtl" : "ltr";
 
   return (
-    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
+    <>
       <style>{`
-        @keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}
-        .ld{animation:lp 2s infinite}
-        @keyframes shi{from{background-position:-600px 0}to{background-position:600px 0}}
-        .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:2px;}
+        @keyframes stayin-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        .su1{animation:stayin-up .5s ease both}
+        .su2{animation:stayin-up .5s .08s ease both}
+        .su3{animation:stayin-up .5s .16s ease both}
+        @media(max-width:640px){
+          .hero-grid{grid-template-columns:1fr!important}
+          .steps-grid{grid-template-columns:1fr!important}
+          .step-col:not(:first-child){border-left:none!important;border-top:1px solid ${C.border};padding-left:0!important;padding-top:28px!important}
+          .vp-grid{grid-template-columns:1fr 1fr!important}
+          .cta-inner{flex-direction:column!important;align-items:flex-start!important}
+          .hero-btns{flex-direction:column!important}
+        }
       `}</style>
 
-      <div
-        style={{
-          height: "3px",
-          background: `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)`,
-        }}
-      />
+      <div dir={dir} style={{ minHeight: "100vh", background: C.white, fontFamily: "var(--font-dm,'DM Sans',sans-serif)" }}>
 
-      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "22px",
-              ...smallCaps,
-            }}
-          >
-            <span style={{ display: "flex", gap: "4px" }}>
-              {[C.usa, C.canada, C.mexico].map((c) => (
-                <span
-                  key={c}
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    background: c,
-                    display: "inline-block",
-                  }}
-                />
-              ))}
-            </span>
-            {isHe
-              ? "מרקטפלייס מונדיאל 2026 · ארה״ב · קנדה · מקסיקו"
-              : "World Cup 2026 · USA · Canada · México"}
-          </div>
+        {/* TICKER */}
+        <Ticker isHe={isHe} />
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              gap: "32px",
-              alignItems: "center",
-            }}
-            className="hero-grid"
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  letterSpacing: "0.24em",
-                  textTransform: "uppercase",
-                  color: C.usa,
-                  marginBottom: "16px",
-                }}
-              >
-                STAY IN THE GAME
-              </div>
-
-              {isHe ? (
-                <h1
-                  className="hero-h1"
-                  style={{
-                    fontFamily: "var(--font-he,'Heebo',sans-serif)",
-                    fontSize: "clamp(40px,5.5vw,68px)",
-                    fontWeight: 900,
-                    lineHeight: 1,
-                    letterSpacing: "-0.5px",
-                    color: C.text,
-                    marginBottom: "18px",
-                  }}
-                >
-                  כל הכרטיסים
-                  <br />
-                  <span style={{ color: C.usa }}>במקום אחד.</span>
-                </h1>
-              ) : (
-                <h1
-                  className="hero-h1"
-                  style={{
-                    fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                    fontSize: "clamp(40px,5.5vw,68px)",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                    letterSpacing: "0.02em",
-                    color: C.text,
-                    marginBottom: "18px",
-                  }}
-                >
-                  ALL TICKETS
-                  <br />
-                  <span style={{ color: C.usa }}>IN ONE PLACE.</span>
-                </h1>
-              )}
-
-              <p
-                style={{
-                  fontSize: "15px",
-                  fontWeight: 400,
-                  color: C.muted,
-                  lineHeight: 1.8,
-                  maxWidth: "420px",
-                  marginBottom: "28px",
-                  letterSpacing: isHe ? "0" : "0.01em",
-                  fontFamily: isHe
-                    ? "var(--font-he,'Heebo',sans-serif)"
-                    : "var(--font-dm,'DM Sans',sans-serif)",
-                }}
-              >
-                {isHe
-                  ? "בלי הודעות חוזרות ובלי בלאגן — כל המודעות במקום אחד, פנייה ישירה בוואטסאפ."
-                  : "No repeated messages, no chaos — all listings in one place, contact directly on WhatsApp."}
-              </p>
-
-              <div
-                className="hero-btns"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <a
-                  href="#matches"
-                  style={{
-                    padding: "12px 24px",
-                    background: "transparent",
-                    color: C.usa,
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    letterSpacing: "0.02em",
-                    border: `2px solid ${C.usa}`,
-                    transition: "all 150ms",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = C.usa;
-                    (e.currentTarget as HTMLElement).style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                    (e.currentTarget as HTMLElement).style.color = C.usa;
-                  }}
-                >
-                  {isHe ? "צפה במשחקים ↓" : "Browse matches ↓"}
-                </a>
-
-                {isLoggedIn ? (
-                  <Link
-                    href="/post-listing"
-                    style={{
-                      padding: "12px 22px",
-                      border: `1px solid ${C.border}`,
-                      color: C.muted,
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      borderRadius: "4px",
-                      textDecoration: "none",
-                      background: C.white,
-                      transition: "border-color 150ms,color 150ms",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-                      (e.currentTarget as HTMLElement).style.color = C.usa;
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                      (e.currentTarget as HTMLElement).style.color = C.muted;
-                    }}
-                  >
-                    {isHe ? "+ פרסם מודעה" : "+ Post listing"}
-                  </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/how-it-works"
-                      style={{
-                        padding: "12px 22px",
-                        border: `1px solid ${C.border}`,
-                        color: C.muted,
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        borderRadius: "4px",
-                        textDecoration: "none",
-                        background: C.white,
-                        transition: "border-color 150ms,color 150ms",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-                        (e.currentTarget as HTMLElement).style.color = C.usa;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                        (e.currentTarget as HTMLElement).style.color = C.muted;
-                      }}
-                    >
-                      {isHe ? "איך זה עובד?" : "How it works"}
-                    </Link>
-
-                    <Link
-                      href="/auth"
-                      style={{
-                        padding: "12px 22px",
-                        border: `1px solid ${C.border}`,
-                        color: C.muted,
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        borderRadius: "4px",
-                        textDecoration: "none",
-                        background: C.white,
-                        transition: "border-color 150ms,color 150ms",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-                        (e.currentTarget as HTMLElement).style.color = C.usa;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                        (e.currentTarget as HTMLElement).style.color = C.muted;
-                      }}
-                    >
-                      {isHe ? "התחבר / הרשמה" : "Login / Sign up"}
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div
-              className="hero-stats"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3,1fr)",
-                gap: "1px",
-                background: C.border,
-                border: `1px solid ${C.border}`,
-                borderRadius: "6px",
-                overflow: "hidden",
-              }}
-            >
-              {[
-                { val: `${matches.length || 64}`, lbl: isHe ? "משחקים" : "Matches", color: C.usa },
-                { val: activeCount, lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true },
-                { val: "WA", lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.mexico },
-              ].map((s, i) => (
-                <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                      fontSize: "22px",
-                      fontWeight: 800,
-                      color: s.color,
-                      letterSpacing: "-0.5px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "5px",
-                    }}
-                  >
-                    {s.val}
-                    {s.live && (
-                      <span
-                        className="ld"
-                        style={{
-                          width: "6px",
-                          height: "6px",
-                          borderRadius: "50%",
-                          background: pulse ? "#34d399" : "#22c55e",
-                          display: "inline-block",
-                          transition: "background 400ms",
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div style={{ ...smallCaps, marginTop: "4px" }}>{s.lbl}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="matches" style={{ ...W, paddingTop: "24px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            border: `1px solid ${C.border}`,
-            background: "rgba(255,255,255,0.8)",
-            borderRadius: "4px",
-            marginBottom: "10px",
-            backdropFilter: "blur(8px)",
-            transition: "border-color 150ms",
-          }}
-          onFocusCapture={(e) => (e.currentTarget.style.borderColor = C.usa)}
-          onBlurCapture={(e) => (e.currentTarget.style.borderColor = C.border)}
-        >
-          <span style={{ padding: "0 14px", fontSize: "16px", color: C.faint }}>⌕</span>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.searchPlaceholder}
-            style={{
-              flex: 1,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: C.text,
-              fontSize: "13px",
-              padding: "12px 0",
-              fontFamily: "var(--font-dm),var(--font-he),sans-serif",
-            }}
-          />
-          {query && (
-            <button
-              onClick={() => setQuery("")}
-              style={{
-                padding: "0 14px",
-                background: "none",
-                border: "none",
-                color: C.hint,
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-          <span
-            style={{
-              fontSize: "10px",
-              fontWeight: 600,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: C.hint,
-              flexShrink: 0,
-            }}
-          >
-            {isHe ? "טווח מחיר" : "Price range"}
-          </span>
-
-          <div style={{ display: "flex", flex: 1, gap: "8px" }}>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                border: `1px solid ${C.border}`,
-                borderRadius: "4px",
-                background: C.white,
-              }}
-            >
-              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>$</span>
-              <input
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                placeholder={isHe ? "מינימום" : "Min"}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  color: C.text,
-                  fontSize: "12px",
-                  padding: "10px 0",
-                  fontFamily: "var(--font-dm),var(--font-he),sans-serif",
-                }}
-              />
-            </div>
-
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                border: `1px solid ${C.border}`,
-                borderRadius: "4px",
-                background: C.white,
-              }}
-            >
-              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>$</span>
-              <input
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                placeholder={isHe ? "מקסימום" : "Max"}
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  color: C.text,
-                  fontSize: "12px",
-                  padding: "10px 0",
-                  fontFamily: "var(--font-dm),var(--font-he),sans-serif",
-                }}
-              />
-            </div>
-
-            {(minPrice || maxPrice) && (
-              <button
-                onClick={() => {
-                  setMinPrice("");
-                  setMaxPrice("");
-                }}
-                style={{
-                  padding: "0 12px",
-                  background: "none",
-                  border: `1px solid ${C.border}`,
-                  borderRadius: "4px",
-                  color: C.hint,
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px", flexWrap: "wrap" }}>
-          <button
-            onClick={() => {
-              setActiveStage(null);
-              setSavedOnly(false);
-            }}
-            style={{
-              padding: "5px 14px",
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              border: `1px solid ${!activeStage && !savedOnly ? C.usa : C.border}`,
-              color: !activeStage && !savedOnly ? C.usa : C.hint,
-              background: !activeStage && !savedOnly ? "rgba(26,58,107,0.05)" : C.white,
-              cursor: "pointer",
-              borderRadius: "3px",
-              transition: "all 150ms",
-              fontFamily: "var(--font-dm),sans-serif",
-            }}
-          >
-            {isHe ? "הכל" : "All"}
-          </button>
-
-          {availableStages.map((stage) => (
-            <button
-              key={stage}
-              onClick={() => {
-                setActiveStage(activeStage === stage ? null : stage);
-                setSavedOnly(false);
-              }}
-              style={{
-                padding: "5px 14px",
-                fontSize: "10px",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                border: `1px solid ${activeStage === stage ? C.usa : C.border}`,
-                color: activeStage === stage ? C.usa : C.hint,
-                background: activeStage === stage ? "rgba(26,58,107,0.05)" : C.white,
-                cursor: "pointer",
-                borderRadius: "3px",
-                transition: "all 150ms",
-                whiteSpace: "nowrap",
-                fontFamily: "var(--font-dm),sans-serif",
-              }}
-            >
-              {stageLabel(stage, isHe)}
-            </button>
+        {/* ── HERO ── */}
+        <div style={{
+          background: "linear-gradient(135deg,#eef2ff 0%,#fdf0f2 52%,#edfff8 100%)",
+          padding: "72px 40px 64px",
+          position: "relative", overflow: "hidden",
+        }}>
+          {/* blobs */}
+          {[
+            { w: 400, t: -120, r: -80,  c: "rgba(230,57,70,.06)" },
+            { w: 320, b: -100, l: -60,  c: "rgba(26,58,143,.06)" },
+            { w: 260, t: 40,   r: "30%",c: "rgba(0,104,71,.05)"  },
+          ].map((b, i) => (
+            <div key={i} style={{
+              position: "absolute", width: b.w, height: b.w, borderRadius: "50%",
+              background: `radial-gradient(circle,${b.c},transparent 70%)`,
+              top: (b as any).t, bottom: (b as any).b,
+              left: (b as any).l, right: (b as any).r,
+              pointerEvents: "none",
+            }} />
           ))}
 
-          <button
-            onClick={() => {
-              setSavedOnly(!savedOnly);
-              setActiveStage(null);
-            }}
-            style={{
-              padding: "5px 14px",
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              border: `1px solid ${savedOnly ? "rgba(230,57,70,0.4)" : C.border}`,
-              color: savedOnly ? C.canada : C.hint,
-              background: savedOnly ? "rgba(230,57,70,0.05)" : C.white,
-              cursor: "pointer",
-              borderRadius: "3px",
-              transition: "all 150ms",
-              fontFamily: "var(--font-dm),sans-serif",
-            }}
-          >
-            ♥ {isHe ? "שמורים" : "Saved"}
-            {saved.size > 0 && ` (${saved.size})`}
-          </button>
-
-          <div
-            style={{
-              marginInlineStart: "auto",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "11px",
-              color: C.hint,
-            }}
-          >
-            <span
-              className="ld"
-              style={{
-                width: "5px",
-                height: "5px",
-                borderRadius: "50%",
-                background: pulse ? "#34d399" : "#22c55e",
-                display: "inline-block",
-                transition: "background 400ms",
-              }}
-            />
-            {isHe ? "מתעדכן חי" : "Live updates"}
-            {!loading && (
-              <span style={{ color: C.usa, fontWeight: 600 }}>
-                · {filtered.length}{" "}
-                {filtered.length === 1 ? t.matchSingleFound : t.matchesFound}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "10px",
-          }}
-        >
-          <span style={{ ...smallCaps }}>{isHe ? "משחקים" : "Matches"}</span>
-          <span style={{ fontSize: "11px", color: C.usa, fontWeight: 600 }}>
-            {activeCount} {isHe ? "מודעות פעילות" : "active listings"} ●
-          </span>
-        </div>
-      </div>
-
-      <div style={W}>
-        {loading ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
-              gap: "1px",
-              background: C.border,
-              borderRadius: "6px",
-              overflow: "hidden",
-              border: `1px solid ${C.border}`,
-            }}
-          >
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} style={{ background: C.white, padding: "20px" }}>
-                <div
-                  style={{
-                    height: "2px",
-                    background: ACCENTS[(i - 1) % 3],
-                    marginBottom: "16px",
-                    marginInline: "-20px",
-                    marginTop: "-20px",
-                  }}
-                />
-                {[60, 120, 90, 50].map((w, j) => (
-                  <div
-                    key={j}
-                    className="sk"
-                    style={{ height: "12px", width: `${w}%`, marginBottom: "12px" }}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div
-            style={{
-              padding: "60px 24px",
-              textAlign: "center",
-              background: C.white,
-              border: `1px solid ${C.border}`,
-              borderRadius: "6px",
-            }}
-          >
-            <div style={{ fontSize: "28px", marginBottom: "12px" }}>
-              {savedOnly ? "♡" : "⌕"}
-            </div>
-            <p style={{ fontSize: "14px", color: C.muted, marginBottom: "4px" }}>
-              {savedOnly
-                ? isHe
-                  ? "אין משחקים שמורים עדיין"
-                  : "No saved matches yet"
-                : t.noMatchesFound}
-            </p>
-            <p style={{ fontSize: "12px", color: C.hint }}>
-              {savedOnly
-                ? isHe
-                  ? "לחץ על ♡ בכרטיס להוסיף"
-                  : "Tap ♡ on any card"
-                : t.tryChangingFilters}
-            </p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))",
-              gap: "1px",
-              background: C.border,
-              borderRadius: "6px",
-              overflow: "hidden",
-              border: `1px solid ${C.border}`,
-            }}
-          >
-            {filtered.map((match, i) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                idx={i}
-                sell={getSell(match.id)}
-                buy={getBuy(match.id)}
-                priceRange={getPrice(match.id)}
-                hot={isHot(match.id)}
-                saved={saved.has(match.id)}
-                onSave={toggleSave}
-                isHe={isHe}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div style={{ ...W, marginTop: "28px" }}>
-        <div style={{ borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
-          <div
-            style={{
-              background: C.usa,
-              padding: "16px 22px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+          <div className="hero-grid" style={{
+            maxWidth: 1200, margin: "0 auto",
+            display: "grid", gridTemplateColumns: "1fr auto",
+            gap: 52, alignItems: "center", position: "relative",
+          }}>
+            {/* Left: text */}
             <div>
-              <div
-                style={{
-                  fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#fff",
-                }}
-              >
-                FIFA World Cup 2026
+              <div className="su1" style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                padding: "6px 14px", borderRadius: 999,
+                background: "rgba(26,58,143,.07)", border: "1px solid rgba(26,58,143,.14)",
+                fontSize: 11, fontWeight: 700, color: C.navy, marginBottom: 22,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.navy, display: "inline-block" }} />
+                {isHe ? "מרקטפלייס הכרטיסים יד שנייה של ישראל" : "Israel's secondary ticket marketplace"}
               </div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "rgba(255,255,255,.5)",
-                  marginTop: "2px",
-                  fontWeight: 300,
-                }}
-              >
+
+              <h1 className="su2" style={{
+                fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                fontSize: "clamp(42px,6vw,68px)",
+                fontWeight: 900, lineHeight: 0.87,
+                letterSpacing: "-3.5px", margin: "0 0 22px",
+              }}>
+                {isHe ? (
+                  <><span style={{ color: C.navy }}>מצא </span><span style={{ color: C.red }}>כרטיסים.</span><br /><span style={{ color: C.green }}>דלג </span><span style={{ color: C.navy }}>על הבלאגן.</span></>
+                ) : (
+                  <><span style={{ color: C.navy }}>Find </span><span style={{ color: C.red }}>tickets.</span><br /><span style={{ color: C.green }}>Skip </span><span style={{ color: C.navy }}>the chaos.</span></>
+                )}
+              </h1>
+
+              <p className="su3" style={{
+                fontSize: 16, lineHeight: 1.72, color: C.muted,
+                maxWidth: 480, margin: "0 0 30px",
+              }}>
                 {isHe
-                  ? "48 נבחרות · 104 משחקים · 16 ערים מארחות"
-                  : "48 teams · 104 matches · 16 host cities"}
+                  ? "ספורט, הופעות ופסטיבלים — הכל במקום אחד ברור. קונים ומוכרים מתחברים ישירות. בלי עמלות, בלי תיווך."
+                  : "Sports, concerts and festivals — all in one clear place. Buyers and sellers connect directly. No fees, no middlemen."}
+              </p>
+
+              <div className="hero-btns" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Link href="/sports/world-cup-2026" style={{
+                  textDecoration: "none", padding: "14px 28px",
+                  borderRadius: 8, background: C.navy, color: C.white,
+                  fontSize: 14, fontWeight: 800,
+                  boxShadow: "0 8px 24px rgba(26,58,143,.24)",
+                }}>
+                  {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
+                </Link>
+                <Link href="/sports/football-israel" style={{
+                  textDecoration: "none", padding: "14px 22px",
+                  borderRadius: 8,
+                  background: "rgba(26,191,176,.1)",
+                  border: "1px solid rgba(26,191,176,.25)",
+                  color: C.teal,
+                  fontSize: 14, fontWeight: 700,
+                }}>
+                  {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
+                </Link>
               </div>
             </div>
-            <div
-              style={{
-                fontSize: "11px",
-                fontWeight: 700,
-                color: "#fff",
-                background: "rgba(255,255,255,.12)",
-                padding: "5px 12px",
-                borderRadius: "3px",
-                border: "1px solid rgba(255,255,255,.15)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Jun 11 – Jul 19
+
+            {/* Right: 2×2 value props */}
+            <div className="vp-grid" style={{
+              display: "grid", gridTemplateColumns: "1fr 1fr",
+              gap: 8, flexShrink: 0, minWidth: 220,
+            }}>
+              {VALUE_PROPS.map((v) => (
+                <div key={v.titleEn} style={{
+                  padding: "16px 14px", borderRadius: 12, textAlign: "center",
+                  background: "rgba(255,255,255,.7)",
+                  border: "1px solid rgba(255,255,255,.95)",
+                }}>
+                  <div style={{ fontSize: 20, marginBottom: 6 }}>{v.icon}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 3 }}>
+                    {isHe ? v.titleHe : v.titleEn}
+                  </div>
+                  <div style={{ fontSize: 10, color: C.hint, lineHeight: 1.35 }}>
+                    {isHe ? v.subHe : v.subEn}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border }}>
+        {/* WC strip */}
+        <div style={{
+          background: C.navy, padding: "13px 40px",
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 5 }}>
+              {["rgba(255,255,255,.35)", "#ff8080", "#4ade80"].map((c, i) => (
+                <span key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, display: "inline-block" }} />
+              ))}
+            </div>
+            <span style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>
+              FIFA World Cup 2026
+            </span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>
+              {isHe ? "48 קבוצות · 104 משחקים · 16 ערים" : "48 teams · 104 matches · 16 host cities"}
+            </span>
+          </div>
+          <span style={{
+            fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)",
+            background: "rgba(255,255,255,.08)", padding: "5px 13px",
+            borderRadius: 4, border: "1px solid rgba(255,255,255,.1)",
+          }}>Jun 11 – Jul 19, 2026</span>
+        </div>
+
+        {/* ── CATEGORIES ── */}
+        <div style={{ maxWidth: 1200, margin: "60px auto 0", padding: "0 40px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20, gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: C.navy, opacity: 0.55, marginBottom: 6 }}>
+                {isHe ? "קטגוריות" : "Categories"}
+              </div>
+              <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,2.8vw,30px)", fontWeight: 800, letterSpacing: "-0.04em", color: C.text, lineHeight: 1 }}>
+                {isHe ? "מה אתה מחפש?" : "What are you looking for?"}
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: C.hint }}>{isHe ? "עברו מעל קטגוריה לגלות אותה" : "Hover to explore"}</div>
+          </div>
+          <ExpandBands isHe={isHe} />
+          <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
             {[
-              {
-                dot: C.usa,
-                name: isHe ? "ארצות הברית" : "United States",
-                n: isHe ? "78 משחקים" : "78 matches",
-              },
-              {
-                dot: C.canada,
-                name: isHe ? "קנדה" : "Canada",
-                n: isHe ? "13 משחקים" : "13 matches",
-              },
-              {
-                dot: C.mexico,
-                name: isHe ? "מקסיקו" : "México",
-                n: isHe ? "13 משחקים" : "13 matches",
-              },
-            ].map((c) => (
-              <div
-                key={c.name}
-                style={{
-                  background: "rgba(255,255,255,0.8)",
-                  padding: "12px 18px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
-              >
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: c.dot,
-                    flexShrink: 0,
-                    display: "inline-block",
-                  }}
-                />
-                <div>
-                  <div style={{ fontSize: "12px", fontWeight: 600, color: C.text }}>
-                    {c.name}
-                  </div>
-                  <div style={{ fontSize: "10px", color: C.hint, marginTop: "1px" }}>
-                    {c.n}
-                  </div>
+              { en: "Sports",          he: "ספורט",          c: C.navy,    bg: "rgba(26,58,143,.07)",  b: "rgba(26,58,143,.13)" },
+              { en: "Live Shows",      he: "הופעות חיות",    c: C.teal,    bg: "rgba(26,191,176,.07)", b: "rgba(26,191,176,.14)" },
+              { en: "No fees",         he: "ללא עמלות",      c: C.green,   bg: "rgba(0,104,71,.07)",   b: "rgba(0,104,71,.13)" },
+              { en: "Direct WhatsApp", he: "ישיר לוואטסאפ", c: "#25D366", bg: "rgba(37,211,102,.07)", b: "rgba(37,211,102,.13)" },
+              { en: "Free to post",    he: "פרסום חינמי",   c: C.red,     bg: "rgba(230,57,70,.06)",  b: "rgba(230,57,70,.12)" },
+            ].map((p) => (
+              <span key={p.en} style={{ padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, color: p.c, background: p.bg, border: `1px solid ${p.b}` }}>
+                {isHe ? p.he : p.en}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── HOW IT WORKS ── */}
+        <div style={{ maxWidth: 1200, margin: "72px auto 0", padding: "0 40px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: C.teal, marginBottom: 6 }}>
+                {isHe ? "איך זה עובד" : "How it works"}
+              </div>
+              <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,2.8vw,30px)", fontWeight: 800, letterSpacing: "-0.04em", color: C.text, lineHeight: 1 }}>
+                {isHe ? "שלושה צעדים. זהו." : "Three steps. That's it."}
+              </div>
+            </div>
+            <div style={{ fontSize: 13, color: C.hint }}>{isHe ? "בלי סיבוך, בלי תשלומים" : "No complexity, no payments"}</div>
+          </div>
+
+          <div style={{ borderTop: `1px solid ${C.border}` }} />
+
+          <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
+            {STEPS.map((s, i) => (
+              <div key={s.n} className="step-col" style={{
+                padding: "40px 32px 40px 0",
+                ...(i > 0 ? { paddingLeft: 32, borderLeft: `1px solid ${C.border}` } : {}),
+                position: "relative",
+              }}>
+                <div style={{
+                  position: "absolute", bottom: 24, right: 20,
+                  fontFamily: "var(--font-syne,'Syne',sans-serif)",
+                  fontSize: 80, fontWeight: 900, opacity: 0.04,
+                  lineHeight: 1, pointerEvents: "none", color: C.text,
+                }}>{s.n}</div>
+                <div style={{ fontSize: 26, marginBottom: 18 }}>{s.icon}</div>
+                <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" as const, color: s.color, marginBottom: 10 }}>
+                  Step {s.n}
+                </div>
+                <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: 19, fontWeight: 800, letterSpacing: "-0.03em", color: C.text, marginBottom: 10 }}>
+                  {isHe ? s.he : s.en}
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.75, color: C.muted }}>
+                  {isHe ? s.dHe : s.dEn}
                 </div>
               </div>
             ))}
           </div>
+          <div style={{ borderTop: `1px solid ${C.border}` }} />
         </div>
-      </div>
 
-      <div style={{ ...W, marginTop: "20px", paddingBottom: "52px" }}>
-        <div
-          style={{
-            padding: "24px",
-            border: `1px solid ${C.border}`,
-            borderRadius: "6px",
-            background: "rgba(255,255,255,0.8)",
-            backdropFilter: "blur(8px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "20px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                fontSize: "16px",
-                fontWeight: 800,
-                color: C.text,
-                marginBottom: "4px",
-                letterSpacing: "-0.3px",
-              }}
-            >
-              {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+        {/* ── CTA ── */}
+        <div style={{
+          background: "linear-gradient(135deg,#1a3a8f 0%,#0f2252 55%,#0d2a1a 100%)",
+          padding: "72px 40px", marginTop: 72,
+          position: "relative", overflow: "hidden",
+        }}>
+          <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", top: -70, right: -40, background: "radial-gradient(circle,rgba(26,191,176,.14),transparent 70%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", bottom: -60, left: 80, background: "radial-gradient(circle,rgba(230,57,70,.11),transparent 70%)", pointerEvents: "none" }} />
+          <div className="cta-inner" style={{
+            maxWidth: 1200, margin: "0 auto",
+            display: "flex", alignItems: "center",
+            justifyContent: "space-between", gap: 32, flexWrap: "wrap",
+            position: "relative",
+          }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(26px,4vw,36px)", fontWeight: 900, letterSpacing: "-0.05em", color: C.white, lineHeight: 1, marginBottom: 12 }}>
+                {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+              </div>
+              <div style={{ fontSize: 15, color: "rgba(255,255,255,.48)", lineHeight: 1.65, maxWidth: 420 }}>
+                {isHe
+                  ? "פרסם מודעה תוך דקה. קונים יפנו אליך ישירות בוואטסאפ. חינמי לחלוטין."
+                  : "Post a listing in under a minute. Buyers contact you directly on WhatsApp. Completely free."}
+              </div>
             </div>
-            <div style={{ fontSize: "12px", fontWeight: 300, color: C.muted, lineHeight: 1.75 }}>
-              {isHe
-                ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ."
-                : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp."}
+            <div style={{ display: "flex", gap: 12, flexShrink: 0, flexWrap: "wrap" }}>
+              <Link href="/post-listing" style={{
+                textDecoration: "none", padding: "14px 30px",
+                borderRadius: 8, background: C.teal, color: C.navy,
+                fontSize: 14, fontWeight: 800,
+              }}>
+                {isHe ? "פרסם מודעה →" : "Post listing →"}
+              </Link>
+              <Link href="/sports/world-cup-2026" style={{
+                textDecoration: "none", padding: "14px 22px",
+                borderRadius: 8, background: "rgba(255,255,255,.08)",
+                border: "1px solid rgba(255,255,255,.12)",
+                color: "rgba(255,255,255,.6)", fontSize: 14, fontWeight: 600,
+              }}>
+                {isHe ? "חיפוש כרטיסים" : "Find tickets"}
+              </Link>
             </div>
           </div>
-
-          <Link
-            href={isLoggedIn ? "/post-listing" : "/auth"}
-            style={{
-              padding: "12px 26px",
-              background: C.usa,
-              color: "#fff",
-              fontSize: "13px",
-              fontWeight: 700,
-              borderRadius: "4px",
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-              letterSpacing: "0.02em",
-              transition: "opacity 150ms",
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-          >
-            {isHe ? "פרסם מודעה →" : "Post listing →"}
-          </Link>
         </div>
+
       </div>
-    </main>
+    </>
   );
 }
