@@ -313,11 +313,6 @@ export default function FootballIsraelPage() {
   const activeCount = listings.filter(isActiveL).length;
   const ligatCount  = matches.filter(m => m.competition === "ligat_haal").length;
   const cupCount    = matches.filter(m => m.competition === "state_cup").length;
-  const sellCount   = listings.filter(l => isActiveL(l) && l.type === "sell").length;
-  const buyCount    = listings.filter(l => isActiveL(l) && l.type === "buy").length;
-  const sellPrices  = listings.filter(l => isActiveL(l) && l.type === "sell").map(l => Number(l.price)).filter(Boolean);
-  const minP        = sellPrices.length ? Math.min(...sellPrices) : null;
-  const avgP        = sellPrices.length ? Math.round(sellPrices.reduce((a,b)=>a+b,0)/sellPrices.length) : null;
 
   const W: React.CSSProperties = { maxWidth: "1100px", margin: "0 auto", padding: "0 16px" };
   const smallCaps: React.CSSProperties = { fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: C.hint };
@@ -349,7 +344,7 @@ export default function FootballIsraelPage() {
             {isHe ? "כדורגל ישראלי · ליגת העל · גביע המדינה" : "Israeli Football · Ligat Ha'Al · State Cup"}
           </div>
 
-          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: "40px", alignItems: "start" }}>
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "32px", alignItems: "center" }}>
             <div>
               {/* "STAY IN THE GAME" style label */}
               <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.24em", textTransform: "uppercase" as const, color: C.blue, marginBottom: "16px" }}>
@@ -400,21 +395,6 @@ export default function FootballIsraelPage() {
                   + {isHe ? "פרסם מודעה" : "Post listing"}
                 </Link>
               </div>
-            </div>
-
-            {/* Right: stats grid — same as WC page */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
-              {[
-                { n: loading ? "–" : String(activeCount), l: isHe ? "מודעות פעילות" : "Active listings", c: C.blue },
-                { n: loading ? "–" : String(sellCount),   l: isHe ? "מוכרים"         : "Sellers",         c: C.green },
-                { n: loading ? "–" : (minP !== null ? `₪${minP}` : "—"),  l: isHe ? "מחיר מינ׳" : "From",    c: "#15803d" },
-                { n: loading ? "–" : (avgP !== null ? `₪${avgP}` : "—"),  l: isHe ? "מחיר ממוצע" : "Avg",   c: C.gold   },
-              ].map((s, i) => (
-                <div key={i} style={{ background: C.white, padding: "14px 12px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: fSyne, fontSize: "20px", fontWeight: 800, color: s.c, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.n}</div>
-                  <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.hint, marginTop: "4px", lineHeight: 1.3 }}>{s.l}</div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

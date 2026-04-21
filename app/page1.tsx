@@ -225,14 +225,12 @@ export default function HomePage() {
               </div>
 
               {isHe ? (
-                <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", marginBottom: "18px" }}>
-                  <span style={{ color: C.navy }}>כל</span> <span style={{ color: C.red }}>הכרטיסים</span><br />
-                  <span style={{ color: C.green }}>במקום </span><span style={{ color: C.navy }}>אחד.</span>
+                <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
+                  כל הכרטיסים<br /><span style={{ color: C.navy }}>במקום אחד.</span>
                 </h1>
               ) : (
-                <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
-                  <span style={{ color: C.navy }}>ALL </span><span style={{ color: C.red }}>TICKETS.</span><br />
-                  <span style={{ color: C.green }}>SKIP </span><span style={{ color: C.navy }}>THE CHAOS.</span>
+                <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
+                  ALL TICKETS<br /><span style={{ color: C.navy }}>IN ONE PLACE.</span>
                 </h1>
               )}
 
