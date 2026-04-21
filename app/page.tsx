@@ -241,15 +241,15 @@ export default function HomePage() {
               </p>
 
               <div className="hero-btns su3" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
-                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 24px rgba(26,58,143,.24)", transition: "opacity 150ms" }}
+                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: "linear-gradient(135deg,#1a3a6b 0%,#e63946 55%,#006847 100%)", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 28px rgba(26,58,107,.3)", transition: "opacity 150ms" }}
                   onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
                 >
                   {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
                 </Link>
-                <Link href="/sports/football-israel" style={{ padding: "12px 22px", border: "1px solid rgba(26,191,176,.3)", color: C.teal, fontSize: "13px", fontWeight: 600, borderRadius: "4px", textDecoration: "none", background: "rgba(26,191,176,.08)", transition: "all 150ms" }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.15)")}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.08)")}
+                <Link href="/sports/football-israel" style={{ padding: "12px 22px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", border: "1px solid rgba(255,255,255,.25)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.15), 0 4px 14px rgba(26,58,143,.22)", transition: "opacity 150ms" }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
                 >
                   {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
                 </Link>

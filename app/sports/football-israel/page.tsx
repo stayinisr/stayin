@@ -338,7 +338,14 @@ export default function FootballIsraelPage() {
       <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
 
       {/* ── HEADER ── */}
-      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ background: "linear-gradient(135deg,#eef4ff 0%,#f0fff8 50%,#e8fffe 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+        {[
+          { w:360, t:-100, r:-60,  c:"rgba(26,58,143,.07)"  },
+          { w:280, b:-80,  l:-40,  c:"rgba(0,104,71,.06)"   },
+          { w:220, t:30,   r:"28%",c:"rgba(26,191,176,.05)" },
+        ].map((b,i) => (
+          <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" as const }} />
+        ))}
         <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
 
           {/* Label */}
@@ -358,16 +365,16 @@ export default function FootballIsraelPage() {
 
               {/* H1 — exact same sizing as WC */}
               {isHe ? (
-                <h1 style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
-                  כדורגל ישראלי
+                <h1 style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", marginBottom: "18px" }}>
+                  <span style={{ color: C.blue }}>כדורגל </span><span style={{ color: C.green }}>ישראלי</span>
                   <br />
-                  <span style={{ color: C.blue }}>כרטיסים.</span>
+                  <span style={{ color: C.teal }}>כרטיסים </span><span style={{ color: C.blue }}>ישירות.</span>
                 </h1>
               ) : (
-                <h1 style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
-                  ISRAELI FOOTBALL
+                <h1 style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
+                  <span style={{ color: C.blue }}>ISRAELI </span><span style={{ color: C.green }}>FOOTBALL.</span>
                   <br />
-                  <span style={{ color: C.blue }}>TICKETS.</span>
+                  <span style={{ color: C.teal }}>DIRECT </span><span style={{ color: C.blue }}>TICKETS.</span>
                 </h1>
               )}
 

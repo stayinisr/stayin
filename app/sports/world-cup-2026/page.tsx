@@ -689,7 +689,14 @@ export default function Home() {
         }}
       />
 
-      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ background: "linear-gradient(135deg,#eef4ff 0%,#fdf0f2 50%,#edfff8 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+        {[
+          { w:380, t:-100, r:-60,  c:"rgba(26,58,107,.07)"  },
+          { w:300, b:-80,  l:-40,  c:"rgba(230,57,70,.06)"  },
+          { w:240, t:30,   r:"28%",c:"rgba(0,104,71,.05)"   },
+        ].map((b,i) => (
+          <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" as const }} />
+        ))}
         <div style={{ ...W, paddingTop: "44px", paddingBottom: "40px" }}>
           <div
             style={{
@@ -751,13 +758,12 @@ export default function Home() {
                     fontWeight: 900,
                     lineHeight: 1,
                     letterSpacing: "-0.5px",
-                    color: C.text,
                     marginBottom: "18px",
                   }}
                 >
-                  כל הכרטיסים
+                  <span style={{ color: C.usa }}>כל</span> <span style={{ color: C.canada }}>הכרטיסים</span>
                   <br />
-                  <span style={{ color: C.usa }}>במקום אחד.</span>
+                  <span style={{ color: C.mexico }}>במקום </span><span style={{ color: C.usa }}>אחד.</span>
                 </h1>
               ) : (
                 <h1
@@ -768,13 +774,12 @@ export default function Home() {
                     fontWeight: 800,
                     lineHeight: 1,
                     letterSpacing: "0.02em",
-                    color: C.text,
                     marginBottom: "18px",
                   }}
                 >
-                  ALL TICKETS
+                  <span style={{ color: C.usa }}>ALL </span><span style={{ color: C.canada }}>TICKETS.</span>
                   <br />
-                  <span style={{ color: C.usa }}>IN ONE PLACE.</span>
+                  <span style={{ color: C.mexico }}>SKIP </span><span style={{ color: C.usa }}>THE CHAOS.</span>
                 </h1>
               )}
 
