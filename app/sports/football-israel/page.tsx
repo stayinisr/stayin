@@ -384,28 +384,22 @@ export default function FootballIsraelPage() {
                   : "Tickets for Ligat Ha'Al and the State Cup — directly between buyer and seller. No fees, no middlemen."}
               </p>
 
-              {/* Tabs */}
-              <div style={{ display: "flex", gap: "6px", marginBottom: "20px" }}>
-                {([["ligat_haal", isHe ? "ליגת העל" : "Ligat Ha'Al", ligatCount], ["state_cup", isHe ? "גביע המדינה" : "State Cup", cupCount]] as [Competition, string, number][]).map(([id, label, count]) => (
-                  <button key={id} className={`il-tab ${tab === id ? "on" : "off"}`} onClick={() => setTab(id)} style={{ fontFamily: fBody(isHe) }}>
-                    {label}<span style={{ marginInlineStart: "6px", fontSize: "9px", opacity: 0.7 }}>({loading ? "–" : count})</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Filters */}
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" as const, alignItems: "center" }}>
-                <input value={query} onChange={e => setQuery(e.target.value)} placeholder={isHe ? "חיפוש קבוצה, סיבוב..." : "Search team, round..."} style={{ padding: "7px 12px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "12px", background: C.white, color: C.text, outline: "none", width: "200px", fontFamily: fBody(isHe) }} />
-                <span style={{ fontSize: "10px", color: C.hint, fontWeight: 600 }}>₪</span>
-                <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder={isHe ? "מינ׳" : "min"} style={{ width: "60px", padding: "7px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.white, color: C.text, outline: "none" }} />
-                <span style={{ fontSize: "10px", color: C.faint }}>—</span>
-                <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder={isHe ? "מקס׳" : "max"} style={{ width: "60px", padding: "7px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.white, color: C.text, outline: "none" }} />
-                <button onClick={() => setSavedOnly(p => !p)} style={{ padding: "7px 12px", border: `1px solid ${savedOnly ? "rgba(230,57,70,0.35)" : C.border}`, borderRadius: "4px", fontSize: "11px", fontWeight: 700, background: savedOnly ? "rgba(230,57,70,0.06)" : "transparent", color: savedOnly ? C.red : C.muted, cursor: "pointer", transition: "all 150ms" }}>
-                  {savedOnly ? "♥" : "♡"} {isHe ? "שמורים" : "Saved"}
-                </button>
-                <Link href={isLoggedIn ? `/post-listing?type=israeli` : "/auth"} style={{ marginInlineStart: "auto", padding: "7px 18px", background: C.blue, color: "#fff", fontSize: "12px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const }}>
-                  + {isHe ? "פרסם מודעה" : "Post listing"}
-                </Link>
+              {/* Buttons — same structure as WC page */}
+              <div className="hero-btns" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
+                <a href="#matches" style={{ padding: "12px 24px", background: "transparent", color: C.blue, fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", letterSpacing: "0.02em", border: `2px solid ${C.blue}`, transition: "all 150ms" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = C.blue; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = C.blue; }}
+                >
+                  {isHe ? "צפה במשחקים ↓" : "Browse matches ↓"}
+                </a>
+                {isLoggedIn && (
+                  <Link href="/post-listing?type=israeli" style={{ padding: "12px 22px", border: `1px solid ${C.border}`, color: C.muted, fontSize: "13px", fontWeight: 500, borderRadius: "4px", textDecoration: "none", background: C.white, transition: "border-color 150ms,color 150ms" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = C.blue; (e.currentTarget as HTMLElement).style.color = C.blue; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.muted; }}
+                  >
+                    {isHe ? "+ פרסם מודעה" : "+ Post listing"}
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -429,14 +423,86 @@ export default function FootballIsraelPage() {
         </div>
       </div>
 
-      {/* ── GRID ── */}
-      <div style={{ ...W, marginTop: "28px" }}>
+      {/* ── SEARCH + FILTERS — identical structure to WC page ── */}
+      <div id="matches" style={{ ...W, paddingTop: "24px" }}>
+
+        {/* Search bar */}
+        <div style={{ display: "flex", alignItems: "center", border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.8)", borderRadius: "4px", marginBottom: "10px", backdropFilter: "blur(8px)", transition: "border-color 150ms" }}
+          onFocusCapture={e => (e.currentTarget.style.borderColor = C.blue)}
+          onBlurCapture={e => (e.currentTarget.style.borderColor = C.border)}
+        >
+          <span style={{ padding: "0 14px", fontSize: "16px", color: C.faint }}>⌕</span>
+          <input value={query} onChange={e => setQuery(e.target.value)}
+            placeholder={isHe ? "חיפוש קבוצה, סיבוב, אצטדיון..." : "Search team, round, stadium..."}
+            style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.text, fontSize: "13px", padding: "12px 0", fontFamily: "var(--font-dm),var(--font-he),sans-serif" }}
+          />
+          {query && (
+            <button onClick={() => setQuery("")} style={{ padding: "0 14px", background: "none", border: "none", color: C.hint, cursor: "pointer", fontSize: "14px" }}>✕</button>
+          )}
+        </div>
+
+        {/* Price range */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+          <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.hint, flexShrink: 0 }}>
+            {isHe ? "טווח מחיר" : "Price range"}
+          </span>
+          <div style={{ display: "flex", flex: 1, gap: "8px" }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", border: `1px solid ${C.border}`, borderRadius: "4px", background: C.white }}>
+              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>₪</span>
+              <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder={isHe ? "מינימום" : "Min"} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.text, fontSize: "12px", padding: "10px 0", fontFamily: "var(--font-dm),var(--font-he),sans-serif" }} />
+            </div>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", border: `1px solid ${C.border}`, borderRadius: "4px", background: C.white }}>
+              <span style={{ padding: "0 10px", fontSize: "12px", color: C.faint }}>₪</span>
+              <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder={isHe ? "מקסימום" : "Max"} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.text, fontSize: "12px", padding: "10px 0", fontFamily: "var(--font-dm),var(--font-he),sans-serif" }} />
+            </div>
+            {(minPrice || maxPrice) && (
+              <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} style={{ padding: "0 12px", background: "none", border: `1px solid ${C.border}`, borderRadius: "4px", color: C.hint, cursor: "pointer", fontSize: "12px", whiteSpace: "nowrap" as const }}>✕</button>
+            )}
+          </div>
+        </div>
+
+        {/* Chips — All | Ligat Ha'Al | State Cup | ♥ Saved | live dot */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px", flexWrap: "wrap" as const }}>
+          {/* All */}
+          <button onClick={() => { setTab("ligat_haal"); setSavedOnly(false); }}
+            style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${!savedOnly ? C.blue : C.border}`, color: !savedOnly ? C.blue : C.hint, background: !savedOnly ? "rgba(26,58,143,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", fontFamily: "var(--font-dm),sans-serif" }}>
+            {isHe ? "הכל" : "All"}
+          </button>
+
+          {/* Competition tabs as chips */}
+          {([["ligat_haal", isHe ? "ליגת העל" : "Ligat Ha'Al", ligatCount], ["state_cup", isHe ? "גביע המדינה" : "State Cup", cupCount]] as [Competition, string, number][]).map(([id, label, count]) => (
+            <button key={id} onClick={() => { setTab(id); setSavedOnly(false); }}
+              style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${tab === id && !savedOnly ? C.blue : C.border}`, color: tab === id && !savedOnly ? C.blue : C.hint, background: tab === id && !savedOnly ? "rgba(26,58,143,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", whiteSpace: "nowrap" as const, fontFamily: "var(--font-dm),sans-serif" }}>
+              {label} <span style={{ opacity: 0.6, fontSize: "9px" }}>({loading ? "–" : count})</span>
+            </button>
+          ))}
+
+          {/* Saved */}
+          <button onClick={() => setSavedOnly(p => !p)}
+            style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${savedOnly ? "rgba(230,57,70,0.4)" : C.border}`, color: savedOnly ? C.red : C.hint, background: savedOnly ? "rgba(230,57,70,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", fontFamily: "var(--font-dm),sans-serif" }}>
+            ♥ {isHe ? "שמורים" : "Saved"}{saved.size > 0 && ` (${saved.size})`}
+          </button>
+
+          {/* Live dot + count */}
+          <div style={{ marginInlineStart: "auto", display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: C.hint }}>
+            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+            {isHe ? "מתעדכן חי" : "Live updates"}
+            {!loading && (
+              <span style={{ color: C.blue, fontWeight: 600 }}>
+                · {filtered.length} {isHe ? (filtered.length === 1 ? "משחק" : "משחקים") : (filtered.length === 1 ? "match" : "matches")}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Section label */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
           <span style={smallCaps}>{isHe ? "משחקים" : "Matches"}</span>
           <span style={{ fontSize: "11px", color: C.blue, fontWeight: 600 }}>{activeCount} {isHe ? "מודעות פעילות" : "active listings"} ●</span>
         </div>
       </div>
 
+      {/* ── GRID ── */}
       <div style={W}>
         {loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden", border: `1px solid ${C.border}` }}>
