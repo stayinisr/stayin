@@ -33,7 +33,6 @@ type ListingItem = {
   user_id: string;
   israeli_match_id: string;
   type: string;
-  category: string;
   quantity: number;
   price: number;
   notes: string | null;
@@ -59,11 +58,11 @@ type ProfileItem = {
 
 type EnrichedListing = ListingItem & { profile: ProfileItem | null };
 
-// ── Tokens ────────────────────────────────────────────────────────────────────
+// ── Tokens — IL palette, same structure as WC ─────────────────────────────────
 const C = {
-  blue:       "#1a3a8f",
-  green:      "#006847",
-  teal:       "#1abfb0",
+  blue:       "#1a3a8f",   // primary  (≈ WC usa)
+  green:      "#006847",   // secondary(≈ WC mexico)
+  teal:       "#1abfb0",   // accent
   bg:         "#f8f9fc",
   white:      "#ffffff",
   border:     "#e8edf5",
@@ -106,13 +105,13 @@ function formatMatchDate(dateStr: string | null | undefined) {
 }
 
 // ── Team Logo ─────────────────────────────────────────────────────────────────
-function TeamLogo({ name, size = 32 }: { name: string; size?: number }) {
+function TeamLogo({ name, size = 28 }: { name: string; size?: number }) {
   const [err, setErr] = useState(false);
   const src   = getTeamLogo(name);
   const color = TEAM_COLORS[name] ?? C.hint;
   if (err || !src) {
     return (
-      <span style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: `${color}22`, border: `2px solid ${color}55`, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.35, fontWeight: 800, color, fontFamily: "var(--font-syne,'Syne',sans-serif)" }}>
+      <span style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: `${color}22`, border: `2px solid ${color}55`, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.38, fontWeight: 800, color, fontFamily: "var(--font-syne,'Syne',sans-serif)" }}>
         {name.slice(0,1)}
       </span>
     );
@@ -120,15 +119,15 @@ function TeamLogo({ name, size = 32 }: { name: string; size?: number }) {
   return <Image src={src} alt={name} width={size} height={size} style={{ objectFit: "contain", flexShrink: 0 }} onError={() => setErr(true)} />;
 }
 
-// ── Countdown ─────────────────────────────────────────────────────────────────
+// ── Countdown — identical to WC ───────────────────────────────────────────────
 function Countdown({ date, time, isHe }: { date: string; time: string | null; isHe: boolean }) {
-  const [t, setT] = useState({ d: 0, h: 0, m: 0, s: 0, over: false });
+  const [t, setT] = useState({ d:0, h:0, m:0, s:0, over: false });
   useEffect(() => {
-    const target = new Date(`${date}T${(time || "20:00").slice(0,5)}:00`).getTime();
+    const target = new Date(`${date}T${(time||"20:00").slice(0,5)}:00`).getTime();
     function tick() {
       const diff = target - Date.now();
       if (diff <= 0) { setT({ d:0,h:0,m:0,s:0,over:true }); return; }
-      setT({ d: Math.floor(diff/86400000), h: Math.floor((diff%86400000)/3600000), m: Math.floor((diff%3600000)/60000), s: Math.floor((diff%60000)/1000), over: false });
+      setT({ d:Math.floor(diff/86400000), h:Math.floor((diff%86400000)/3600000), m:Math.floor((diff%3600000)/60000), s:Math.floor((diff%60000)/1000), over:false });
     }
     tick();
     const id = setInterval(tick, 1000);
@@ -141,10 +140,10 @@ function Countdown({ date, time, isHe }: { date: string; time: string | null; is
         {isHe ? "עד הקיקאוף" : "Kickoff in"}
       </span>
       <div style={{ display: "flex", gap: "4px" }}>
-        {[{ v: t.d, l: isHe?"י":"d" },{ v: t.h, l: isHe?"ש":"h" },{ v: t.m, l: isHe?"ד":"m" },{ v: t.s, l: isHe?"ש":"s" }].map(({ v, l }) => (
-          <div key={l} style={{ textAlign: "center" as const, minWidth: "36px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: "4px", padding: "5px 4px" }}>
-            <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "15px", fontWeight: 800, color: C.text, lineHeight: 1 }}>{String(v).padStart(2,"0")}</div>
-            <div style={{ fontSize: "8px", fontWeight: 700, color: C.hint, letterSpacing: "0.1em", textTransform: "uppercase" as const, marginTop: "2px" }}>{l}</div>
+        {[{v:t.d,l:isHe?"י":"d"},{v:t.h,l:isHe?"ש":"h"},{v:t.m,l:isHe?"ד":"m"},{v:t.s,l:isHe?"ש":"s"}].map(({v,l}) => (
+          <div key={l} style={{ textAlign:"center" as const, minWidth:"36px", background:C.bg, border:`1px solid ${C.border}`, borderRadius:"4px", padding:"5px 4px" }}>
+            <div style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"15px", fontWeight:800, color:C.text, lineHeight:1 }}>{String(v).padStart(2,"0")}</div>
+            <div style={{ fontSize:"8px", fontWeight:700, color:C.hint, letterSpacing:"0.1em", textTransform:"uppercase" as const, marginTop:"2px" }}>{l}</div>
           </div>
         ))}
       </div>
@@ -152,7 +151,7 @@ function Countdown({ date, time, isHe }: { date: string; time: string | null; is
   );
 }
 
-// ── Trust Badge ───────────────────────────────────────────────────────────────
+// ── TrustBadge — identical to WC ──────────────────────────────────────────────
 function TrustBadge({ profile, isHe }: { profile: ProfileItem | null; isHe: boolean }) {
   if (!profile) return null;
   const age   = profile.created_at ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / 86400000) : 0;
@@ -161,113 +160,203 @@ function TrustBadge({ profile, isHe }: { profile: ProfileItem | null; isHe: bool
   const label = verified ? (isHe?"מאומת":"Verified") : trusted ? (isHe?"מהימן":"Trusted") : (isHe?"חדש":"New");
   const color = verified ? C.green : trusted ? C.blue : C.hint;
   return (
-    <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 7px", borderRadius: "3px", background: `${color}15`, color, border: `1px solid ${color}28`, letterSpacing: "0.05em", textTransform: "uppercase" as const }}>
+    <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 7px", borderRadius:"3px", background:`${color}15`, color, border:`1px solid ${color}28`, letterSpacing:"0.05em", textTransform:"uppercase" as const }}>
       {verified ? "✓ " : ""}{label}
     </span>
   );
 }
 
-// ── Gold Listing ──────────────────────────────────────────────────────────────
+// ── GoldListing — same as WC, IL colors + ₪ + no category ────────────────────
 function GoldListing({ item, isBestValue, isHe, viewerLoggedIn, viewerProfileComplete, onContact }: {
   item: EnrichedListing; isBestValue: boolean; isHe: boolean;
   viewerLoggedIn: boolean; viewerProfileComplete: boolean;
   onContact: (item: EnrichedListing) => void;
 }) {
-  const isSell = item.type === "sell";
+  const [hov, setHov] = useState(false);
+  const seatPills = [
+    item.seats_block && { l: isHe?"בלוק":"Block", v: item.seats_block },
+    item.seats_row   && { l: isHe?"שורה":"Row",   v: item.seats_row },
+    item.seats_numbers && { l: isHe?"מושבים":"Seats", v: item.seats_numbers },
+    item.quantity > 1 && item.seated_together === "yes" && { l:"", v: isHe?"✓ יחד":"✓ Together", green:true },
+    item.quantity > 1 && item.seated_together === "no"  && { l:"", v: isHe?"לא יחד":"Not together" },
+  ].filter(Boolean) as any[];
+
   return (
-    <div style={{ background: C.goldLight, border: `1.5px solid ${C.gold}44`, borderRadius: "8px", padding: "16px 18px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: `linear-gradient(90deg,${C.gold},${C.gold}88)` }} />
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" as const }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 8px", borderRadius: "3px", background: C.gold, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
-              ⭐ {isHe ? "מודגש" : "Featured"}
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:"10px", overflow:"hidden", position:"relative", transition:"box-shadow 200ms,transform 200ms", boxShadow: hov ? "0 8px 40px rgba(26,58,143,0.15),0 2px 12px rgba(13,27,62,0.08)" : "0 2px 12px rgba(13,27,62,0.06)", transform: hov ? "translateY(-2px)" : "none" }}>
+      <div style={{ height:"3px", background:`linear-gradient(90deg,${C.blue},${C.gold},${C.green})` }} />
+      <div style={{ position:"absolute", top:0, left:0, right:0, height:"120px", background:"radial-gradient(ellipse at 50% 0%,rgba(212,160,23,0.1) 0%,transparent 70%)", pointerEvents:"none" as const }} />
+      <div style={{ padding:"18px 20px", position:"relative" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"14px", flexWrap:"wrap" as const, gap:"8px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap" as const }}>
+            <span style={{ fontSize:"9px", fontWeight:800, padding:"3px 10px", borderRadius:"3px", background:`linear-gradient(135deg,${C.gold},#fbbf24)`, color:"#fff", letterSpacing:"0.08em", textTransform:"uppercase" as const }}>
+              ⭐ GOLD LISTING
             </span>
             {isBestValue && (
-              <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "3px", background: C.greenLight, color: C.greenDark, border: `1px solid ${C.green}33`, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
-                {isHe ? "מחיר מומלץ" : "Best value"}
+              <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 8px", borderRadius:"3px", background:C.greenLight, color:C.greenDark, border:"1px solid rgba(0,104,71,0.22)", letterSpacing:"0.05em", textTransform:"uppercase" as const }}>
+                🏷️ {isHe?"הכי זול":"Best value"}
               </span>
             )}
-            <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "3px", background: isSell ? "rgba(26,58,143,0.08)" : "rgba(37,211,102,0.08)", color: isSell ? C.blue : "#15803d", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
-              {isSell ? (isHe?"מכירה":"SELL") : (isHe?"קנייה":"BUY")}
+            <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 8px", borderRadius:"3px", background:C.greenLight, color:C.greenDark, border:"1px solid rgba(0,104,71,0.2)", letterSpacing:"0.05em", textTransform:"uppercase" as const }}>
+              {isHe?"מכירה":"Sell"}
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "6px" }}>
-            <span style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "22px", fontWeight: 900, color: C.text, letterSpacing: "-0.5px" }}>
-              ₪{item.price.toLocaleString()}
-            </span>
-            <span style={{ fontSize: "11px", color: C.muted }}>{isHe ? `לכרטיס · ${item.quantity} כרטיסים` : `per ticket · ${item.quantity} tickets`}</span>
-          </div>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" as const, fontSize: "11px", color: C.muted, marginBottom: item.notes ? "8px" : "0" }}>
-            <span>{item.category}</span>
-            {item.seated_together === "yes" && <span style={{ color: C.green2 }}>✓ {isHe?"ביחד":"Together"}</span>}
-            {item.seats_block && <span>{isHe?"בלוק":"Block"} {item.seats_block}</span>}
-          </div>
-          {item.notes && <p style={{ fontSize: "12px", color: C.muted, margin: "6px 0 0", lineHeight: 1.5 }}>{item.notes}</p>}
+          <span style={{ fontSize:"9px", fontWeight:600, color:C.hint }}>{isHe?"מודעה מוזהבת":"Featured listing"}</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "8px", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: "11px", color: C.muted }}>{item.profile?.full_name || (isHe?"משתמש":"User")}</span>
-            <TrustBadge profile={item.profile} isHe={isHe} />
+
+        <div style={{ display:"flex", alignItems:"baseline", gap:"10px", marginBottom:"10px" }}>
+          <span style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"32px", fontWeight:800, color:C.text, letterSpacing:"-1px", lineHeight:1 }}>
+            ₪{item.price}
+          </span>
+          <span style={{ fontSize:"12px", color:C.hint }}>{isHe?"לכרטיס":"/ ticket"} × {item.quantity}</span>
+          {item.quantity > 1 && <span style={{ fontSize:"13px", fontWeight:700, color:C.gold }}>= ₪{item.price * item.quantity}</span>}
+        </div>
+
+        {seatPills.length > 0 && (
+          <div style={{ display:"flex", gap:"6px", marginBottom:"10px", flexWrap:"wrap" as const }}>
+            {seatPills.map((p:any, i:number) => (
+              <span key={i} style={{ fontSize:"10px", padding:"3px 9px", background: p.green ? "rgba(34,197,94,0.08)" : "#f1f5f9", borderRadius:"4px", color: p.green ? "#15803d" : C.muted, fontWeight:500 }}>
+                {p.l && <span style={{ color:C.hint }}>{p.l} </span>}{p.v}
+              </span>
+            ))}
           </div>
-          <button
-            onClick={() => onContact(item)}
-            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", background: "#25D366", color: "#fff", border: "none", borderRadius: "5px", fontSize: "12px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const }}
-          >
-            <span style={{ fontSize: "14px" }}>💬</span>
-            {isHe ? "וואטסאפ" : "WhatsApp"}
-          </button>
+        )}
+
+        {item.notes && (
+          <p style={{ fontSize:"12px", color:C.muted, fontStyle:"italic", lineHeight:1.65, marginBottom:"12px", borderLeft:`2px solid ${C.gold}`, paddingLeft:"10px" }}>
+            "{item.notes}"
+          </p>
+        )}
+
+        <div style={{ height:"1px", background:"#f1f5f9", margin:"12px 0" }} />
+
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:`linear-gradient(135deg,${C.blue},${C.green})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", fontWeight:700, color:"#fff", flexShrink:0 }}>
+            {(item.profile?.full_name || "?")[0].toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontSize:"13px", fontWeight:600, color:C.text }}>{item.profile?.full_name || "Stayin user"}</div>
+            <div style={{ display:"flex", alignItems:"center", gap:"5px", marginTop:"2px" }}>
+              <span style={{ fontSize:"10px", color:C.hint }}>{item.profile?.country || ""}</span>
+              <TrustBadge profile={item.profile} isHe={isHe} />
+            </div>
+          </div>
+          <div style={{ marginInlineStart:"auto", display:"flex", gap:"8px", alignItems:"center" }}>
+            {!viewerLoggedIn ? (
+              <Link href="/auth" style={{ display:"block", padding:"10px 20px", textAlign:"center" as const, background:C.blue, color:"#fff", fontSize:"12px", fontWeight:700, borderRadius:"5px", textDecoration:"none" }}>
+                {isHe?"התחבר ליצירת קשר":"Login to contact"}
+              </Link>
+            ) : !viewerProfileComplete ? (
+              <Link href="/complete-profile" style={{ display:"block", padding:"10px 20px", textAlign:"center" as const, background:C.blue, color:"#fff", fontSize:"12px", fontWeight:700, borderRadius:"5px", textDecoration:"none" }}>
+                {isHe?"השלם פרופיל":"Complete profile"}
+              </Link>
+            ) : item.profile?.phone ? (
+              <button onClick={() => onContact(item)} style={{ padding:"10px 20px", background:"#25D366", color:"#fff", fontSize:"12px", fontWeight:700, border:"none", borderRadius:"5px", cursor:"pointer", letterSpacing:"0.02em", width:"100%" }}>
+                WhatsApp →
+              </button>
+            ) : (
+              <span style={{ fontSize:"11px", color:C.hint }}>{isHe?"אין מספר":"No number"}</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Regular Listing ───────────────────────────────────────────────────────────
+// ── RegularListing — same as WC, IL colors + ₪ + no category ─────────────────
 function RegularListing({ item, isBestValue, isNew, isHe, viewerLoggedIn, viewerProfileComplete, onContact }: {
   item: EnrichedListing; isBestValue: boolean; isNew: boolean; isHe: boolean;
   viewerLoggedIn: boolean; viewerProfileComplete: boolean;
   onContact: (item: EnrichedListing) => void;
 }) {
   const [hov, setHov] = useState(false);
-  const isSell = item.type === "sell";
+  const accentColor  = item.type === "sell" ? C.green : C.blue;
+  const expiresSoon  = item.expires_at && new Date(item.expires_at).getTime() - Date.now() < 24 * 3600000;
+  const hoursLeft    = item.expires_at ? Math.max(0, Math.floor((new Date(item.expires_at).getTime() - Date.now()) / 3600000)) : null;
+
   return (
-    <div
-      style={{ background: hov ? "rgba(248,249,252,0.95)" : C.white, border: `1px solid ${C.border}`, borderRadius: "8px", padding: "14px 16px", transition: "all 150ms", boxShadow: hov ? "0 2px 12px rgba(13,27,62,0.07)" : "0 1px 4px rgba(13,27,62,0.04)" }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" as const }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1, minWidth: 0 }}>
-          {/* Type badge */}
-          <div style={{ width: "36px", height: "36px", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: isSell ? "rgba(26,58,143,0.07)" : "rgba(37,211,102,0.08)", border: `1px solid ${isSell ? "rgba(26,58,143,0.14)" : "rgba(37,211,102,0.2)"}` }}>
-            <span style={{ fontSize: "9px", fontWeight: 800, color: isSell ? C.blue : "#15803d", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>{isSell ? (isHe?"מכ":"SEL") : (isHe?"קנ":"BUY")}</span>
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px", flexWrap: "wrap" as const }}>
-              <span style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "16px", fontWeight: 800, color: C.text, letterSpacing: "-0.3px" }}>
-                ₪{item.price.toLocaleString()}
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ background: hov ? "#fdfeff" : C.white, border:`1px solid ${isBestValue ? "rgba(0,104,71,0.35)" : C.border}`, borderRadius:"8px", overflow:"hidden", transition:"all 180ms ease", transform: hov ? "translateY(-1px)" : "none", boxShadow: hov ? "0 4px 20px rgba(13,27,62,0.08)" : "0 1px 4px rgba(13,27,62,0.04)" }}>
+      <div style={{ height:"2px", background:accentColor }} />
+      <div style={{ padding:"15px 18px" }}>
+
+        {/* Badges */}
+        <div style={{ display:"flex", alignItems:"center", gap:"5px", marginBottom:"10px", flexWrap:"wrap" as const }}>
+          {isBestValue && (
+            <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 7px", borderRadius:"3px", background:C.greenLight, color:C.greenDark, border:"1px solid rgba(0,104,71,0.2)", letterSpacing:"0.05em", textTransform:"uppercase" as const }}>
+              🏷️ {isHe?"הכי זול":"Best value"}
+            </span>
+          )}
+          {isNew && (
+            <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 7px", borderRadius:"3px", background:"rgba(26,58,143,0.07)", color:C.blue, border:"1px solid rgba(26,58,143,0.18)", letterSpacing:"0.05em", textTransform:"uppercase" as const }}>
+              {isHe?"חדש":"New"}
+            </span>
+          )}
+          <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 7px", borderRadius:"3px", textTransform:"uppercase" as const, letterSpacing:"0.05em", background: item.type === "sell" ? C.greenLight : "rgba(26,58,143,0.07)", color: item.type === "sell" ? C.greenDark : C.blue, border:`1px solid ${item.type === "sell" ? "rgba(0,104,71,0.2)" : "rgba(26,58,143,0.15)"}` }}>
+            {item.type === "sell" ? (isHe?"מכירה":"Sell") : (isHe?"קנייה":"Buy")}
+          </span>
+          {expiresSoon && hoursLeft !== null && (
+            <span style={{ fontSize:"9px", fontWeight:700, padding:"2px 7px", borderRadius:"3px", background:"rgba(230,57,70,0.07)", color:C.red, border:"1px solid rgba(230,57,70,0.2)", letterSpacing:"0.04em" }}>
+              🔥 {isHe?`${hoursLeft}ש' נשארו`:`${hoursLeft}h left`}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:"16px", alignItems:"center" }}>
+          <div>
+            <div style={{ display:"flex", alignItems:"baseline", gap:"8px", marginBottom:"6px" }}>
+              <span style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"22px", fontWeight:800, color: isBestValue ? C.green : C.text, letterSpacing:"-0.5px", lineHeight:1 }}>
+                {item.type === "sell" ? `₪${item.price}` : (isHe?`עד ₪${item.price}`:`Up to ₪${item.price}`)}
               </span>
-              <span style={{ fontSize: "10px", color: C.muted }}>{isHe?`× ${item.quantity} כרטיסים`:`× ${item.quantity} tickets`}</span>
-              {isBestValue && <span style={{ fontSize: "9px", fontWeight: 700, padding: "1px 6px", borderRadius: "2px", background: C.greenLight, color: C.greenDark, border: `1px solid ${C.green}33` }}>{isHe?"מחיר מומלץ":"Best value"}</span>}
-              {isNew && <span style={{ fontSize: "9px", fontWeight: 700, padding: "1px 6px", borderRadius: "2px", background: "rgba(26,191,176,0.1)", color: C.teal, border: "1px solid rgba(26,191,176,0.2)" }}>{isHe?"חדש":"New"}</span>}
+              <span style={{ fontSize:"11px", color:C.hint }}>× {item.quantity} {isHe?"כרטיסים":"tickets"}</span>
             </div>
-            <div style={{ display: "flex", gap: "8px", fontSize: "10px", color: C.hint, flexWrap: "wrap" as const }}>
-              <span>{item.category}</span>
-              {item.seated_together === "yes" && <span style={{ color: C.green2 }}>✓ {isHe?"ביחד":"Together"}</span>}
-              {item.seats_block && <span>{isHe?"בלוק":"Block"} {item.seats_block}</span>}
-              {item.profile?.full_name && <span>· {item.profile.full_name}</span>}
+
+            {(item.seats_block || item.seats_row) && (
+              <div style={{ display:"flex", gap:"5px", marginBottom:"6px", flexWrap:"wrap" as const }}>
+                {[
+                  item.seats_block && `${isHe?"בלוק":"Blk"} ${item.seats_block}`,
+                  item.seats_row   && `${isHe?"שורה":"Row"} ${item.seats_row}`,
+                  item.seated_together === "yes" && (isHe?"✓ יחד":"✓ Together"),
+                ].filter(Boolean).map((v:any, i) => (
+                  <span key={i} style={{ fontSize:"10px", padding:"2px 7px", background:"#f8f9fc", borderRadius:"3px", color:C.muted }}>{v}</span>
+                ))}
+              </div>
+            )}
+
+            {item.notes && (
+              <p style={{ fontSize:"11px", color:C.muted, fontStyle:"italic", lineHeight:1.55, marginBottom:"8px" }}>"{item.notes}"</p>
+            )}
+
+            <div style={{ display:"flex", alignItems:"center", gap:"7px" }}>
+              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:`linear-gradient(135deg,${C.blue}80,${C.green}80)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", fontWeight:700, color:"#fff", flexShrink:0 }}>
+                {(item.profile?.full_name || "?")[0].toUpperCase()}
+              </div>
+              <span style={{ fontSize:"11px", fontWeight:600, color:C.text }}>{item.profile?.full_name || "Stayin user"}</span>
+              {item.profile?.country && <span style={{ fontSize:"10px", color:C.hint }}>· {item.profile.country}</span>}
               <TrustBadge profile={item.profile} isHe={isHe} />
             </div>
-            {item.notes && <p style={{ fontSize: "11px", color: C.muted, margin: "4px 0 0", lineHeight: 1.5 }}>{item.notes}</p>}
+          </div>
+
+          <div style={{ display:"flex", flexDirection:"column" as const, gap:"6px", alignItems:"flex-end" }}>
+            {!viewerLoggedIn ? (
+              <Link href="/auth" style={{ padding:"9px 16px", background:C.blue, color:"#fff", fontSize:"11px", fontWeight:700, borderRadius:"4px", textDecoration:"none", whiteSpace:"nowrap" as const }}>
+                {isHe?"התחבר":"Login"}
+              </Link>
+            ) : !viewerProfileComplete ? (
+              <Link href="/complete-profile" style={{ padding:"9px 16px", background:C.blue, color:"#fff", fontSize:"11px", fontWeight:700, borderRadius:"4px", textDecoration:"none", whiteSpace:"nowrap" as const }}>
+                {isHe?"השלם פרופיל":"Complete profile"}
+              </Link>
+            ) : item.profile?.phone ? (
+              <button onClick={() => onContact(item)} style={{ padding:"9px 16px", background:"#25D366", color:"#fff", fontSize:"11px", fontWeight:700, border:"none", borderRadius:"4px", cursor:"pointer", whiteSpace:"nowrap" as const }}>
+                WhatsApp →
+              </button>
+            ) : (
+              <span style={{ fontSize:"10px", color:C.faint }}>{isHe?"אין מספר":"No number"}</span>
+            )}
+            <Link href={`/contact?type=report&listingId=${item.id}`} style={{ fontSize:"10px", color:C.faint, textDecoration:"none", textAlign:"center" as const }}>
+              {isHe?"דווח":"Report"}
+            </Link>
           </div>
         </div>
-        <button
-          onClick={() => onContact(item)}
-          style={{ display: "flex", alignItems: "center", gap: "5px", padding: "8px 14px", background: "#25D366", color: "#fff", border: "none", borderRadius: "5px", fontSize: "11px", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
-        >
-          <span style={{ fontSize: "13px" }}>💬</span>
-          {isHe ? "וואטסאפ" : "WhatsApp"}
-        </button>
       </div>
     </div>
   );
@@ -275,10 +364,11 @@ function RegularListing({ item, isBestValue, isNew, isHe, viewerLoggedIn, viewer
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function ILMatchPage() {
-  const { id: matchId } = useParams<{ id: string }>();
-  const { lang } = useLanguage();
-  const toast    = useToast();
-  const isHe     = lang === "he";
+  const params  = useParams();
+  const matchId = params.id as string;
+  const { t, lang } = useLanguage();
+  const toast   = useToast();
+  const isHe    = lang === "he";
 
   const [match,                setMatch]                = useState<ILMatchDetail | null>(null);
   const [listings,             setListings]             = useState<EnrichedListing[]>([]);
@@ -288,130 +378,114 @@ export default function ILMatchPage() {
   const [showLoginModal,       setShowLoginModal]       = useState(false);
 
   const [typeFilter, setTypeFilter] = useState<"all"|"sell"|"buy">("all");
+  const [sortBy,     setSortBy]     = useState("featured");
   const [minPrice,   setMinPrice]   = useState("");
   const [maxPrice,   setMaxPrice]   = useState("");
-  const [sortBy,     setSortBy]     = useState("featured");
 
-  // ── Load ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!matchId) return;
-
-    async function load() {
-      setLoading(true);
-
-      // Match details
-      const { data: matchData } = await supabase
-        .from("israeli_matches")
-        .select("*")
-        .eq("id", matchId)
-        .single();
-      setMatch(matchData as ILMatchDetail);
-
-      // Listings + profiles
-      const { data: listingData } = await supabase
-        .from("listings")
-        .select("*")
-        .eq("israeli_match_id", matchId)
-        .eq("status", "active")
-        .is("archived_at", null);
-
-      if (listingData && listingData.length > 0) {
-        const userIds = [...new Set(listingData.map((l: any) => l.user_id))];
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("id,full_name,phone,country,city,created_at")
-          .in("id", userIds);
-        const profileMap = Object.fromEntries((profileData || []).map((p: ProfileItem) => [p.id, p]));
-        setListings(listingData.map((l: any) => ({ ...l, profile: profileMap[l.user_id] || null })));
-      } else {
-        setListings([]);
-      }
-
-      // Viewer
-      const { data: { user } } = await supabase.auth.getUser();
-      setViewerLoggedIn(!!user);
-      if (user) {
-        const { data: p } = await supabase.from("profiles").select("phone,full_name").eq("id", user.id).single();
-        setViewerProfileComplete(!!(p?.phone && p?.full_name));
-      }
-
-      setLoading(false);
-    }
-
     load();
-
-    // Realtime
-    const ch = supabase.channel(`il-match-${matchId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "listings", filter: `israeli_match_id=eq.${matchId}` }, () => load())
+    const ch = supabase
+      .channel(`il-match-${matchId}`)
+      .on("postgres_changes", { event:"INSERT", schema:"public", table:"listings", filter:`israeli_match_id=eq.${matchId}` },
+        async (payload) => {
+          const { data } = await supabase.from("profiles").select("id,full_name,phone,country,city,created_at").eq("id", (payload.new as ListingItem).user_id).maybeSingle();
+          setListings(prev => [{ ...(payload.new as ListingItem), profile: data||null }, ...prev]);
+          toast.success(isHe ? "מודעה חדשה נוספה! 🎟️" : "New listing added! 🎟️");
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [matchId]);
+  }, [matchId, isHe, toast]);
 
-  // ── Contact ───────────────────────────────────────────────────────────────
-  function handleContact(item: EnrichedListing) {
-    if (!viewerLoggedIn) { setShowLoginModal(true); return; }
-    const phone = item.profile?.phone?.replace(/\D/g, "");
-    if (!phone) { toast.show(isHe ? "אין מספר טלפון" : "No phone number", "error"); return; }
-    const matchName = match ? `${isHe ? match.home_team : match.home_team_en} vs ${isHe ? match.away_team : match.away_team_en}` : "";
-    const msg = item.type === "sell"
-      ? `היי, ראיתי את המודעה שלך ב-Stayin – ${item.quantity} כרטיסים ל${matchName} ב-₪${item.price} לכרטיס. עוד זמין?`
-      : `היי, ראיתי שאתה מחפש כרטיסים ל${matchName} ב-Stayin. יש לי – נדבר?`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+  async function load() {
+    setLoading(true);
+    await Promise.all([loadViewer(), loadData()]);
+    setLoading(false);
   }
 
-  // ── Filter + sort ─────────────────────────────────────────────────────────
+  async function loadViewer() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    setViewerLoggedIn(true);
+    const { data } = await supabase.from("profiles").select("full_name,phone,country").eq("id", session.user.id).maybeSingle();
+    setViewerProfileComplete(!!(data?.full_name && data?.phone && data?.country));
+  }
+
+  async function loadData() {
+    const { data: matchData } = await supabase.from("israeli_matches").select("*").eq("id", matchId).single();
+    if (!matchData) return;
+    setMatch(matchData as ILMatchDetail);
+
+    const { data: listingsData } = await supabase.from("listings").select("*").eq("israeli_match_id", matchId).eq("status","active").is("archived_at",null);
+    const ids = [...new Set((listingsData||[]).map((l:any) => l.user_id))];
+    const profilesMap: Record<string, ProfileItem> = {};
+    if (ids.length) {
+      const { data: pData } = await supabase.from("profiles").select("id,full_name,phone,country,city,created_at").in("id", ids);
+      (pData||[]).forEach((p:ProfileItem) => { profilesMap[p.id] = p; });
+    }
+    setListings((listingsData||[]).map((l:any) => ({ ...l, profile: profilesMap[l.user_id]||null })));
+  }
+
+  function handleContact(item: EnrichedListing) {
+    if (!match || !item.profile?.phone) return;
+    const phone = item.profile.phone.replace(/[^\d+]/g,"").replace(/^\+/,"");
+    const home  = isHe ? match.home_team : match.home_team_en;
+    const away  = isHe ? match.away_team : match.away_team_en;
+    const text  = isHe
+      ? item.type === "sell"
+        ? `היי, ראיתי את מודעת המכירה שלך ב-Stayin למשחק ${home} נגד ${away}. זה עדיין זמין?`
+        : `היי, ראיתי את בקשת הקנייה שלך למשחק ${home} נגד ${away} ב-Stayin. אולי יש לי כרטיסים.`
+      : item.type === "sell"
+        ? `Hi, I saw your sell listing on Stayin for ${home} vs ${away}. Still available?`
+        : `Hi, I saw your buy request on Stayin for ${home} vs ${away}. I may have tickets.`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
   const filtered = useMemo(() => {
-    const mn = minPrice ? Number(minPrice) : null;
-    const mx = maxPrice ? Number(maxPrice) : null;
-    let list = listings.filter(l => {
-      if (typeFilter !== "all" && l.type !== typeFilter) return false;
-      if (l.type === "sell") {
-        if (mn !== null && l.price < mn) return false;
-        if (mx !== null && l.price > mx) return false;
-      }
-      return true;
+    let r = [...listings];
+    if (typeFilter !== "all") r = r.filter(l => l.type === typeFilter);
+    if (minPrice) r = r.filter(l => l.price >= Number(minPrice));
+    if (maxPrice) r = r.filter(l => l.price <= Number(maxPrice));
+    r.sort((a,b) => {
+      if (sortBy === "price_low")  return a.price - b.price;
+      if (sortBy === "price_high") return b.price - a.price;
+      if (sortBy === "newest") return new Date(b.first_published_at||0).getTime() - new Date(a.first_published_at||0).getTime();
+      if (Number(!!b.is_featured) !== Number(!!a.is_featured)) return Number(!!b.is_featured) - Number(!!a.is_featured);
+      return new Date(b.last_bumped_at||b.first_published_at||0).getTime() - new Date(a.last_bumped_at||a.first_published_at||0).getTime();
     });
-    if (sortBy === "featured")   list = [...list].sort((a,b) => (b.is_featured?1:0) - (a.is_featured?1:0) || new Date(b.first_published_at||0).getTime() - new Date(a.first_published_at||0).getTime());
-    if (sortBy === "price_low")  list = [...list].sort((a,b) => a.price - b.price);
-    if (sortBy === "price_high") list = [...list].sort((a,b) => b.price - a.price);
-    if (sortBy === "newest")     list = [...list].sort((a,b) => new Date(b.first_published_at||0).getTime() - new Date(a.first_published_at||0).getTime());
-    return list;
+    return r;
   }, [listings, typeFilter, minPrice, maxPrice, sortBy]);
+
+  const bestValueIds = useMemo(() => {
+    const sells = listings.filter(l => l.type === "sell");
+    if (!sells.length) return new Set<string>();
+    const min = sells.reduce((m,l) => l.price < m.price ? l : m, sells[0]);
+    return new Set([min.id]);
+  }, [listings]);
 
   const sellCount = listings.filter(l => l.type === "sell").length;
   const buyCount  = listings.filter(l => l.type === "buy").length;
+  const prices    = listings.filter(l => l.type === "sell").map(l => l.price);
+  const minP      = prices.length ? Math.min(...prices) : null;
+  const avgP      = prices.length ? Math.round(prices.reduce((a,b) => a+b,0) / prices.length) : null;
 
-  const sellPrices = listings.filter(l => l.type === "sell").map(l => l.price).filter(Boolean);
-  const bestValueIds = new Set(
-    sellPrices.length
-      ? listings.filter(l => l.type === "sell" && l.price === Math.min(...sellPrices)).map(l => l.id)
-      : []
-  );
-
-  const W = { maxWidth: "860px", margin: "0 auto", padding: "0 16px" } as const;
-
-  const t = {
-    loginRequired:        isHe ? "נדרשת התחברות" : "Login required",
-    cannotPostWithoutLogin: isHe ? "כדי לצור קשר עם המוכר יש להתחבר תחילה." : "Please log in to contact the seller.",
-    continueWithoutLogin: isHe ? "המשך ללא התחברות" : "Continue without login",
-  };
-
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) return (
-    <main style={{ background: C.bg, minHeight: "100vh" }}>
-      <style>{`@keyframes shi{from{background-position:-600px 0}to{background-position:600px 0}}.sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:3px;}`}</style>
-      <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
-      <div style={{ ...W, paddingTop: "48px" }}>
-        {[80,220,140,180].map((w,i) => <div key={i} className="sk" style={{ height: i===1?32:14, width:`${w}px`, marginBottom:"16px" }} />)}
+    <main style={{ minHeight:"100vh" }}>
+      <style>{`@keyframes sk{from{background-position:-600px 0}to{background-position:600px 0}}.sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:sk 1.4s infinite linear;border-radius:8px;}`}</style>
+      <div style={{ height:"3px", background:`linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
+      <div style={{ maxWidth:"900px", margin:"0 auto", padding:"2rem 1.75rem" }}>
+        <div className="sk" style={{ height:"200px", marginBottom:"14px" }} />
+        <div className="sk" style={{ height:"48px", marginBottom:"14px" }} />
+        {[1,2,3].map(i => <div key={i} className="sk" style={{ height:"110px", marginBottom:"10px" }} />)}
       </div>
     </main>
   );
 
   if (!match) return (
-    <main style={{ background: C.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ textAlign: "center" as const }}>
-        <div style={{ fontSize: "40px", marginBottom: "16px" }}>⚽</div>
-        <p style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "20px", fontWeight: 800, color: C.text }}>{isHe ? "משחק לא נמצא" : "Match not found"}</p>
-        <Link href="/sports/football-israel" style={{ display: "inline-block", marginTop: "16px", color: C.blue, fontSize: "13px", fontWeight: 600 }}>{isHe ? "← חזרה לכדורגל ישראלי" : "← Back to Israeli Football"}</Link>
+    <main style={{ minHeight:"100vh" }}>
+      <div style={{ maxWidth:"900px", margin:"0 auto", padding:"2rem 1.75rem" }}>
+        <p style={{ color:C.hint }}>{isHe?"משחק לא נמצא":"Match not found"}</p>
+        <Link href="/sports/football-israel" style={{ color:C.blue, fontSize:"13px" }}>← {isHe?"חזרה":"Back"}</Link>
       </div>
     </main>
   );
@@ -419,145 +493,142 @@ export default function ILMatchPage() {
   const isCup = match.competition === "state_cup";
 
   return (
-    <main style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
-      <style>{`
-        @keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}.ld{animation:lp 2s infinite}
-        @keyframes shi{from{background-position:-600px 0}to{background-position:600px 0}}.sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:2px;}
-        .fsu{animation:fsu .4s ease both}@keyframes fsu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .fsu2{animation:fsu .4s .06s ease both}
-      `}</style>
+    <main style={{ minHeight:"100vh" }}>
+      <style>{`@keyframes fsu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.fsu{animation:fsu 380ms cubic-bezier(0.16,1,0.3,1) both}.fsu1{animation-delay:50ms}.fsu2{animation-delay:100ms}.fsu3{animation-delay:150ms}`}</style>
 
-      {/* 3px top bar */}
-      <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
+      {/* 3px top bar — IL colors */}
+      <div style={{ height:"3px", background:`linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
 
-      {/* ── HEADER ── */}
-      <div style={{ background: "transparent", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ ...W, paddingTop: "32px", paddingBottom: "32px" }}>
+      <div style={{ maxWidth:"900px", margin:"0 auto", padding:"1.5rem 1.75rem" }}>
 
-          {/* Breadcrumb */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "20px", fontSize: "11px", color: C.hint, fontWeight: 500 }}>
-            <Link href="/" style={{ color: C.hint, textDecoration: "none" }}>{isHe?"דף הבית":"Home"}</Link>
-            <span>/</span>
-            <Link href="/sports/football-israel" style={{ color: C.hint, textDecoration: "none" }}>{isHe?"כדורגל ישראלי":"Israeli Football"}</Link>
-            <span>/</span>
-            <span style={{ color: C.muted }}>{isHe ? match.round : match.round_en}</span>
-          </div>
+        {/* Back link */}
+        <Link href="/sports/football-israel" style={{ display:"inline-flex", alignItems:"center", gap:"6px", fontSize:"12px", fontWeight:600, color:C.hint, textDecoration:"none", marginBottom:"16px", letterSpacing:"0.06em", textTransform:"uppercase" as const, transition:"color 150ms" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = C.blue)}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = C.hint)}
+        >
+          <span style={{ fontSize:"14px" }}>←</span>
+          {isHe?"כל המשחקים":"All matches"}
+        </Link>
 
-          {/* Round + competition badges */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px", flexWrap: "wrap" as const }}>
-            <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.faint }}>{isHe ? match.round : match.round_en}</span>
-            {isCup && (
-              <span style={{ fontSize: "9px", fontWeight: 700, padding: "2px 8px", borderRadius: "3px", background: "rgba(212,160,23,0.1)", color: "#b8860b", border: "1px solid rgba(212,160,23,0.25)", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
-                {isHe?"גביע המדינה":"State Cup"}
-              </span>
-            )}
-          </div>
-
-          {/* Teams */}
-          <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "16px", flexWrap: "wrap" as const }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <TeamLogo name={match.home_team} size={44} />
-              <div>
-                <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(18px,3vw,26px)", fontWeight: 900, letterSpacing: "-0.5px", color: C.text, lineHeight: 1 }}>
-                  {isHe ? match.home_team : match.home_team_en}
+        {/* ── MATCH CARD ── */}
+        <div className="fsu" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:"10px", overflow:"hidden", marginBottom:"12px", boxShadow:"0 2px 12px rgba(13,27,62,0.06)" }}>
+          <div style={{ height:"3px", background:C.blue }} />
+          <div style={{ padding:"22px 26px" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:"20px", flexWrap:"wrap" as const }}>
+              <div style={{ flex:1 }}>
+                {/* Round + Cup badge */}
+                <div style={{ fontSize:"10px", fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase" as const, color:C.hint, marginBottom:"8px", display:"flex", alignItems:"center", gap:"8px" }}>
+                  <span>{isHe ? match.round : match.round_en}</span>
+                  {isCup && (
+                    <span style={{ padding:"2px 8px", borderRadius:"3px", background:"rgba(212,160,23,0.1)", color:"#b8860b", border:"1px solid rgba(212,160,23,0.25)", fontSize:"9px" }}>
+                      {isHe?"גביע המדינה":"State Cup"}
+                    </span>
+                  )}
                 </div>
-                <div style={{ fontSize: "10px", color: C.hint, fontWeight: 500, marginTop: "3px" }}>{isHe?"בית":"Home"}</div>
+
+                {/* Teams H1 — same size/font as WC */}
+                <h1 style={{ fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)", fontSize:"clamp(22px,3.5vw,38px)", fontWeight:800, color:C.text, letterSpacing:"-0.8px", lineHeight:1.05, marginBottom:"10px", display:"flex", alignItems:"center", flexWrap:"wrap" as const, gap:"10px" }}>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:"10px" }}>
+                    <TeamLogo name={match.home_team} size={28} />
+                    {isHe ? match.home_team : match.home_team_en}
+                  </span>
+                  <span style={{ color:C.faint, fontWeight:300, margin:"0 2px", fontSize:"0.65em", fontFamily:"inherit" }}>
+                    {isHe?"נגד":"vs"}
+                  </span>
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:"10px" }}>
+                    <TeamLogo name={match.away_team} size={28} />
+                    {isHe ? match.away_team : match.away_team_en}
+                  </span>
+                </h1>
+
+                {/* Meta */}
+                <div style={{ display:"flex", flexWrap:"wrap" as const, gap:"14px", fontSize:"12px", color:C.muted, marginBottom:"16px" }}>
+                  {(match.city || match.city_en) && <span>📍 {isHe ? (match.city||match.city_en) : (match.city_en||match.city)}</span>}
+                  {(match.stadium || match.stadium_en) && <span>🏟️ {isHe ? (match.stadium||match.stadium_en) : (match.stadium_en||match.stadium)}</span>}
+                  <span>📅 {formatMatchDate(match.match_date)}</span>
+                  {match.match_time && <span>🕐 {match.match_time.slice(0,5)}</span>}
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" as const }}>
+                  <button onClick={() => { if (!viewerLoggedIn) { setShowLoginModal(true); return; } window.location.href = `/post-listing?matchId=${matchId}&type=israeli`; }}
+                    style={{ padding:"10px 22px", background:C.blue, color:"#fff", fontSize:"12px", fontWeight:700, border:"none", borderRadius:"5px", cursor:"pointer", letterSpacing:"0.02em" }}>
+                    + {isHe?"מכור כרטיסים":"Sell tickets"}
+                  </button>
+                  <button onClick={() => { if (!viewerLoggedIn) { setShowLoginModal(true); return; } window.location.href = `/post-listing?matchId=${matchId}&type=israeli`; }}
+                    style={{ padding:"10px 22px", background:"transparent", color:C.blue, fontSize:"12px", fontWeight:700, border:`1px solid ${C.blue}`, borderRadius:"5px", cursor:"pointer" }}>
+                    + {isHe?"חפש לקנות":"Looking to buy"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: countdown + stats */}
+              <div style={{ display:"flex", flexDirection:"column" as const, gap:"14px", alignItems:"flex-end" }}>
+                <Countdown date={match.match_date} time={match.match_time} isHe={isHe} />
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1px", background:C.border, border:`1px solid ${C.border}`, borderRadius:"8px", overflow:"hidden" }}>
+                  {[
+                    { n: sellCount,                              l: isHe?"מוכרים":"Sell",   c: C.green },
+                    { n: buyCount,                               l: isHe?"מחפשים":"Buy",    c: C.blue  },
+                    { n: minP !== null ? `₪${minP}` : "—",      l: isHe?"מינ׳":"From",     c: "#15803d" },
+                    { n: avgP !== null ? `₪${avgP}` : "—",      l: isHe?"ממוצע":"Avg",     c: C.gold  },
+                  ].map((s,i) => (
+                    <div key={i} style={{ background:C.white, padding:"10px 14px", textAlign:"center" as const }}>
+                      <div style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"16px", fontWeight:800, color:s.c, letterSpacing:"-0.3px" }}>{s.n}</div>
+                      <div style={{ fontSize:"9px", fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase" as const, color:C.hint, marginTop:"2px" }}>{s.l}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-
-            <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "14px", fontWeight: 900, color: C.faint, padding: "6px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: "4px" }}>VS</div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <TeamLogo name={match.away_team} size={44} />
-              <div>
-                <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(18px,3vw,26px)", fontWeight: 900, letterSpacing: "-0.5px", color: C.text, lineHeight: 1 }}>
-                  {isHe ? match.away_team : match.away_team_en}
-                </div>
-                <div style={{ fontSize: "10px", color: C.hint, fontWeight: 500, marginTop: "3px" }}>{isHe?"חוץ":"Away"}</div>
-              </div>
-            </div>
           </div>
-
-          {/* Meta row */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" as const, marginBottom: "20px" }}>
-            <span style={{ fontSize: "12px", color: C.muted }}>
-              📅 {formatMatchDate(match.match_date)}{match.match_time ? ` · ${match.match_time.slice(0,5)}` : ""}
-            </span>
-            {(match.city || match.stadium) && (
-              <span style={{ fontSize: "12px", color: C.muted }}>
-                📍 {isHe ? (match.city || match.city_en) : (match.city_en || match.city)}
-                {(match.stadium || match.stadium_en) ? ` · ${isHe ? (match.stadium || match.stadium_en) : (match.stadium_en || match.stadium)}` : ""}
-              </span>
-            )}
-          </div>
-
-          {/* Countdown */}
-          <Countdown date={match.match_date} time={match.match_time} isHe={isHe} />
         </div>
-      </div>
 
-      {/* ── LISTINGS ── */}
-      <div style={{ ...W, marginTop: "24px" }}>
-
-        {/* Filter bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", flexWrap: "wrap" as const, background: C.white, border: `1px solid ${C.border}`, borderRadius: "6px", padding: "10px 14px", boxShadow: "0 1px 4px rgba(13,27,62,0.04)" }}>
-          {/* Type tabs */}
-          <div style={{ display: "flex", border: `1px solid ${C.border}`, borderRadius: "4px", overflow: "hidden" }}>
+        {/* ── FILTER BAR ── */}
+        <div className="fsu fsu1" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:"8px", padding:"11px 16px", marginBottom:"12px", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap" as const, boxShadow:"0 1px 4px rgba(13,27,62,0.04)" }}>
+          <div style={{ display:"flex", gap:"4px" }}>
             {(["all","sell","buy"] as const).map(v => (
-              <button
-                key={v}
-                onClick={() => setTypeFilter(v)}
-                style={{ padding: "5px 12px", fontSize: "11px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", fontFamily: "var(--font-dm,'DM Sans',sans-serif)", background: typeFilter === v ? C.blue : "transparent", color: typeFilter === v ? "#fff" : C.muted }}
-              >
-                {v === "all" ? (isHe?"הכל":"All") : v === "sell" ? `${isHe?"מכירה":"Sell"} (${sellCount})` : `${isHe?"קנייה":"Buy"} (${buyCount})`}
+              <button key={v} onClick={() => setTypeFilter(v)} style={{ padding:"5px 12px", fontSize:"10px", fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase" as const, border:`1px solid ${typeFilter===v ? C.blue : C.border}`, color: typeFilter===v ? C.blue : C.hint, background: typeFilter===v ? "rgba(26,58,143,0.06)" : "transparent", borderRadius:"4px", cursor:"pointer", transition:"all 150ms" }}>
+                {v==="all" ? (isHe?"הכל":"All") : v==="sell" ? `${isHe?"מכירה":"Sell"} (${sellCount})` : `${isHe?"קנייה":"Buy"} (${buyCount})`}
               </button>
             ))}
           </div>
 
-          {/* Price */}
-          <span style={{ fontSize: "10px", color: C.hint, fontWeight: 600 }}>₪</span>
-          <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder={isHe?"מינ׳":"min"} style={{ width: "58px", padding: "5px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.bg, color: C.text, outline: "none" }} />
-          <span style={{ fontSize: "10px", color: C.faint }}>—</span>
-          <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder={isHe?"מקס׳":"max"} style={{ width: "58px", padding: "5px 8px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.bg, color: C.text, outline: "none" }} />
+          <div style={{ display:"flex", alignItems:"center", gap:"5px" }}>
+            <span style={{ fontSize:"10px", color:C.hint, fontWeight:600 }}>₪</span>
+            <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder={isHe?"מינ׳":"min"} style={{ width:"58px", padding:"5px 8px", border:`1px solid ${C.border}`, borderRadius:"4px", fontSize:"11px", background:C.bg, color:C.text, outline:"none" }} />
+            <span style={{ fontSize:"10px", color:C.faint }}>—</span>
+            <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder={isHe?"מקס׳":"max"} style={{ width:"58px", padding:"5px 8px", border:`1px solid ${C.border}`, borderRadius:"4px", fontSize:"11px", background:C.bg, color:C.text, outline:"none" }} />
+          </div>
 
-          {/* Sort */}
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: "4px", fontSize: "11px", background: C.bg, color: C.text, outline: "none", cursor: "pointer", marginInlineStart: "auto" }}>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{ padding:"5px 10px", border:`1px solid ${C.border}`, borderRadius:"4px", fontSize:"11px", background:C.bg, color:C.text, outline:"none", cursor:"pointer", marginInlineStart:"auto" }}>
             <option value="featured">{isHe?"מודגשות + חדש":"Featured + newest"}</option>
             <option value="price_low">{isHe?"מחיר: נמוך לגבוה":"Price: low → high"}</option>
             <option value="price_high">{isHe?"מחיר: גבוה לנמוך":"Price: high → low"}</option>
             <option value="newest">{isHe?"חדשות ביותר":"Newest first"}</option>
           </select>
 
-          <span style={{ fontSize: "11px", color: C.hint }}>{filtered.length} {isHe?"תוצאות":"results"}</span>
+          <span style={{ fontSize:"11px", color:C.hint }}>{filtered.length} {isHe?"תוצאות":"results"}</span>
         </div>
 
         {/* Disclaimer */}
-        <div style={{ marginBottom: "10px", fontSize: "11px", color: C.muted, background: "rgba(255,255,255,0.72)", border: `1px solid ${C.border}`, borderRadius: "8px", padding: "10px 12px", boxShadow: "0 1px 4px rgba(13,27,62,0.04)" }}>
-          {isHe
-            ? "Stayin היא פלטפורמה לחיבור בין משתמשים בלבד. האתר אינו צד לעסקה ואינו אחראי לתוכן המודעות, למחיר, לתשלום או להעברת הכרטיסים."
-            : "Stayin is a platform that only connects users. The platform is not a party to any transaction and is not responsible for listing content, pricing, payment, or ticket transfer."}
+        <div style={{ marginBottom:"10px", fontSize:"11px", color:C.muted, background:"rgba(255,255,255,0.72)", border:`1px solid ${C.border}`, borderRadius:"8px", padding:"10px 12px", boxShadow:"0 1px 4px rgba(13,27,62,0.04)" }}>
+          {isHe ? "Stayin היא פלטפורמה לחיבור בין משתמשים בלבד. האתר אינו צד לעסקה, ואינו אחראי לתוכן המודעות, למחיר, לתשלום או להעברת הכרטיסים." : "Stayin is a platform that only connects users. The platform is not a party to any transaction and is not responsible for listing content, pricing, payment, or ticket transfer."}
         </div>
 
-        {/* List */}
+        {/* ── LISTINGS ── */}
         <div className="fsu fsu2">
           {filtered.length === 0 ? (
-            <div style={{ padding: "56px 24px", textAlign: "center" as const, background: C.white, border: `1px solid ${C.border}`, borderRadius: "10px", boxShadow: "0 1px 4px rgba(13,27,62,0.04)" }}>
-              <div style={{ fontSize: "40px", marginBottom: "14px" }}>🎟️</div>
-              <p style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "20px", fontWeight: 800, color: C.text, marginBottom: "8px" }}>
-                {isHe ? "אין מודעות עדיין" : "No listings yet"}
-              </p>
-              <p style={{ fontSize: "13px", color: C.muted, marginBottom: "24px" }}>
-                {isHe ? "היה הראשון לפרסם מודעה למשחק הזה" : "Be the first to post a listing for this match"}
-              </p>
-              <button
-                onClick={() => { if (!viewerLoggedIn) { setShowLoginModal(true); return; } window.location.href = `/post-listing?matchId=${matchId}`; }}
-                style={{ padding: "12px 28px", background: C.blue, color: "#fff", fontSize: "13px", fontWeight: 700, border: "none", borderRadius: "5px", cursor: "pointer" }}
-              >
-                + {isHe ? "פרסם מודעה ראשונה" : "Post first listing"}
+            <div style={{ padding:"56px 24px", textAlign:"center" as const, background:C.white, border:`1px solid ${C.border}`, borderRadius:"10px", boxShadow:"0 1px 4px rgba(13,27,62,0.04)" }}>
+              <div style={{ fontSize:"40px", marginBottom:"14px" }}>🎟️</div>
+              <p style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"20px", fontWeight:800, color:C.text, marginBottom:"8px" }}>{isHe?"אין מודעות עדיין":"No listings yet"}</p>
+              <p style={{ fontSize:"13px", color:C.muted, marginBottom:"24px" }}>{isHe?"היה הראשון לפרסם מודעה למשחק הזה":"Be the first to post a listing for this match"}</p>
+              <button onClick={() => { if (!viewerLoggedIn) { setShowLoginModal(true); return; } window.location.href = `/post-listing?matchId=${matchId}&type=israeli`; }}
+                style={{ padding:"12px 28px", background:C.blue, color:"#fff", fontSize:"13px", fontWeight:700, border:"none", borderRadius:"5px", cursor:"pointer" }}>
+                + {isHe?"פרסם מודעה ראשונה":"Post first listing"}
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px", paddingBottom: "52px" }}>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:"10px" }}>
               {filtered.map(item => {
                 const bv  = bestValueIds.has(item.id);
                 const isN = !!item.first_published_at && Date.now() - new Date(item.first_published_at).getTime() < 86400000;
@@ -570,18 +641,19 @@ export default function ILMatchPage() {
         </div>
       </div>
 
-      {/* ── LOGIN MODAL ── */}
+      {/* ── LOGIN MODAL — identical to WC ── */}
       {showLoginModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(13,27,62,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99, padding: "1.5rem" }} onClick={e => { if (e.target === e.currentTarget) setShowLoginModal(false); }}>
-          <div style={{ background: "#fff", borderRadius: "12px", padding: "32px", maxWidth: "360px", width: "100%", textAlign: "center" as const, boxShadow: "0 32px 80px rgba(13,27,62,0.2)" }}>
-            <div style={{ fontSize: "36px", marginBottom: "14px" }}>🔐</div>
-            <h3 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "20px", fontWeight: 800, color: C.text, marginBottom: "8px" }}>{t.loginRequired}</h3>
-            <p style={{ fontSize: "13px", color: C.muted, marginBottom: "24px", lineHeight: 1.7 }}>{t.cannotPostWithoutLogin}</p>
-            <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
-              <Link href="/auth" style={{ display: "block", padding: "12px", background: C.blue, color: "#fff", borderRadius: "5px", fontSize: "13px", fontWeight: 700, textDecoration: "none" }}>
-                {isHe ? "התחבר / הרשמה" : "Login / Sign up"}
+        <div style={{ position:"fixed", inset:0, background:"rgba(13,27,62,0.5)", backdropFilter:"blur(6px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:99, padding:"1.5rem" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowLoginModal(false); }}>
+          <div style={{ background:"#fff", borderRadius:"12px", padding:"32px", maxWidth:"360px", width:"100%", textAlign:"center" as const, boxShadow:"0 32px 80px rgba(13,27,62,0.2)" }}>
+            <div style={{ fontSize:"36px", marginBottom:"14px" }}>🔐</div>
+            <h3 style={{ fontFamily:"var(--font-syne,'Syne',sans-serif)", fontSize:"20px", fontWeight:800, color:C.text, marginBottom:"8px" }}>{t.loginRequired}</h3>
+            <p style={{ fontSize:"13px", color:C.muted, marginBottom:"24px", lineHeight:1.7 }}>{t.cannotPostWithoutLogin}</p>
+            <div style={{ display:"flex", flexDirection:"column" as const, gap:"10px" }}>
+              <Link href="/auth" style={{ display:"block", padding:"12px", background:C.blue, color:"#fff", borderRadius:"5px", fontSize:"13px", fontWeight:700, textDecoration:"none" }}>
+                {isHe?"התחבר / הרשמה":"Login / Sign up"}
               </Link>
-              <button onClick={() => setShowLoginModal(false)} style={{ padding: "12px", background: "transparent", border: `1px solid ${C.border}`, borderRadius: "5px", fontSize: "12px", fontWeight: 500, color: C.muted, cursor: "pointer" }}>
+              <button onClick={() => setShowLoginModal(false)} style={{ padding:"12px", background:"transparent", border:`1px solid ${C.border}`, borderRadius:"5px", fontSize:"12px", fontWeight:500, color:C.muted, cursor:"pointer" }}>
                 {t.continueWithoutLogin}
               </button>
             </div>
