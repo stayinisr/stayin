@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
 
 const C = {
@@ -23,29 +24,73 @@ const fSyne = "var(--font-syne,'Syne',sans-serif)";
 function fBody(isHe: boolean) { return isHe ? fHe : fEn; }
 
 // ── Ticker ────────────────────────────────────────────────────────────────────
-const TICKER = [
-  { en: "2× Argentina vs France · $420",       he: "2× ארגנטינה נגד צרפת · ₪1,550" },
-  { en: "WANTED · 4× USA vs Mexico",            he: "מחפש · 4× ארה\"ב נגד מקסיקו" },
-  { en: "1× Brazil vs Spain · $310",            he: "1× ברזיל נגד ספרד · ₪1,140" },
-  { en: "3× Canada Quarter Final · $280",       he: "3× קנדה רבע גמר · ₪1,030" },
-  { en: "WANTED · 2× World Cup Final",          he: "מחפש · 2× גמר המונדיאל" },
-  { en: "1× Maccabi TA vs Hapoel · ₪180",      he: "1× מכבי ת\"א נגד הפועל · ₪180" },
-  { en: "2× Morocco vs Portugal · $260",        he: "2× מרוקו נגד פורטוגל · ₪960" },
-  { en: "WANTED · 1× Semi Final seat",          he: "מחפש · 1× מושב חצי גמר" },
-  { en: "2× Maccabi Haifa vs Beitar · ₪220",   he: "2× מכבי חיפה נגד בית\"ר · ₪220" },
-];
+type TickerItem = { text: string; type: string };
 
 function Ticker({ isHe }: { isHe: boolean }) {
-  const items = [...TICKER, ...TICKER];
+  const [items, setItems] = useState<TickerItem[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      // Fetch active listings with match info
+      const { data: listings } = await supabase
+        .from("listings")
+        .select("type, price, quantity, match_id, israeli_match_id")
+        .eq("status", "active")
+        .is("archived_at", null)
+        .order("last_bumped_at", { ascending: false })
+        .limit(20);
+
+      if (!listings?.length) return;
+
+      // Fetch WC match names
+      const wcIds = [...new Set(listings.filter(l => l.match_id).map(l => l.match_id))];
+      const ilIds = [...new Set(listings.filter(l => l.israeli_match_id).map(l => l.israeli_match_id))];
+
+      const [{ data: wcMatches }, { data: ilMatches }] = await Promise.all([
+        wcIds.length ? supabase.from("matches").select("id,home_team_name,away_team_name").in("id", wcIds) : { data: [] },
+        ilIds.length ? supabase.from("israeli_matches").select("id,home_team,away_team,home_team_en,away_team_en").in("id", ilIds) : { data: [] },
+      ]);
+
+      const wcMap: Record<string, string> = {};
+      (wcMatches || []).forEach((m: any) => { wcMap[m.id] = `${m.home_team_name || "TBD"} vs ${m.away_team_name || "TBD"}`; });
+
+      const ilMapHe: Record<string, string> = {};
+      const ilMapEn: Record<string, string> = {};
+      (ilMatches || []).forEach((m: any) => {
+        ilMapHe[m.id] = `${m.home_team} נגד ${m.away_team}`;
+        ilMapEn[m.id] = `${m.home_team_en} vs ${m.away_team_en}`;
+      });
+
+      const built: TickerItem[] = listings.map(l => {
+        const matchHe = l.match_id ? wcMap[l.match_id] : (l.israeli_match_id ? ilMapHe[l.israeli_match_id] : null);
+        const matchEn = l.match_id ? wcMap[l.match_id] : (l.israeli_match_id ? ilMapEn[l.israeli_match_id] : null);
+        const match = isHe ? matchHe : matchEn;
+        if (!match) return null;
+        const qty = `${l.quantity}×`;
+        const price = l.price ? (l.match_id ? `$${l.price}` : `₪${l.price}`) : "";
+        const text = l.type === "buy"
+          ? (isHe ? `מחפש · ${qty} ${match}` : `WANTED · ${qty} ${match}`)
+          : `${qty} ${match}${price ? ` · ${price}` : ""}`;
+        return { text, type: l.type };
+      }).filter(Boolean) as TickerItem[];
+
+      if (built.length) setItems(built);
+    }
+    load();
+  }, [isHe]);
+
+  if (!items.length) return null;
+
+  const doubled = [...items, ...items];
   return (
     <>
       <style>{`@keyframes stayin-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
       <div style={{ overflow: "hidden", borderBottom: `1px solid ${C.border}`, padding: "10px 0" }}>
-        <div style={{ display: "flex", animation: "stayin-tick 36s linear infinite", whiteSpace: "nowrap" }}>
-          {items.map((t, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}` }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: i % 3 === 0 ? C.red : i % 3 === 1 ? C.navy : C.teal, display: "inline-block" }} />
-              {isHe ? t.he : t.en}
+        <div style={{ display: "flex", animation: `stayin-tick ${Math.max(20, doubled.length * 3)}s linear infinite`, whiteSpace: "nowrap" }}>
+          {doubled.map((t, i) => (
+            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}`, flexShrink: 0 }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: t.type === "buy" ? C.navy : t.type === "sell" ? C.red : C.teal, display: "inline-block" }} />
+              {t.text}
             </span>
           ))}
         </div>
@@ -61,7 +106,7 @@ const BANDS = [
     subEn: "104 matches · USA, Canada & México", subHe: "104 משחקים · ארה\"ב, קנדה ומקסיקו",
     tagEn: "01 · Sports", tagHe: "01 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/world-cup-2026",
-    img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(230,57,70,0.32)", top: "#e63946", live: true,
     bgGrad: "linear-gradient(135deg,#1a3a6b,#e63946)",
   },
@@ -70,7 +115,7 @@ const BANDS = [
     subEn: "Ligat Ha'Al & State Cup", subHe: "ליגת העל וגביע המדינה",
     tagEn: "02 · Sports", tagHe: "02 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/football-israel",
-    img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(26,191,176,0.24)", top: "#1abfb0",
     bgGrad: "linear-gradient(135deg,#1a3a8f,#006847)",
   },
@@ -145,8 +190,8 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
             : b.soon
             ? { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" }
             : { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
-          return (
-            <Link key={b.id} href={b.href} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)} style={{ textDecoration: "none" }}>
+          const inner = (
+            <>
               <div className="sb-img" style={{ backgroundImage: `url(${b.img})` }} />
               <div className="sb-grad" />
               <div className="sb-acc" style={{ background: `linear-gradient(155deg,${b.accent},transparent 55%)` }} />
@@ -157,10 +202,13 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
                 <div className="sb-tag">{isHe ? b.tagHe : b.tagEn}</div>
                 <div className="sb-title">{isHe ? b.he : b.en}</div>
                 <div className="sb-sub">{isHe ? b.subHe : b.subEn}</div>
-                <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} →</div>
+                <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} {b.soon ? "" : "→"}</div>
               </div>
-            </Link>
+            </>
           );
+          return b.soon
+            ? <div key={b.id} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)}>{inner}</div>
+            : <Link key={b.id} href={b.href} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)} style={{ textDecoration: "none" }}>{inner}</Link>;
         })}
       </div>
 
@@ -330,19 +378,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* WC strip */}
-        <div style={{ background: C.navy, padding: "13px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const }}>
-            <div style={{ display: "flex", gap: 5 }}>
-              {["rgba(255,255,255,.35)", "#ff8080", "#4ade80"].map((c, i) => (
-                <span key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, display: "inline-block" }} />
-              ))}
-            </div>
-            <span style={{ fontFamily: fSyne, fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>FIFA World Cup 2026</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{isHe ? "48 קבוצות · 104 משחקים · 16 ערים" : "48 teams · 104 matches · 16 host cities"}</span>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)", background: "rgba(255,255,255,.08)", padding: "5px 13px", borderRadius: 3, border: "1px solid rgba(255,255,255,.1)" }}>Jun 11 – Jul 19, 2026</span>
-        </div>
 
         {/* ── CATEGORIES ── */}
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "44px 16px 0" }}>
