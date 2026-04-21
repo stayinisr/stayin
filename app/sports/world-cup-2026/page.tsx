@@ -862,59 +862,7 @@ export default function Home() {
                   >
                     {isHe ? "+ פרסם מודעה" : "+ Post listing"}
                   </Link>
-                ) : (
-                  <>
-                    <Link
-                      href="/how-it-works"
-                      style={{
-                        padding: "12px 22px",
-                        border: `1px solid ${C.border}`,
-                        color: C.muted,
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        borderRadius: "4px",
-                        textDecoration: "none",
-                        background: C.white,
-                        transition: "border-color 150ms,color 150ms",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-                        (e.currentTarget as HTMLElement).style.color = C.usa;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                        (e.currentTarget as HTMLElement).style.color = C.muted;
-                      }}
-                    >
-                      {isHe ? "איך זה עובד?" : "How it works"}
-                    </Link>
-
-                    <Link
-                      href="/auth"
-                      style={{
-                        padding: "12px 22px",
-                        border: `1px solid ${C.border}`,
-                        color: C.muted,
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        borderRadius: "4px",
-                        textDecoration: "none",
-                        background: C.white,
-                        transition: "border-color 150ms,color 150ms",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.usa;
-                        (e.currentTarget as HTMLElement).style.color = C.usa;
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                        (e.currentTarget as HTMLElement).style.color = C.muted;
-                      }}
-                    >
-                      {isHe ? "התחבר / הרשמה" : "Login / Sign up"}
-                    </Link>
-                  </>
-                )}
+                ) : null}
               </div>
             </div>
 
