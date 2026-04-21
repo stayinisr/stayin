@@ -41,11 +41,11 @@ type ListingItem = {
 // ── Tokens — same as WC page ──────────────────────────────────────────────────
 const C = {
   blue:   "#1a3a8f",
-  green:  "#006847",
-  teal:   "#1abfb0",
-  bg:     "#f8f9fc",
+  green:  "#0095DA",   // תכלת — צבע פסי הדגל
+  teal:   "#4A8FD4",   // תכלת בהיר
+  bg:     "#f0f6ff",   // רקע כחלחל קל
   white:  "#ffffff",
-  border: "#e8edf5",
+  border: "#dce8f8",
   text:   "#0d1b3e",
   muted:  "#64748b",
   hint:   "#94a3b8",
@@ -334,15 +334,15 @@ export default function FootballIsraelPage() {
         @media(max-width:640px){.hero-grid{grid-template-columns:1fr!important}}
       `}</style>
 
-      {/* 3px top bar */}
-      <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)` }} />
+      {/* 3px top bar — כחול → תכלת → לבן */}
+      <div style={{ height: "3px", background: `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,#ffffff 66.6%)` }} />
 
       {/* ── HEADER ── */}
-      <div style={{ background: "linear-gradient(135deg,#eef4ff 0%,#f0fff8 50%,#e8fffe 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+      <div style={{ background: "linear-gradient(135deg,#e8f2ff 0%,#f4f8ff 50%,#ffffff 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
         {[
-          { w:360, t:-100, r:-60,  c:"rgba(26,58,143,.07)"  },
-          { w:280, b:-80,  l:-40,  c:"rgba(0,104,71,.06)"   },
-          { w:220, t:30,   r:"28%",c:"rgba(26,191,176,.05)" },
+          { w:360, t:-100, r:-60,  c:"rgba(26,58,143,.08)"  },
+          { w:280, b:-80,  l:-40,  c:"rgba(0,149,218,.06)"  },
+          { w:220, t:30,   r:"28%",c:"rgba(74,143,212,.05)" },
         ].map((b,i) => (
           <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" as const }} />
         ))}
@@ -409,17 +409,19 @@ export default function FootballIsraelPage() {
               </div>
             </div>
 
-            {/* Right: stats grid — same as WC page */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
+            {/* Right: stats — 3 columns, identical to WC page */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1px", background: C.border, border: `1px solid ${C.border}`, borderRadius: "6px", overflow: "hidden", flexShrink: 0 }}>
               {[
-                { n: loading ? "–" : String(activeCount), l: isHe ? "מודעות פעילות" : "Active listings", c: C.blue },
-                { n: loading ? "–" : String(sellCount),   l: isHe ? "מוכרים"         : "Sellers",         c: C.green },
-                { n: loading ? "–" : (minP !== null ? `₪${minP}` : "—"),  l: isHe ? "מחיר מינ׳" : "From",    c: "#15803d" },
-                { n: loading ? "–" : (avgP !== null ? `₪${avgP}` : "—"),  l: isHe ? "מחיר ממוצע" : "Avg",   c: "#d4a017"},
+                { val: loading ? "–" : String(matches.length), lbl: isHe ? "משחקים" : "Matches",        color: C.blue,   live: false },
+                { val: loading ? "–" : String(activeCount),    lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true  },
+                { val: "WA",                                    lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.teal,  live: false },
               ].map((s, i) => (
-                <div key={i} style={{ background: C.white, padding: "14px 12px", textAlign: "center" as const }}>
-                  <div style={{ fontFamily: fSyne, fontSize: "20px", fontWeight: 800, color: s.c, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.n}</div>
-                  <div style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.hint, marginTop: "4px", lineHeight: 1.3 }}>{s.l}</div>
+                <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" as const }}>
+                  <div style={{ fontFamily: fSyne, fontSize: "22px", fontWeight: 800, color: s.color, letterSpacing: "-0.5px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+                    {s.val}
+                    {s.live && <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />}
+                  </div>
+                  <div style={{ ...smallCaps, marginTop: "4px" }}>{s.lbl}</div>
                 </div>
               ))}
             </div>
