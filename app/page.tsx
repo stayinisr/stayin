@@ -130,7 +130,7 @@ const BANDS = [
   },
   {
     id: "basketball", en: "Basketball IL", he: "כדורסל ישראלי",
-    subEn: "Courts, leagues & playoff nights", subHe: "קורטים, ליגות ולילות פלייאוף",
+    subEn: "Leagues, playoff & israeli cup", subHe: "ליגה, פליאוף וגביע המדינה",
     tagEn: "04 · Sports", tagHe: "04 · ספורט", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/sports",
     img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
@@ -147,8 +147,8 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
         /* ── Desktop: horizontal expand ── */
         .sb{flex:1;position:relative;overflow:hidden;cursor:pointer;transition:flex 420ms cubic-bezier(.4,0,.2,1);border-right:1px solid rgba(255,255,255,.05)}
         .sb:last-child{border-right:none}.sb.on{flex:3.8}
-        .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.15;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}.sb.on .sb-img{opacity:.48;transform:scale(1)}
-        .sb-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 10%,rgba(4,8,18,.96) 100%)}
+        .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.30;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}.sb.on .sb-img{opacity:.62;transform:scale(1)}
+        .sb-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(4,8,18,.82) 100%)}
         .sb-acc{position:absolute;inset:0;opacity:0;transition:opacity 400ms}.sb.on .sb-acc{opacity:1}
         .sb-top{position:absolute;top:0;left:0;right:0;height:3px;width:0;transition:width 420ms}.sb.on .sb-top{width:100%}
         .sb-badge{position:absolute;top:14px;left:14px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity 250ms 80ms}.sb.on .sb-badge{opacity:1}
