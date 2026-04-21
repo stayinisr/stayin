@@ -59,7 +59,7 @@ const BANDS = [
   {
     id: "wc2026", en: "World Cup 2026", he: "מונדיאל 2026",
     subEn: "104 matches · USA, Canada & México", subHe: "104 משחקים · ארה\"ב, קנדה ומקסיקו",
-    tagEn: "01 · Sports", tagHe: "01 · ספורט", ctaEn: "Browse matches", ctaHe: "לגלישה במשחקים",
+    tagEn: "01 · Sports", tagHe: "01 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/world-cup-2026",
     img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(230,57,70,0.32)", top: "#e63946", live: true,
@@ -68,7 +68,7 @@ const BANDS = [
   {
     id: "israel", en: "Israeli Football", he: "כדורגל ישראלי",
     subEn: "Ligat Ha'Al & State Cup", subHe: "ליגת העל וגביע המדינה",
-    tagEn: "02 · Sports", tagHe: "02 · ספורט", ctaEn: "Explore", ctaHe: "לגלישה",
+    tagEn: "02 · Sports", tagHe: "02 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/football-israel",
     img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(26,191,176,0.24)", top: "#1abfb0",
@@ -77,7 +77,7 @@ const BANDS = [
   {
     id: "concerts", en: "Live Concerts", he: "הופעות חיות",
     subEn: "Artists, tours & big nights", subHe: "אמנים, טורים ולילות גדולים",
-    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
+    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/live-shows",
     img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(212,160,23,0.24)", top: "#d4a017", soon: true,
@@ -86,7 +86,7 @@ const BANDS = [
   {
     id: "basketball", en: "Basketball IL", he: "כדורסל ישראלי",
     subEn: "Courts, leagues & playoff nights", subHe: "קורטים, ליגות ולילות פלייאוף",
-    tagEn: "04 · Sports", tagHe: "04 · ספורט", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
+    tagEn: "04 · Sports", tagHe: "04 · ספורט", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/sports",
     img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(212,160,23,0.2)", top: "#d4a017", soon: true,
