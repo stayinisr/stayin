@@ -244,7 +244,7 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
               <div className="mb-body">
                 <div className="mb-sub">{isHe ? b.subHe : b.subEn}</div>
                 {b.soon
-                  ? <span className="mb-cta">{isHe ? "עדכנו אותי →" : "Notify me →"}</span>
+                  ? <span className="mb-cta">{isHe ? "בקרוב" : "Soon"}</span>
                   : <Link href={b.href} className="mb-cta" style={{ color: "#1abfb0", textDecoration: "none" }} onClick={e => e.stopPropagation()}>{isHe ? b.ctaHe : b.ctaEn} →</Link>
                 }
               </div>
