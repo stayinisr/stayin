@@ -408,7 +408,7 @@ export default function FootballIsraelPage() {
                 { n: loading ? "–" : String(activeCount), l: isHe ? "מודעות פעילות" : "Active listings", c: C.blue },
                 { n: loading ? "–" : String(sellCount),   l: isHe ? "מוכרים"         : "Sellers",         c: C.green },
                 { n: loading ? "–" : (minP !== null ? `₪${minP}` : "—"),  l: isHe ? "מחיר מינ׳" : "From",    c: "#15803d" },
-                { n: loading ? "–" : (avgP !== null ? `₪${avgP}` : "—"),  l: isHe ? "מחיר ממוצע" : "Avg",   c: C.gold   },
+                { n: loading ? "–" : (avgP !== null ? `₪${avgP}` : "—"),  l: isHe ? "מחיר ממוצע" : "Avg",   c: "#d4a017"},
               ].map((s, i) => (
                 <div key={i} style={{ background: C.white, padding: "14px 12px", textAlign: "center" as const }}>
                   <div style={{ fontFamily: fSyne, fontSize: "20px", fontWeight: 800, color: s.c, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.n}</div>
