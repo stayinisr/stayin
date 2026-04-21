@@ -63,6 +63,7 @@ const BANDS = [
     href: "/sports/world-cup-2026",
     img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(230,57,70,0.32)", top: "#e63946", live: true,
+    bgGrad: "linear-gradient(135deg,#1a3a6b,#e63946)",
   },
   {
     id: "israel", en: "Israeli Football", he: "כדורגל ישראלי",
@@ -71,30 +72,25 @@ const BANDS = [
     href: "/sports/football-israel",
     img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(26,191,176,0.24)", top: "#1abfb0",
+    bgGrad: "linear-gradient(135deg,#1a3a8f,#006847)",
   },
   {
     id: "concerts", en: "Live Concerts", he: "הופעות חיות",
     subEn: "Artists, tours & big nights", subHe: "אמנים, טורים ולילות גדולים",
-    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Explore", ctaHe: "לגלישה",
+    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
     href: "/live-shows",
     img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
-    accent: "rgba(212,160,23,0.24)", top: "#d4a017", isNew: true,
+    accent: "rgba(212,160,23,0.24)", top: "#d4a017", soon: true,
+    bgGrad: "linear-gradient(135deg,#4a3000,#d4a017)",
   },
   {
-    id: "festivals", en: "Festivals", he: "פסטיבלים",
-    subEn: "Multi-day events & summer weekends", subHe: "אירועים מרובי ימים וסופי שבוע",
-    tagEn: "04 · Live", tagHe: "04 · הופעות", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
-    href: "/live-shows",
-    img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1400&q=80",
-    accent: "rgba(26,191,176,0.2)", top: "#1abfb0", soon: true,
-  },
-  {
-    id: "basketball", en: "Basketball", he: "כדורסל",
+    id: "basketball", en: "Basketball IL", he: "כדורסל ישראלי",
     subEn: "Courts, leagues & playoff nights", subHe: "קורטים, ליגות ולילות פלייאוף",
-    tagEn: "05 · Sports", tagHe: "05 · ספורט", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
+    tagEn: "04 · Sports", tagHe: "04 · ספורט", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
     href: "/sports",
     img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(212,160,23,0.2)", top: "#d4a017", soon: true,
+    bgGrad: "linear-gradient(135deg,#2a1a6b,#d4a017)",
   },
 ];
 
@@ -103,6 +99,7 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
   return (
     <>
       <style>{`
+        /* ── Desktop: horizontal expand ── */
         .sb{flex:1;position:relative;overflow:hidden;cursor:pointer;transition:flex 420ms cubic-bezier(.4,0,.2,1);border-right:1px solid rgba(255,255,255,.05)}
         .sb:last-child{border-right:none}.sb.on{flex:3.8}
         .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.15;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}.sb.on .sb-img{opacity:.48;transform:scale(1)}
@@ -116,16 +113,38 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
         .sb-sub{font-size:12px;color:rgba(255,255,255,.48);line-height:1.5;margin-top:7px;max-height:0;overflow:hidden;opacity:0;transition:max-height 340ms,opacity 280ms}.sb.on .sb-sub{max-height:56px;opacity:1}
         .sb-cta{display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:11px;font-weight:800;color:#1abfb0;letter-spacing:.04em;max-height:0;overflow:hidden;opacity:0;transition:max-height 300ms 70ms,opacity 260ms 70ms}.sb.on .sb-cta{max-height:30px;opacity:1}
         .sb-soon{position:absolute;inset:0;background:rgba(4,8,18,.42);transition:opacity 300ms}.sb.on .sb-soon{opacity:0}
-        @media(max-width:640px){.sb.on{flex:4}.sb.on .sb-title{font-size:18px}}
+        .eb-desktop{display:flex;height:380px;border-radius:6px;overflow:hidden;background:#06090f}
+        .eb-mobile{display:none;flex-direction:column;gap:6px}
+        /* ── Mobile: accordion ── */
+        @media(max-width:640px){
+          .eb-desktop{display:none}
+          .eb-mobile{display:flex}
+          .mb-band{border-radius:8px;overflow:hidden;cursor:pointer}
+          .mb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;position:relative}
+          .mb-head-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.25}
+          .mb-head-grad{position:absolute;inset:0;background:rgba(4,8,18,.55)}
+          .mb-head-content{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%}
+          .mb-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:inline-block}
+          .mb-title{font-family:var(--font-syne,'Syne',sans-serif);font-size:17px;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1}
+          .mb-chevron{font-size:11px;color:rgba(255,255,255,.6);transition:transform 280ms;flex-shrink:0}
+          .mb-band.mb-open .mb-chevron{transform:rotate(180deg)}
+          .mb-body{max-height:0;overflow:hidden;transition:max-height 320ms ease,padding 280ms ease;padding:0 16px;background:rgba(4,8,18,.7)}
+          .mb-band.mb-open .mb-body{max-height:80px;padding:12px 16px}
+          .mb-sub{font-size:12px;color:rgba(255,255,255,.55);line-height:1.5}
+          .mb-cta{font-size:11px;font-weight:800;color:#1abfb0;margin-top:8px;display:block}
+          .mb-soon-overlay{position:absolute;inset:0;background:rgba(4,8,18,.35)}
+        }
       `}</style>
-      <div style={{ display: "flex", height: 380, borderRadius: "6px", overflow: "hidden", background: "#06090f", border: `1px solid ${C.border}` }}>
+
+      {/* ── DESKTOP ── */}
+      <div className="eb-desktop" style={{ border: `1px solid ${C.border}` }}>
         {BANDS.map((b) => {
           const on = active === b.id;
           const badge = b.live
             ? { bg: "rgba(230,57,70,.18)", border: "1px solid rgba(230,57,70,.34)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
-            : b.isNew
-            ? { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" }
-            : { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" };
+            : b.soon
+            ? { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" }
+            : { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
           return (
             <Link key={b.id} href={b.href} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)} style={{ textDecoration: "none" }}>
               <div className="sb-img" style={{ backgroundImage: `url(${b.img})` }} />
@@ -141,6 +160,47 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
                 <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} →</div>
               </div>
             </Link>
+          );
+        })}
+      </div>
+
+      {/* ── MOBILE: accordion ── */}
+      <div className="eb-mobile">
+        {BANDS.map((b) => {
+          const badge = b.live
+            ? { bg: "rgba(230,57,70,.25)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
+            : b.soon
+            ? { bg: "rgba(255,255,255,.12)", color: "rgba(255,255,255,.5)", label: isHe ? "בקרוב" : "Soon" }
+            : { bg: "rgba(26,191,176,.22)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
+          return (
+            <div key={b.id} className="mb-band" style={{ background: b.bgGrad || "#06090f" }}
+              onClick={e => {
+                const el = e.currentTarget as HTMLElement;
+                // close all others
+                document.querySelectorAll(".mb-band").forEach(x => { if (x !== el) x.classList.remove("mb-open"); });
+                el.classList.toggle("mb-open");
+              }}
+            >
+              <div className="mb-head">
+                <div className="mb-head-img" style={{ backgroundImage: `url(${b.img})` }} />
+                <div className="mb-head-grad" />
+                {b.soon && <div className="mb-soon-overlay" />}
+                <div className="mb-head-content">
+                  <div>
+                    <span className="mb-badge" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
+                    <div className="mb-title">{isHe ? b.he : b.en}</div>
+                  </div>
+                  <span className="mb-chevron">▼</span>
+                </div>
+              </div>
+              <div className="mb-body">
+                <div className="mb-sub">{isHe ? b.subHe : b.subEn}</div>
+                {b.soon
+                  ? <span className="mb-cta">{isHe ? "עדכנו אותי →" : "Notify me →"}</span>
+                  : <Link href={b.href} className="mb-cta" style={{ color: "#1abfb0", textDecoration: "none" }} onClick={e => e.stopPropagation()}>{isHe ? b.ctaHe : b.ctaEn} →</Link>
+                }
+              </div>
+            </div>
           );
         })}
       </div>
@@ -247,7 +307,7 @@ export default function HomePage() {
                 >
                   {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
                 </Link>
-                <Link href="/sports/football-israel" style={{ padding: "12px 22px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", border: "1px solid rgba(255,255,255,.25)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.15), 0 4px 14px rgba(26,58,143,.22)", transition: "opacity 150ms" }}
+                <Link href="/sports/football-israel" style={{ padding: "12px 22px", background: "linear-gradient(135deg,#1a3a8f 0%,#2d5be3 50%,#ffffff22 100%),#1a3a8f", backgroundBlendMode: "screen", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", border: "1px solid rgba(100,160,255,.4)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.2), 0 4px 14px rgba(26,58,143,.3)", transition: "opacity 150ms" }}
                   onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
                 >
