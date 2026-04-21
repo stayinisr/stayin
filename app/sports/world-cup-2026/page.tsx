@@ -772,7 +772,7 @@ export default function Home() {
                   className="hero-h1"
                   style={{
                     fontFamily: "var(--font-syne,'Syne',sans-serif)",
-                    fontSize: "clamp(40px,5.5vw,65px)",
+                    fontSize: "clamp(40px,5.5vw,62px)",
                     fontWeight: 800,
                     lineHeight: 1,
                     letterSpacing: "0.02em",
