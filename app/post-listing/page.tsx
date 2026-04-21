@@ -235,7 +235,7 @@ function PostListingPageContent() {
 
     const payload: Record<string, any> = {
       type,
-      category,
+      category: league === "il" ? "general" : category,
       quantity,
       price: Number(price),
       notes: notes.trim() || null,
@@ -275,7 +275,7 @@ function PostListingPageContent() {
     if ((active || []).length >= maxListings) { setSubmitting(false); toast.error(t.limitReached10); return; }
 
     // Check duplicate
-    const dupQuery = supabase.from("listings").select("id").eq("user_id", user.id).eq("type", type).eq("category", category).is("archived_at", null);
+    const dupQuery = supabase.from("listings").select("id").eq("user_id", user.id).eq("type", type).eq("category", league === "il" ? "general" : category).is("archived_at", null);
     const { data: dup } = league === "il"
       ? await dupQuery.eq("israeli_match_id", matchId).maybeSingle()
       : await dupQuery.eq("match_id", matchId).maybeSingle();
