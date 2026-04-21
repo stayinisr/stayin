@@ -261,6 +261,7 @@ export default function FootballIsraelPage() {
         .from("israeli_matches")
         .select("*")
         .neq("status", "finished")
+        .gte("match_date", new Date().toISOString().slice(0, 10))
         .order("match_date", { ascending: true }),
       supabase
         .from("listings")
