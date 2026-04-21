@@ -374,7 +374,7 @@ export default function FootballIsraelPage() {
                   <span style={{ color: C.teal }}>ישירות </span><span style={{ color: C.blue }}>מאוהדים.</span>
                 </h1>
               ) : (
-                <h1 style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
+                <h1 style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,62px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
                   <span style={{ color: C.blue }}>ISRAELI </span><span style={{ color: C.green }}>FOOTBALL.</span>
                   <br />
                   <span style={{ color: C.teal }}>DIRECT FROM </span><span style={{ color: C.blue }}>FANS.</span>
