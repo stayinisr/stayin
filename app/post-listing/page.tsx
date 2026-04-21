@@ -158,7 +158,7 @@ function PostListingPageContent() {
   useEffect(() => {
     if (league === "wc") {
       setLoadingWC(true);
-      supabase.from("matches").select("id,fifa_match_number,home_team_name,away_team_name,city,stadium,match_date,stage").order("fifa_match_number", { ascending: true })
+      supabase.from("matches").select("id,fifa_match_number,home_team_name,away_team_name,city,stadium,match_date,stage").gte("match_date", new Date().toISOString().slice(0, 10)).order("fifa_match_number", { ascending: true })
         .then(({ data }) => { setWcMatches((data || []) as MatchItem[]); setLoadingWC(false); });
     }
   }, [league]);
@@ -167,7 +167,7 @@ function PostListingPageContent() {
   useEffect(() => {
     if (league === "il") {
       setLoadingIL(true);
-      supabase.from("israeli_matches").select("id,competition,round,round_en,home_team,away_team,home_team_en,away_team_en,match_date,match_time,status").neq("status", "finished").order("match_date", { ascending: true })
+      supabase.from("israeli_matches").select("id,competition,round,round_en,home_team,away_team,home_team_en,away_team_en,match_date,match_time,status").neq("status", "finished").gte("match_date", new Date().toISOString().slice(0, 10)).order("match_date", { ascending: true })
         .then(({ data }) => { setIlMatches((data || []) as ILMatch[]); setLoadingIL(false); });
     }
   }, [league]);

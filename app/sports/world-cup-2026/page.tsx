@@ -538,7 +538,7 @@ export default function Home() {
       listingsData = (l || []) as ListingItem[];
     }
 
-    setMatches(matchesData);
+    setMatches(matchesData.filter((match) => match.match_date >= today));
     setListings(listingsData);
     setLoading(false);
   }
