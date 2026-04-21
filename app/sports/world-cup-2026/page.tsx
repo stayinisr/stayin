@@ -763,9 +763,9 @@ export default function Home() {
                     marginBottom: "18px",
                   }}
                 >
-                  <span style={{ color: C.usa }}>כל</span> <span style={{ color: C.canada }}>הכרטיסים</span>
+                  <span style={{ color: C.usa }}>כרטיסים</span> <span style={{ color: C.canada }}>למונדיאל</span>
                   <br />
-                  <span style={{ color: C.mexico }}>במקום </span><span style={{ color: C.usa }}>אחד.</span>
+                  <span style={{ color: C.mexico }}>ללא </span><span style={{ color: C.usa }}>עמלות.</span>
                 </h1>
               ) : (
                 <h1
@@ -779,9 +779,9 @@ export default function Home() {
                     marginBottom: "18px",
                   }}
                 >
-                  <span style={{ color: C.usa }}>ALL </span><span style={{ color: C.canada }}>TICKETS.</span>
+                  <span style={{ color: C.usa }}>WORLD CUP </span><span style={{ color: C.canada }}>TICKETS.</span>
                   <br />
-                  <span style={{ color: C.mexico }}>SKIP </span><span style={{ color: C.usa }}>THE CHAOS.</span>
+                  <span style={{ color: C.mexico }}>NO </span><span style={{ color: C.usa }}>FEES.</span>
                 </h1>
               )}
 
