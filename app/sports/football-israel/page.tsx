@@ -8,7 +8,7 @@ import { useLanguage } from "../../../lib/LanguageContext";
 import { getTeamLogo } from "../../../lib/teamLogos";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type Competition = "ligat_haal" | "state_cup";
+type Competition = "ligat_haal" | "state_cup" | "all";
 
 type ILMatch = {
   id: string;
@@ -240,7 +240,7 @@ export default function FootballIsraelPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [saved,      setSaved]      = useState<Set<string>>(new Set());
 
-  const [tab,       setTab]       = useState<Competition>("ligat_haal");
+  const [tab,       setTab]       = useState<Competition>("all");
   const [query,     setQuery]     = useState("");
   const [savedOnly,     setSavedOnly]     = useState(false);
   const [withListings,  setWithListings]  = useState(false);
@@ -300,7 +300,7 @@ export default function FootballIsraelPage() {
     const mn = minPrice ? Number(minPrice) : null;
     const mx = maxPrice ? Number(maxPrice) : null;
     return matches.filter(m => {
-      if (m.competition !== tab) return false;
+      if (tab !== "all" && m.competition !== tab) return false;
       if (savedOnly && !saved.has(m.id)) return false;
       if (withListings && listings.filter(l => l.israeli_match_id === m.id && isActiveL(l)).length === 0) return false;
       const text = [m.home_team, m.away_team, m.home_team_en, m.away_team_en, m.round, m.round_en, m.city, m.city_en, m.stadium].join(" ").toLowerCase();
@@ -467,8 +467,8 @@ export default function FootballIsraelPage() {
         {/* Chips — All | Ligat Ha'Al | State Cup | ♥ Saved | live dot */}
         <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "16px", flexWrap: "wrap" as const }}>
           {/* All */}
-          <button onClick={() => { setTab("ligat_haal"); setSavedOnly(false); }}
-            style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${!savedOnly ? C.blue : C.border}`, color: !savedOnly ? C.blue : C.hint, background: !savedOnly ? "rgba(26,58,143,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", fontFamily: "var(--font-dm),sans-serif" }}>
+          <button onClick={() => { setTab("all"); setSavedOnly(false); }}
+            style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${tab === "all" && !savedOnly ? C.blue : C.border}`, color: tab === "all" && !savedOnly ? C.blue : C.hint, background: tab === "all" && !savedOnly ? "rgba(26,58,143,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", fontFamily: "var(--font-dm),sans-serif" }}>
             {isHe ? "הכל" : "All"}
           </button>
 
