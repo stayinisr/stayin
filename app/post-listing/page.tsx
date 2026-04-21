@@ -151,8 +151,12 @@ function PostListingPageContent() {
   const [acceptedTerms,  setAcceptedTerms]  = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
 
-  // Reset matchId when league changes
-  useEffect(() => { setMatchId(""); }, [league]);
+  // Reset matchId when league changes (but not on initial load if preMatchId exists)
+  const isFirstRender = useState(true);
+  useEffect(() => {
+    if (isFirstRender[0]) { isFirstRender[1](false); return; }
+    setMatchId("");
+  }, [league]);
 
   // Load WC matches
   useEffect(() => {
@@ -177,9 +181,9 @@ function PostListingPageContent() {
     if (editId) loadEdit(editId);
   }, [editId]);
 
-  // Pre-fill matchId for WC links
+  // Pre-fill matchId for WC and IL links
   useEffect(() => {
-    if (!editId && preMatchId && league === "wc") setMatchId(preMatchId);
+    if (!editId && preMatchId) setMatchId(preMatchId);
   }, [preMatchId, league, editId]);
 
   async function loadEdit(id: string) {
