@@ -363,21 +363,21 @@ export default function FootballIsraelPage() {
             <div>
               {/* "STAY IN THE GAME" style label */}
               <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.24em", textTransform: "uppercase" as const, color: C.blue, marginBottom: "16px" }}>
-                {isHe ? "ליגת העל 2025/26" : "LIGAT HA'AL 2025/26"}
+                {isHe ? "STAY IN THE GAME" : "STAY IN THE GAME"}
               </div>
 
               {/* H1 — exact same sizing as WC */}
               {isHe ? (
                 <h1 style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", marginBottom: "18px" }}>
-                  <span style={{ color: C.blue }}>כדורגל </span><span style={{ color: C.green }}>ישראלי</span>
+                  <span style={{ color: C.blue }}>כרטיסים לכדורגל </span><span style={{ color: C.green }}>ישראלי</span>
                   <br />
-                  <span style={{ color: C.teal }}>כרטיסים </span><span style={{ color: C.blue }}>ישירות.</span>
+                  <span style={{ color: C.teal }}>בדרך </span><span style={{ color: C.blue }}>פשוטה.</span>
                 </h1>
               ) : (
                 <h1 style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
-                  <span style={{ color: C.blue }}>ISRAELI </span><span style={{ color: C.green }}>FOOTBALL.</span>
+                  <span style={{ color: C.blue }}>ISRAELI </span><span style={{ color: C.green }}>FOOTBALL TICKETS.</span>
                   <br />
-                  <span style={{ color: C.teal }}>DIRECT </span><span style={{ color: C.blue }}>TICKETS.</span>
+                  <span style={{ color: C.teal }}>THE SIMPLE </span><span style={{ color: C.blue }}>WAY.</span>
                 </h1>
               )}
 
