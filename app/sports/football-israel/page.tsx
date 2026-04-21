@@ -356,7 +356,7 @@ export default function FootballIsraelPage() {
             {isHe ? "כדורגל ישראלי · ליגת העל · גביע המדינה" : "Israeli Football · Ligat Ha'Al · State Cup"}
           </div>
 
-          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: "40px", alignItems: "start" }}>
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "32px", alignItems: "center" }}>
             <div>
               {/* "STAY IN THE GAME" style label */}
               <div style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.24em", textTransform: "uppercase" as const, color: C.blue, marginBottom: "16px" }}>
