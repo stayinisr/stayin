@@ -463,6 +463,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [activeStage, setActiveStage] = useState<string | null>(null);
   const [savedOnly, setSavedOnly] = useState(false);
+  const [withListings, setWithListings] = useState(false);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
@@ -620,6 +621,7 @@ export default function Home() {
 
     return matches.filter((m) => {
       if (savedOnly && !saved.has(m.id)) return false;
+      if (withListings && listings.filter((l) => l.match_id === m.id && isActive(l)).length === 0) return false;
       if (!matchesStage(m)) return false;
 
       const searchText = [
@@ -660,7 +662,7 @@ export default function Home() {
 
       return true;
     });
-  }, [matches, listings, query, activeStage, savedOnly, saved, minPrice, maxPrice]);
+  }, [matches, listings, query, activeStage, savedOnly, withListings, saved, minPrice, maxPrice]);
 
   const activeCount = listings.filter(isActive).length;
 
@@ -1138,6 +1140,28 @@ export default function Home() {
             ♥ {isHe ? "שמורים" : "Saved"}
             {saved.size > 0 && ` (${saved.size})`}
           </button>
+
+          {/* With listings checkbox */}
+          <label style={{ display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer", userSelect: "none" as const }}>
+            <span
+              onClick={() => setWithListings(p => !p)}
+              style={{
+                width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0,
+                border: `1.5px solid ${withListings ? C.usa : C.border}`,
+                background: withListings ? C.usa : C.white,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                transition: "all 150ms",
+              }}
+            >
+              {withListings && <span style={{ color: "#fff", fontSize: "10px", fontWeight: 800, lineHeight: 1 }}>✓</span>}
+            </span>
+            <span
+              onClick={() => setWithListings(p => !p)}
+              style={{ fontSize: "11px", fontWeight: 600, color: withListings ? C.usa : C.hint, transition: "color 150ms", whiteSpace: "nowrap" as const }}
+            >
+              {isHe ? "רק משחקים עם מודעות" : "Only with listings"}
+            </span>
+          </label>
 
           <div
             style={{

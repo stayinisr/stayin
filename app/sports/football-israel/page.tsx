@@ -242,7 +242,8 @@ export default function FootballIsraelPage() {
 
   const [tab,       setTab]       = useState<Competition>("ligat_haal");
   const [query,     setQuery]     = useState("");
-  const [savedOnly, setSavedOnly] = useState(false);
+  const [savedOnly,     setSavedOnly]     = useState(false);
+  const [withListings,  setWithListings]  = useState(false);
   const [minPrice,  setMinPrice]  = useState("");
   const [maxPrice,  setMaxPrice]  = useState("");
 
@@ -301,6 +302,7 @@ export default function FootballIsraelPage() {
     return matches.filter(m => {
       if (m.competition !== tab) return false;
       if (savedOnly && !saved.has(m.id)) return false;
+      if (withListings && listings.filter(l => l.israeli_match_id === m.id && isActiveL(l)).length === 0) return false;
       const text = [m.home_team, m.away_team, m.home_team_en, m.away_team_en, m.round, m.round_en, m.city, m.city_en, m.stadium].join(" ").toLowerCase();
       if (q && !text.includes(q)) return false;
       if (mn !== null || mx !== null) {
@@ -309,7 +311,7 @@ export default function FootballIsraelPage() {
       }
       return true;
     });
-  }, [matches, listings, query, tab, savedOnly, saved, minPrice, maxPrice]);
+  }, [matches, listings, query, tab, savedOnly, withListings, saved, minPrice, maxPrice]);
 
   const activeCount = listings.filter(isActiveL).length;
   const ligatCount  = matches.filter(m => m.competition === "ligat_haal").length;
@@ -483,6 +485,27 @@ export default function FootballIsraelPage() {
             style={{ padding: "5px 14px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, border: `1px solid ${savedOnly ? "rgba(230,57,70,0.4)" : C.border}`, color: savedOnly ? C.red : C.hint, background: savedOnly ? "rgba(230,57,70,0.05)" : C.white, cursor: "pointer", borderRadius: "3px", transition: "all 150ms", fontFamily: "var(--font-dm),sans-serif" }}>
             ♥ {isHe ? "שמורים" : "Saved"}{saved.size > 0 && ` (${saved.size})`}
           </button>
+
+          {/* With listings checkbox */}
+          <label style={{ display: "inline-flex", alignItems: "center", gap: "7px", cursor: "pointer", userSelect: "none" as const }}>
+            <span style={{
+              width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0,
+              border: `1.5px solid ${withListings ? C.blue : C.border}`,
+              background: withListings ? C.blue : C.white,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              transition: "all 150ms",
+            }}
+              onClick={() => setWithListings(p => !p)}
+            >
+              {withListings && <span style={{ color: "#fff", fontSize: "10px", fontWeight: 800, lineHeight: 1 }}>✓</span>}
+            </span>
+            <span
+              onClick={() => setWithListings(p => !p)}
+              style={{ fontSize: "11px", fontWeight: 600, color: withListings ? C.blue : C.hint, transition: "color 150ms", whiteSpace: "nowrap" as const }}
+            >
+              {isHe ? "רק משחקים עם מודעות" : "Only with listings"}
+            </span>
+          </label>
 
           {/* Live dot + count */}
           <div style={{ marginInlineStart: "auto", display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: C.hint }}>
