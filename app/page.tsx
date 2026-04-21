@@ -24,7 +24,7 @@ const fSyne = "var(--font-syne,'Syne',sans-serif)";
 function fBody(isHe: boolean) { return isHe ? fHe : fEn; }
 
 // ── Ticker ────────────────────────────────────────────────────────────────────
-type TickerItem = { text: string; type: string };
+type TickerItem = { text: string; type: string; href: string };
 
 function Ticker({ isHe }: { isHe: boolean }) {
   const [items, setItems] = useState<TickerItem[]>([]);
@@ -71,7 +71,10 @@ function Ticker({ isHe }: { isHe: boolean }) {
         const text = l.type === "buy"
           ? (isHe ? `מחפש · ${qty} ${match}` : `WANTED · ${qty} ${match}`)
           : `${qty} ${match}${price ? ` · ${price}` : ""}`;
-        return { text, type: l.type };
+        const href = l.match_id
+          ? `/matches/${l.match_id}`
+          : `/sports/football-israel/${l.israeli_match_id}`;
+        return { text, type: l.type, href };
       }).filter(Boolean) as TickerItem[];
 
       if (built.length) setItems(built);
@@ -88,10 +91,13 @@ function Ticker({ isHe }: { isHe: boolean }) {
       <div style={{ overflow: "hidden", borderBottom: `1px solid ${C.border}`, padding: "10px 0" }}>
         <div style={{ display: "flex", animation: `stayin-tick ${Math.max(20, doubled.length * 3)}s linear infinite`, whiteSpace: "nowrap" }}>
           {doubled.map((t, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}`, flexShrink: 0 }}>
+            <a key={i} href={t.href} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}`, flexShrink: 0, textDecoration: "none", cursor: "pointer", transition: "color 150ms" }}
+              onMouseEnter={e => (e.currentTarget.style.color = C.navy)}
+              onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
+            >
               <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: t.type === "buy" ? C.navy : t.type === "sell" ? C.red : C.teal, display: "inline-block" }} />
               {t.text}
-            </span>
+            </a>
           ))}
         </div>
       </div>
