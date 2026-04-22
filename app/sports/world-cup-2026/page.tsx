@@ -883,7 +883,7 @@ export default function Home() {
               {[
                 { val: `${matches.length || 64}`, lbl: isHe ? "משחקים" : "Matches", color: C.usa },
                 { val: activeCount, lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true },
-                { val: "WA", lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.mexico },
+                { val: "WA", lbl: isHe ? "פנו ישירות" : "Direct contact", color: C.mexico },
               ].map((s, i) => (
                 <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" }}>
                   <div

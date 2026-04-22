@@ -411,7 +411,7 @@ export default function FootballIsraelPage() {
               {[
                 { val: loading ? "–" : String(matches.length), lbl: isHe ? "משחקים" : "Matches",        color: C.blue,   live: false },
                 { val: loading ? "–" : String(activeCount),    lbl: isHe ? "מודעות פעילות" : "Live listings", color: C.text, live: true  },
-                { val: "WA",                                    lbl: isHe ? "קשר ישיר" : "Direct contact", color: C.teal,  live: false },
+                { val: "WA",                                    lbl: isHe ? "פנו ישירות" : "Direct contact", color: C.teal,  live: false },
               ].map((s, i) => (
                 <div key={i} style={{ background: "transparent", padding: "18px 14px", textAlign: "center" as const }}>
                   <div style={{ fontFamily: fSyne, fontSize: "22px", fontWeight: 800, color: s.color, letterSpacing: "-0.5px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
