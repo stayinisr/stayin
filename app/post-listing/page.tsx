@@ -54,7 +54,18 @@ type ILMatch = {
 };
 
 // ── League type ───────────────────────────────────────────────────────────────
-type LeagueType = "wc" | "il";
+type Artist = { id: string; name: string; name_he: string | null };
+type Venue = { id: string; name: string; city: string; city_he: string | null };
+type Concert = {
+  id: string;
+  artist_id: string | null;
+  venue_id: string | null;
+  concert_date: string;
+  concert_time: string | null;
+  status: string | null;
+};
+
+type LeagueType = "wc" | "il" | "concert";
 
 // ── WC helpers ────────────────────────────────────────────────────────────────
 function isGroupStage(stage?: string | null) {
@@ -108,6 +119,29 @@ function ilMatchOptionLabel(m: ILMatch, isHe: boolean) {
   return `${round} — ${home} / ${away} · ${date}`;
 }
 
+function formatConcertDate(d: string, isHe: boolean) {
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return d;
+  return date.toLocaleDateString(isHe ? "he-IL" : "en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function concertOptionLabel(c: Concert, artist?: Artist, venue?: Venue, isHe = true) {
+  const artistName = isHe ? (artist?.name_he || artist?.name || "") : (artist?.name || artist?.name_he || "");
+  const venueName = venue?.name || "";
+  const cityName = isHe ? (venue?.city_he || venue?.city || "") : (venue?.city || venue?.city_he || "");
+  const date = formatConcertDate(c.concert_date, isHe);
+  const time = c.concert_time ? ` · ${c.concert_time.slice(0, 5)}` : "";
+  return `${artistName} — ${venueName}${cityName ? `, ${cityName}` : ""} · ${date}${time}`;
+}
+
+function concertExpiry(date?: string, time?: string | null) {
+  if (!date) return new Date(Date.now() + 7 * 86400000).toISOString();
+  const safeTime = time ? time.slice(0, 5) : "23:59";
+  const eventDate = new Date(`${date}T${safeTime}:00`);
+  if (Number.isNaN(eventDate.getTime())) return new Date(Date.now() + 7 * 86400000).toISOString();
+  eventDate.setHours(eventDate.getHours() + 8);
+  return eventDate.toISOString();
+}
 // ── Page content ──────────────────────────────────────────────────────────────
 function PostListingPageContent() {
   const router  = useRouter();
@@ -116,13 +150,13 @@ function PostListingPageContent() {
   const toast   = useToast();
   const isHe    = lang === "he";
 
-  const preMatchId = params.get("matchId") || "";
+  const preMatchId = params.get("type") === "concert" ? (params.get("concertId") || params.get("matchId") || "") : (params.get("matchId") || "");
   const preType    = params.get("type") || "sell";
   const editId     = params.get("listingId") || "";
 
   // League toggle — default to IL if ?type=israeli
   const [league, setLeague] = useState<LeagueType>(
-    params.get("type") === "israeli" ? "il" : "wc"
+    params.get("type") === "concert" ? "concert" : params.get("type") === "israeli" ? "il" : "wc"
   );
 
   // WC matches
@@ -133,12 +167,18 @@ function PostListingPageContent() {
   const [ilMatches,  setIlMatches]  = useState<ILMatch[]>([]);
   const [loadingIL,  setLoadingIL]  = useState(false);
 
+  // Live shows
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [concerts, setConcerts] = useState<Concert[]>([]);
+  const [loadingConcerts, setLoadingConcerts] = useState(false);
+
   const [submitting,   setSubmitting]   = useState(false);
   const [showSuccess,  setShowSuccess]  = useState(false);
   const [successMatchId, setSuccessMatchId] = useState("");
 
   // Form state
-  const [type,           setType]           = useState(preType === "israeli" ? "sell" : preType);
+  const [type,           setType]           = useState(preType === "israeli" || preType === "concert" ? "sell" : preType);
   const [matchId,        setMatchId]        = useState(preMatchId);
   const [category,       setCategory]       = useState("Category 1");
   const [quantity,       setQuantity]       = useState(1);
@@ -176,6 +216,24 @@ function PostListingPageContent() {
     }
   }, [league]);
 
+  // Load live shows
+  useEffect(() => {
+    if (league === "concert") {
+      setLoadingConcerts(true);
+      const today = new Date().toISOString().slice(0, 10);
+      Promise.all([
+        supabase.from("artists").select("id,name,name_he").order("name"),
+        supabase.from("venues").select("id,name,city,city_he").order("name"),
+        supabase.from("concerts").select("id,artist_id,venue_id,concert_date,concert_time,status").eq("status", "active").gte("concert_date", today).order("concert_date", { ascending: true }),
+      ]).then(([artistsRes, venuesRes, concertsRes]) => {
+        setArtists((artistsRes.data || []) as Artist[]);
+        setVenues((venuesRes.data || []) as Venue[]);
+        setConcerts((concertsRes.data || []) as Concert[]);
+        setLoadingConcerts(false);
+      });
+    }
+  }, [league]);
+
   // Load edit
   useEffect(() => {
     if (editId) loadEdit(editId);
@@ -207,12 +265,15 @@ function PostListingPageContent() {
 
   const selectedWCMatch = useMemo(() => wcMatches.find(m => m.id === matchId), [wcMatches, matchId]);
   const selectedILMatch = useMemo(() => ilMatches.find(m => m.id === matchId), [ilMatches, matchId]);
+  const artistMap = useMemo(() => Object.fromEntries(artists.map(a => [a.id, a])), [artists]);
+  const venueMap = useMemo(() => Object.fromEntries(venues.map(v => [v.id, v])), [venues]);
+  const selectedConcert = useMemo(() => concerts.find(c => c.id === matchId), [concerts, matchId]);
 
-  const loading = league === "wc" ? loadingWC : loadingIL;
+  const loading = league === "wc" ? loadingWC : league === "il" ? loadingIL : loadingConcerts;
 
   async function handleSubmit() {
     if (!acceptedTerms) { setShowTermsError(true); toast.error(isHe ? "יש לאשר את התנאים כדי לפרסם מודעה" : "You must accept the terms to publish a listing"); return; }
-    if (!matchId) { toast.error(t.selectMatchAlert); return; }
+    if (!matchId) { toast.error(league === "concert" ? (isHe ? "בחר הופעה" : "Select a show") : t.selectMatchAlert); return; }
     if (!price || Number(price) <= 0) { toast.error(t.validPriceAlert); return; }
     if (quantity <= 0) { toast.error(t.validQuantityAlert); return; }
 
@@ -226,6 +287,38 @@ function PostListingPageContent() {
 
     if (!editId && profile.last_post_at && !profile.is_premium && Date.now() - new Date(profile.last_post_at).getTime() < 30000) {
       setSubmitting(false); toast.error(t.postEvery30Seconds); return;
+    }
+
+    if (league === "concert") {
+      const userPlan = (profile.plan as string) ?? (profile.is_premium ? "premium" : "free");
+      const planLimits: Record<string, number> = { free: 10, premium: 25, unlimited: 9999 };
+      const maxListings = planLimits[userPlan] ?? 10;
+
+      const { data: activeConcerts } = await supabase.from("concert_listings").select("id").eq("user_id", user.id).eq("status", "active").is("archived_at", null).gt("expires_at", new Date().toISOString());
+      if ((activeConcerts || []).length >= maxListings) { setSubmitting(false); toast.error(t.limitReached10); return; }
+
+      const { data: duplicateConcert } = await supabase.from("concert_listings").select("id").eq("user_id", user.id).eq("concert_id", matchId).eq("type", type).is("archived_at", null).maybeSingle();
+      if (duplicateConcert) { setSubmitting(false); toast.error(t.alreadySimilarListing); return; }
+
+      const now = new Date().toISOString();
+      const { error } = await supabase.from("concert_listings").insert({
+        user_id: user.id,
+        concert_id: matchId,
+        type,
+        quantity,
+        price: Number(price),
+        notes: notes.trim() || null,
+        status: "active",
+        expires_at: concertExpiry(selectedConcert?.concert_date, selectedConcert?.concert_time),
+      });
+
+      setSubmitting(false);
+      if (error) { toast.error(isHe ? "פרסום נכשל" : "Failed to post"); return; }
+
+      await supabase.from("profiles").update({ last_post_at: now }).eq("id", user.id);
+      setSuccessMatchId(matchId);
+      setShowSuccess(true);
+      return;
     }
 
     // Get match date for expiry
@@ -307,7 +400,9 @@ function PostListingPageContent() {
   return (
     <main style={{ minHeight: "100vh" }}>
       {/* Top bar */}
-      <div style={{ height: "3px", background: league === "il"
+      <div style={{ height: "3px", background: league === "concert"
+        ? `linear-gradient(90deg,${C.teal} 33.3%,${C.blue} 33.3% 66.6%,${C.green} 66.6%)`
+        : league === "il"
         ? `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)`
         : `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)` }} />
 
@@ -340,12 +435,13 @@ function PostListingPageContent() {
               {!editId && (
                 <div>
                   <label style={lbl}>{isHe ? "לאיזה אירוע?" : "Which event?"}</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden" }}>
                     {([
                       ["wc", "🌍", isHe ? "מונדיאל 2026" : "World Cup 2026"],
                       ["il", "⚽", isHe ? "כדורגל ישראלי" : "Israeli Football"],
+                      ["concert", "🎵", isHe ? "הופעות חיות" : "Live Shows"],
                     ] as [LeagueType, string, string][]).map(([v, icon, label]) => (
-                      <button key={v} type="button" onClick={() => setLeague(v)} style={{ padding: "11px", fontSize: "12px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", background: league === v ? (v === "il" ? C.blue : C.usa) : "rgba(255,255,255,0.9)", color: league === v ? "#fff" : C.hint }}>
+                      <button key={v} type="button" onClick={() => setLeague(v)} style={{ padding: "11px", fontSize: "12px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", background: league === v ? (v === "concert" ? C.teal : v === "il" ? C.blue : C.usa) : "rgba(255,255,255,0.9)", color: league === v ? "#fff" : C.hint }}>
                         {icon} {label}
                       </button>
                     ))}
@@ -367,12 +463,14 @@ function PostListingPageContent() {
 
               {/* ── MATCH SELECTOR ── */}
               <div>
-                <label style={lbl}>{t.match}</label>
+                <label style={lbl}>{league === "concert" ? (isHe ? "הופעה" : "Show") : t.match}</label>
                 <select dir={isHe ? "rtl" : "ltr"} value={matchId} onChange={(e) => setMatchId(e.target.value)} disabled={loading} style={{ ...inp, cursor: "pointer" }}>
-                  <option value="">{loading ? t.loading : t.selectMatch}</option>
+                  <option value="">{loading ? t.loading : league === "concert" ? (isHe ? "בחר הופעה" : "Select show") : t.selectMatch}</option>
                   {league === "wc"
                     ? wcMatches.map(m => <option key={m.id} value={m.id}>{matchOptionLabel(m, isHe)}</option>)
-                    : ilMatches.map(m => <option key={m.id} value={m.id}>{ilMatchOptionLabel(m, isHe)}</option>)
+                    : league === "il"
+                    ? ilMatches.map(m => <option key={m.id} value={m.id}>{ilMatchOptionLabel(m, isHe)}</option>)
+                    : concerts.map(c => <option key={c.id} value={c.id}>{concertOptionLabel(c, artistMap[c.artist_id || ""], venueMap[c.venue_id || ""], isHe)}</option>)
                   }
                 </select>
               </div>
@@ -488,6 +586,11 @@ function PostListingPageContent() {
                       {isHe ? "כדורגל ישראלי" : "IL Football"}
                     </span>
                   )}
+                  {league === "concert" && (
+                    <span style={{ fontSize: "9px", fontWeight: 600, padding: "2px 7px", borderRadius: "3px", background: "rgba(26,191,176,0.1)", color: C.teal, border: "1px solid rgba(26,191,176,0.2)" }}>
+                      {isHe ? "הופעות חיות" : "Live Shows"}
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: price ? "24px" : "18px", fontWeight: 800, color: price ? C.text : C.faint, letterSpacing: "-0.5px", marginBottom: "6px" }}>
@@ -521,9 +624,13 @@ function PostListingPageContent() {
                     <br />
                     <span>{isHe ? selectedILMatch.round : selectedILMatch.round_en} · {selectedILMatch.match_date}</span>
                   </div>
+                ) : league === "concert" && selectedConcert ? (
+                  <div style={{ fontSize: "11px", color: C.hint, paddingTop: "10px", borderTop: `1px solid ${C.border}`, lineHeight: 1.6 }}>
+                    <span>🎵 {concertOptionLabel(selectedConcert, artistMap[selectedConcert.artist_id || ""], venueMap[selectedConcert.venue_id || ""], isHe)}</span>
+                  </div>
                 ) : (
                   <div style={{ fontSize: "11px", color: C.faint, paddingTop: "10px", borderTop: `1px solid ${C.border}` }}>
-                    {isHe ? "בחר משחק..." : "Select a match..."}
+                    {league === "concert" ? (isHe ? "בחר הופעה..." : "Select a show...") : (isHe ? "בחר משחק..." : "Select a match...")}
                   </div>
                 )}
               </div>
@@ -531,7 +638,7 @@ function PostListingPageContent() {
 
             <div style={{ marginTop: "12px", padding: "12px 14px", background: `${accentColor}08`, border: `1px solid ${accentColor}18`, borderRadius: "8px" }}>
               <p style={{ fontSize: "11px", color: C.muted, lineHeight: 1.7 }}>
-                {isHe ? "המודעה תהיה פעילה עד לאחר המשחק. תוכל לערוך או למחוק אותה בכל עת מהאזור האישי." : "Your listing stays live until after the match. You can edit or delete it anytime from My Listings."}
+                {league === "concert" ? (isHe ? "המודעה תהיה פעילה עד לאחר ההופעה. תוכל לערוך או למחוק אותה בכל עת מהאזור האישי." : "Your listing stays live until after the show. You can edit or delete it anytime from My Listings.") : (isHe ? "המודעה תהיה פעילה עד לאחר המשחק. תוכל לערוך או למחוק אותה בכל עת מהאזור האישי." : "Your listing stays live until after the match. You can edit or delete it anytime from My Listings.")}
               </p>
             </div>
           </div>
@@ -541,7 +648,7 @@ function PostListingPageContent() {
       {showSuccess && (
         <SuccessModal
           matchId={successMatchId}
-          redirectUrl={league === "il" ? `/sports/football-israel/${successMatchId}` : `/matches/${successMatchId}`}
+          redirectUrl={league === "concert" ? `/live-shows/${successMatchId}` : league === "il" ? `/sports/football-israel/${successMatchId}` : `/matches/${successMatchId}`}
         />
       )}
     </main>
