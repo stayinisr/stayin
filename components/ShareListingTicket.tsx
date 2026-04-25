@@ -47,6 +47,8 @@ type Props = {
 
 const SITE_URL = "stayin.co.il";
 const EMPTY = "—";
+const TICKET_WIDTH = 1600;
+const TICKET_HEIGHT = 900;
 
 function clean(value: unknown) {
   if (value === null || value === undefined) return EMPTY;
@@ -95,7 +97,7 @@ function getShareUrl(listingId: string, matchId: string) {
 
 function useModalLayout(open: boolean) {
   const [mounted, setMounted] = useState(false);
-  const [previewScale, setPreviewScale] = useState(0.58);
+  const [previewScale, setPreviewScale] = useState(0.5);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -107,11 +109,15 @@ function useModalLayout(open: boolean) {
       const width = window.innerWidth;
       const height = window.innerHeight;
       setIsMobile(width <= 768);
-      const availableWidth = Math.max(280, width - 44);
-      const availableHeight = Math.max(260, height - 210);
-      const scaleByWidth = availableWidth / 1600;
-      const scaleByHeight = availableHeight / 900;
-      setPreviewScale(Math.min(0.68, scaleByWidth, scaleByHeight));
+
+      const modalChromeHeight = width <= 768 ? 190 : 154;
+      const availableWidth = Math.max(280, width - 64);
+      const availableHeight = Math.max(240, height - modalChromeHeight);
+      const scaleByWidth = availableWidth / TICKET_WIDTH;
+      const scaleByHeight = availableHeight / TICKET_HEIGHT;
+      const maxScale = width <= 768 ? 0.42 : 0.55;
+      const minScale = width <= 768 ? 0.2 : 0.38;
+      setPreviewScale(Math.max(minScale, Math.min(maxScale, scaleByWidth, scaleByHeight)));
     }
 
     update();
@@ -131,15 +137,7 @@ function useModalLayout(open: boolean) {
   return { mounted, previewScale, isMobile };
 }
 
-function SafeImage({
-  src,
-  alt,
-  style,
-}: {
-  src: string;
-  alt: string;
-  style: CSSProperties;
-}) {
+function SafeImage({ src, alt, style }: { src: string; alt: string; style: CSSProperties }) {
   return (
     <img
       src={src}
@@ -153,6 +151,16 @@ function SafeImage({
   );
 }
 
+const flagStyle: CSSProperties = {
+  width: 68,
+  height: 68,
+  borderRadius: 999,
+  objectFit: "cover",
+  border: "1px solid rgba(255,255,255,0.32)",
+  boxShadow: "0 12px 26px rgba(0,0,0,0.28)",
+  flexShrink: 0,
+};
+
 function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "left" | "right"; isHe: boolean }) {
   const translated = teamName(name, isHe);
   const flag = flagImgSrc(name);
@@ -164,7 +172,7 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
         display: "flex",
         alignItems: "center",
         justifyContent: side === "left" ? "flex-start" : "flex-end",
-        gap: 18,
+        gap: 22,
         minWidth: 0,
       }}
     >
@@ -172,7 +180,7 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
       <div
         style={{
           color: "#ffffff",
-          fontSize: 54,
+          fontSize: 60,
           lineHeight: 1,
           fontWeight: 950,
           letterSpacing: "-0.055em",
@@ -180,7 +188,7 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          maxWidth: 270,
+          maxWidth: 335,
           textShadow: "0 14px 35px rgba(0,0,0,0.32)",
         }}
       >
@@ -191,39 +199,29 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
   );
 }
 
-const flagStyle: CSSProperties = {
-  width: 62,
-  height: 62,
-  borderRadius: 999,
-  objectFit: "cover",
-  border: "1px solid rgba(255,255,255,0.32)",
-  boxShadow: "0 12px 26px rgba(0,0,0,0.28)",
-  flexShrink: 0,
-};
-
 function InfoCell({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
     <div
       style={{
         minWidth: 0,
         textAlign: "center",
-        paddingInline: 10,
+        paddingInline: 11,
         borderInlineStart: "1px solid rgba(145,169,210,0.30)",
       }}
     >
-      <div style={{ color: "rgba(207,218,245,0.55)", fontSize: 22, fontWeight: 750, marginBottom: 11, lineHeight: 1 }}>
+      <div style={{ color: "rgba(207,218,245,0.57)", fontSize: 23, fontWeight: 750, marginBottom: 11, lineHeight: 1 }}>
         {label}
       </div>
       <div
         style={{
           color: strong ? "#7df9ff" : "#ffffff",
-          fontSize: strong ? 34 : 28,
+          fontSize: strong ? 35 : 29,
           fontWeight: strong ? 980 : 900,
           lineHeight: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          textShadow: strong ? "0 0 22px rgba(34,211,238,0.28)" : undefined,
+          textShadow: strong ? "0 0 22px rgba(34,211,238,0.30)" : undefined,
         }}
       >
         {value}
@@ -239,14 +237,14 @@ function TicketCutouts() {
     height: 58,
     borderRadius: 999,
     background: "#06101f",
-    border: "3px solid rgba(39,117,241,0.72)",
+    border: "3px solid rgba(39,117,241,0.76)",
     zIndex: 4,
   };
   return (
     <>
       <div style={{ ...cutout, left: -32, top: 250 }} />
-      <div style={{ ...cutout, left: 305, top: -32 }} />
-      <div style={{ ...cutout, left: 305, bottom: -32 }} />
+      <div style={{ ...cutout, left: 330, top: -32 }} />
+      <div style={{ ...cutout, left: 330, bottom: -32 }} />
     </>
   );
 }
@@ -259,12 +257,11 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   const stage = clean(match.stage);
   const stadium = clean(match.stadium);
   const city = clean(match.city);
-  const location = [stadium !== EMPTY ? stadium : null, city !== EMPTY ? city : null].filter(Boolean).join(" · ") || EMPTY;
   const publisher = clean(listing.profile?.full_name);
+  const locationText = [stadium !== EMPTY ? stadium : null, city !== EMPTY ? city : null].filter(Boolean).join(" · ") || EMPTY;
 
   const topDetails = [
     { label: isHe ? "משחק" : "Match", value: matchNumber },
-    { label: isHe ? "אצטדיון" : "Stadium", value: stadium },
     { label: isHe ? "עיר" : "City", value: city },
     { label: isHe ? "תאריך" : "Date", value: formatDate(match.match_date) },
     { label: isHe ? "שעה" : "Time", value: formatTime(match.match_time) },
@@ -284,13 +281,13 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
     <div
       dir="ltr"
       style={{
-        width: 1600,
-        height: 900,
+        width: TICKET_WIDTH,
+        height: TICKET_HEIGHT,
         position: "relative",
         overflow: "hidden",
         borderRadius: 58,
-        border: "3px solid rgba(38,117,241,0.9)",
-        background: "linear-gradient(130deg, #06142d 0%, #071d42 42%, #04101f 100%)",
+        border: "3px solid rgba(38,117,241,0.92)",
+        background: "linear-gradient(130deg, #06142d 0%, #071d42 43%, #04101f 100%)",
         boxShadow: "0 44px 110px rgba(0,0,0,0.48), inset 0 0 0 1px rgba(125,249,255,0.12)",
         fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
       }}
@@ -300,7 +297,7 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at 73% 18%, rgba(34,211,238,0.18), transparent 26%), radial-gradient(circle at 16% 68%, rgba(37,99,235,0.18), transparent 28%)",
+            "radial-gradient(circle at 74% 20%, rgba(34,211,238,0.18), transparent 27%), radial-gradient(circle at 18% 69%, rgba(37,99,235,0.18), transparent 29%)",
         }}
       />
 
@@ -310,17 +307,18 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         style={{
           position: "absolute",
           left: 0,
-          bottom: 8,
-          width: 560,
+          bottom: 10,
+          width: 575,
           height: "auto",
-          opacity: 0.78,
-          transform: "translateX(-76px)",
+          opacity: 0.76,
+          transform: "translateX(-98px)",
+          mixBlendMode: "screen",
           zIndex: 1,
         }}
       />
 
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 360, background: "linear-gradient(180deg, rgba(16,50,103,0.76), rgba(5,16,35,0.78))", zIndex: 2 }} />
-      <div style={{ position: "absolute", left: 355, top: 0, bottom: 0, borderLeft: "4px dashed rgba(34,160,255,0.82)", zIndex: 3 }} />
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 382, background: "linear-gradient(180deg, rgba(16,50,103,0.76), rgba(5,16,35,0.78))", zIndex: 2 }} />
+      <div style={{ position: "absolute", left: 377, top: 0, bottom: 0, borderLeft: "4px dashed rgba(34,160,255,0.84)", zIndex: 3 }} />
       <TicketCutouts />
 
       <aside
@@ -328,8 +326,8 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
           position: "absolute",
           insetBlock: 0,
           left: 0,
-          width: 354,
-          padding: "78px 40px 70px",
+          width: 374,
+          padding: "82px 40px 70px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -342,15 +340,16 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
             src="/stayin-share-logo.png"
             alt="Stayin"
             style={{
-              width: 244,
+              width: 265,
               height: "auto",
               maxHeight: 112,
               objectFit: "contain",
               marginInline: "auto",
-              filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
+              filter: "drop-shadow(0 0 18px rgba(34,211,238,0.30))",
+              mixBlendMode: "screen",
             }}
           />
-          <div style={{ color: "#7df9ff", fontSize: 31, fontWeight: 900, letterSpacing: "0.28em", marginTop: 20 }}>TICKETS</div>
+          <div style={{ color: "#7df9ff", fontSize: 31, fontWeight: 900, letterSpacing: "0.28em", marginTop: 22 }}>TICKETS</div>
         </div>
 
         <div style={{ width: "100%", textAlign: "center" }}>
@@ -376,8 +375,8 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         </div>
       </aside>
 
-      <main style={{ position: "absolute", left: 405, right: 64, top: 78, bottom: 62, zIndex: 4 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 42 }}>
+      <main style={{ position: "absolute", left: 455, right: 68, top: 80, bottom: 54, zIndex: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 46 }}>
           <div>
             <div style={{ color: "#24dce9", fontSize: 34, fontWeight: 900, letterSpacing: "0.18em" }}>FIFA WORLD CUP 2026™</div>
             <div style={{ color: "rgba(215,223,249,0.66)", fontSize: 31, fontWeight: 650, letterSpacing: "0.17em", marginTop: 16 }}>{stage}</div>
@@ -386,22 +385,23 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
             src="/stayin-cup-icon.png"
             alt=""
             style={{
-              width: 86,
-              height: 86,
+              width: 92,
+              height: 92,
               objectFit: "contain",
-              opacity: 0.9,
-              filter: "drop-shadow(0 0 22px rgba(34,211,238,0.24))",
+              opacity: 0.82,
+              mixBlendMode: "screen",
+              filter: "drop-shadow(0 0 22px rgba(34,211,238,0.30))",
             }}
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 42, marginBottom: 54 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 48, marginBottom: 76 }}>
           <TeamNameWithFlag name={match.home_team_name} side="left" isHe={isHe} />
-          <div style={{ color: "rgba(209,217,244,0.66)", fontSize: 36, fontWeight: 850, letterSpacing: "0.08em" }}>VS</div>
+          <div style={{ color: "rgba(209,217,244,0.66)", fontSize: 38, fontWeight: 850, letterSpacing: "0.08em" }}>VS</div>
           <TeamNameWithFlag name={match.away_team_name} side="right" isHe={isHe} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", direction: isHe ? "rtl" : "ltr", marginBottom: 36 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", direction: isHe ? "rtl" : "ltr", marginBottom: 36 }}>
           {topDetails.map((item) => (
             <InfoCell key={item.label} label={item.label} value={item.value} />
           ))}
@@ -415,20 +415,43 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
           ))}
         </div>
 
+        <div style={{ borderTop: "1px solid rgba(145,169,210,0.24)", marginTop: 32 }} />
+
         <div
           dir={isHe ? "rtl" : "ltr"}
           style={{
-            marginTop: 30,
-            color: "rgba(218,228,255,0.55)",
-            fontSize: 20,
+            marginTop: 27,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 14,
+            color: "#ffffff",
+            fontSize: 27,
+            fontWeight: 850,
+            letterSpacing: "0.01em",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          <span style={{ color: "#24dce9", fontSize: 28 }}>◎</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{locationText}</span>
+        </div>
+
+        <div
+          dir={isHe ? "rtl" : "ltr"}
+          style={{
+            marginTop: 16,
+            color: "rgba(218,228,255,0.50)",
+            fontSize: 18,
             fontWeight: 650,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            textAlign: isHe ? "right" : "left",
+            textAlign: "center",
           }}
         >
-          {isHe ? "מיקום" : "Location"}: {location} · {isHe ? "מפרסם" : "Publisher"}: {publisher} · {isHe ? "הערות" : "Notes"}: {clean(listing.notes)}
+          {isHe ? "מפרסם" : "Publisher"}: {publisher} · {isHe ? "הערות" : "Notes"}: {clean(listing.notes)}
         </div>
       </main>
     </div>
@@ -509,22 +532,22 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 14,
       }}
     >
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
-          width: "min(1040px, 100%)",
-          maxHeight: "94vh",
-          overflow: "auto",
+          width: "min(940px, 100%)",
+          maxHeight: "96vh",
+          overflow: "hidden",
           borderRadius: 24,
           background: "#06101f",
           boxShadow: "0 30px 100px rgba(0,0,0,0.46)",
-          padding: 16,
+          padding: 14,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#ffffff" }}>{isHe ? "כרטיס שיתוף מודעה" : "Listing share ticket"}</div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 2 }}>{isHe ? "תמונה מוכנה לשיתוף בקבוצות" : "Ready image for groups"}</div>
@@ -542,17 +565,18 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
               cursor: "pointer",
               fontSize: 22,
               color: "#ffffff",
+              flexShrink: 0,
             }}
           >
             ×
           </button>
         </div>
 
-        <div style={{ width: "100%", overflow: "hidden", borderRadius: 22, background: "#06101f", padding: 10 }}>
+        <div style={{ width: "100%", overflow: "hidden", borderRadius: 20, background: "#06101f", padding: 8 }}>
           <div
             style={{
               width: "100%",
-              height: Math.ceil(900 * previewScale),
+              height: Math.ceil(TICKET_HEIGHT * previewScale),
               display: "flex",
               justifyContent: "center",
               alignItems: "flex-start",
@@ -561,21 +585,21 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
           >
             <div
               style={{
-                width: 1600,
-                height: 900,
+                width: TICKET_WIDTH,
+                height: TICKET_HEIGHT,
                 transform: `scale(${previewScale})`,
                 transformOrigin: "top center",
                 flexShrink: 0,
               }}
             >
-              <div ref={cardRef} style={{ width: 1600, height: 900 }}>
+              <div ref={cardRef} style={{ width: TICKET_WIDTH, height: TICKET_HEIGHT }}>
                 <TicketPreview listing={listing} match={match} isHe={isHe} />
               </div>
             </div>
           </div>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 14 }}>
           {isMobile ? (
             <button type="button" onClick={shareWhatsApp} disabled={busy} style={actionButton("#25D366", "#ffffff")}>
               {busy ? (isHe ? "מכין תמונה..." : "Creating...") : isHe ? "שתף בוואטסאפ" : "Share WhatsApp"}
