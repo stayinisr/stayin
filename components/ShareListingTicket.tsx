@@ -216,26 +216,23 @@ function NeonText({ children, style }: { children: ReactNode; style?: CSSPropert
 
 function CupIcon() {
   return (
-    <svg width="86" height="112" viewBox="0 0 86 112" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))" }}>
-      <path d="M43 8C58 8 70 19 70 33C70 44 63 54 53 58C51 69 56 82 64 95C54 101 32 101 22 95C30 82 35 69 33 58C23 54 16 44 16 33C16 19 28 8 43 8Z" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.95"/>
-      <path d="M21 32C31 42 52 42 65 25" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.82"/>
-      <path d="M31 57C38 50 48 49 55 57" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.66"/>
-      <path d="M31 21C41 30 49 39 58 52" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.52"/>
-      <path d="M27 96H59" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round"/>
-      <path d="M22 103H64" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round" opacity="0.8"/>
-    </svg>
+    <img
+      src="/stayin-cup-icon.png"
+      alt=""
+      crossOrigin="anonymous"
+      style={{ display: "block", width: 86, height: 112, objectFit: "contain", filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))" }}
+    />
   );
 }
 
 function StadiumIcon({ rtl }: { rtl: boolean }) {
   return (
-    <svg width="72" height="52" viewBox="0 0 72 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))", transform: rtl ? "none" : "none" }}>
-      <ellipse cx="36" cy="25" rx="30" ry="16" stroke="#22F4FF" strokeWidth="3" opacity="0.95"/>
-      <ellipse cx="36" cy="25" rx="18" ry="8" stroke="#22F4FF" strokeWidth="2.5" opacity="0.72"/>
-      <path d="M8 25V36C8 44 20 49 36 49C52 49 64 44 64 36V25" stroke="#22F4FF" strokeWidth="3" opacity="0.85"/>
-      <path d="M15 36C24 42 48 42 57 36" stroke="#22F4FF" strokeWidth="2.4" opacity="0.6"/>
-      <path d="M14 13V5M25 9V2M36 8V1M47 9V2M58 13V5" stroke="#22F4FF" strokeWidth="2.4" strokeLinecap="round" opacity="0.72"/>
-    </svg>
+    <img
+      src="/stayin-stadium-icon.png"
+      alt=""
+      crossOrigin="anonymous"
+      style={{ display: "block", width: 140, height: 100, objectFit: "contain", filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))" }}
+    />
   );
 }
 
@@ -283,13 +280,13 @@ function TicketIconMark() {
 
 function LogoBlock() {
   return (
-    <div style={{ position: "absolute", left: 56, top: 92, width: 318, textAlign: "center" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-        <span style={{ color: "#ffffff", fontSize: 66, fontWeight: 950, letterSpacing: "-0.055em", textShadow: "0 12px 24px rgba(0,0,0,.35)" }}>Stay</span>
-        <span style={{ color: "#28F4FF", fontSize: 66, fontWeight: 950, letterSpacing: "-0.055em", textShadow: "0 0 15px rgba(34,211,238,.35)" }}>in</span>
-        <TicketIconMark />
-      </div>
-      <div style={{ color: "#35f2ff", marginTop: 18, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
+    <div style={{ position: "absolute", left: 36, top: 80, width: 348, textAlign: "center" }}>
+      <img
+        src="/stayin-share-logo.png"
+        alt="Stayin"
+        crossOrigin="anonymous"
+        style={{ width: 320, height: "auto", objectFit: "contain", filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
+      />
     </div>
   );
 }
