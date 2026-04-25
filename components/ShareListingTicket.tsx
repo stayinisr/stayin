@@ -80,38 +80,76 @@ function listingTypeLabel(type: string | null | undefined, isHe: boolean) {
   return isHe ? "מכירה" : "Sell";
 }
 
+function yesNo(value: string | null | undefined, isHe: boolean) {
+  if (!value) return EMPTY;
+  const normalized = String(value).toLowerCase().trim();
+  if (["yes", "true", "1", "כן"].includes(normalized)) return isHe ? "כן" : "Yes";
+  if (["no", "false", "0", "לא"].includes(normalized)) return isHe ? "לא" : "No";
+  return clean(value);
+}
+
 function getShareUrl(listingId: string, matchId: string) {
   if (typeof window === "undefined") return `https://${SITE_URL}/matches/${matchId}?listing=${listingId}`;
   return `${window.location.origin}/matches/${matchId}?listing=${listingId}`;
 }
 
-function BrandLogo() {
+function useModalLayout(open: boolean) {
+  const [mounted, setMounted] = useState(false);
+  const [previewScale, setPreviewScale] = useState(0.58);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    function update() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setIsMobile(width <= 768);
+      const availableWidth = Math.max(280, width - 44);
+      const availableHeight = Math.max(260, height - 210);
+      const scaleByWidth = availableWidth / 1600;
+      const scaleByHeight = availableHeight / 900;
+      setPreviewScale(Math.min(0.68, scaleByWidth, scaleByHeight));
+    }
+
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [open]);
+
+  return { mounted, previewScale, isMobile };
+}
+
+function SafeImage({
+  src,
+  alt,
+  style,
+}: {
+  src: string;
+  alt: string;
+  style: CSSProperties;
+}) {
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 11 }}>
-      <div style={{ fontSize: 56, fontWeight: 950, letterSpacing: "-0.07em", lineHeight: 1 }}>
-        <span style={{ color: "#ffffff" }}>Stay</span>
-        <span style={{ color: "#22d3ee" }}>in</span>
-      </div>
-      <div
-        aria-hidden="true"
-        style={{
-          width: 58,
-          height: 36,
-          border: "4px solid #7df9ff",
-          borderRadius: 8,
-          transform: "rotate(-13deg)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#ffffff",
-          fontSize: 21,
-          fontWeight: 900,
-          boxShadow: "0 0 22px rgba(34,211,238,0.28)",
-        }}
-      >
-        ↔
-      </div>
-    </div>
+    <img
+      src={src}
+      alt={alt}
+      crossOrigin="anonymous"
+      style={style}
+      onError={(event) => {
+        event.currentTarget.style.display = "none";
+      }}
+    />
   );
 }
 
@@ -125,8 +163,8 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
       style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: side === "left" ? "flex-end" : "flex-start",
-        gap: 16,
+        justifyContent: side === "left" ? "flex-start" : "flex-end",
+        gap: 18,
         minWidth: 0,
       }}
     >
@@ -138,11 +176,12 @@ function TeamNameWithFlag({ name, side, isHe }: { name?: string | null; side: "l
           lineHeight: 1,
           fontWeight: 950,
           letterSpacing: "-0.055em",
-          textAlign: side === "left" ? "right" : "left",
+          textAlign: side === "left" ? "left" : "right",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          maxWidth: 255,
+          maxWidth: 270,
+          textShadow: "0 14px 35px rgba(0,0,0,0.32)",
         }}
       >
         {clean(translated)}
@@ -164,19 +203,27 @@ const flagStyle: CSSProperties = {
 
 function InfoCell({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div style={{ minWidth: 0, textAlign: "center", paddingInline: 12, borderInlineStart: "1px solid rgba(145,169,210,0.32)" }}>
-      <div style={{ color: "rgba(207,218,245,0.55)", fontSize: 25, fontWeight: 750, marginBottom: 12, lineHeight: 1 }}>
+    <div
+      style={{
+        minWidth: 0,
+        textAlign: "center",
+        paddingInline: 10,
+        borderInlineStart: "1px solid rgba(145,169,210,0.30)",
+      }}
+    >
+      <div style={{ color: "rgba(207,218,245,0.55)", fontSize: 22, fontWeight: 750, marginBottom: 11, lineHeight: 1 }}>
         {label}
       </div>
       <div
         style={{
-          color: "#ffffff",
-          fontSize: strong ? 34 : 31,
-          fontWeight: strong ? 950 : 900,
+          color: strong ? "#7df9ff" : "#ffffff",
+          fontSize: strong ? 34 : 28,
+          fontWeight: strong ? 980 : 900,
           lineHeight: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
+          textShadow: strong ? "0 0 22px rgba(34,211,238,0.28)" : undefined,
         }}
       >
         {value}
@@ -193,7 +240,7 @@ function TicketCutouts() {
     borderRadius: 999,
     background: "#06101f",
     border: "3px solid rgba(39,117,241,0.72)",
-    zIndex: 3,
+    zIndex: 4,
   };
   return (
     <>
@@ -210,22 +257,27 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   const quantity = listing.quantity ? `${listing.quantity}` : EMPTY;
   const matchNumber = match.fifa_match_number ? `#${match.fifa_match_number}` : EMPTY;
   const stage = clean(match.stage);
-  const location = [match.stadium, match.city].filter(Boolean).join(" · ") || EMPTY;
+  const stadium = clean(match.stadium);
+  const city = clean(match.city);
+  const location = [stadium !== EMPTY ? stadium : null, city !== EMPTY ? city : null].filter(Boolean).join(" · ") || EMPTY;
+  const publisher = clean(listing.profile?.full_name);
 
   const topDetails = [
-    { label: isHe ? "קטגוריה" : "Category", value: clean(listing.category) },
-    { label: isHe ? "שעה" : "Time", value: formatTime(match.match_time) },
-    { label: isHe ? "תאריך" : "Date", value: formatDate(match.match_date) },
-    { label: isHe ? "עיר" : "City", value: clean(match.city) },
     { label: isHe ? "משחק" : "Match", value: matchNumber },
+    { label: isHe ? "אצטדיון" : "Stadium", value: stadium },
+    { label: isHe ? "עיר" : "City", value: city },
+    { label: isHe ? "תאריך" : "Date", value: formatDate(match.match_date) },
+    { label: isHe ? "שעה" : "Time", value: formatTime(match.match_time) },
+    { label: isHe ? "קטגוריה" : "Category", value: clean(listing.category) },
   ];
 
   const bottomDetails = [
-    { label: isHe ? "כמות" : "Qty", value: quantity },
-    { label: isHe ? "מושבים" : "Seats", value: clean(listing.seats_numbers) },
-    { label: isHe ? "שורה" : "Row", value: clean(listing.seats_row) },
-    { label: isHe ? "בלוק" : "Block", value: clean(listing.seats_block) },
     { label: isHe ? "מחיר" : "Price", value: price, strong: true },
+    { label: isHe ? "כמות" : "Qty", value: quantity },
+    { label: isHe ? "בלוק" : "Block", value: clean(listing.seats_block) },
+    { label: isHe ? "שורה" : "Row", value: clean(listing.seats_row) },
+    { label: isHe ? "מושבים" : "Seats", value: clean(listing.seats_numbers) },
+    { label: isHe ? "יחד" : "Together", value: yesNo(listing.seated_together, isHe) },
   ];
 
   return (
@@ -243,57 +295,140 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
       }}
     >
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 73% 18%, rgba(34,211,238,0.18), transparent 26%), radial-gradient(circle at 16% 68%, rgba(37,99,235,0.18), transparent 28%)" }} />
-      <div style={{ position: "absolute", left: 44, top: 286, width: 300, height: 190, borderRadius: "50%", border: "2px solid rgba(58,137,255,0.25)", transform: "rotate(-10deg)", boxShadow: "0 0 38px rgba(37,99,235,0.2)" }} />
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 360, background: "linear-gradient(180deg, rgba(16,50,103,0.75), rgba(5,16,35,0.75))" }} />
-      <div style={{ position: "absolute", left: 355, top: 0, bottom: 0, borderLeft: "4px dashed rgba(34,160,255,0.82)" }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(circle at 73% 18%, rgba(34,211,238,0.18), transparent 26%), radial-gradient(circle at 16% 68%, rgba(37,99,235,0.18), transparent 28%)",
+        }}
+      />
+
+      <SafeImage
+        src="/stayin-stadium-bg.png"
+        alt=""
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: 8,
+          width: 560,
+          height: "auto",
+          opacity: 0.78,
+          transform: "translateX(-76px)",
+          zIndex: 1,
+        }}
+      />
+
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 360, background: "linear-gradient(180deg, rgba(16,50,103,0.76), rgba(5,16,35,0.78))", zIndex: 2 }} />
+      <div style={{ position: "absolute", left: 355, top: 0, bottom: 0, borderLeft: "4px dashed rgba(34,160,255,0.82)", zIndex: 3 }} />
       <TicketCutouts />
 
-      <aside style={{ position: "absolute", insetBlock: 0, left: 0, width: 354, padding: "88px 48px 72px", display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", zIndex: 2 }}>
-        <div style={{ textAlign: "center" }}>
-          <BrandLogo />
-          <div style={{ color: "#7df9ff", fontSize: 32, fontWeight: 900, letterSpacing: "0.27em", marginTop: 20 }}>TICKETS</div>
+      <aside
+        style={{
+          position: "absolute",
+          insetBlock: 0,
+          left: 0,
+          width: 354,
+          padding: "78px 40px 70px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "center",
+          zIndex: 5,
+        }}
+      >
+        <div style={{ width: "100%", textAlign: "center" }}>
+          <SafeImage
+            src="/stayin-share-logo.png"
+            alt="Stayin"
+            style={{
+              width: 244,
+              height: "auto",
+              maxHeight: 112,
+              objectFit: "contain",
+              marginInline: "auto",
+              filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
+            }}
+          />
+          <div style={{ color: "#7df9ff", fontSize: 31, fontWeight: 900, letterSpacing: "0.28em", marginTop: 20 }}>TICKETS</div>
         </div>
 
         <div style={{ width: "100%", textAlign: "center" }}>
-          <div style={{ display: "inline-flex", minWidth: 206, height: 78, borderRadius: 999, alignItems: "center", justifyContent: "center", background: "rgba(20,184,166,0.50)", border: "3px solid rgba(34,211,238,0.86)", color: "#7df9ff", fontSize: 43, fontWeight: 950, boxShadow: "0 0 34px rgba(34,211,238,0.35)" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              minWidth: 206,
+              height: 78,
+              borderRadius: 999,
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(20,184,166,0.50)",
+              border: "3px solid rgba(34,211,238,0.86)",
+              color: "#7df9ff",
+              fontSize: 43,
+              fontWeight: 950,
+              boxShadow: "0 0 34px rgba(34,211,238,0.35)",
+            }}
+          >
             {shareType}
           </div>
           <div style={{ color: "#7df9ff", fontSize: 31, fontWeight: 850, marginTop: 22, letterSpacing: "0.02em" }}>{SITE_URL}</div>
         </div>
       </aside>
 
-      <main style={{ position: "absolute", left: 405, right: 64, top: 90, bottom: 72, zIndex: 2 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 56 }}>
+      <main style={{ position: "absolute", left: 405, right: 64, top: 78, bottom: 62, zIndex: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 42 }}>
           <div>
             <div style={{ color: "#24dce9", fontSize: 34, fontWeight: 900, letterSpacing: "0.18em" }}>FIFA WORLD CUP 2026™</div>
             <div style={{ color: "rgba(215,223,249,0.66)", fontSize: 31, fontWeight: 650, letterSpacing: "0.17em", marginTop: 16 }}>{stage}</div>
           </div>
-          <div style={{ color: "rgba(34,211,238,0.52)", fontSize: 82, lineHeight: 1 }}>♜</div>
+          <SafeImage
+            src="/stayin-cup-icon.png"
+            alt=""
+            style={{
+              width: 86,
+              height: 86,
+              objectFit: "contain",
+              opacity: 0.9,
+              filter: "drop-shadow(0 0 22px rgba(34,211,238,0.24))",
+            }}
+          />
         </div>
 
-        <div dir={isHe ? "rtl" : "ltr"} style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 42, marginBottom: 64 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 42, marginBottom: 54 }}>
           <TeamNameWithFlag name={match.home_team_name} side="left" isHe={isHe} />
-          <div style={{ color: "rgba(209,217,244,0.66)", fontSize: 36, fontWeight: 850, letterSpacing: "0.08em" }}>{isHe ? "VS" : "VS"}</div>
+          <div style={{ color: "rgba(209,217,244,0.66)", fontSize: 36, fontWeight: 850, letterSpacing: "0.08em" }}>VS</div>
           <TeamNameWithFlag name={match.away_team_name} side="right" isHe={isHe} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", direction: isHe ? "rtl" : "ltr", marginBottom: 42 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", direction: isHe ? "rtl" : "ltr", marginBottom: 36 }}>
           {topDetails.map((item) => (
             <InfoCell key={item.label} label={item.label} value={item.value} />
           ))}
         </div>
 
-        <div style={{ borderTop: "4px dashed rgba(46,133,255,0.72)", marginBottom: 42 }} />
+        <div style={{ borderTop: "4px dashed rgba(46,133,255,0.72)", marginBottom: 36 }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", direction: isHe ? "rtl" : "ltr" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", direction: isHe ? "rtl" : "ltr" }}>
           {bottomDetails.map((item) => (
             <InfoCell key={item.label} label={item.label} value={item.value} strong={item.strong} />
           ))}
         </div>
 
-        <div dir={isHe ? "rtl" : "ltr"} style={{ marginTop: 34, color: "rgba(218,228,255,0.55)", fontSize: 20, fontWeight: 650, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {isHe ? "מיקום" : "Location"}: {location} · {isHe ? "הערות" : "Notes"}: {clean(listing.notes)}
+        <div
+          dir={isHe ? "rtl" : "ltr"}
+          style={{
+            marginTop: 30,
+            color: "rgba(218,228,255,0.55)",
+            fontSize: 20,
+            fontWeight: 650,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textAlign: isHe ? "right" : "left",
+          }}
+        >
+          {isHe ? "מיקום" : "Location"}: {location} · {isHe ? "מפרסם" : "Publisher"}: {publisher} · {isHe ? "הערות" : "Notes"}: {clean(listing.notes)}
         </div>
       </main>
     </div>
@@ -304,21 +439,8 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = original;
-    };
-  }, [open]);
+  const { mounted, previewScale, isMobile } = useModalLayout(open);
 
   const shareUrl = useMemo(() => getShareUrl(listing.id, match.id), [listing.id, match.id]);
   const matchTitle = `${teamName(match.home_team_name, isHe)} ${isHe ? "נגד" : "vs"} ${teamName(match.away_team_name, isHe)}`;
@@ -387,19 +509,19 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 22,
+        padding: 18,
       }}
     >
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
-          width: "min(1440px, 100%)",
+          width: "min(1040px, 100%)",
           maxHeight: "94vh",
           overflow: "auto",
           borderRadius: 24,
           background: "#06101f",
           boxShadow: "0 30px 100px rgba(0,0,0,0.46)",
-          padding: 18,
+          padding: 16,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
@@ -410,24 +532,57 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
           <button
             type="button"
             onClick={() => setOpen(false)}
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.08)", borderRadius: 999, width: 38, height: 38, cursor: "pointer", fontSize: 22, color: "#ffffff" }}
+            aria-label={isHe ? "סגור" : "Close"}
+            style={{
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.08)",
+              borderRadius: 999,
+              width: 38,
+              height: 38,
+              cursor: "pointer",
+              fontSize: 22,
+              color: "#ffffff",
+            }}
           >
             ×
           </button>
         </div>
 
-        <div style={{ width: "100%", overflowX: "auto", borderRadius: 22, background: "#06101f", padding: 10 }}>
-          <div ref={cardRef} style={{ width: 1600, height: 900 }}>
-            <TicketPreview listing={listing} match={match} isHe={isHe} />
+        <div style={{ width: "100%", overflow: "hidden", borderRadius: 22, background: "#06101f", padding: 10 }}>
+          <div
+            style={{
+              width: "100%",
+              height: Math.ceil(900 * previewScale),
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: 1600,
+                height: 900,
+                transform: `scale(${previewScale})`,
+                transformOrigin: "top center",
+                flexShrink: 0,
+              }}
+            >
+              <div ref={cardRef} style={{ width: 1600, height: 900 }}>
+                <TicketPreview listing={listing} match={match} isHe={isHe} />
+              </div>
+            </div>
           </div>
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginTop: 16 }}>
-          <button type="button" onClick={shareWhatsApp} disabled={busy} style={actionButton("#25D366", "#ffffff")}>
-            {busy ? (isHe ? "מכין תמונה..." : "Creating...") : isHe ? "שתף בוואטסאפ" : "Share WhatsApp"}
-          </button>
+          {isMobile ? (
+            <button type="button" onClick={shareWhatsApp} disabled={busy} style={actionButton("#25D366", "#ffffff")}>
+              {busy ? (isHe ? "מכין תמונה..." : "Creating...") : isHe ? "שתף בוואטסאפ" : "Share WhatsApp"}
+            </button>
+          ) : null}
           <button type="button" onClick={downloadImage} disabled={busy} style={actionButton("#0d1b3e", "#ffffff")}>
-            {isHe ? "הורד תמונה" : "Download image"}
+            {busy ? (isHe ? "מכין תמונה..." : "Creating...") : isHe ? "הורד תמונה" : "Download image"}
           </button>
           <button type="button" onClick={copyLink} style={actionButton("#f1f5f9", "#0d1b3e")}>
             {copied ? (isHe ? "הקישור הועתק" : "Copied") : isHe ? "העתק קישור" : "Copy link"}
