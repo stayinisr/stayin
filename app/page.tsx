@@ -265,48 +265,37 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
 // ── Value Props — redesigned to match WC aesthetic ────────────────────────────
 const VALUE_PROPS = [
   {
-    num: "01", icon: "✦",
-    stubFrom: "#1a3a8f", stubTo: "#1abfb0",
-    titleGradFrom: "#1a3a8f", titleGradTo: "#1abfb0",
-    pillColor: "#1a3a8f", pillBorder: "rgba(26,191,176,.22)",
-    pillBg: "linear-gradient(135deg,rgba(26,58,143,.07),rgba(26,191,176,.07))",
-    titleEn: "Zero fees",       titleHe: "0% עמלות",
+    stat: "0%",
+    barFrom: "#1a3a8f", barTo: "#1abfb0",
+    gradFrom: "#1a3a8f", gradTo: "#1abfb0",
+    labelEn: "Fees",         labelHe: "עמלות",
     subEn: "No fees for buyers or sellers. Ever.",
     subHe: "לא לקונה, לא למוכר. אף פעם.",
-    pillEn: "Free — forever",   pillHe: "ללא תשלום — לעולם",
   },
   {
-    num: "02", icon: "💬",
-    stubFrom: "#006847", stubTo: "#25D366",
-    titleGradFrom: "#006847", titleGradTo: "#22c55e",
-    pillColor: "#006847", pillBorder: "rgba(37,211,102,.22)",
-    pillBg: "linear-gradient(135deg,rgba(0,104,71,.07),rgba(37,211,102,.07))",
-    titleEn: "WhatsApp",        titleHe: "ישיר בוואטסאפ",
+    stat: "💬",
+    barFrom: "#006847", barTo: "#25D366",
+    gradFrom: "#006847", gradTo: "#22c55e",
+    labelEn: "WhatsApp direct", labelHe: "ישיר בוואטסאפ",
     subEn: "Contact the seller directly. No middlemen.",
     subHe: "פנייה ישירה למוכר. בלי תיווך.",
-    pillEn: "Direct · Fast · Simple", pillHe: "ישיר · מהיר · פשוט",
   },
   {
-    num: "03", icon: "🎟️",
-    stubFrom: "#c0202c", stubTo: "#e63946",
-    titleGradFrom: "#c0202c", titleGradTo: "#e63946",
-    pillColor: "#c0202c", pillBorder: "rgba(230,57,70,.2)",
-    pillBg: "linear-gradient(135deg,rgba(230,57,70,.07),rgba(230,57,70,.04))",
-    titleEn: "Free to post",    titleHe: "פרסום חינמי",
+    stat: "60s",
+    barFrom: "#c0202c", barTo: "#e63946",
+    gradFrom: "#c0202c", gradTo: "#e63946",
+    labelEn: "Free to post",   labelHe: "פרסום חינמי",
     subEn: "60 seconds. Always, for everyone.",
     subHe: "תוך 60 שניות. תמיד ולכולם.",
-    pillEn: "Free — always",    pillHe: "חינמי — תמיד",
   },
   {
-    num: "04", icon: "⚡",
-    stubFrom: "#92650a", stubTo: "#d4a017",
-    titleGradFrom: "#92650a", titleGradTo: "#d4a017",
-    pillColor: "#92650a", pillBorder: "rgba(212,160,23,.25)",
-    pillBg: "linear-gradient(135deg,rgba(146,101,10,.07),rgba(212,160,23,.07))",
-    titleEn: "You set the price", titleHe: "אתה קובע",
+    stat: "∞",
+    statOffset: "4px",
+    barFrom: "#92650a", barTo: "#d4a017",
+    gradFrom: "#92650a", gradTo: "#d4a017",
+    labelEn: "You set the price", labelHe: "אתה קובע",
     subEn: "No algorithms. Your price, your rules.",
     subHe: "בלי אלגוריתם. המחיר שלך.",
-    pillEn: "Your price, your rules", pillHe: "המחיר שלך, הכללים שלך",
   },
 ];
 
@@ -391,31 +380,18 @@ export default function HomePage() {
             </div>
 
             {/* Value props — glass cards on gradient */}
-            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, flexShrink: 0, minWidth: 240 }}>
-              {VALUE_PROPS.map((v) => (
-                <div key={v.num} style={{ display: "flex", flexDirection: "row", direction: "ltr", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,.92)", border: "1px solid rgba(255,255,255,.98)", boxShadow: "0 8px 28px rgba(13,27,62,.09), 0 2px 6px rgba(13,27,62,.05)", minHeight: 120, transition: "transform 200ms", position: "relative" }}>
-                  {/* Stub */}
-                  <div style={{ width: 44, flexShrink: 0, background: `linear-gradient(160deg,${v.stubFrom},${v.stubTo})`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "14px 0", position: "relative" }}>
-                    <div style={{ position: "absolute", top: "12%", bottom: "12%", right: 0, borderRight: "1.5px dashed rgba(255,255,255,.22)" }} />
-                    <div style={{ position: "absolute", top: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
-                    <div style={{ position: "absolute", bottom: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
-                    <div style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontFamily: fHe, fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.2)" }}>Stayin</div>
-                    <div style={{ fontSize: 26 }}>{v.icon}</div>
-                    <div style={{ fontFamily: fHe, fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,.28)" }}>{v.num}</div>
+            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, flexShrink: 0, minWidth: 240 }}>
+              {VALUE_PROPS.map((v, i) => (
+                <div key={i} style={{ borderRadius: 16, background: "rgba(255,255,255,.9)", border: "1px solid rgba(255,255,255,.98)", padding: "22px 20px 18px", display: "flex", flexDirection: "column", gap: 6, boxShadow: "0 8px 32px rgba(13,27,62,.09), 0 2px 8px rgba(13,27,62,.05)", position: "relative", overflow: "hidden", minHeight: 160, transition: "transform 200ms, box-shadow 200ms" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg,${v.barFrom},${v.barTo})` }} />
+                  <div style={{ fontFamily: fHe, fontSize: 50, fontWeight: 900, letterSpacing: -2, lineHeight: 1, marginBottom: 4, paddingRight: v.statOffset ?? 0, background: `linear-gradient(135deg,${v.gradFrom},${v.gradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    {v.stat}
                   </div>
-                  {/* Body */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "12px 14px 10px" }}>
-                    <div>
-                      <div style={{ fontFamily: fHe, fontSize: 18, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1, marginBottom: 6, background: `linear-gradient(135deg,${v.titleGradFrom},${v.titleGradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                        {isHe ? v.titleHe : v.titleEn}
-                      </div>
-                      <div style={{ fontFamily: fHe, fontSize: 11, fontWeight: 800, color: "#1e293b", lineHeight: 1.5 }}>
-                        {isHe ? v.subHe : v.subEn}
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "7px 10px", borderRadius: 999, fontFamily: fHe, fontSize: 11, fontWeight: 900, background: v.pillBg, border: `1px solid ${v.pillBorder}`, color: v.pillColor }}>
-                      {isHe ? v.pillHe : v.pillEn}
-                    </div>
+                  <div style={{ fontFamily: fHe, fontSize: 17, fontWeight: 900, color: "#0d1b3e", letterSpacing: "-.3px", lineHeight: 1.1 }}>
+                    {isHe ? v.labelHe : v.labelEn}
+                  </div>
+                  <div style={{ fontFamily: fHe, fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.55 }}>
+                    {isHe ? v.subHe : v.subEn}
                   </div>
                 </div>
               ))}

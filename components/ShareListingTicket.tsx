@@ -270,22 +270,30 @@ function LabelValue({ label, value, x, y, w, strong = false }: { label: string; 
 
 function Header({ isHe, stage }: { isHe: boolean; stage: string }) {
   const title = eventTitle(isHe);
+
+  // Language-specific anchor points:
+  // HE: title block is aligned to the right, close to the trophy area.
+  // EN: title block is aligned to the left, so long English text has room.
+  const box = isHe
+    ? { left: 760, topTitle: 108, topStage: 168, width: 560, align: "right" as const }
+    : { left: 520, topTitle: 108, topStage: 168, width: 760, align: "left" as const };
+
   return (
     <>
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
           position: "absolute",
-          left: 642,
-          top: 112,
-          width: 560,
+          left: box.left,
+          top: box.topTitle,
+          width: box.width,
           color: "#5ef7ff",
-          fontSize: isHe ? 38 : 38,
+          fontSize: isHe ? 38 : 36,
           fontWeight: 950,
-          letterSpacing: isHe ? "0.025em" : "0.08em",
+          letterSpacing: isHe ? "0.025em" : "0.075em",
           textTransform: isHe ? "none" : "uppercase",
           lineHeight: 1,
-          textAlign: "center",
+          textAlign: box.align,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -298,14 +306,14 @@ function Header({ isHe, stage }: { isHe: boolean; stage: string }) {
         dir={isHe ? "rtl" : "ltr"}
         style={{
           position: "absolute",
-          left: 642,
-          top: 172,
-          width: 560,
+          left: box.left,
+          top: box.topStage,
+          width: box.width,
           color: "rgba(208,197,255,0.9)",
-          fontSize: 30,
+          fontSize: isHe ? 30 : 28,
           fontWeight: 850,
-          letterSpacing: isHe ? "0" : "0.09em",
-          textAlign: "center",
+          letterSpacing: isHe ? "0" : "0.085em",
+          textAlign: box.align,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
