@@ -322,6 +322,11 @@ export default function HomePage() {
           .steps-grid{grid-template-columns:1fr!important}
           .step-col:not(:first-child){border-left:none!important;border-top:1px solid ${C.border};padding-left:0!important;padding-top:28px!important}
           .cta-inner{flex-direction:column!important;align-items:flex-start!important}
+        @media(max-width:640px){
+          .footer-inner{flex-direction:column!important;align-items:center!important;text-align:center;gap:10px!important}
+          .footer-links{flex-wrap:wrap!important;justify-content:center!important;gap:12px!important}
+          .footer-social{justify-content:center!important}
+        }
           .hero-btns{flex-direction:column!important}
           .vp-grid{grid-template-columns:repeat(2,1fr)!important}
         }
@@ -486,12 +491,12 @@ export default function HomePage() {
 
         {/* ── FOOTER ── */}
         <footer style={{ background: C.text, marginTop: 48 }}>
-          <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+          <div className="footer-inner" style={{ maxWidth: "1100px", margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
 
             {/* Logo */}
             <Link href="/" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
               <Image
-                src="/stayin-logo-transparent.png"
+                src="/stayin-logo-dark-transparent.png"
                 alt="Stayin"
                 width={90}
                 height={24}
@@ -500,7 +505,7 @@ export default function HomePage() {
             </Link>
 
             {/* Nav links */}
-            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, alignItems: "center" }}>
+            <div className="footer-links" style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, alignItems: "center" }}>
               {[
                 { he: "מונדיאל 2026", en: "World Cup 2026", href: "/sports/world-cup-2026" },
                 { he: "כדורגל ישראלי", en: "Israeli Football", href: "/sports/football-israel" },
@@ -517,7 +522,7 @@ export default function HomePage() {
             </div>
 
             {/* Social + copyright */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <div className="footer-social" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,.18)", fontFamily: fBody(isHe) }}>© 2026</div>
               <div style={{ width: 1, height: 12, background: "rgba(255,255,255,.1)" }} />
               {[
