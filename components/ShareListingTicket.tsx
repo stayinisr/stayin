@@ -220,7 +220,7 @@ function CupIcon() {
       src="/stayin-cup-icon.png"
       alt=""
       crossOrigin="anonymous"
-      style={{ display: "block", width: 86, height: 112, objectFit: "contain", filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))" }}
+      style={{ display: "block", width: 86, height: 112, objectFit: "contain", mixBlendMode: "screen" as const, filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))" }}
     />
   );
 }
@@ -231,7 +231,7 @@ function StadiumIcon({ rtl }: { rtl: boolean }) {
       src="/stayin-stadium-icon.png"
       alt=""
       crossOrigin="anonymous"
-      style={{ display: "block", width: 140, height: 100, objectFit: "contain", filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))" }}
+      style={{ display: "block", width: 140, height: 100, objectFit: "contain", mixBlendMode: "screen" as const, filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))" }}
     />
   );
 }
@@ -285,7 +285,7 @@ function LogoBlock() {
         src="/stayin-share-logo.png"
         alt="Stayin"
         crossOrigin="anonymous"
-        style={{ width: 320, height: "auto", objectFit: "contain", filter: "drop-shadow(0 4px 16px rgba(0,0,0,.4))" }}
+        style={{ width: 320, height: "auto", objectFit: "contain", mixBlendMode: "screen" as const }}
       />
     </div>
   );
