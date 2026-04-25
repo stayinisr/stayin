@@ -369,20 +369,7 @@ export default function HomePage() {
                 {isHe ? "ספורט, הופעות ופסטיבלים — הכל במקום אחד. קונים ומוכרים מתחברים ישירות. בלי עמלות, בלי תיווך." : "Sports, concerts and festivals — all in one place. Buyers and sellers connect directly. No fees, no middlemen."}
               </p>
 
-              <div className="hero-btns su3" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
-                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: "linear-gradient(135deg,#1a3a6b 0%,#e63946 55%,#006847 100%)", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 28px rgba(26,58,107,.3)", transition: "opacity 150ms" }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-                >
-                  {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
-                </Link>
-                <Link href="/sports/football-israel" style={{ padding: "12px 22px", background: "linear-gradient(135deg,#1a3a8f 0%,#2d5be3 50%,#ffffff22 100%),#1a3a8f", backgroundBlendMode: "screen", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", border: "1px solid rgba(100,160,255,.4)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.2), 0 4px 14px rgba(26,58,143,.3)", transition: "opacity 150ms" }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-                >
-                  {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
-                </Link>
-              </div>
+
             </div>
 
             {/* Value props — glass cards on gradient */}
