@@ -47,10 +47,6 @@ type Props = {
 
 const SITE_URL = "stayin.co.il";
 const EMPTY = "—";
-const ASSET_VERSION = "v=13";
-const SHARE_LOGO_SRC = `/stayin-share-logo.png?${ASSET_VERSION}`;
-const STADIUM_ICON_SRC = `/stayin-stadium-icon.png?${ASSET_VERSION}`;
-const CUP_ICON_SRC = `/stayin-cup-icon.png?${ASSET_VERSION}`;
 const TICKET_WIDTH = 1600;
 const TICKET_HEIGHT = 900;
 
@@ -218,50 +214,43 @@ function NeonText({ children, style }: { children: ReactNode; style?: CSSPropert
   return <span style={{ textShadow: baseTextShadow, ...style }}>{children}</span>;
 }
 
-function SafeImage({ src, alt, style }: { src: string; alt: string; style: CSSProperties }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      draggable={false}
-      style={style}
-      onError={(event) => {
-        event.currentTarget.style.display = "none";
-      }}
-    />
-  );
-}
-
 function CupIcon() {
   return (
-    <SafeImage
-      src={CUP_ICON_SRC}
-      alt="World Cup"
-      style={{
-        display: "block",
-        width: 86,
-        height: 112,
-        objectFit: "contain",
-        filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))",
-      }}
-    />
+    <svg width="86" height="112" viewBox="0 0 86 112" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))" }}>
+      <path d="M43 8C58 8 70 19 70 33C70 44 63 54 53 58C51 69 56 82 64 95C54 101 32 101 22 95C30 82 35 69 33 58C23 54 16 44 16 33C16 19 28 8 43 8Z" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.95"/>
+      <path d="M21 32C31 42 52 42 65 25" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.82"/>
+      <path d="M31 57C38 50 48 49 55 57" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.66"/>
+      <path d="M31 21C41 30 49 39 58 52" stroke="#35F4FF" strokeWidth="3" strokeLinecap="round" opacity="0.52"/>
+      <path d="M27 96H59" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M22 103H64" stroke="#35F4FF" strokeWidth="4" strokeLinecap="round" opacity="0.8"/>
+    </svg>
   );
 }
 
 function StadiumIcon({ rtl }: { rtl: boolean }) {
   return (
-    <SafeImage
-      src={STADIUM_ICON_SRC}
-      alt="Stadium"
-      style={{
-        display: "block",
-        width: 72,
-        height: 52,
-        objectFit: "contain",
-        transform: rtl ? "none" : "none",
-        filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))",
-      }}
-    />
+    <svg width="72" height="52" viewBox="0 0 72 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))", transform: rtl ? "none" : "none" }}>
+      <ellipse cx="36" cy="25" rx="30" ry="16" stroke="#22F4FF" strokeWidth="3" opacity="0.95"/>
+      <ellipse cx="36" cy="25" rx="18" ry="8" stroke="#22F4FF" strokeWidth="2.5" opacity="0.72"/>
+      <path d="M8 25V36C8 44 20 49 36 49C52 49 64 44 64 36V25" stroke="#22F4FF" strokeWidth="3" opacity="0.85"/>
+      <path d="M15 36C24 42 48 42 57 36" stroke="#22F4FF" strokeWidth="2.4" opacity="0.6"/>
+      <path d="M14 13V5M25 9V2M36 8V1M47 9V2M58 13V5" stroke="#22F4FF" strokeWidth="2.4" strokeLinecap="round" opacity="0.72"/>
+    </svg>
+  );
+}
+
+function StadiumDecoration() {
+  const ribs = Array.from({ length: 14 }, (_, i) => 54 + i * 22);
+  const rings = Array.from({ length: 6 }, (_, i) => i);
+  return (
+    <svg width="386" height="242" viewBox="0 0 386 242" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", left: 24, top: 315, width: 386, height: 242, opacity: 0.34, filter: "drop-shadow(0 0 22px rgba(34,211,238,0.34))" }}>
+      <ellipse cx="193" cy="94" rx="164" ry="62" stroke="#168CFF" strokeWidth="3"/>
+      <ellipse cx="193" cy="94" rx="110" ry="34" stroke="#24E9FF" strokeWidth="2" opacity="0.8"/>
+      <path d="M29 94V138C29 179 101 212 193 212C285 212 357 179 357 138V94" stroke="#168CFF" strokeWidth="3" opacity="0.7"/>
+      <path d="M54 135C86 166 136 184 193 184C250 184 300 166 332 135" stroke="#24E9FF" strokeWidth="2" opacity="0.55"/>
+      {ribs.map((x, i) => <path key={"rib-" + i} d={"M" + x + " 49L" + (x + 20) + " 183"} stroke="#1DA7FF" strokeWidth="1.5" opacity="0.28" />)}
+      {rings.map((_, i) => <ellipse key={"ring-" + i} cx="193" cy={72 + i * 22} rx={155 - i * 13} ry={56 - i * 5} stroke="#25EAFF" strokeWidth="1.3" opacity="0.18" />)}
+    </svg>
   );
 }
 
@@ -282,22 +271,25 @@ const flagCircleStyle: CSSProperties = {
   background: "rgba(255,255,255,0.08)",
 };
 
+function TicketIconMark() {
+  return (
+    <svg width="62" height="42" viewBox="0 0 62 42" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginInlineStart: 8, filter: "drop-shadow(0 0 8px rgba(34,211,238,.35))" }}>
+      <path d="M9 12L45 3C48 2 51 4 52 7L57 26C58 30 56 33 52 34L16 39C13 40 10 38 9 35L4 18C3 15 5 13 9 12Z" stroke="#58F7FF" strokeWidth="4" strokeLinejoin="round"/>
+      <path d="M24 25C27 29 33 29 36 25L39 21C42 17 39 12 34 13" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"/>
+      <path d="M38 17C35 13 29 13 26 17L23 21C20 25 23 30 28 29" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function LogoBlock() {
   return (
-    <div style={{ position: "absolute", left: 64, top: 76, width: 304, textAlign: "center" }}>
-      <SafeImage
-        src={SHARE_LOGO_SRC}
-        alt="Stayin"
-        style={{
-          display: "block",
-          width: 304,
-          height: 104,
-          objectFit: "contain",
-          margin: "0 auto",
-          filter: "drop-shadow(0 0 12px rgba(34,211,238,0.22))",
-        }}
-      />
-      <div style={{ color: "#35f2ff", marginTop: 14, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
+    <div style={{ position: "absolute", left: 56, top: 92, width: 318, textAlign: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+        <span style={{ color: "#ffffff", fontSize: 66, fontWeight: 950, letterSpacing: "-0.055em", textShadow: "0 12px 24px rgba(0,0,0,.35)" }}>Stay</span>
+        <span style={{ color: "#28F4FF", fontSize: 66, fontWeight: 950, letterSpacing: "-0.055em", textShadow: "0 0 15px rgba(34,211,238,.35)" }}>in</span>
+        <TicketIconMark />
+      </div>
+      <div style={{ color: "#35f2ff", marginTop: 18, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
     </div>
   );
 }
@@ -320,20 +312,7 @@ function LeftPanel({ typeLabel }: { typeLabel: string }) {
           opacity: 0.9,
         }}
       />
-      <SafeImage
-        src={STADIUM_ICON_SRC}
-        alt=""
-        style={{
-          position: "absolute",
-          left: 24,
-          top: 315,
-          width: 386,
-          height: 242,
-          objectFit: "contain",
-          opacity: 0.36,
-          filter: "drop-shadow(0 0 22px rgba(34,211,238,0.34))",
-        }}
-      />
+      <StadiumDecoration />
 
       <div
         style={{
