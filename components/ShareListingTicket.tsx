@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { toPng } from "html-to-image";
 import { flagImgSrc, teamName } from "../lib/teams";
@@ -47,8 +47,8 @@ type Props = {
 
 const SITE_URL = "stayin.co.il";
 const EMPTY = "—";
-const TICKET_WIDTH = 1659;
-const TICKET_HEIGHT = 948;
+const TICKET_WIDTH = 1600;
+const TICKET_HEIGHT = 900;
 
 function clean(value: unknown) {
   if (value === null || value === undefined) return EMPTY;
@@ -125,7 +125,7 @@ function getShareUrl(listingId: string, matchId: string) {
 
 function useModalLayout(open: boolean) {
   const [mounted, setMounted] = useState(false);
-  const [previewScale, setPreviewScale] = useState(0.42);
+  const [previewScale, setPreviewScale] = useState(0.5);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -139,13 +139,13 @@ function useModalLayout(open: boolean) {
       const mobile = width <= 768;
       setIsMobile(mobile);
 
-      const chromeHeight = mobile ? 265 : 185;
-      const availableWidth = Math.max(260, width - (mobile ? 34 : 84));
+      const chromeHeight = mobile ? 255 : 180;
+      const availableWidth = Math.max(260, width - (mobile ? 32 : 88));
       const availableHeight = Math.max(210, height - chromeHeight);
       const byWidth = availableWidth / TICKET_WIDTH;
       const byHeight = availableHeight / TICKET_HEIGHT;
-      const maxScale = mobile ? 0.47 : 0.61;
-      const minScale = mobile ? 0.22 : 0.34;
+      const maxScale = mobile ? 0.48 : 0.72;
+      const minScale = mobile ? 0.22 : 0.36;
       setPreviewScale(Math.max(minScale, Math.min(maxScale, byWidth, byHeight)));
     }
 
@@ -170,20 +170,6 @@ function useModalLayout(open: boolean) {
   return { mounted, previewScale, isMobile };
 }
 
-function SafeImage({ src, alt, style }: { src: string; alt: string; style: CSSProperties }) {
-  return (
-    <img
-      src={src}
-      alt={alt}
-      crossOrigin="anonymous"
-      style={style}
-      onError={(event) => {
-        event.currentTarget.style.display = "none";
-      }}
-    />
-  );
-}
-
 async function waitForImages(element: HTMLElement) {
   const images = Array.from(element.querySelectorAll("img"));
 
@@ -202,138 +188,304 @@ async function waitForImages(element: HTMLElement) {
   await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 }
 
-function fitFont(text: string, base: number, mediumAt: number, smallAt: number, min = 34) {
-  if (text.length > smallAt) return Math.max(min, base - 18);
-  if (text.length > mediumAt) return Math.max(min, base - 10);
+function fitFont(text: string, base: number, mediumAt: number, smallAt: number, min = 24) {
+  if (text.length > smallAt) return Math.max(min, base - 16);
+  if (text.length > mediumAt) return Math.max(min, base - 8);
   return base;
 }
 
-function TeamName({ value, x, y, w, align }: { value: string; x: number; y: number; w: number; align: "left" | "right" | "center" }) {
-  const text = clean(value);
+function actionButton(background: string, color: string): CSSProperties {
+  return {
+    border: 0,
+    borderRadius: 14,
+    minHeight: 54,
+    padding: "0 18px",
+    background,
+    color,
+    fontSize: 15,
+    fontWeight: 900,
+    cursor: "pointer",
+  };
+}
+
+const baseTextShadow = "0 12px 22px rgba(0,0,0,0.35)";
+
+function NeonText({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return <span style={{ textShadow: baseTextShadow, ...style }}>{children}</span>;
+}
+
+function CupIcon() {
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: x,
-        top: y,
-        width: w,
-        color: "#ffffff",
-        fontSize: fitFont(text, 53, 9, 14, 32),
-        lineHeight: 1,
-        fontWeight: 950,
-        letterSpacing: text.length > 10 ? "-0.035em" : "-0.045em",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        textAlign: align,
-        textShadow: "0 14px 35px rgba(0,0,0,0.48)",
-      }}
-    >
-      {text}
-    </div>
+    <svg viewBox="0 0 92 120" width="76" height="99" style={{ display: "block", filter: "drop-shadow(0 0 13px rgba(34,211,238,0.72))" }}>
+      <path d="M47 8c13 7 25 18 31 34 5 14 3 28-6 41-8 12-17 21-20 31H40c-3-10-12-19-20-31-9-13-11-27-6-41C20 26 32 15 47 8Z" fill="rgba(6, 24, 48, .42)" stroke="#20e8ff" strokeWidth="3" />
+      <path d="M27 29c17 4 26 17 31 40M67 29c-15 7-21 22-23 45M25 77c11 9 25 13 43 6" fill="none" stroke="#23e8ff" strokeWidth="3" strokeLinecap="round" opacity=".86" />
+      <path d="M33 113h27" stroke="#23e8ff" strokeWidth="4" strokeLinecap="round" />
+    </svg>
   );
 }
 
-const flagStyle: CSSProperties = {
-  position: "absolute",
-  width: 70,
-  height: 70,
+function StadiumIcon({ rtl }: { rtl: boolean }) {
+  return (
+    <svg viewBox="0 0 86 58" width="66" height="45" style={{ display: "block", transform: rtl ? "none" : "none", filter: "drop-shadow(0 0 10px rgba(34,211,238,0.50))" }}>
+      <ellipse cx="43" cy="29" rx="35" ry="18" fill="rgba(2,20,35,.35)" stroke="#16e8f7" strokeWidth="3" />
+      <ellipse cx="43" cy="29" rx="22" ry="9" fill="none" stroke="#16e8f7" strokeWidth="2" opacity=".8" />
+      <path d="M14 29v14M72 29v14M25 16V6M43 12V2M61 16V6" stroke="#16e8f7" strokeWidth="3" strokeLinecap="round" />
+      <path d="M16 43c17 11 37 11 54 0" fill="none" stroke="#16e8f7" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Flag({ name }: { name?: string | null }) {
+  const flag = flagImgSrc(name);
+  if (!flag) return <div style={flagCircleStyle} />;
+  return <img src={flag} crossOrigin="anonymous" alt="" style={flagCircleStyle} />;
+}
+
+const flagCircleStyle: CSSProperties = {
+  width: 76,
+  height: 76,
   borderRadius: 999,
   objectFit: "cover",
-  border: "1px solid rgba(255,255,255,0.34)",
-  boxShadow: "0 14px 30px rgba(0,0,0,0.38)",
+  flexShrink: 0,
+  border: "1px solid rgba(255,255,255,0.35)",
+  boxShadow: "0 16px 32px rgba(0,0,0,0.36)",
+  background: "rgba(255,255,255,0.08)",
 };
 
-function Flag({ name, x, y }: { name?: string | null; x: number; y: number }) {
-  const flag = flagImgSrc(name);
-  if (!flag) return <div style={{ ...flagStyle, left: x, top: y, background: "rgba(255,255,255,0.08)" }} />;
-  return <img src={flag} crossOrigin="anonymous" alt="" style={{ ...flagStyle, left: x, top: y }} />;
+function LogoBlock() {
+  return (
+    <div style={{ position: "absolute", left: 84, top: 92, width: 270, textAlign: "center" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <span style={{ color: "#fff", fontSize: 64, fontWeight: 950, lineHeight: 1, letterSpacing: "-0.055em" }}>Stay</span>
+        <span style={{ color: "#19e7ef", fontSize: 64, fontWeight: 950, lineHeight: 1, letterSpacing: "-0.055em" }}>in</span>
+        <svg viewBox="0 0 74 48" width="58" height="38" style={{ transform: "rotate(-14deg)", filter: "drop-shadow(0 0 8px rgba(34,211,238,.55))" }}>
+          <path d="M8 12 58 4c2 9 7 12 13 12l-6 28-52 1c0-8-4-12-12-13L8 12Z" fill="none" stroke="#71fbff" strokeWidth="5" strokeLinejoin="round" />
+          <path d="M29 31c-6-3-6-13 1-16l7-3c9-3 15 7 10 14M42 19c6 3 6 13-1 16l-7 3c-9 3-15-7-10-14" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+      </div>
+      <div style={{ color: "#35f2ff", marginTop: 25, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
+    </div>
+  );
 }
 
-function LabelValue({ label, value, x, y, w, strong = false }: { label: string; value: string; x: number; y: number; w: number; strong?: boolean }) {
-  const text = clean(value);
+function LeftPanel({ typeLabel }: { typeLabel: string }) {
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: x,
-        top: y,
-        width: w,
-        textAlign: "center",
-        fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
-      }}
-    >
-      <div style={{ color: "#66f6ff", fontSize: 19, fontWeight: 900, marginBottom: 11, lineHeight: 1 }}>
-        {label}
-      </div>
+    <div style={{ position: "absolute", left: 0, top: 0, width: 420, height: TICKET_HEIGHT, overflow: "hidden" }}>
+      <LogoBlock />
+
       <div
         style={{
-          color: strong ? "#65f7ff" : "#ffffff",
-          fontSize: strong ? fitFont(text, 34, 7, 10, 25) : fitFont(text, 29, 8, 12, 22),
-          fontWeight: strong ? 980 : 900,
+          position: "absolute",
+          left: 58,
+          top: 286,
+          width: 360,
+          height: 300,
+          background:
+            "radial-gradient(ellipse at center, rgba(34,160,255,.22) 0%, rgba(34,160,255,.08) 45%, rgba(34,160,255,0) 72%)",
+          opacity: 0.9,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 28,
+          top: 321,
+          width: 382,
+          height: 230,
+          borderRadius: "50%",
+          border: "2px solid rgba(39,139,255,.55)",
+          transform: "perspective(500px) rotateX(58deg)",
+          boxShadow: "0 0 0 10px rgba(39,139,255,.08), inset 0 0 38px rgba(29,147,255,.22)",
+        }}
+      />
+      {Array.from({ length: 9 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: 70 + i * 31,
+            top: 330 - Math.abs(i - 4) * 7,
+            width: 2,
+            height: 210 + Math.abs(i - 4) * 14,
+            background: "rgba(35,148,255,.22)",
+            transform: `rotate(${(i - 4) * 9}deg)`,
+            transformOrigin: "bottom center",
+          }}
+        />
+      ))}
+
+      <div
+        style={{
+          position: "absolute",
+          left: 86,
+          top: 640,
+          width: 254,
+          height: 84,
+          borderRadius: 28,
+          border: "3px solid #18f4ff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#ffffff",
+          fontSize: typeLabel.length > 5 ? 43 : 50,
+          fontWeight: 950,
           lineHeight: 1,
-          whiteSpace: "nowrap",
+          boxShadow: "0 0 24px rgba(24,244,255,.72), inset 0 0 32px rgba(24,244,255,.13)",
+          background: "rgba(10,41,58,.46)",
           overflow: "hidden",
+          whiteSpace: "nowrap",
           textOverflow: "ellipsis",
-          textShadow: strong ? "0 0 22px rgba(34,211,238,0.42)" : "0 10px 22px rgba(0,0,0,0.30)",
+          padding: "0 12px",
         }}
       >
-        {text}
+        {typeLabel}
+      </div>
+      <div style={{ position: "absolute", left: 96, top: 758, width: 230, textAlign: "center", color: "#2cf8ff", fontSize: 31, fontWeight: 750 }}>
+        {SITE_URL}
       </div>
     </div>
   );
 }
 
-function Header({ isHe, stage }: { isHe: boolean; stage: string }) {
-  const title = eventTitle(isHe);
-  const box = isHe
-    ? { left: 805, topTitle: 108, topStage: 168, width: 530, align: "right" as const }
-    : { left: 520, topTitle: 106, topStage: 165, width: 760, align: "left" as const };
-
+function CardShell({ children, typeLabel }: { children: ReactNode; typeLabel: string }) {
   return (
-    <>
+    <div
+      style={{
+        width: TICKET_WIDTH,
+        height: TICKET_HEIGHT,
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
+        color: "#ffffff",
+        background:
+          "radial-gradient(circle at 20% 40%, rgba(21,122,255,.18) 0%, rgba(21,122,255,.06) 28%, transparent 56%), linear-gradient(105deg, #061121 0%, #071832 45%, #030914 100%)",
+        borderRadius: 64,
+        border: "3px solid rgba(72,132,255,.86)",
+        boxShadow: "inset 0 0 0 1px rgba(0,239,255,.18), inset 0 0 52px rgba(42,116,255,.16), 0 0 32px rgba(57,122,255,.30)",
+      }}
+    >
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 76% 26%, rgba(26,187,255,.08), transparent 35%)" }} />
+
+      <div style={{ position: "absolute", left: 400, top: 0, width: 4, height: "100%", background: "linear-gradient(#16e7ff, #16e7ff)" , boxShadow: "0 0 18px #16e7ff" }} />
+      <div style={{ position: "absolute", left: 391, top: 0, width: 24, height: "100%", background: "repeating-linear-gradient(to bottom, transparent 0 23px, #14e7ff 23px 38px)", opacity: .88 }} />
+      <div style={notchStyle(367, -31)} />
+      <div style={notchStyle(367, 865)} />
+      <div style={sideNotchStyle()} />
+
+      <LeftPanel typeLabel={typeLabel} />
+      <div style={{ position: "absolute", left: 420, top: 0, width: 1180, height: TICKET_HEIGHT }}>{children}</div>
+    </div>
+  );
+}
+
+function notchStyle(left: number, top: number): CSSProperties {
+  return {
+    position: "absolute",
+    left,
+    top,
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+    background: "#040b18",
+    border: "3px solid rgba(72,132,255,.9)",
+    boxShadow: "0 0 22px rgba(38,138,255,.4)",
+    zIndex: 3,
+  };
+}
+
+function sideNotchStyle(): CSSProperties {
+  return {
+    position: "absolute",
+    left: -38,
+    top: 315,
+    width: 92,
+    height: 92,
+    borderRadius: 999,
+    background: "#040b18",
+    border: "3px solid rgba(72,132,255,.9)",
+    boxShadow: "0 0 22px rgba(38,138,255,.4)",
+    zIndex: 3,
+  };
+}
+
+function TeamPill({ name, flagName, side, isHe }: { name: string; flagName?: string | null; side: "left" | "right"; isHe: boolean }) {
+  const fontSize = fitFont(name, isHe ? 56 : 54, isHe ? 8 : 11, isHe ? 12 : 16, 34);
+  const flexDirection = side === "left" ? "row" : "row-reverse";
+  const textAlign = side === "left" ? "left" : "right";
+  return (
+    <div
+      style={{
+        width: 405,
+        height: 105,
+        borderRadius: 38,
+        border: "2px solid rgba(110,154,255,.58)",
+        background: "rgba(7,18,38,.36)",
+        boxShadow: "inset 0 0 22px rgba(54,107,255,.12)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: 22,
+        padding: "0 28px",
+        flexDirection,
+        overflow: "hidden",
+      }}
+    >
+      <Flag name={flagName} />
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
-          position: "absolute",
-          left: box.left,
-          top: box.topTitle,
-          width: box.width,
-          color: "#5ef7ff",
-          fontSize: isHe ? 38 : 36,
+          flex: 1,
+          minWidth: 0,
+          textAlign,
+          color: "#fff",
+          fontSize,
           fontWeight: 950,
-          letterSpacing: isHe ? "0.025em" : "0.075em",
-          textTransform: isHe ? "none" : "uppercase",
           lineHeight: 1,
-          textAlign: box.align,
+          letterSpacing: isHe ? "-0.045em" : "-0.035em",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          textShadow: "0 0 18px rgba(34,211,238,0.30)",
+          textShadow: baseTextShadow,
         }}
       >
-        {title}
+        {name}
       </div>
+    </div>
+  );
+}
+
+function DataCell({ label, value, price = false }: { label: string; value: string; price?: boolean }) {
+  const cleaned = clean(value);
+  return (
+    <div style={{ minWidth: 0, textAlign: "center", padding: "0 10px" }}>
+      <div style={{ color: "#28f4ff", fontSize: 24, fontWeight: 900, lineHeight: 1, marginBottom: 17 }}>{label}</div>
       <div
-        dir={isHe ? "rtl" : "ltr"}
         style={{
-          position: "absolute",
-          left: box.left,
-          top: box.topStage,
-          width: box.width,
-          color: "rgba(208,197,255,0.9)",
-          fontSize: isHe ? 28 : 29,
-          fontWeight: 850,
-          letterSpacing: isHe ? "0" : "0.055em",
-          textAlign: box.align,
+          color: price ? "#40effa" : "#ffffff",
+          fontSize: price ? fitFont(cleaned, 40, 7, 11, 30) : fitFont(cleaned, 34, 9, 14, 25),
+          fontWeight: price ? 980 : 900,
+          lineHeight: 1,
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
+          textShadow: price ? "0 0 22px rgba(34,211,238,0.42)" : baseTextShadow,
         }}
       >
-        {stage}
+        {cleaned}
       </div>
-    </>
+    </div>
+  );
+}
+
+function DataGrid({ items }: { items: Array<{ label: string; value: string; price?: boolean }> }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`, alignItems: "center" }}>
+      {items.map((item, index) => (
+        <div key={`${item.label}-${index}`} style={{ borderLeft: index === 0 ? "none" : "2px solid rgba(119,151,255,.42)", minWidth: 0 }}>
+          <DataCell label={item.label} value={item.value} price={item.price} />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -346,114 +498,126 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   const matchNumber = match.fifa_match_number ? `#${match.fifa_match_number}` : EMPTY;
   const city = clean(match.city);
   const stadium = clean(match.stadium);
-  const notes = clean(listing.notes);
-  const template = isHe ? "/stayin-ticket-template-he.png?v=7" : "/stayin-ticket-template-en.png?v=7";
   const stage = stageLabel(match.stage, isHe);
   const stadiumText = stadium !== EMPTY && city !== EMPTY ? `${stadium} · ${city}` : stadium !== EMPTY ? stadium : city;
+  const rowOne = [
+    { label: isHe ? "קטגוריה" : "Category", value: clean(listing.category) },
+    { label: isHe ? "שעה" : "Time", value: formatTime(match.match_time) },
+    { label: isHe ? "תאריך" : "Date", value: formatDate(match.match_date) },
+    { label: isHe ? "עיר" : "City", value: city },
+    { label: isHe ? "משחק" : "Match", value: matchNumber },
+  ];
+  const rowTwo = [
+    { label: isHe ? "כמות" : "Qty", value: quantity },
+    { label: isHe ? "מושבים" : "Seats", value: clean(listing.seats_numbers) },
+    { label: isHe ? "שורה" : "Row", value: clean(listing.seats_row) },
+    { label: isHe ? "בלוק" : "Block", value: clean(listing.seats_block) },
+    { label: isHe ? "יחד" : "Together", value: yesNo(listing.seated_together, isHe) },
+    { label: isHe ? "מחיר" : "Price", value: price, price: true },
+  ];
 
   return (
-    <div
-      dir="ltr"
-      style={{
-        width: TICKET_WIDTH,
-        height: TICKET_HEIGHT,
-        position: "relative",
-        overflow: "hidden",
-        fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
-        color: "#ffffff",
-        background: "#040b18",
-      }}
-    >
-      <SafeImage src={template} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }} />
-
-      <Header isHe={isHe} stage={stage} />
+    <CardShell typeLabel={shareType}>
+      <div style={{ position: "absolute", right: 72, top: 72 }}>
+        <CupIcon />
+      </div>
 
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
           position: "absolute",
-          left: 126,
-          top: 653,
-          width: 236,
-          height: 76,
+          left: isHe ? 380 : 75,
+          top: 70,
+          width: isHe ? 600 : 720,
+          textAlign: isHe ? "right" : "left",
+        }}
+      >
+        <div
+          style={{
+            color: "#5ef7ff",
+            fontSize: isHe ? 48 : 43,
+            fontWeight: 950,
+            letterSpacing: isHe ? "0.02em" : "0.07em",
+            textTransform: isHe ? "none" : "uppercase",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            textShadow: "0 0 18px rgba(34,211,238,0.30)",
+          }}
+        >
+          {eventTitle(isHe)}
+        </div>
+        <div
+          style={{
+            color: "rgba(208,197,255,0.92)",
+            fontSize: isHe ? 31 : 29,
+            fontWeight: 850,
+            letterSpacing: isHe ? "0" : "0.04em",
+            marginTop: 24,
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {stage}
+        </div>
+      </div>
+
+      <div style={{ position: "absolute", left: 75, top: 255, width: 1030, display: "grid", gridTemplateColumns: "405px 180px 405px", alignItems: "center" }}>
+        <TeamPill name={homeName} flagName={match.home_team_name} side="left" isHe={isHe} />
+        <div style={{ textAlign: "center", color: "#a69cf8", fontSize: 52, fontWeight: 900, lineHeight: 1, textShadow: "0 0 16px rgba(166,156,248,.28)" }}>VS</div>
+        <TeamPill name={awayName} flagName={match.away_team_name} side="right" isHe={isHe} />
+      </div>
+
+      <div style={{ position: "absolute", left: 70, top: 410, width: 1040, height: 2, background: "rgba(113,153,255,.45)" }} />
+
+      <div style={{ position: "absolute", left: 70, top: 462, width: 1040 }}>
+        <DataGrid items={rowOne} />
+      </div>
+
+      <div style={{ position: "absolute", left: 70, top: 580, width: 1040, borderTop: "3px dashed rgba(88,139,255,.6)" }} />
+
+      <div style={{ position: "absolute", left: 70, top: 632, width: 1040 }}>
+        <DataGrid items={rowTwo} />
+      </div>
+
+      <div style={{ position: "absolute", left: 70, top: 760, width: 1040, height: 2, background: "rgba(113,153,255,.34)" }} />
+
+      <div
+        dir={isHe ? "rtl" : "ltr"}
+        style={{
+          position: "absolute",
+          left: 75,
+          top: 795,
+          width: 1030,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          color: "#75f7ff",
-          fontSize: shareType.length > 5 ? 39 : 45,
-          fontWeight: 950,
-          lineHeight: 1,
-          paddingBottom: 1,
-          textShadow: "0 0 22px rgba(34,211,238,0.62)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
+          gap: 22,
+          flexDirection: isHe ? "row-reverse" : "row",
         }}
       >
-        {shareType}
-      </div>
-
-      <Flag name={match.home_team_name} x={515} y={305} />
-      <TeamName value={homeName} x={595} y={326} w={300} align="left" />
-      <TeamName value={awayName} x={1114} y={326} w={290} align="right" />
-      <Flag name={match.away_team_name} x={1420} y={305} />
-
-      <LabelValue label={isHe ? "קטגוריה" : "Category"} value={clean(listing.category)} x={512} y={468} w={150} />
-      <LabelValue label={isHe ? "שעה" : "Time"} value={formatTime(match.match_time)} x={705} y={468} w={136} />
-      <LabelValue label={isHe ? "תאריך" : "Date"} value={formatDate(match.match_date)} x={890} y={468} w={190} />
-      <LabelValue label={isHe ? "עיר" : "City"} value={city} x={1128} y={468} w={174} />
-      <LabelValue label={isHe ? "משחק" : "Match"} value={matchNumber} x={1380} y={468} w={124} />
-
-      <LabelValue label={isHe ? "כמות" : "Qty"} value={quantity} x={512} y={635} w={110} />
-      <LabelValue label={isHe ? "מושבים" : "Seats"} value={clean(listing.seats_numbers)} x={672} y={635} w={154} />
-      <LabelValue label={isHe ? "שורה" : "Row"} value={clean(listing.seats_row)} x={870} y={635} w={124} />
-      <LabelValue label={isHe ? "בלוק" : "Block"} value={clean(listing.seats_block)} x={1066} y={635} w={132} />
-      <LabelValue label={isHe ? "יחד" : "Together"} value={yesNo(listing.seated_together, isHe)} x={1220} y={635} w={118} />
-      <LabelValue label={isHe ? "מחיר" : "Price"} value={price} x={1366} y={635} w={150} strong />
-
-      <div
-        dir={isHe ? "rtl" : "ltr"}
-        style={{
-          position: "absolute",
-          left: isHe ? 600 : 595,
-          top: 814,
-          width: isHe ? 760 : 790,
-          color: "#ffffff",
-          fontSize: fitFont(stadiumText, 29, 24, 38, 22),
-          fontWeight: 860,
-          lineHeight: 1,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          textAlign: isHe ? "right" : "left",
-          textShadow: "0 12px 22px rgba(0,0,0,0.35)",
-        }}
-      >
-        {stadiumText}
-      </div>
-
-      {notes !== EMPTY ? (
+        <StadiumIcon rtl={isHe} />
         <div
-          dir={isHe ? "rtl" : "ltr"}
           style={{
-            position: "absolute",
-            left: 610,
-            top: 864,
-            width: 790,
-            color: "rgba(230,237,255,0.58)",
-            fontSize: 16,
-            fontWeight: 650,
+            flex: 1,
+            minWidth: 0,
+            color: "#ffffff",
+            fontSize: fitFont(stadiumText, 31, 26, 42, 23),
+            fontWeight: 860,
+            lineHeight: 1,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
             textAlign: isHe ? "right" : "left",
+            textShadow: baseTextShadow,
           }}
         >
-          {isHe ? "הערות" : "Notes"}: {notes}
+          {stadiumText}
         </div>
-      ) : null}
-    </div>
+      </div>
+    </CardShell>
   );
 }
 
@@ -542,7 +706,7 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
-          width: isMobile ? "min(100%, 430px)" : "min(1100px, 100%)",
+          width: isMobile ? "min(100%, 430px)" : "min(1160px, 100%)",
           maxHeight: "96vh",
           overflow: "hidden",
           borderRadius: isMobile ? 30 : 28,
@@ -626,35 +790,21 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         type="button"
         onClick={() => setOpen(true)}
         style={{
-          padding: isSm ? "8px 12px" : "10px 16px",
-          borderRadius: isSm ? 4 : 5,
-          border: "1px solid rgba(34,211,238,0.28)",
-          background: "linear-gradient(135deg, rgba(34,211,238,0.12), rgba(37,99,235,0.08))",
-          color: "#0d1b3e",
-          fontSize: isSm ? 10 : 12,
-          fontWeight: 800,
+          border: "1px solid rgba(32, 211, 238, 0.22)",
+          background: "linear-gradient(135deg, rgba(13,27,62,.92), rgba(17,39,86,.92))",
+          color: "#ffffff",
+          borderRadius: 12,
+          minHeight: isSm ? 34 : 40,
+          padding: isSm ? "0 12px" : "0 16px",
+          fontSize: isSm ? 13 : 14,
+          fontWeight: 850,
           cursor: "pointer",
-          whiteSpace: "nowrap",
+          boxShadow: "0 10px 28px rgba(0,0,0,.12)",
         }}
       >
         {isHe ? "שתף מודעה" : "Share listing"}
       </button>
-
       {mounted && modal ? createPortal(modal, document.body) : null}
     </>
   );
-}
-
-function actionButton(bg: string, color: string): CSSProperties {
-  return {
-    padding: "14px 18px",
-    borderRadius: 14,
-    border: "none",
-    background: bg,
-    color,
-    fontSize: 15,
-    fontWeight: 900,
-    cursor: "pointer",
-    minHeight: 52,
-  };
 }
