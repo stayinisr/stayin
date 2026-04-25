@@ -265,48 +265,28 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
 // ── Value Props — redesigned to match WC aesthetic ────────────────────────────
 const VALUE_PROPS = [
   {
-    num: "01", icon: "✦",
-    stubFrom: "#1a3a8f", stubTo: "#1abfb0",
-    titleGradFrom: "#1a3a8f", titleGradTo: "#1abfb0",
-    pillColor: "#1a3a8f", pillBorder: "rgba(26,191,176,.22)",
-    pillBg: "linear-gradient(135deg,rgba(26,58,143,.07),rgba(26,191,176,.07))",
-    titleEn: "Zero fees",       titleHe: "0% עמלות",
+    num: "01", color: C.navy,
+    titleEn: "Zero fees",       titleHe: "אפס עמלות",
     subEn: "No fees for buyers or sellers. Ever.",
-    subHe: "לא לקונה, לא למוכר. אף פעם.",
-    pillEn: "Free — forever",   pillHe: "ללא תשלום — לעולם",
+    subHe: "בלי עמלות לקונה או למוכר. אף פעם.",
   },
   {
-    num: "02", icon: "💬",
-    stubFrom: "#006847", stubTo: "#25D366",
-    titleGradFrom: "#006847", titleGradTo: "#22c55e",
-    pillColor: "#006847", pillBorder: "rgba(37,211,102,.22)",
-    pillBg: "linear-gradient(135deg,rgba(0,104,71,.07),rgba(37,211,102,.07))",
-    titleEn: "WhatsApp",        titleHe: "ישיר בוואטסאפ",
+    num: "02", color: "#25D366",
+    titleEn: "WhatsApp direct", titleHe: "ישיר בוואטסאפ",
     subEn: "Contact the seller directly. No middlemen.",
     subHe: "פנייה ישירה למוכר. בלי תיווך.",
-    pillEn: "Direct · Fast · Simple", pillHe: "ישיר · מהיר · פשוט",
   },
   {
-    num: "03", icon: "🎟️",
-    stubFrom: "#c0202c", stubTo: "#e63946",
-    titleGradFrom: "#c0202c", titleGradTo: "#e63946",
-    pillColor: "#c0202c", pillBorder: "rgba(230,57,70,.2)",
-    pillBg: "linear-gradient(135deg,rgba(230,57,70,.07),rgba(230,57,70,.04))",
+    num: "03", color: C.teal,
     titleEn: "Free to post",    titleHe: "פרסום חינמי",
-    subEn: "60 seconds. Always, for everyone.",
-    subHe: "תוך 60 שניות. תמיד ולכולם.",
-    pillEn: "Free — always",    pillHe: "חינמי — תמיד",
+    subEn: "List your tickets in under 60 seconds.",
+    subHe: "פרסם כרטיסים תוך פחות מ-60 שניות.",
   },
   {
-    num: "04", icon: "⚡",
-    stubFrom: "#92650a", stubTo: "#d4a017",
-    titleGradFrom: "#92650a", titleGradTo: "#d4a017",
-    pillColor: "#92650a", pillBorder: "rgba(212,160,23,.25)",
-    pillBg: "linear-gradient(135deg,rgba(146,101,10,.07),rgba(212,160,23,.07))",
-    titleEn: "You set the price", titleHe: "אתה קובע",
-    subEn: "No algorithms. Your price, your rules.",
-    subHe: "בלי אלגוריתם. המחיר שלך.",
-    pillEn: "Your price, your rules", pillHe: "המחיר שלך, הכללים שלך",
+    num: "04", color: C.red,
+    titleEn: "You set the price", titleHe: "אתה קובע את המחיר",
+    subEn: "No algorithms. No price manipulation.",
+    subHe: "בלי אלגוריתמים. בלי מניפולציות מחיר.",
   },
 ];
 
@@ -391,32 +371,13 @@ export default function HomePage() {
             </div>
 
             {/* Value props — glass cards on gradient */}
-            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, flexShrink: 0, minWidth: 240 }}>
+            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flexShrink: 0, minWidth: 220 }}>
               {VALUE_PROPS.map((v) => (
-                <div key={v.num} style={{ display: "flex", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,.92)", border: "1px solid rgba(255,255,255,.98)", boxShadow: "0 8px 28px rgba(13,27,62,.09), 0 2px 6px rgba(13,27,62,.05)", minHeight: 160, transition: "transform 200ms", position: "relative" }}>
-                  {/* Stub */}
-                  <div style={{ width: 44, flexShrink: 0, background: `linear-gradient(160deg,${v.stubFrom},${v.stubTo})`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "14px 0", position: "relative" }}>
-                    <div style={{ position: "absolute", top: "12%", bottom: "12%", right: 0, borderRight: "1.5px dashed rgba(255,255,255,.22)" }} />
-                    <div style={{ position: "absolute", top: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
-                    <div style={{ position: "absolute", bottom: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
-                    <div style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontFamily: fHe, fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.2)" }}>Stayin</div>
-                    <div style={{ fontSize: 26 }}>{v.icon}</div>
-                    <div style={{ fontFamily: fHe, fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,.28)" }}>{v.num}</div>
-                  </div>
-                  {/* Body */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "16px 16px 14px" }}>
-                    <div>
-                      <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${v.titleGradFrom},${v.titleGradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                        {isHe ? v.titleHe : v.titleEn}
-                      </div>
-                      <div style={{ fontFamily: fHe, fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.5 }}>
-                        {isHe ? v.subHe : v.subEn}
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "9px 10px", borderRadius: 999, fontFamily: fHe, fontSize: 11, fontWeight: 900, background: v.pillBg, border: `1px solid ${v.pillBorder}`, color: v.pillColor }}>
-                      {isHe ? v.pillHe : v.pillEn}
-                    </div>
-                  </div>
+                <div key={v.num} style={{ padding: "18px 16px", borderRadius: 12, textAlign: "center" as const, background: "rgba(255,255,255,.72)", border: "1px solid rgba(255,255,255,.95)", backdropFilter: "blur(8px)", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: v.color }} />
+                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint, marginBottom: 8 }}>{v.num}</div>
+                  <div style={{ fontFamily: fSyne, fontSize: 13, fontWeight: 800, color: C.text, letterSpacing: "-0.3px", marginBottom: 4 }}>{isHe ? v.titleHe : v.titleEn}</div>
+                  <div style={{ fontSize: 10, color: C.hint, lineHeight: 1.4, fontFamily: fBody(isHe) }}>{isHe ? v.subHe : v.subEn}</div>
                 </div>
               ))}
             </div>
@@ -483,101 +444,24 @@ export default function HomePage() {
         </div>
 
         {/* ── CTA ── */}
-        <div style={{ maxWidth: "1100px", margin: "20px auto 0", padding: "0 16px" }}>
-          <div style={{ borderRadius: 16, overflow: "hidden", position: "relative", background: `linear-gradient(135deg,${C.navy},#0f2252,#0d2a1a)` }}>
-            {/* blobs */}
-            <div style={{ position: "absolute", width: 280, height: 280, top: -90, right: -50, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,191,176,.13),transparent 70%)", pointerEvents: "none" as const }} />
-            <div style={{ position: "absolute", width: 220, height: 220, bottom: -70, left: -40, borderRadius: "50%", background: "radial-gradient(circle,rgba(230,57,70,.1),transparent 70%)", pointerEvents: "none" as const }} />
-            <div style={{ position: "relative", padding: "36px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" as const }} className="cta-inner">
-              <div>
-                <div style={{ fontFamily: fHe, fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: "#fff", marginBottom: 10, letterSpacing: "-0.5px", lineHeight: 1.1 }}>
-                  {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,.45)", lineHeight: 1.7, fontFamily: fBody(isHe), maxWidth: 380 }}>
-                  {isHe ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ. חינמי לחלוטין." : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp. Completely free."}
-                </div>
+        <div style={{ maxWidth: "1100px", margin: "20px auto 52px", padding: "0 16px" }}>
+          <div style={{ padding: "24px", border: `1px solid ${C.border}`, borderRadius: "6px", background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" as const }} className="cta-inner">
+            <div>
+              <div style={{ fontFamily: fSyne, fontSize: "16px", fontWeight: 800, color: C.text, marginBottom: "4px", letterSpacing: "-0.3px" }}>
+                {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
               </div>
-              <Link href="/post-listing" style={{ padding: "13px 30px", background: C.teal, color: C.navy, fontSize: 14, fontWeight: 900, borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0, boxShadow: "0 6px 20px rgba(26,191,176,.35)" }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-              >
-                {isHe ? "פרסם מודעה →" : "Post listing →"}
-              </Link>
+              <div style={{ fontSize: "12px", fontWeight: 300, color: C.muted, lineHeight: 1.75, fontFamily: fBody(isHe) }}>
+                {isHe ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ." : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp."}
+              </div>
             </div>
+            <Link href="/post-listing" style={{ padding: "12px 26px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+            >
+              {isHe ? "פרסם מודעה →" : "Post listing →"}
+            </Link>
           </div>
         </div>
-
-        {/* ── FOOTER ── */}
-        <footer style={{ background: C.text, marginTop: 48 }}>
-          <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 16px 24px" }}>
-            {/* Top row */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap" as const, gap: 24, marginBottom: 24 }}>
-              <div>
-                <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-.5px", marginBottom: 6 }}>
-                  Stay<span style={{ color: C.teal }}>in</span> 🎟️
-                </div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", fontFamily: fBody(isHe) }}>
-                  {isHe ? "כרטיסים בין אנשים, בלי עמלה" : "Tickets between people, no fees"}
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 24, flexWrap: "wrap" as const }}>
-                {[
-                  { he: "מונדיאל 2026", en: "World Cup 2026", href: "/sports/world-cup-2026" },
-                  { he: "כדורגל ישראלי", en: "Israeli Football", href: "/sports/football-israel" },
-                  { he: "הופעות", en: "Live Shows", href: "/live-shows" },
-                  { he: "פרסם מודעה", en: "Post listing", href: "/post-listing" },
-                ].map(l => (
-                  <Link key={l.href} href={l.href} style={{ fontSize: 12, color: "rgba(255,255,255,.35)", textDecoration: "none", fontFamily: fBody(isHe), fontWeight: 500, transition: "color 150ms" }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,.7)")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,.35)")}
-                  >
-                    {isHe ? l.he : l.en}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(255,255,255,.08)", marginBottom: 20 }} />
-
-            {/* Bottom row */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16 }}>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.2)", fontFamily: fBody(isHe) }}>
-                © 2026 Stayin · {isHe ? "כל הזכויות שמורות" : "All rights reserved"}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.22)", letterSpacing: ".1em", textTransform: "uppercase" as const }}>
-                  {isHe ? "עקבו אחרינו" : "Follow us"}
-                </div>
-                {[
-                  { label: "Instagram", href: "https://instagram.com/stayin.co.il", bg: "linear-gradient(135deg,#405de6,#e1306c,#fd1d1d,#f56040,#ffdc80)", icon: (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
-                    </svg>
-                  )},
-                  { label: "TikTok", href: "https://tiktok.com/@stayin.co.il", bg: "#000", icon: (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.05a8.16 8.16 0 0 0 4.78 1.53V7.12a4.85 4.85 0 0 1-1.01-.43z"/>
-                    </svg>
-                  )},
-                  { label: "Facebook", href: "https://facebook.com/stayin.co.il", bg: "#1877f2", icon: (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-                    </svg>
-                  )},
-                ].map(s => (
-                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" title={s.label}
-                    style={{ width: 34, height: 34, borderRadius: 8, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "transform 150ms, opacity 150ms", border: "1px solid rgba(255,255,255,.08)" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.12)"; (e.currentTarget as HTMLElement).style.opacity = ".9"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-                  >
-                    {s.icon}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </footer>
 
       </div>
     </>
