@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
@@ -489,12 +490,15 @@ export default function HomePage() {
             {/* Top row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap" as const, gap: 24, marginBottom: 24 }}>
               <div>
-                <div style={{ fontFamily: fHe, fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-.5px", marginBottom: 6 }}>
-                  Stay<span style={{ color: C.teal }}>in</span> 🎟️
-                </div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", fontFamily: fBody(isHe) }}>
-                  {isHe ? "כרטיסים בין אנשים, בלי עמלה" : "Tickets between people, no fees"}
-                </div>
+                <Link href="/" style={{ display: "flex", alignItems: "center" }}>
+                  <Image
+                    src="/stayin-logo-transparent.png"
+                    alt="Stayin"
+                    width={110}
+                    height={28}
+                    style={{ height: "auto", width: "auto", maxHeight: "30px" }}
+                  />
+                </Link>
               </div>
               <div style={{ display: "flex", gap: 24, flexWrap: "wrap" as const }}>
                 {[

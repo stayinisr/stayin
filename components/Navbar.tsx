@@ -129,9 +129,9 @@ export default function Navbar() {
           {/* LOGO */}
           <Link href="/" style={{ display: "flex", alignItems: "center" }}>
             <Image
-              src="/stayin-logo.svg"
+              src="/stayin-logo-transparent.png"
               alt="Stayin"
-              width={110}
+              width={130}
               height={34}
               priority
               style={{ height: "auto", width: "auto", maxHeight: "36px" }}
