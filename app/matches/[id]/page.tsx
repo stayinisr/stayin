@@ -1591,6 +1591,10 @@ export default function MatchPage() {
                   !!item.first_published_at &&
                   Date.now() - new Date(item.first_published_at).getTime() < 86400000;
 
+                const mn = match
+                  ? `${teamName(match.home_team_name, isHe)} vs ${teamName(match.away_team_name, isHe)}`
+                  : "";
+
                 return item.is_featured ? (
                   <GoldListing
                     key={item.id}
@@ -1600,6 +1604,7 @@ export default function MatchPage() {
                     viewerLoggedIn={viewerLoggedIn}
                     viewerProfileComplete={viewerProfileComplete}
                     onContact={handleContact}
+                    matchName={mn}
                   />
                 ) : (
                   <RegularListing
@@ -1611,6 +1616,7 @@ export default function MatchPage() {
                     viewerLoggedIn={viewerLoggedIn}
                     viewerProfileComplete={viewerProfileComplete}
                     onContact={handleContact}
+                    matchName={mn}
                   />
                 );
               })}
