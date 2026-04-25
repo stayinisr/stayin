@@ -393,7 +393,7 @@ export default function HomePage() {
             {/* Value props — glass cards on gradient */}
             <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, flexShrink: 0, minWidth: 240 }}>
               {VALUE_PROPS.map((v) => (
-                <div key={v.num} style={{ display: "flex", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,.92)", border: "1px solid rgba(255,255,255,.98)", boxShadow: "0 8px 28px rgba(13,27,62,.09), 0 2px 6px rgba(13,27,62,.05)", minHeight: 160, transition: "transform 200ms", position: "relative" }}>
+                <div key={v.num} style={{ display: "flex", flexDirection: "row", direction: "ltr", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,.92)", border: "1px solid rgba(255,255,255,.98)", boxShadow: "0 8px 28px rgba(13,27,62,.09), 0 2px 6px rgba(13,27,62,.05)", minHeight: 120, transition: "transform 200ms", position: "relative" }}>
                   {/* Stub */}
                   <div style={{ width: 44, flexShrink: 0, background: `linear-gradient(160deg,${v.stubFrom},${v.stubTo})`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "14px 0", position: "relative" }}>
                     <div style={{ position: "absolute", top: "12%", bottom: "12%", right: 0, borderRight: "1.5px dashed rgba(255,255,255,.22)" }} />
@@ -404,16 +404,16 @@ export default function HomePage() {
                     <div style={{ fontFamily: fHe, fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,.28)" }}>{v.num}</div>
                   </div>
                   {/* Body */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "16px 16px 14px" }}>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "12px 14px 10px" }}>
                     <div>
-                      <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${v.titleGradFrom},${v.titleGradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                      <div style={{ fontFamily: fHe, fontSize: 18, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1, marginBottom: 6, background: `linear-gradient(135deg,${v.titleGradFrom},${v.titleGradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                         {isHe ? v.titleHe : v.titleEn}
                       </div>
-                      <div style={{ fontFamily: fHe, fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.5 }}>
+                      <div style={{ fontFamily: fHe, fontSize: 11, fontWeight: 800, color: "#1e293b", lineHeight: 1.5 }}>
                         {isHe ? v.subHe : v.subEn}
                       </div>
                     </div>
-                    <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "9px 10px", borderRadius: 999, fontFamily: fHe, fontSize: 11, fontWeight: 900, background: v.pillBg, border: `1px solid ${v.pillBorder}`, color: v.pillColor }}>
+                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "7px 10px", borderRadius: 999, fontFamily: fHe, fontSize: 11, fontWeight: 900, background: v.pillBg, border: `1px solid ${v.pillBorder}`, color: v.pillColor }}>
                       {isHe ? v.pillHe : v.pillEn}
                     </div>
                   </div>
@@ -513,7 +513,7 @@ export default function HomePage() {
             {/* Top row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap" as const, gap: 24, marginBottom: 24 }}>
               <div>
-                <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-.5px", marginBottom: 6 }}>
+                <div style={{ fontFamily: fHe, fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: "-.5px", marginBottom: 6 }}>
                   Stay<span style={{ color: C.teal }}>in</span> 🎟️
                 </div>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", fontFamily: fBody(isHe) }}>

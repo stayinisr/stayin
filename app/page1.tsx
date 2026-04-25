@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
 
 const C = {
@@ -23,30 +24,80 @@ const fSyne = "var(--font-syne,'Syne',sans-serif)";
 function fBody(isHe: boolean) { return isHe ? fHe : fEn; }
 
 // ── Ticker ────────────────────────────────────────────────────────────────────
-const TICKER = [
-  { en: "2× Argentina vs France · $420",       he: "2× ארגנטינה נגד צרפת · ₪1,550" },
-  { en: "WANTED · 4× USA vs Mexico",            he: "מחפש · 4× ארה\"ב נגד מקסיקו" },
-  { en: "1× Brazil vs Spain · $310",            he: "1× ברזיל נגד ספרד · ₪1,140" },
-  { en: "3× Canada Quarter Final · $280",       he: "3× קנדה רבע גמר · ₪1,030" },
-  { en: "WANTED · 2× World Cup Final",          he: "מחפש · 2× גמר המונדיאל" },
-  { en: "1× Maccabi TA vs Hapoel · ₪180",      he: "1× מכבי ת\"א נגד הפועל · ₪180" },
-  { en: "2× Morocco vs Portugal · $260",        he: "2× מרוקו נגד פורטוגל · ₪960" },
-  { en: "WANTED · 1× Semi Final seat",          he: "מחפש · 1× מושב חצי גמר" },
-  { en: "2× Maccabi Haifa vs Beitar · ₪220",   he: "2× מכבי חיפה נגד בית\"ר · ₪220" },
-];
+type TickerItem = { text: string; type: string; href: string };
 
 function Ticker({ isHe }: { isHe: boolean }) {
-  const items = [...TICKER, ...TICKER];
+  const [items, setItems] = useState<TickerItem[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      // Fetch active listings with match info
+      const { data: listings } = await supabase
+        .from("listings")
+        .select("type, price, quantity, match_id, israeli_match_id")
+        .eq("status", "active")
+        .is("archived_at", null)
+        .order("last_bumped_at", { ascending: false })
+        .limit(20);
+
+      if (!listings?.length) return;
+
+      // Fetch WC match names
+      const wcIds = [...new Set(listings.filter(l => l.match_id).map(l => l.match_id))];
+      const ilIds = [...new Set(listings.filter(l => l.israeli_match_id).map(l => l.israeli_match_id))];
+
+      const [{ data: wcMatches }, { data: ilMatches }] = await Promise.all([
+        wcIds.length ? supabase.from("matches").select("id,home_team_name,away_team_name").in("id", wcIds) : { data: [] },
+        ilIds.length ? supabase.from("israeli_matches").select("id,home_team,away_team,home_team_en,away_team_en").in("id", ilIds) : { data: [] },
+      ]);
+
+      const wcMap: Record<string, string> = {};
+      (wcMatches || []).forEach((m: any) => { wcMap[m.id] = `${m.home_team_name || "TBD"} vs ${m.away_team_name || "TBD"}`; });
+
+      const ilMapHe: Record<string, string> = {};
+      const ilMapEn: Record<string, string> = {};
+      (ilMatches || []).forEach((m: any) => {
+        ilMapHe[m.id] = `${m.home_team} נגד ${m.away_team}`;
+        ilMapEn[m.id] = `${m.home_team_en} vs ${m.away_team_en}`;
+      });
+
+      const built: TickerItem[] = listings.map(l => {
+        const matchHe = l.match_id ? wcMap[l.match_id] : (l.israeli_match_id ? ilMapHe[l.israeli_match_id] : null);
+        const matchEn = l.match_id ? wcMap[l.match_id] : (l.israeli_match_id ? ilMapEn[l.israeli_match_id] : null);
+        const match = isHe ? matchHe : matchEn;
+        if (!match) return null;
+        const qty = `${l.quantity}×`;
+        const price = l.price ? (l.match_id ? `$${l.price}` : `₪${l.price}`) : "";
+        const text = l.type === "buy"
+          ? (isHe ? `מחפש · ${qty} ${match}` : `WANTED · ${qty} ${match}`)
+          : `${qty} ${match}${price ? ` · ${price}` : ""}`;
+        const href = l.match_id
+          ? `/matches/${l.match_id}`
+          : `/sports/football-israel/${l.israeli_match_id}`;
+        return { text, type: l.type, href };
+      }).filter(Boolean) as TickerItem[];
+
+      if (built.length) setItems(built);
+    }
+    load();
+  }, [isHe]);
+
+  if (!items.length) return null;
+
+  const doubled = [...items, ...items];
   return (
     <>
       <style>{`@keyframes stayin-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}`}</style>
       <div style={{ overflow: "hidden", borderBottom: `1px solid ${C.border}`, padding: "10px 0" }}>
-        <div style={{ display: "flex", animation: "stayin-tick 36s linear infinite", whiteSpace: "nowrap" }}>
-          {items.map((t, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}` }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: i % 3 === 0 ? C.red : i % 3 === 1 ? C.navy : C.teal, display: "inline-block" }} />
-              {isHe ? t.he : t.en}
-            </span>
+        <div style={{ display: "flex", animation: `stayin-tick ${Math.max(20, doubled.length * 3)}s linear infinite`, whiteSpace: "nowrap" }}>
+          {doubled.map((t, i) => (
+            <a key={i} href={t.href} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "0 22px", fontSize: 11, fontWeight: 600, color: C.muted, borderRight: `1px solid ${C.border}`, flexShrink: 0, textDecoration: "none", cursor: "pointer", transition: "color 150ms" }}
+              onMouseEnter={e => (e.currentTarget.style.color = C.navy)}
+              onMouseLeave={e => (e.currentTarget.style.color = C.muted)}
+            >
+              <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: t.type === "buy" ? C.navy : t.type === "sell" ? C.red : C.teal, display: "inline-block" }} />
+              {t.text}
+            </a>
           ))}
         </div>
       </div>
@@ -59,42 +110,38 @@ const BANDS = [
   {
     id: "wc2026", en: "World Cup 2026", he: "מונדיאל 2026",
     subEn: "104 matches · USA, Canada & México", subHe: "104 משחקים · ארה\"ב, קנדה ומקסיקו",
-    tagEn: "01 · Sports", tagHe: "01 · ספורט", ctaEn: "Browse matches", ctaHe: "לגלישה במשחקים",
+    tagEn: "01 · Sports", tagHe: "01 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/world-cup-2026",
-    img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(230,57,70,0.32)", top: "#e63946", live: true,
+    bgGrad: "linear-gradient(135deg,#1a3a6b,#e63946)",
   },
   {
     id: "israel", en: "Israeli Football", he: "כדורגל ישראלי",
     subEn: "Ligat Ha'Al & State Cup", subHe: "ליגת העל וגביע המדינה",
-    tagEn: "02 · Sports", tagHe: "02 · ספורט", ctaEn: "Explore", ctaHe: "לגלישה",
+    tagEn: "02 · Sports", tagHe: "02 · ספורט", ctaEn: "Browse matches", ctaHe: "לצפייה במשחקים",
     href: "/sports/football-israel",
-    img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(26,191,176,0.24)", top: "#1abfb0",
+    bgGrad: "linear-gradient(135deg,#1a3a8f,#006847)",
   },
   {
     id: "concerts", en: "Live Concerts", he: "הופעות חיות",
     subEn: "Artists, tours & big nights", subHe: "אמנים, טורים ולילות גדולים",
-    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Explore", ctaHe: "לגלישה",
+    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/live-shows",
     img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
-    accent: "rgba(212,160,23,0.24)", top: "#d4a017", isNew: true,
+    accent: "rgba(212,160,23,0.24)", top: "#d4a017", soon: true,
+    bgGrad: "linear-gradient(135deg,#4a3000,#d4a017)",
   },
   {
-    id: "festivals", en: "Festivals", he: "פסטיבלים",
-    subEn: "Multi-day events & summer weekends", subHe: "אירועים מרובי ימים וסופי שבוע",
-    tagEn: "04 · Live", tagHe: "04 · הופעות", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
-    href: "/live-shows",
-    img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1400&q=80",
-    accent: "rgba(26,191,176,0.2)", top: "#1abfb0", soon: true,
-  },
-  {
-    id: "basketball", en: "Basketball", he: "כדורסל",
-    subEn: "Courts, leagues & playoff nights", subHe: "קורטים, ליגות ולילות פלייאוף",
-    tagEn: "05 · Sports", tagHe: "05 · ספורט", ctaEn: "Notify me", ctaHe: "עדכנו אותי",
+    id: "basketball", en: "Basketball IL", he: "כדורסל ישראלי",
+    subEn: "Leagues, playoff & israeli cup", subHe: "ליגה, פליאוף וגביע המדינה",
+    tagEn: "04 · Sports", tagHe: "04 · ספורט", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/sports",
     img: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1400&q=80",
     accent: "rgba(212,160,23,0.2)", top: "#d4a017", soon: true,
+    bgGrad: "linear-gradient(135deg,#2a1a6b,#d4a017)",
   },
 ];
 
@@ -103,10 +150,11 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
   return (
     <>
       <style>{`
+        /* ── Desktop: horizontal expand ── */
         .sb{flex:1;position:relative;overflow:hidden;cursor:pointer;transition:flex 420ms cubic-bezier(.4,0,.2,1);border-right:1px solid rgba(255,255,255,.05)}
         .sb:last-child{border-right:none}.sb.on{flex:3.8}
-        .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.15;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}.sb.on .sb-img{opacity:.48;transform:scale(1)}
-        .sb-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 10%,rgba(4,8,18,.96) 100%)}
+        .sb-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.30;transition:opacity 400ms,transform 400ms;transform:scale(1.06)}.sb.on .sb-img{opacity:.82;transform:scale(1)}
+        .sb-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(4,8,18,.82) 100%)}
         .sb-acc{position:absolute;inset:0;opacity:0;transition:opacity 400ms}.sb.on .sb-acc{opacity:1}
         .sb-top{position:absolute;top:0;left:0;right:0;height:3px;width:0;transition:width 420ms}.sb.on .sb-top{width:100%}
         .sb-badge{position:absolute;top:14px;left:14px;padding:4px 10px;border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity 250ms 80ms}.sb.on .sb-badge{opacity:1}
@@ -116,18 +164,40 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
         .sb-sub{font-size:12px;color:rgba(255,255,255,.48);line-height:1.5;margin-top:7px;max-height:0;overflow:hidden;opacity:0;transition:max-height 340ms,opacity 280ms}.sb.on .sb-sub{max-height:56px;opacity:1}
         .sb-cta{display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:11px;font-weight:800;color:#1abfb0;letter-spacing:.04em;max-height:0;overflow:hidden;opacity:0;transition:max-height 300ms 70ms,opacity 260ms 70ms}.sb.on .sb-cta{max-height:30px;opacity:1}
         .sb-soon{position:absolute;inset:0;background:rgba(4,8,18,.42);transition:opacity 300ms}.sb.on .sb-soon{opacity:0}
-        @media(max-width:640px){.sb.on{flex:4}.sb.on .sb-title{font-size:18px}}
+        .eb-desktop{display:flex;height:380px;border-radius:6px;overflow:hidden;background:#06090f}
+        .eb-mobile{display:none;flex-direction:column;gap:6px}
+        /* ── Mobile: accordion ── */
+        @media(max-width:640px){
+          .eb-desktop{display:none}
+          .eb-mobile{display:flex}
+          .mb-band{border-radius:8px;overflow:hidden;cursor:pointer}
+          .mb-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;position:relative}
+          .mb-head-img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.25}
+          .mb-head-grad{position:absolute;inset:0;background:rgba(4,8,18,.55)}
+          .mb-head-content{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%}
+          .mb-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;display:inline-block}
+          .mb-title{font-family:var(--font-syne,'Syne',sans-serif);font-size:17px;font-weight:800;color:#fff;letter-spacing:-.04em;line-height:1}
+          .mb-chevron{font-size:11px;color:rgba(255,255,255,.6);transition:transform 280ms;flex-shrink:0}
+          .mb-band.mb-open .mb-chevron{transform:rotate(180deg)}
+          .mb-body{max-height:0;overflow:hidden;transition:max-height 320ms ease,padding 280ms ease;padding:0 16px;background:rgba(4,8,18,.7)}
+          .mb-band.mb-open .mb-body{max-height:80px;padding:12px 16px}
+          .mb-sub{font-size:12px;color:rgba(255,255,255,.55);line-height:1.5}
+          .mb-cta{font-size:11px;font-weight:800;color:#1abfb0;margin-top:8px;display:block}
+          .mb-soon-overlay{position:absolute;inset:0;background:rgba(4,8,18,.35)}
+        }
       `}</style>
-      <div style={{ display: "flex", height: 380, borderRadius: "6px", overflow: "hidden", background: "#06090f", border: `1px solid ${C.border}` }}>
+
+      {/* ── DESKTOP ── */}
+      <div className="eb-desktop" style={{ border: `1px solid ${C.border}` }}>
         {BANDS.map((b) => {
           const on = active === b.id;
           const badge = b.live
             ? { bg: "rgba(230,57,70,.18)", border: "1px solid rgba(230,57,70,.34)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
-            : b.isNew
-            ? { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" }
-            : { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" };
-          return (
-            <Link key={b.id} href={b.href} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)} style={{ textDecoration: "none" }}>
+            : b.soon
+            ? { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" }
+            : { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
+          const inner = (
+            <>
               <div className="sb-img" style={{ backgroundImage: `url(${b.img})` }} />
               <div className="sb-grad" />
               <div className="sb-acc" style={{ background: `linear-gradient(155deg,${b.accent},transparent 55%)` }} />
@@ -138,9 +208,53 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
                 <div className="sb-tag">{isHe ? b.tagHe : b.tagEn}</div>
                 <div className="sb-title">{isHe ? b.he : b.en}</div>
                 <div className="sb-sub">{isHe ? b.subHe : b.subEn}</div>
-                <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} →</div>
+                <div className="sb-cta">{isHe ? b.ctaHe : b.ctaEn} {b.soon ? "" : "→"}</div>
               </div>
-            </Link>
+            </>
+          );
+          return b.soon
+            ? <div key={b.id} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)}>{inner}</div>
+            : <Link key={b.id} href={b.href} className={`sb${on ? " on" : ""}`} onMouseEnter={() => setActive(b.id)} style={{ textDecoration: "none" }}>{inner}</Link>;
+        })}
+      </div>
+
+      {/* ── MOBILE: accordion ── */}
+      <div className="eb-mobile">
+        {BANDS.map((b) => {
+          const badge = b.live
+            ? { bg: "rgba(230,57,70,.25)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
+            : b.soon
+            ? { bg: "rgba(255,255,255,.12)", color: "rgba(255,255,255,.5)", label: isHe ? "בקרוב" : "Soon" }
+            : { bg: "rgba(26,191,176,.22)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
+          return (
+            <div key={b.id} className="mb-band" style={{ background: b.bgGrad || "#06090f" }}
+              onClick={e => {
+                const el = e.currentTarget as HTMLElement;
+                // close all others
+                document.querySelectorAll(".mb-band").forEach(x => { if (x !== el) x.classList.remove("mb-open"); });
+                el.classList.toggle("mb-open");
+              }}
+            >
+              <div className="mb-head">
+                <div className="mb-head-img" style={{ backgroundImage: `url(${b.img})` }} />
+                <div className="mb-head-grad" />
+                {b.soon && <div className="mb-soon-overlay" />}
+                <div className="mb-head-content">
+                  <div>
+                    <span className="mb-badge" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
+                    <div className="mb-title">{isHe ? b.he : b.en}</div>
+                  </div>
+                  <span className="mb-chevron">▼</span>
+                </div>
+              </div>
+              <div className="mb-body">
+                <div className="mb-sub">{isHe ? b.subHe : b.subEn}</div>
+                {b.soon
+                  ? <span className="mb-cta">{isHe ? "בקרוב" : "Soon"}</span>
+                  : <Link href={b.href} className="mb-cta" style={{ color: "#1abfb0", textDecoration: "none" }} onClick={e => e.stopPropagation()}>{isHe ? b.ctaHe : b.ctaEn} →</Link>
+                }
+              </div>
+            </div>
           );
         })}
       </div>
@@ -151,28 +265,48 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
 // ── Value Props — redesigned to match WC aesthetic ────────────────────────────
 const VALUE_PROPS = [
   {
-    num: "01", color: C.navy,
-    titleEn: "Zero fees",       titleHe: "אפס עמלות",
+    num: "01", icon: "✦",
+    stubFrom: "#1a3a8f", stubTo: "#1abfb0",
+    titleGradFrom: "#1a3a8f", titleGradTo: "#1abfb0",
+    pillColor: "#1a3a8f", pillBorder: "rgba(26,191,176,.22)",
+    pillBg: "linear-gradient(135deg,rgba(26,58,143,.07),rgba(26,191,176,.07))",
+    titleEn: "Zero fees",       titleHe: "0% עמלות",
     subEn: "No fees for buyers or sellers. Ever.",
-    subHe: "בלי עמלות לקונה או למוכר. אף פעם.",
+    subHe: "לא לקונה, לא למוכר. אף פעם.",
+    pillEn: "Free — forever",   pillHe: "ללא תשלום — לעולם",
   },
   {
-    num: "02", color: "#25D366",
-    titleEn: "WhatsApp direct", titleHe: "ישיר בוואטסאפ",
+    num: "02", icon: "💬",
+    stubFrom: "#006847", stubTo: "#25D366",
+    titleGradFrom: "#006847", titleGradTo: "#22c55e",
+    pillColor: "#006847", pillBorder: "rgba(37,211,102,.22)",
+    pillBg: "linear-gradient(135deg,rgba(0,104,71,.07),rgba(37,211,102,.07))",
+    titleEn: "WhatsApp",        titleHe: "ישיר בוואטסאפ",
     subEn: "Contact the seller directly. No middlemen.",
     subHe: "פנייה ישירה למוכר. בלי תיווך.",
+    pillEn: "Direct · Fast · Simple", pillHe: "ישיר · מהיר · פשוט",
   },
   {
-    num: "03", color: C.teal,
+    num: "03", icon: "🎟️",
+    stubFrom: "#c0202c", stubTo: "#e63946",
+    titleGradFrom: "#c0202c", titleGradTo: "#e63946",
+    pillColor: "#c0202c", pillBorder: "rgba(230,57,70,.2)",
+    pillBg: "linear-gradient(135deg,rgba(230,57,70,.07),rgba(230,57,70,.04))",
     titleEn: "Free to post",    titleHe: "פרסום חינמי",
-    subEn: "List your tickets in under 60 seconds.",
-    subHe: "פרסם כרטיסים תוך פחות מ-60 שניות.",
+    subEn: "60 seconds. Always, for everyone.",
+    subHe: "תוך 60 שניות. תמיד ולכולם.",
+    pillEn: "Free — always",    pillHe: "חינמי — תמיד",
   },
   {
-    num: "04", color: C.red,
-    titleEn: "You set the price", titleHe: "אתה קובע את המחיר",
-    subEn: "No algorithms. No price manipulation.",
-    subHe: "בלי אלגוריתמים. בלי מניפולציות מחיר.",
+    num: "04", icon: "⚡",
+    stubFrom: "#92650a", stubTo: "#d4a017",
+    titleGradFrom: "#92650a", titleGradTo: "#d4a017",
+    pillColor: "#92650a", pillBorder: "rgba(212,160,23,.25)",
+    pillBg: "linear-gradient(135deg,rgba(146,101,10,.07),rgba(212,160,23,.07))",
+    titleEn: "You set the price", titleHe: "אתה קובע",
+    subEn: "No algorithms. Your price, your rules.",
+    subHe: "בלי אלגוריתם. המחיר שלך.",
+    pillEn: "Your price, your rules", pillHe: "המחיר שלך, הכללים שלך",
   },
 ];
 
@@ -225,12 +359,14 @@ export default function HomePage() {
               </div>
 
               {isHe ? (
-                <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", color: C.text, marginBottom: "18px" }}>
-                  כל הכרטיסים<br /><span style={{ color: C.navy }}>במקום אחד.</span>
+                <h1 className="su2" style={{ fontFamily: fHe, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.5px", marginBottom: "18px" }}>
+                  <span style={{ color: C.navy }}>כל</span> <span style={{ color: C.red }}>הכרטיסים</span><br />
+                  <span style={{ color: C.green }}>במקום </span><span style={{ color: C.navy }}>אחד.</span>
                 </h1>
               ) : (
-                <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", color: C.text, marginBottom: "18px" }}>
-                  ALL TICKETS<br /><span style={{ color: C.navy }}>IN ONE PLACE.</span>
+                <h1 className="su2" style={{ fontFamily: fSyne, fontSize: "clamp(40px,5.5vw,68px)", fontWeight: 800, lineHeight: 1, letterSpacing: "0.02em", marginBottom: "18px" }}>
+                  <span style={{ color: C.navy }}>ALL </span><span style={{ color: C.red }}>TICKETS.</span><br />
+                  <span style={{ color: C.green }}>SKIP </span><span style={{ color: C.navy }}>THE CHAOS.</span>
                 </h1>
               )}
 
@@ -239,15 +375,15 @@ export default function HomePage() {
               </p>
 
               <div className="hero-btns su3" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" as const }}>
-                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 24px rgba(26,58,143,.24)", transition: "opacity 150ms" }}
+                <Link href="/sports/world-cup-2026" style={{ padding: "12px 24px", background: "linear-gradient(135deg,#1a3a6b 0%,#e63946 55%,#006847 100%)", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", boxShadow: "0 8px 28px rgba(26,58,107,.3)", transition: "opacity 150ms" }}
                   onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
                 >
                   {isHe ? "מונדיאל 2026 →" : "World Cup 2026 →"}
                 </Link>
-                <Link href="/sports/football-israel" style={{ padding: "12px 22px", border: "1px solid rgba(26,191,176,.3)", color: C.teal, fontSize: "13px", fontWeight: 600, borderRadius: "4px", textDecoration: "none", background: "rgba(26,191,176,.08)", transition: "all 150ms" }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.15)")}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "rgba(26,191,176,.08)")}
+                <Link href="/sports/football-israel" style={{ padding: "12px 22px", background: "linear-gradient(135deg,#1a3a8f 0%,#2d5be3 50%,#ffffff22 100%),#1a3a8f", backgroundBlendMode: "screen", color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", border: "1px solid rgba(100,160,255,.4)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.2), 0 4px 14px rgba(26,58,143,.3)", transition: "opacity 150ms" }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
                 >
                   {isHe ? "כדורגל ישראלי →" : "Israeli Football →"}
                 </Link>
@@ -255,32 +391,38 @@ export default function HomePage() {
             </div>
 
             {/* Value props — glass cards on gradient */}
-            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, flexShrink: 0, minWidth: 220 }}>
+            <div className="vp-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, flexShrink: 0, minWidth: 240 }}>
               {VALUE_PROPS.map((v) => (
-                <div key={v.num} style={{ padding: "18px 16px", borderRadius: 12, textAlign: "center" as const, background: "rgba(255,255,255,.72)", border: "1px solid rgba(255,255,255,.95)", backdropFilter: "blur(8px)", position: "relative", overflow: "hidden" }}>
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: v.color }} />
-                  <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint, marginBottom: 8 }}>{v.num}</div>
-                  <div style={{ fontFamily: fSyne, fontSize: 13, fontWeight: 800, color: C.text, letterSpacing: "-0.3px", marginBottom: 4 }}>{isHe ? v.titleHe : v.titleEn}</div>
-                  <div style={{ fontSize: 10, color: C.hint, lineHeight: 1.4, fontFamily: fBody(isHe) }}>{isHe ? v.subHe : v.subEn}</div>
+                <div key={v.num} style={{ display: "flex", borderRadius: 14, overflow: "hidden", background: "rgba(255,255,255,.92)", border: "1px solid rgba(255,255,255,.98)", boxShadow: "0 8px 28px rgba(13,27,62,.09), 0 2px 6px rgba(13,27,62,.05)", minHeight: 160, transition: "transform 200ms", position: "relative" }}>
+                  {/* Stub */}
+                  <div style={{ width: 44, flexShrink: 0, background: `linear-gradient(160deg,${v.stubFrom},${v.stubTo})`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "14px 0", position: "relative" }}>
+                    <div style={{ position: "absolute", top: "12%", bottom: "12%", right: 0, borderRight: "1.5px dashed rgba(255,255,255,.22)" }} />
+                    <div style={{ position: "absolute", top: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
+                    <div style={{ position: "absolute", bottom: -7, right: -7, width: 14, height: 14, borderRadius: "50%", background: "linear-gradient(135deg,#eef2ff,#fdf0f2)", zIndex: 4 }} />
+                    <div style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontFamily: fHe, fontSize: 7, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.2)" }}>Stayin</div>
+                    <div style={{ fontSize: 26 }}>{v.icon}</div>
+                    <div style={{ fontFamily: fHe, fontSize: 10, fontWeight: 900, color: "rgba(255,255,255,.28)" }}>{v.num}</div>
+                  </div>
+                  {/* Body */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "16px 16px 14px" }}>
+                    <div>
+                      <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1, marginBottom: 8, background: `linear-gradient(135deg,${v.titleGradFrom},${v.titleGradTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                        {isHe ? v.titleHe : v.titleEn}
+                      </div>
+                      <div style={{ fontFamily: fHe, fontSize: 12, fontWeight: 800, color: "#1e293b", lineHeight: 1.5 }}>
+                        {isHe ? v.subHe : v.subEn}
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 14, display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "9px 10px", borderRadius: 999, fontFamily: fHe, fontSize: 11, fontWeight: 900, background: v.pillBg, border: `1px solid ${v.pillBorder}`, color: v.pillColor }}>
+                      {isHe ? v.pillHe : v.pillEn}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* WC strip */}
-        <div style={{ background: C.navy, padding: "13px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" as const }}>
-            <div style={{ display: "flex", gap: 5 }}>
-              {["rgba(255,255,255,.35)", "#ff8080", "#4ade80"].map((c, i) => (
-                <span key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: c, display: "inline-block" }} />
-              ))}
-            </div>
-            <span style={{ fontFamily: fSyne, fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,.9)" }}>FIFA World Cup 2026</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{isHe ? "48 קבוצות · 104 משחקים · 16 ערים" : "48 teams · 104 matches · 16 host cities"}</span>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)", background: "rgba(255,255,255,.08)", padding: "5px 13px", borderRadius: 3, border: "1px solid rgba(255,255,255,.1)" }}>Jun 11 – Jul 19, 2026</span>
-        </div>
 
         {/* ── CATEGORIES ── */}
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "44px 16px 0" }}>
@@ -341,24 +483,101 @@ export default function HomePage() {
         </div>
 
         {/* ── CTA ── */}
-        <div style={{ maxWidth: "1100px", margin: "20px auto 52px", padding: "0 16px" }}>
-          <div style={{ padding: "24px", border: `1px solid ${C.border}`, borderRadius: "6px", background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" as const }} className="cta-inner">
-            <div>
-              <div style={{ fontFamily: fSyne, fontSize: "16px", fontWeight: 800, color: C.text, marginBottom: "4px", letterSpacing: "-0.3px" }}>
-                {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+        <div style={{ maxWidth: "1100px", margin: "20px auto 0", padding: "0 16px" }}>
+          <div style={{ borderRadius: 16, overflow: "hidden", position: "relative", background: `linear-gradient(135deg,${C.navy},#0f2252,#0d2a1a)` }}>
+            {/* blobs */}
+            <div style={{ position: "absolute", width: 280, height: 280, top: -90, right: -50, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,191,176,.13),transparent 70%)", pointerEvents: "none" as const }} />
+            <div style={{ position: "absolute", width: 220, height: 220, bottom: -70, left: -40, borderRadius: "50%", background: "radial-gradient(circle,rgba(230,57,70,.1),transparent 70%)", pointerEvents: "none" as const }} />
+            <div style={{ position: "relative", padding: "36px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" as const }} className="cta-inner">
+              <div>
+                <div style={{ fontFamily: fHe, fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: "#fff", marginBottom: 10, letterSpacing: "-0.5px", lineHeight: 1.1 }}>
+                  {isHe ? "יש לך כרטיסים למכור?" : "Got tickets to sell?"}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,.45)", lineHeight: 1.7, fontFamily: fBody(isHe), maxWidth: 380 }}>
+                  {isHe ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ. חינמי לחלוטין." : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp. Completely free."}
+                </div>
               </div>
-              <div style={{ fontSize: "12px", fontWeight: 300, color: C.muted, lineHeight: 1.75, fontFamily: fBody(isHe) }}>
-                {isHe ? "פרסם מודעה תוך 60 שניות. קונים יפנו אליך ישירות בוואטסאפ." : "Post a listing in 60 seconds. Buyers contact you directly on WhatsApp."}
-              </div>
+              <Link href="/post-listing" style={{ padding: "13px 30px", background: C.teal, color: C.navy, fontSize: 14, fontWeight: 900, borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0, boxShadow: "0 6px 20px rgba(26,191,176,.35)" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
+              >
+                {isHe ? "פרסם מודעה →" : "Post listing →"}
+              </Link>
             </div>
-            <Link href="/post-listing" style={{ padding: "12px 26px", background: C.navy, color: "#fff", fontSize: "13px", fontWeight: 700, borderRadius: "4px", textDecoration: "none", whiteSpace: "nowrap" as const, flexShrink: 0 }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity = ".88")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-            >
-              {isHe ? "פרסם מודעה →" : "Post listing →"}
-            </Link>
           </div>
         </div>
+
+        {/* ── FOOTER ── */}
+        <footer style={{ background: C.text, marginTop: 48 }}>
+          <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px 16px 24px" }}>
+            {/* Top row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap" as const, gap: 24, marginBottom: 24 }}>
+              <div>
+                <div style={{ fontFamily: fHe, fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-.5px", marginBottom: 6 }}>
+                  Stay<span style={{ color: C.teal }}>in</span> 🎟️
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)", fontFamily: fBody(isHe) }}>
+                  {isHe ? "כרטיסים בין אנשים, בלי עמלה" : "Tickets between people, no fees"}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 24, flexWrap: "wrap" as const }}>
+                {[
+                  { he: "מונדיאל 2026", en: "World Cup 2026", href: "/sports/world-cup-2026" },
+                  { he: "כדורגל ישראלי", en: "Israeli Football", href: "/sports/football-israel" },
+                  { he: "הופעות", en: "Live Shows", href: "/live-shows" },
+                  { he: "פרסם מודעה", en: "Post listing", href: "/post-listing" },
+                ].map(l => (
+                  <Link key={l.href} href={l.href} style={{ fontSize: 12, color: "rgba(255,255,255,.35)", textDecoration: "none", fontFamily: fBody(isHe), fontWeight: 500, transition: "color 150ms" }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,.7)")}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,.35)")}
+                  >
+                    {isHe ? l.he : l.en}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "rgba(255,255,255,.08)", marginBottom: 20 }} />
+
+            {/* Bottom row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 16 }}>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.2)", fontFamily: fBody(isHe) }}>
+                © 2026 Stayin · {isHe ? "כל הזכויות שמורות" : "All rights reserved"}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.22)", letterSpacing: ".1em", textTransform: "uppercase" as const }}>
+                  {isHe ? "עקבו אחרינו" : "Follow us"}
+                </div>
+                {[
+                  { label: "Instagram", href: "https://instagram.com/stayin.co.il", bg: "linear-gradient(135deg,#405de6,#e1306c,#fd1d1d,#f56040,#ffdc80)", icon: (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
+                    </svg>
+                  )},
+                  { label: "TikTok", href: "https://tiktok.com/@stayin.co.il", bg: "#000", icon: (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.05a8.16 8.16 0 0 0 4.78 1.53V7.12a4.85 4.85 0 0 1-1.01-.43z"/>
+                    </svg>
+                  )},
+                  { label: "Facebook", href: "https://facebook.com/stayin.co.il", bg: "#1877f2", icon: (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                  )},
+                ].map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" title={s.label}
+                    style={{ width: 34, height: 34, borderRadius: 8, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "transform 150ms, opacity 150ms", border: "1px solid rgba(255,255,255,.08)" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.12)"; (e.currentTarget as HTMLElement).style.opacity = ".9"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                  >
+                    {s.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </footer>
 
       </div>
     </>
