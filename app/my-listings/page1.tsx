@@ -214,7 +214,10 @@ function BumpTimer({
   const h = Math.floor(ms / 3600000),
     m = Math.floor((ms % 3600000) / 60000),
     s = Math.floor((ms % 60000) / 1000);
-  const timer = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const timer = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(
+    2,
+    "0"
+  )}`;
 
   return (
     <div
@@ -230,7 +233,13 @@ function BumpTimer({
       }}
     >
       <div>
-        <div style={{ fontSize: "12px", fontWeight: 700, color: canBump ? C.mexico : C.hint }}>
+        <div
+          style={{
+            fontSize: "12px",
+            fontWeight: 700,
+            color: canBump ? C.mexico : C.hint,
+          }}
+        >
           🚀 {isHe ? "הקפץ מודעה" : "Bump listing"}
         </div>
         <div style={{ fontSize: "10px", color: C.muted, marginTop: "1px" }}>
@@ -239,8 +248,8 @@ function BumpTimer({
               ? "מעלה אותך לראש הרשימה"
               : "Moves you to top of list"
             : isHe
-              ? `זמין שוב בעוד`
-              : "Available again in"}
+            ? `זמין שוב בעוד`
+            : "Available again in"}
         </div>
       </div>
       {canBump ? (
@@ -311,7 +320,9 @@ export default function MyListingsPage() {
       .eq("id", user.id)
       .maybeSingle();
 
-    setPlan((profile?.plan as Plan) ?? (profile?.is_premium ? "premium" : "free"));
+    setPlan(
+      (profile?.plan as Plan) ?? (profile?.is_premium ? "premium" : "free")
+    );
 
     const { data: raw } = await supabase
       .from("listings")
@@ -326,13 +337,17 @@ export default function MyListingsPage() {
     if (ids.length) {
       const { data: md } = await supabase
         .from("matches")
-        .select("id,fifa_match_number,home_team_name,away_team_name,city,match_date,stage")
+        .select(
+          "id,fifa_match_number,home_team_name,away_team_name,city,match_date,stage"
+        )
         .in("id", ids);
 
       mMap = Object.fromEntries((md || []).map((m: any) => [m.id, m]));
     }
 
-    setListings((raw || []).map((l: any) => ({ ...l, match: mMap[l.match_id] || null })));
+    setListings(
+      (raw || []).map((l: any) => ({ ...l, match: mMap[l.match_id] || null }))
+    );
     setLoading(false);
   }
 
@@ -341,18 +356,24 @@ export default function MyListingsPage() {
   }
 
   const activeCount = useMemo(
-    () => listings.filter((l) => l.status === "active" && !isExp(l.expires_at)).length,
+    () =>
+      listings.filter((l) => l.status === "active" && !isExp(l.expires_at))
+        .length,
     [listings]
   );
   const featuredCount = useMemo(
     () =>
-      listings.filter((l) => !!l.is_featured && l.status === "active" && !isExp(l.expires_at))
-        .length,
+      listings.filter(
+        (l) => !!l.is_featured && l.status === "active" && !isExp(l.expires_at)
+      ).length,
     [listings]
   );
 
   async function handleClose(id: string) {
-    const { error } = await supabase.from("listings").update({ status: "closed" }).eq("id", id);
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: "closed" })
+      .eq("id", id);
     if (!error) {
       toast.success(isHe ? "המודעה נסגרה" : "Listing closed");
       loadPage();
@@ -372,7 +393,8 @@ export default function MyListingsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?")) return;
+    if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?"))
+      return;
     const { error } = await supabase
       .from("listings")
       .update({ archived_at: new Date().toISOString(), status: "closed" })
@@ -387,13 +409,19 @@ export default function MyListingsPage() {
     const maxFeat = getPlanLimits(plan).max_featured;
     if (featuredCount >= maxFeat) {
       toast.warning(
-        isHe ? `ניתן להדגיש עד ${maxFeat} מודעות בלבד` : `Max ${maxFeat} featured listings`
+        isHe
+          ? `ניתן להדגיש עד ${maxFeat} מודעות בלבד`
+          : `Max ${maxFeat} featured listings`
       );
       return;
     }
     const payload: any = { is_featured: true };
-    if (!(listing as any).first_featured_at) payload.first_featured_at = new Date().toISOString();
-    const { error } = await supabase.from("listings").update(payload).eq("id", listing.id);
+    if (!(listing as any).first_featured_at)
+      payload.first_featured_at = new Date().toISOString();
+    const { error } = await supabase
+      .from("listings")
+      .update(payload)
+      .eq("id", listing.id);
     if (!error) {
       toast.success(isHe ? "מודעה הפכה למוזהבת ⭐" : "Listing is now gold ⭐");
       loadPage();
@@ -401,7 +429,10 @@ export default function MyListingsPage() {
   }
 
   async function handleFeatureOff(id: string) {
-    const { error } = await supabase.from("listings").update({ is_featured: false }).eq("id", id);
+    const { error } = await supabase
+      .from("listings")
+      .update({ is_featured: false })
+      .eq("id", id);
     if (!error) {
       toast.show(isHe ? "ההדגשה הוסרה" : "Gold removed", "info");
       loadPage();
@@ -495,12 +526,24 @@ export default function MyListingsPage() {
               <p style={{ fontSize: "12px", color: C.hint }}>
                 {email}
                 {plan === "premium" && (
-                  <span style={{ color: C.gold, fontWeight: 700, marginInlineStart: "6px" }}>
+                  <span
+                    style={{
+                      color: C.gold,
+                      fontWeight: 700,
+                      marginInlineStart: "6px",
+                    }}
+                  >
                     ⭐ Premium
                   </span>
                 )}
                 {plan === "unlimited" && (
-                  <span style={{ color: C.mexico, fontWeight: 700, marginInlineStart: "6px" }}>
+                  <span
+                    style={{
+                      color: C.mexico,
+                      fontWeight: 700,
+                      marginInlineStart: "6px",
+                    }}
+                  >
                     🚀 Unlimited
                   </span>
                 )}
@@ -520,7 +563,10 @@ export default function MyListingsPage() {
               {[
                 { n: activeCount, l: isHe ? "פעילות" : "Active", c: C.mexico },
                 {
-                  n: plan === "unlimited" ? "∞" : `${activeCount}/${getPlanLimits(plan).max_listings}`,
+                  n:
+                    plan === "unlimited"
+                      ? "∞"
+                      : `${activeCount}/${getPlanLimits(plan).max_listings}`,
                   l: isHe ? "מגבלה" : "Limit",
                   c: C.usa,
                 },
@@ -532,7 +578,11 @@ export default function MyListingsPage() {
               ].map((s, i) => (
                 <div
                   key={i}
-                  style={{ background: "rgba(255,255,255,0.9)", padding: "12px 16px", textAlign: "center" }}
+                  style={{
+                    background: "rgba(255,255,255,0.9)",
+                    padding: "12px 16px",
+                    textAlign: "center",
+                  }}
                 >
                   <div
                     style={{
@@ -600,8 +650,16 @@ export default function MyListingsPage() {
               >
                 {isHe ? "אין לך מודעות עדיין" : "No listings yet"}
               </p>
-              <p style={{ fontSize: "13px", color: C.muted, marginBottom: "20px" }}>
-                {isHe ? "פרסם מודעה ראשונה וצא למכירה" : "Post your first listing and start selling"}
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: C.muted,
+                  marginBottom: "20px",
+                }}
+              >
+                {isHe
+                  ? "פרסם מודעה ראשונה וצא למכירה"
+                  : "Post your first listing and start selling"}
               </p>
               <Link
                 href="/post-listing"
@@ -634,8 +692,8 @@ export default function MyListingsPage() {
                       ? "פג תוקף"
                       : "Expired"
                     : isHe
-                      ? "פעילה"
-                      : "Active";
+                    ? "פעילה"
+                    : "Active";
                 const statusColor = isActive ? C.mexico : C.faint;
 
                 return (
@@ -656,8 +714,8 @@ export default function MyListingsPage() {
                         background: listing.is_featured
                           ? `linear-gradient(90deg,${C.usa},${C.gold},${C.mexico})`
                           : listing.type === "sell"
-                            ? C.mexico
-                            : C.usa,
+                          ? C.mexico
+                          : C.usa,
                       }}
                     />
 
@@ -722,7 +780,13 @@ export default function MyListingsPage() {
                             }`,
                           }}
                         >
-                          {listing.type === "sell" ? (isHe ? "מכירה" : "Sell") : isHe ? "קנייה" : "Buy"}
+                          {listing.type === "sell"
+                            ? isHe
+                              ? "מכירה"
+                              : "Sell"
+                            : isHe
+                            ? "קנייה"
+                            : "Buy"}
                         </span>
                         <span
                           style={{
@@ -743,10 +807,14 @@ export default function MyListingsPage() {
                             fontWeight: 700,
                             padding: "2px 7px",
                             borderRadius: "3px",
-                            background: isActive ? "rgba(0,104,71,0.07)" : "rgba(0,0,0,0.03)",
+                            background: isActive
+                              ? "rgba(0,104,71,0.07)"
+                              : "rgba(0,0,0,0.03)",
                             color: statusColor,
                             border: `1px solid ${
-                              isActive ? "rgba(0,104,71,0.18)" : "rgba(0,0,0,0.07)"
+                              isActive
+                                ? "rgba(0,104,71,0.18)"
+                                : "rgba(0,0,0,0.07)"
                             }`,
                             textTransform: "uppercase",
                             letterSpacing: "0.04em",
@@ -755,7 +823,13 @@ export default function MyListingsPage() {
                           {statusLabel}
                         </span>
                         {listing.expires_at && (
-                          <span style={{ fontSize: "9px", color: expired ? C.canada : C.hint, marginInlineStart: "2px" }}>
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              color: expired ? C.canada : C.hint,
+                              marginInlineStart: "2px",
+                            }}
+                          >
                             · {isHe ? "תוקף" : "Exp"}{" "}
                             {new Date(listing.expires_at).toLocaleDateString(
                               isHe ? "he-IL" : "en-US",
@@ -780,77 +854,26 @@ export default function MyListingsPage() {
                       >
                         {listing.match ? (
                           <>
-                            <span>{isHe ? "משחק" : "Match"} {listing.match.fifa_match_number} ·</span>
-
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                              {isGroupStage(listing.match.stage) &&
-                              hasRealTeam(listing.match.home_team_name) ? (
-                                <span
-                                  style={{
-                                    width: "16px",
-                                    height: "11px",
-                                    borderRadius: "3px",
-                                    overflow: "hidden",
-                                    background: "#fff",
-                                    border: "1px solid rgba(13,27,62,0.10)",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0,
-                                    boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
-                                  }}
-                                >
-                                  <img
-                                    src={flagImgSrc(listing.match.home_team_name)}
-                                    alt=""
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                      display: "block",
-                                    }}
-                                  />
-                                </span>
-                              ) : null}
-                              <span>{teamName(listing.match.home_team_name, isHe)}</span>
+                            <span>
+                              {isHe ? "משחק" : "Match"}{" "}
+                              {listing.match.fifa_match_number} ·
                             </span>
+
+                            <TeamInline
+                              name={listing.match.home_team_name}
+                              stage={listing.match.stage}
+                              isHe={isHe}
+                            />
 
                             <span style={{ color: C.hint, fontWeight: 400 }}>
                               {isHe ? "נגד" : "vs"}
                             </span>
 
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                              {isGroupStage(listing.match.stage) &&
-                              hasRealTeam(listing.match.away_team_name) ? (
-                                <span
-                                  style={{
-                                    width: "16px",
-                                    height: "11px",
-                                    borderRadius: "3px",
-                                    overflow: "hidden",
-                                    background: "#fff",
-                                    border: "1px solid rgba(13,27,62,0.10)",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    flexShrink: 0,
-                                    boxShadow: "0 1px 2px rgba(13,27,62,0.04)",
-                                  }}
-                                >
-                                  <img
-                                    src={flagImgSrc(listing.match.away_team_name)}
-                                    alt=""
-                                    style={{
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                      display: "block",
-                                    }}
-                                  />
-                                </span>
-                              ) : null}
-                              <span>{teamName(listing.match.away_team_name, isHe)}</span>
-                            </span>
+                            <TeamInline
+                              name={listing.match.away_team_name}
+                              stage={listing.match.stage}
+                              isHe={isHe}
+                            />
 
                             <span style={{ flexBasis: "100%" }}>
                               {formatMatchMeta(listing.match, isHe)}
@@ -861,7 +884,14 @@ export default function MyListingsPage() {
                         )}
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "10px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: "10px",
+                          marginBottom: "10px",
+                        }}
+                      >
                         <span
                           style={{
                             fontFamily: "var(--font-syne,'Syne',sans-serif)",
@@ -872,13 +902,23 @@ export default function MyListingsPage() {
                             lineHeight: 1,
                           }}
                         >
-                          {listing.type === "sell" ? `$${listing.price}` : isHe ? `עד $${listing.price}` : `Up to $${listing.price}`}
+                          {listing.type === "sell"
+                            ? `$${listing.price}`
+                            : isHe
+                            ? `עד $${listing.price}`
+                            : `Up to $${listing.price}`}
                         </span>
                         <span style={{ fontSize: "12px", color: C.hint }}>
                           {isHe ? "לכרטיס" : "/ ticket"} × {listing.quantity}
                         </span>
                         {listing.quantity > 1 && listing.type === "sell" && (
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: C.gold }}>
+                          <span
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              color: C.gold,
+                            }}
+                          >
                             = ${listing.price * listing.quantity}
                           </span>
                         )}
@@ -918,7 +958,14 @@ export default function MyListingsPage() {
                         onBump={() => handleBump(listing.id)}
                       />
 
-                      <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <Link
                           href={`/post-listing?listingId=${listing.id}`}
                           style={{
