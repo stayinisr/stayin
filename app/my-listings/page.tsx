@@ -7,7 +7,6 @@ import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import { teamName, flagImgSrc } from "../../lib/teams";
-import ShareButton from "../../components/ShareButton";
 
 const C = {
   usa: "#1a3a6b",
@@ -1072,18 +1071,6 @@ export default function MyListingsPage() {
                         >
                           {isHe ? "👁 צפה" : "👁 View"}
                         </Link>
-
-                        <ShareButton
-                          listingId={listing.id}
-                          matchName={
-                            listing.match
-                              ? `${teamName(listing.match.home_team_name, isHe)} vs ${teamName(listing.match.away_team_name, isHe)}`
-                              : ""
-                          }
-                          price={listing.price ? `$${listing.price}` : ""}
-                          isHe={isHe}
-                          size="sm"
-                        />
 
                         <button
                           onClick={() => handleDelete(listing.id)}

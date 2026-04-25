@@ -7,6 +7,7 @@ import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/LanguageContext";
 import { useToast } from "../../../components/ToastProvider";
 import { teamName, flagImgSrc } from "../../../lib/teams";
+import ShareButton from "../../../components/ShareButton";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -280,6 +281,7 @@ function GoldListing({
   viewerLoggedIn,
   viewerProfileComplete,
   onContact,
+  matchName,
 }: {
   item: EnrichedListing;
   isBestValue: boolean;
@@ -287,6 +289,7 @@ function GoldListing({
   viewerLoggedIn: boolean;
   viewerProfileComplete: boolean;
   onContact: (item: EnrichedListing) => void;
+  matchName: string;
 }) {
   const [hov, setHov] = useState(false);
 
@@ -576,6 +579,13 @@ function GoldListing({
                 {isHe ? "אין מספר" : "No number"}
               </span>
             )}
+            <ShareButton
+              listingId={item.id}
+              matchName={matchName}
+              price={item.price ? `$${item.price}` : ""}
+              isHe={isHe}
+              size="sm"
+            />
           </div>
         </div>
       </div>
@@ -591,6 +601,7 @@ function RegularListing({
   viewerLoggedIn,
   viewerProfileComplete,
   onContact,
+  matchName,
 }: {
   item: EnrichedListing;
   isBestValue: boolean;
@@ -599,6 +610,7 @@ function RegularListing({
   viewerLoggedIn: boolean;
   viewerProfileComplete: boolean;
   onContact: (item: EnrichedListing) => void;
+  matchName: string;
 }) {
   const [hov, setHov] = useState(false);
   const accentColor = item.type === "sell" ? C.mexico : C.usa;
@@ -871,6 +883,13 @@ function RegularListing({
                 {isHe ? "אין מספר" : "No number"}
               </span>
             )}
+            <ShareButton
+              listingId={item.id}
+              matchName={matchName}
+              price={item.price ? `$${item.price}` : ""}
+              isHe={isHe}
+              size="sm"
+            />
 
             <Link
               href={`/contact?type=report&listingId=${item.id}&matchId=${item.match_id}`}
@@ -1572,6 +1591,10 @@ export default function MatchPage() {
                   !!item.first_published_at &&
                   Date.now() - new Date(item.first_published_at).getTime() < 86400000;
 
+                const mn = match
+                  ? `${teamName(match.home_team_name, isHe)} vs ${teamName(match.away_team_name, isHe)}`
+                  : "";
+
                 return item.is_featured ? (
                   <GoldListing
                     key={item.id}
@@ -1581,6 +1604,7 @@ export default function MatchPage() {
                     viewerLoggedIn={viewerLoggedIn}
                     viewerProfileComplete={viewerProfileComplete}
                     onContact={handleContact}
+                    matchName={mn}
                   />
                 ) : (
                   <RegularListing
@@ -1592,6 +1616,7 @@ export default function MatchPage() {
                     viewerLoggedIn={viewerLoggedIn}
                     viewerProfileComplete={viewerProfileComplete}
                     onContact={handleContact}
+                    matchName={mn}
                   />
                 );
               })}
