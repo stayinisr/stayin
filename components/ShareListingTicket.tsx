@@ -186,6 +186,26 @@ function SafeImage({ src, alt, style }: { src: string; alt: string; style: CSSPr
   );
 }
 
+async function waitForImages(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map((img) => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+
+      return new Promise<void>((resolve) => {
+        const done = () => resolve();
+        img.onload = done;
+        img.onerror = done;
+      });
+    })
+  );
+
+  await new Promise<void>((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  );
+}
+
 function fitFont(text: string, base: number, mediumAt: number, smallAt: number, min = 34) {
   if (text.length > smallAt) return Math.max(min, base - 18);
   if (text.length > mediumAt) return Math.max(min, base - 10);
@@ -468,10 +488,15 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
     if (!cardRef.current) return null;
     setBusy(true);
     try {
+      await waitForImages(cardRef.current);
+
       return await toPng(cardRef.current, {
         cacheBust: true,
         pixelRatio: 2,
         backgroundColor: "#040b18",
+        style: {
+          backgroundColor: "#040b18",
+        },
       });
     } finally {
       setBusy(false);
