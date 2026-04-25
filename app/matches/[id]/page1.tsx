@@ -7,7 +7,6 @@ import { supabase } from "../../../lib/supabase";
 import { useLanguage } from "../../../lib/LanguageContext";
 import { useToast } from "../../../components/ToastProvider";
 import { teamName, flagImgSrc } from "../../../lib/teams";
-import ShareListingTicketButton from "../../../components/ShareListingTicket";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type MatchItem = {
@@ -276,7 +275,6 @@ function TrustBadge({
 
 function GoldListing({
   item,
-  match,
   isBestValue,
   isHe,
   viewerLoggedIn,
@@ -284,7 +282,6 @@ function GoldListing({
   onContact,
 }: {
   item: EnrichedListing;
-  match: MatchItem;
   isBestValue: boolean;
   isHe: boolean;
   viewerLoggedIn: boolean;
@@ -520,16 +517,8 @@ function GoldListing({
               display: "flex",
               gap: "8px",
               alignItems: "center",
-              flexWrap: "wrap",
-              justifyContent: "flex-end",
             }}
           >
-            <ShareListingTicketButton
-              listing={item}
-              match={match}
-              isHe={isHe}
-              size="md"
-            />
             {!viewerLoggedIn ? (
               <Link
                 href="/auth"
@@ -596,7 +585,6 @@ function GoldListing({
 
 function RegularListing({
   item,
-  match,
   isBestValue,
   isNew,
   isHe,
@@ -605,7 +593,6 @@ function RegularListing({
   onContact,
 }: {
   item: EnrichedListing;
-  match: MatchItem;
   isBestValue: boolean;
   isNew: boolean;
   isHe: boolean;
@@ -830,12 +817,6 @@ function RegularListing({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
-            <ShareListingTicketButton
-              listing={item}
-              match={match}
-              isHe={isHe}
-              size="sm"
-            />
             {!viewerLoggedIn ? (
               <Link
                 href="/auth"
@@ -1595,7 +1576,6 @@ export default function MatchPage() {
                   <GoldListing
                     key={item.id}
                     item={item}
-                    match={match}
                     isBestValue={bv}
                     isHe={isHe}
                     viewerLoggedIn={viewerLoggedIn}
@@ -1606,7 +1586,6 @@ export default function MatchPage() {
                   <RegularListing
                     key={item.id}
                     item={item}
-                    match={match}
                     isBestValue={bv}
                     isNew={isN}
                     isHe={isHe}
