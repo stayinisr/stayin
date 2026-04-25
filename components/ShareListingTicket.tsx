@@ -47,6 +47,10 @@ type Props = {
 
 const SITE_URL = "stayin.co.il";
 const EMPTY = "—";
+const ASSET_VERSION = "v=13";
+const SHARE_LOGO_SRC = `/stayin-share-logo.png?${ASSET_VERSION}`;
+const STADIUM_ICON_SRC = `/stayin-stadium-icon.png?${ASSET_VERSION}`;
+const CUP_ICON_SRC = `/stayin-cup-icon.png?${ASSET_VERSION}`;
 const TICKET_WIDTH = 1600;
 const TICKET_HEIGHT = 900;
 
@@ -214,24 +218,50 @@ function NeonText({ children, style }: { children: ReactNode; style?: CSSPropert
   return <span style={{ textShadow: baseTextShadow, ...style }}>{children}</span>;
 }
 
+function SafeImage({ src, alt, style }: { src: string; alt: string; style: CSSProperties }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      draggable={false}
+      style={style}
+      onError={(event) => {
+        event.currentTarget.style.display = "none";
+      }}
+    />
+  );
+}
+
 function CupIcon() {
   return (
-    <svg viewBox="0 0 92 120" width="76" height="99" style={{ display: "block", filter: "drop-shadow(0 0 13px rgba(34,211,238,0.72))" }}>
-      <path d="M47 8c13 7 25 18 31 34 5 14 3 28-6 41-8 12-17 21-20 31H40c-3-10-12-19-20-31-9-13-11-27-6-41C20 26 32 15 47 8Z" fill="rgba(6, 24, 48, .42)" stroke="#20e8ff" strokeWidth="3" />
-      <path d="M27 29c17 4 26 17 31 40M67 29c-15 7-21 22-23 45M25 77c11 9 25 13 43 6" fill="none" stroke="#23e8ff" strokeWidth="3" strokeLinecap="round" opacity=".86" />
-      <path d="M33 113h27" stroke="#23e8ff" strokeWidth="4" strokeLinecap="round" />
-    </svg>
+    <SafeImage
+      src={CUP_ICON_SRC}
+      alt="World Cup"
+      style={{
+        display: "block",
+        width: 86,
+        height: 112,
+        objectFit: "contain",
+        filter: "drop-shadow(0 0 18px rgba(34,211,238,0.58))",
+      }}
+    />
   );
 }
 
 function StadiumIcon({ rtl }: { rtl: boolean }) {
   return (
-    <svg viewBox="0 0 86 58" width="66" height="45" style={{ display: "block", transform: rtl ? "none" : "none", filter: "drop-shadow(0 0 10px rgba(34,211,238,0.50))" }}>
-      <ellipse cx="43" cy="29" rx="35" ry="18" fill="rgba(2,20,35,.35)" stroke="#16e8f7" strokeWidth="3" />
-      <ellipse cx="43" cy="29" rx="22" ry="9" fill="none" stroke="#16e8f7" strokeWidth="2" opacity=".8" />
-      <path d="M14 29v14M72 29v14M25 16V6M43 12V2M61 16V6" stroke="#16e8f7" strokeWidth="3" strokeLinecap="round" />
-      <path d="M16 43c17 11 37 11 54 0" fill="none" stroke="#16e8f7" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <SafeImage
+      src={STADIUM_ICON_SRC}
+      alt="Stadium"
+      style={{
+        display: "block",
+        width: 72,
+        height: 52,
+        objectFit: "contain",
+        transform: rtl ? "none" : "none",
+        filter: "drop-shadow(0 0 14px rgba(34,211,238,0.48))",
+      }}
+    />
   );
 }
 
@@ -254,16 +284,20 @@ const flagCircleStyle: CSSProperties = {
 
 function LogoBlock() {
   return (
-    <div style={{ position: "absolute", left: 84, top: 92, width: 270, textAlign: "center" }}>
-      <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        <span style={{ color: "#fff", fontSize: 64, fontWeight: 950, lineHeight: 1, letterSpacing: "-0.055em" }}>Stay</span>
-        <span style={{ color: "#19e7ef", fontSize: 64, fontWeight: 950, lineHeight: 1, letterSpacing: "-0.055em" }}>in</span>
-        <svg viewBox="0 0 74 48" width="58" height="38" style={{ transform: "rotate(-14deg)", filter: "drop-shadow(0 0 8px rgba(34,211,238,.55))" }}>
-          <path d="M8 12 58 4c2 9 7 12 13 12l-6 28-52 1c0-8-4-12-12-13L8 12Z" fill="none" stroke="#71fbff" strokeWidth="5" strokeLinejoin="round" />
-          <path d="M29 31c-6-3-6-13 1-16l7-3c9-3 15 7 10 14M42 19c6 3 6 13-1 16l-7 3c-9 3-15-7-10-14" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" />
-        </svg>
-      </div>
-      <div style={{ color: "#35f2ff", marginTop: 25, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
+    <div style={{ position: "absolute", left: 64, top: 76, width: 304, textAlign: "center" }}>
+      <SafeImage
+        src={SHARE_LOGO_SRC}
+        alt="Stayin"
+        style={{
+          display: "block",
+          width: 304,
+          height: 104,
+          objectFit: "contain",
+          margin: "0 auto",
+          filter: "drop-shadow(0 0 12px rgba(34,211,238,0.22))",
+        }}
+      />
+      <div style={{ color: "#35f2ff", marginTop: 14, fontSize: 31, fontWeight: 850, letterSpacing: "0.34em" }}>TICKETS</div>
     </div>
   );
 }
@@ -276,43 +310,30 @@ function LeftPanel({ typeLabel }: { typeLabel: string }) {
       <div
         style={{
           position: "absolute",
-          left: 58,
-          top: 286,
-          width: 360,
-          height: 300,
+          left: 48,
+          top: 280,
+          width: 340,
+          height: 310,
+          borderRadius: 999,
           background:
-            "radial-gradient(ellipse at center, rgba(34,160,255,.22) 0%, rgba(34,160,255,.08) 45%, rgba(34,160,255,0) 72%)",
+            "radial-gradient(ellipse at center, rgba(34,160,255,.22) 0%, rgba(34,160,255,.08) 48%, rgba(34,160,255,0) 74%)",
           opacity: 0.9,
         }}
       />
-      <div
+      <SafeImage
+        src={STADIUM_ICON_SRC}
+        alt=""
         style={{
           position: "absolute",
-          left: 28,
-          top: 321,
-          width: 382,
-          height: 230,
-          borderRadius: "50%",
-          border: "2px solid rgba(39,139,255,.55)",
-          transform: "perspective(500px) rotateX(58deg)",
-          boxShadow: "0 0 0 10px rgba(39,139,255,.08), inset 0 0 38px rgba(29,147,255,.22)",
+          left: 24,
+          top: 315,
+          width: 386,
+          height: 242,
+          objectFit: "contain",
+          opacity: 0.36,
+          filter: "drop-shadow(0 0 22px rgba(34,211,238,0.34))",
         }}
       />
-      {Array.from({ length: 9 }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            left: 70 + i * 31,
-            top: 330 - Math.abs(i - 4) * 7,
-            width: 2,
-            height: 210 + Math.abs(i - 4) * 14,
-            background: "rgba(35,148,255,.22)",
-            transform: `rotate(${(i - 4) * 9}deg)`,
-            transformOrigin: "bottom center",
-          }}
-        />
-      ))}
 
       <div
         style={{
