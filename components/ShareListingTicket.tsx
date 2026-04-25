@@ -47,8 +47,6 @@ type Props = {
 
 const SITE_URL = "stayin.co.il";
 const EMPTY = "—";
-
-// Template image size generated for the share-ticket background.
 const TICKET_WIDTH = 1659;
 const TICKET_HEIGHT = 948;
 
@@ -146,8 +144,8 @@ function useModalLayout(open: boolean) {
       const availableHeight = Math.max(210, height - chromeHeight);
       const byWidth = availableWidth / TICKET_WIDTH;
       const byHeight = availableHeight / TICKET_HEIGHT;
-      const maxScale = mobile ? 0.47 : 0.62;
-      const minScale = mobile ? 0.22 : 0.35;
+      const maxScale = mobile ? 0.47 : 0.61;
+      const minScale = mobile ? 0.22 : 0.34;
       setPreviewScale(Math.max(minScale, Math.min(maxScale, byWidth, byHeight)));
     }
 
@@ -201,9 +199,7 @@ async function waitForImages(element: HTMLElement) {
     })
   );
 
-  await new Promise<void>((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-  );
+  await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 }
 
 function fitFont(text: string, base: number, mediumAt: number, smallAt: number, min = 34) {
@@ -222,7 +218,7 @@ function TeamName({ value, x, y, w, align }: { value: string; x: number; y: numb
         top: y,
         width: w,
         color: "#ffffff",
-        fontSize: fitFont(text, 54, 9, 14, 32),
+        fontSize: fitFont(text, 53, 9, 14, 32),
         lineHeight: 1,
         fontWeight: 950,
         letterSpacing: text.length > 10 ? "-0.035em" : "-0.045em",
@@ -240,8 +236,8 @@ function TeamName({ value, x, y, w, align }: { value: string; x: number; y: numb
 
 const flagStyle: CSSProperties = {
   position: "absolute",
-  width: 74,
-  height: 74,
+  width: 70,
+  height: 70,
   borderRadius: 999,
   objectFit: "cover",
   border: "1px solid rgba(255,255,255,0.34)",
@@ -267,13 +263,13 @@ function LabelValue({ label, value, x, y, w, strong = false }: { label: string; 
         fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
       }}
     >
-      <div style={{ color: "#66f6ff", fontSize: 20, fontWeight: 900, marginBottom: 12, lineHeight: 1 }}>
+      <div style={{ color: "#66f6ff", fontSize: 19, fontWeight: 900, marginBottom: 11, lineHeight: 1 }}>
         {label}
       </div>
       <div
         style={{
           color: strong ? "#65f7ff" : "#ffffff",
-          fontSize: strong ? fitFont(text, 34, 7, 10, 26) : fitFont(text, 29, 8, 12, 22),
+          fontSize: strong ? fitFont(text, 34, 7, 10, 25) : fitFont(text, 29, 8, 12, 22),
           fontWeight: strong ? 980 : 900,
           lineHeight: 1,
           whiteSpace: "nowrap",
@@ -290,13 +286,9 @@ function LabelValue({ label, value, x, y, w, strong = false }: { label: string; 
 
 function Header({ isHe, stage }: { isHe: boolean; stage: string }) {
   const title = eventTitle(isHe);
-
-  // Language-specific anchor points:
-  // HE: title block is aligned to the right, close to the trophy area.
-  // EN: title block is aligned to the left, so long English text has room.
   const box = isHe
-    ? { left: 760, topTitle: 108, topStage: 168, width: 560, align: "right" as const }
-    : { left: 520, topTitle: 108, topStage: 168, width: 760, align: "left" as const };
+    ? { left: 805, topTitle: 108, topStage: 168, width: 530, align: "right" as const }
+    : { left: 520, topTitle: 106, topStage: 165, width: 760, align: "left" as const };
 
   return (
     <>
@@ -330,9 +322,9 @@ function Header({ isHe, stage }: { isHe: boolean; stage: string }) {
           top: box.topStage,
           width: box.width,
           color: "rgba(208,197,255,0.9)",
-          fontSize: isHe ? 30 : 28,
+          fontSize: isHe ? 28 : 29,
           fontWeight: 850,
-          letterSpacing: isHe ? "0" : "0.085em",
+          letterSpacing: isHe ? "0" : "0.055em",
           textAlign: box.align,
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -355,11 +347,10 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   const city = clean(match.city);
   const stadium = clean(match.stadium);
   const notes = clean(listing.notes);
-  const template = isHe ? "/stayin-ticket-template-he.png?v=5" : "/stayin-ticket-template-en.png?v=5";
+  const template = isHe ? "/stayin-ticket-template-he.png?v=7" : "/stayin-ticket-template-en.png?v=7";
   const stage = stageLabel(match.stage, isHe);
   const stadiumText = stadium !== EMPTY && city !== EMPTY ? `${stadium} · ${city}` : stadium !== EMPTY ? stadium : city;
 
-  // The base image contains only visual design. All text is dynamic here.
   return (
     <div
       dir="ltr"
@@ -377,24 +368,23 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
 
       <Header isHe={isHe} stage={stage} />
 
-      {/* Buy / Sell label inside the blank glowing pill on the left. */}
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
           position: "absolute",
           left: 126,
-          top: 650,
+          top: 653,
           width: 236,
-          height: 82,
+          height: 76,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
           color: "#75f7ff",
-          fontSize: shareType.length > 5 ? 41 : 47,
+          fontSize: shareType.length > 5 ? 39 : 45,
           fontWeight: 950,
           lineHeight: 1,
-          paddingBottom: 2,
+          paddingBottom: 1,
           textShadow: "0 0 22px rgba(34,211,238,0.62)",
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -404,37 +394,33 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         {shareType}
       </div>
 
-      {/* Teams row. The VS is part of the template, so we do not print it again. */}
-      <Flag name={match.home_team_name} x={516} y={303} />
-      <TeamName value={homeName} x={606} y={323} w={270} align="left" />
-      <TeamName value={awayName} x={1192} y={323} w={250} align="right" />
-      <Flag name={match.away_team_name} x={1452} y={303} />
+      <Flag name={match.home_team_name} x={515} y={305} />
+      <TeamName value={homeName} x={595} y={326} w={300} align="left" />
+      <TeamName value={awayName} x={1114} y={326} w={290} align="right" />
+      <Flag name={match.away_team_name} x={1420} y={305} />
 
-      {/* First data row */}
-      <LabelValue label={isHe ? "קטגוריה" : "Category"} value={clean(listing.category)} x={515} y={468} w={156} />
-      <LabelValue label={isHe ? "שעה" : "Time"} value={formatTime(match.match_time)} x={704} y={468} w={148} />
-      <LabelValue label={isHe ? "תאריך" : "Date"} value={formatDate(match.match_date)} x={905} y={468} w={186} />
-      <LabelValue label={isHe ? "עיר" : "City"} value={city} x={1135} y={468} w={176} />
-      <LabelValue label={isHe ? "משחק" : "Match"} value={matchNumber} x={1384} y={468} w={124} />
+      <LabelValue label={isHe ? "קטגוריה" : "Category"} value={clean(listing.category)} x={512} y={468} w={150} />
+      <LabelValue label={isHe ? "שעה" : "Time"} value={formatTime(match.match_time)} x={705} y={468} w={136} />
+      <LabelValue label={isHe ? "תאריך" : "Date"} value={formatDate(match.match_date)} x={890} y={468} w={190} />
+      <LabelValue label={isHe ? "עיר" : "City"} value={city} x={1128} y={468} w={174} />
+      <LabelValue label={isHe ? "משחק" : "Match"} value={matchNumber} x={1380} y={468} w={124} />
 
-      {/* Second data row */}
-      <LabelValue label={isHe ? "כמות" : "Qty"} value={quantity} x={515} y={635} w={112} />
-      <LabelValue label={isHe ? "מושבים" : "Seats"} value={clean(listing.seats_numbers)} x={680} y={635} w={150} />
-      <LabelValue label={isHe ? "שורה" : "Row"} value={clean(listing.seats_row)} x={888} y={635} w={116} />
-      <LabelValue label={isHe ? "בלוק" : "Block"} value={clean(listing.seats_block)} x={1086} y={635} w={130} />
-      <LabelValue label={isHe ? "יחד" : "Together"} value={yesNo(listing.seated_together, isHe)} x={1238} y={635} w={112} />
-      <LabelValue label={isHe ? "מחיר" : "Price"} value={price} x={1370} y={635} w={150} strong />
+      <LabelValue label={isHe ? "כמות" : "Qty"} value={quantity} x={512} y={635} w={110} />
+      <LabelValue label={isHe ? "מושבים" : "Seats"} value={clean(listing.seats_numbers)} x={672} y={635} w={154} />
+      <LabelValue label={isHe ? "שורה" : "Row"} value={clean(listing.seats_row)} x={870} y={635} w={124} />
+      <LabelValue label={isHe ? "בלוק" : "Block"} value={clean(listing.seats_block)} x={1066} y={635} w={132} />
+      <LabelValue label={isHe ? "יחד" : "Together"} value={yesNo(listing.seated_together, isHe)} x={1220} y={635} w={118} />
+      <LabelValue label={isHe ? "מחיר" : "Price"} value={price} x={1366} y={635} w={150} strong />
 
-      {/* Stadium row: fixed icon edge in template; text is aligned by language and does not move the icon. */}
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
           position: "absolute",
-          left: isHe ? 590 : 640,
-          top: 815,
-          width: isHe ? 805 : 760,
+          left: isHe ? 600 : 595,
+          top: 814,
+          width: isHe ? 760 : 790,
           color: "#ffffff",
-          fontSize: fitFont(stadiumText, 30, 24, 38, 22),
+          fontSize: fitFont(stadiumText, 29, 24, 38, 22),
           fontWeight: 860,
           lineHeight: 1,
           whiteSpace: "nowrap",
@@ -453,7 +439,7 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
           style={{
             position: "absolute",
             left: 610,
-            top: 866,
+            top: 864,
             width: 790,
             color: "rgba(230,237,255,0.58)",
             fontSize: 16,
