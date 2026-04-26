@@ -345,8 +345,8 @@ function Flag({ name }: { name?: string | null }) {
 }
 
 const flagCircleStyle: CSSProperties = {
-  width: 76,
-  height: 76,
+  width: 110,
+  height: 110,
   borderRadius: 999,
   objectFit: "cover",
   flexShrink: 0,
@@ -417,7 +417,7 @@ function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLab
           <div style={{ position: "absolute", width: "55%", height: "90%", top: "-30%", right: "-12%", borderRadius: "50%", background: "radial-gradient(circle,rgba(26,58,143,.05),transparent 70%)", pointerEvents: "none" as const }} />
           <div style={{ position: "absolute", width: "35%", height: "60%", bottom: "-20%", left: "5%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,32,44,.04),transparent 70%)", pointerEvents: "none" as const }} />
           {/* Content */}
-          <div style={{ flex: 1, padding: "52px 72px 52px 72px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div style={{ flex: 1, padding: "60px 80px 60px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             {children}
           </div>
         </div>
@@ -549,37 +549,37 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
       {/* Event badge + Price */}
       <div dir={isHe ? "rtl" : "ltr"} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "rgba(26,58,143,.06)", border: "1px solid rgba(26,58,143,.1)", borderRadius: 8, padding: "6px 18px 6px 12px", marginBottom: 12 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: isWC ? "#1a3a8f" : "#1abfb0", flexShrink: 0 }} />
-            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase" as const, color: isWC ? "#1a3a8f" : "#1abfb0" }}>{eventTitle(isHe, isWC)}</div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 14, background: isWC ? "rgba(26,58,143,.07)" : "rgba(26,191,176,.07)", border: `1px solid ${isWC ? "rgba(26,58,143,.15)" : "rgba(26,191,176,.2)"}`, borderRadius: 10, padding: "10px 24px 10px 16px", marginBottom: 16 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: isWC ? "#1a3a8f" : "#1abfb0", flexShrink: 0 }} />
+            <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase" as const, color: isWC ? "#1a3a8f" : "#1abfb0" }}>{eventTitle(isHe, isWC)}</div>
           </div>
-          <div style={{ fontSize: 22, color: "#7a8fa8", fontWeight: 500 }}>{stage} {city !== EMPTY ? `· ${city}` : ""} {formatDate(match.match_date) !== EMPTY ? `· ${formatDate(match.match_date)}` : ""} {formatTime(match.match_time) !== EMPTY ? `· ${formatTime(match.match_time)}` : ""}</div>
+          <div style={{ fontSize: 30, color: "#7a8fa8", fontWeight: 500, lineHeight: 1.4 }}>{stage}{city !== EMPTY ? ` · ${city}` : ""}{formatDate(match.match_date) !== EMPTY ? ` · ${formatDate(match.match_date)}` : ""}{formatTime(match.match_time) !== EMPTY ? ` · ${formatTime(match.match_time)}` : ""}</div>
         </div>
         <div style={{ textAlign: "left" as const, flexShrink: 0 }}>
-          <div style={{ fontSize: 86, fontWeight: 900, letterSpacing: "-4px", lineHeight: 1, color: "#1a3a8f" }}>{price}</div>
-          <div style={{ fontSize: 18, color: "#94a3b8", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase" as const, marginTop: 6 }}>{isHe ? "מחיר לכרטיס" : "Price"}</div>
+          <div style={{ fontSize: 120, fontWeight: 900, letterSpacing: "-5px", lineHeight: 1, background: isWC ? "linear-gradient(135deg,#1a3a8f,#1abfb0)" : "linear-gradient(135deg,#1abfb0,#006847)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{price}</div>
+          <div style={{ fontSize: 22, color: "#94a3b8", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase" as const, marginTop: 8 }}>{isHe ? "מחיר לכרטיס" : "Price per ticket"}</div>
         </div>
       </div>
 
       {/* Teams */}
       <div dir="ltr" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <Flag name={match.home_team_name} />
-          <div style={{ fontSize: fitFont(homeName, 72, 7, 10, 44), fontWeight: 900, color: "#0d1b3e", letterSpacing: "-.04em", lineHeight: .95 }}>{homeName}</div>
+          <div style={{ fontSize: fitFont(homeName, 100, 7, 10, 60), fontWeight: 900, background: "linear-gradient(135deg,#0d1b3e,#1a3a8f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92 }}>{homeName}</div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <div style={{ width: 1, height: 36, background: "rgba(13,27,62,.1)" }} />
-          <div style={{ fontSize: 28, color: "rgba(13,27,62,.18)", fontWeight: 300, letterSpacing: ".12em" }}>VS</div>
-          <div style={{ width: 1, height: 36, background: "rgba(13,27,62,.1)" }} />
+        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 10, flexShrink: 0, padding: "0 24px" }}>
+          <div style={{ width: 1, height: 48, background: "rgba(13,27,62,.1)" }} />
+          <div style={{ fontSize: 36, color: "rgba(13,27,62,.15)", fontWeight: 300, letterSpacing: ".16em" }}>VS</div>
+          <div style={{ width: 1, height: 48, background: "rgba(13,27,62,.1)" }} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 24, flexDirection: "row-reverse" as const }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32, flexDirection: "row-reverse" as const }}>
           <Flag name={match.away_team_name} />
-          <div style={{ fontSize: fitFont(awayName, 72, 7, 10, 44), fontWeight: 900, color: "#0d1b3e", letterSpacing: "-.04em", lineHeight: .95, textAlign: "right" as const }}>{awayName}</div>
+          <div style={{ fontSize: fitFont(awayName, 100, 7, 10, 60), fontWeight: 900, background: "linear-gradient(135deg,#e63946,#0d1b3e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92, textAlign: "right" as const }}>{awayName}</div>
         </div>
       </div>
 
       {/* Info strip */}
-      <div dir={isHe ? "rtl" : "ltr"} style={{ background: "rgba(13,27,62,.04)", border: "1px solid rgba(13,27,62,.06)", borderRadius: 18, padding: "28px 36px", display: "flex", alignItems: "center", gap: 0 }}>
+      <div dir={isHe ? "rtl" : "ltr"} style={{ background: "rgba(13,27,62,.04)", border: "1px solid rgba(13,27,62,.07)", borderRadius: 22, padding: "36px 44px", display: "flex", alignItems: "center", gap: 0 }}>
         {[
           { l: isHe ? "קטגוריה" : "Cat", v: clean(listing.category) },
           { l: isHe ? "בלוק" : "Block", v: clean(listing.seats_block) },
@@ -590,13 +590,13 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         ].map((item, i, arr) => (
           <div key={i} style={{ display: "flex", alignItems: "center", flex: 1 }}>
             <div style={{ flex: 1, textAlign: "center" as const }}>
-              <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase" as const, color: "#94a3b8", marginBottom: 8 }}>{item.l}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase" as const, color: "#94a3b8", marginBottom: 10 }}>{item.l}</div>
               {item.v === EMPTY
-                ? <div style={{ width: 32, height: 2, background: "#e2e8f0", borderRadius: 1, margin: "14px auto 0" }} />
-                : <div style={{ fontSize: 28, fontWeight: 900, color: "#1e293b", lineHeight: 1 }}>{item.v}</div>
+                ? <div style={{ width: 40, height: 2, background: "#e2e8f0", borderRadius: 1, margin: "18px auto 0" }} />
+                : <div style={{ fontSize: 38, fontWeight: 900, color: "#1e293b", lineHeight: 1 }}>{item.v}</div>
               }
             </div>
-            {i < arr.length - 1 && <div style={{ width: 1, height: 40, background: "rgba(13,27,62,.08)", flexShrink: 0 }} />}
+            {i < arr.length - 1 && <div style={{ width: 1, height: 52, background: "rgba(13,27,62,.08)", flexShrink: 0 }} />}
           </div>
         ))}
       </div>
