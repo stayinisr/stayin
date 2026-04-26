@@ -373,11 +373,13 @@ function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLab
         overflow: "visible",
         fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
         display: "flex",
+        direction: "ltr",
         filter: "drop-shadow(0 32px 64px rgba(13,27,62,.2))",
       }}
     >
       {/* Notches — outside overflow so they're clean circles */}
-      {[{ top: -28, left: 460 - 28 }, { bottom: -28, left: 460 - 28 }].map((pos, i) => (
+      {/* Notches always on stub/body boundary = left:432 in LTR layout */}
+      {[{ top: -28, left: 432 }, { bottom: -28, left: 432 }].map((pos, i) => (
         <div key={i} style={{ position: "absolute", width: 56, height: 56, borderRadius: 999, background: "#d8dde8", zIndex: 10, ...pos }} />
       ))}
 
@@ -395,8 +397,15 @@ function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLab
 
           {/* Logo */}
           <div style={{ position: "relative", textAlign: "center" }}>
-            <img src={LOGO_SRC} alt="Stayin" crossOrigin="anonymous" style={{ width: 280, height: "auto", objectFit: "contain", display: "block", margin: "0 auto" }} />
+            <img src={LOGO_SRC} alt="Stayin" crossOrigin="anonymous" style={{ width: 360, height: "auto", objectFit: "contain", display: "block", margin: "0 auto" }} />
           </div>
+
+          {/* Match number — vertical, dramatic */}
+          {matchNumber !== EMPTY && (
+            <div style={{ position: "relative", writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: 52, fontWeight: 900, letterSpacing: ".08em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0,rgba(255,255,255,.6),#1abfb0)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", textTransform: "uppercase" as const }}>
+              {matchNumber}
+            </div>
+          )}
 
           {/* Badge */}
           <div style={{ position: "relative", padding: "20px 52px", borderRadius: 999, border: "2.5px solid rgba(255,255,255,.45)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: typeLabel.length > 4 ? 46 : 52, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1 }}>
@@ -417,7 +426,7 @@ function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLab
           <div style={{ position: "absolute", width: "55%", height: "90%", top: "-30%", right: "-12%", borderRadius: "50%", background: "radial-gradient(circle,rgba(26,58,143,.05),transparent 70%)", pointerEvents: "none" as const }} />
           <div style={{ position: "absolute", width: "35%", height: "60%", bottom: "-20%", left: "5%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,32,44,.04),transparent 70%)", pointerEvents: "none" as const }} />
           {/* Content */}
-          <div style={{ flex: 1, padding: "60px 80px 60px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div style={{ flex: 1, padding: "60px 80px 60px 80px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 0 }}>
             {children}
           </div>
         </div>
@@ -561,6 +570,8 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         </div>
       </div>
 
+      {/* Divider */}
+      <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(13,27,62,.1),transparent)" }} />
       {/* Teams */}
       <div dir="ltr" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
@@ -578,10 +589,12 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
         </div>
       </div>
 
+      {/* Divider */}
+      <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(13,27,62,.1),transparent)", margin: "0 0 4px" }} />
       {/* Info strip */}
       <div dir={isHe ? "rtl" : "ltr"} style={{ background: "rgba(13,27,62,.04)", border: "1px solid rgba(13,27,62,.07)", borderRadius: 22, padding: "36px 44px", display: "flex", alignItems: "center", gap: 0 }}>
         {[
-          { l: isHe ? "קטגוריה" : "Cat", v: clean(listing.category) },
+          { l: isHe ? "קטגוריה" : "Cat", v: clean(listing.category).replace(/[A-Za-zא-ת]+\s*/g, "").trim() || clean(listing.category) },
           { l: isHe ? "בלוק" : "Block", v: clean(listing.seats_block) },
           { l: isHe ? "שורה" : "Row", v: clean(listing.seats_row) },
           { l: isHe ? "מושבים" : "Seats", v: clean(listing.seats_numbers) },
