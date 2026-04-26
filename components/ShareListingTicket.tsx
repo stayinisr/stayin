@@ -146,7 +146,15 @@ function useModalLayout(open: boolean) {
   const [previewScale, setPreviewScale] = useState(0.5);
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    if (!document.querySelector('link[href*="Barlow+Condensed"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&display=swap";
+      document.head.appendChild(link);
+    }
+  }, []);
 
   useEffect(() => {
     function update() {
@@ -406,7 +414,7 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
             <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
               <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.28)", marginBottom: 6 }}>MATCH</div>
               <div style={{ fontFamily: fCondensed, fontSize: 140, fontWeight: 900, letterSpacing: "-.02em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0 0%,rgba(255,255,255,.8) 50%,#1abfb0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", display: "inline-block" }}>
-                {matchNumber.replace("#", "")}
+                {(matchNumber ?? "").replace("#", "")}
               </div>
             </div>
           )}
@@ -802,7 +810,6 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         </div>
       </div>
     </div>
-    </>
   ) : null;
 
   return (
