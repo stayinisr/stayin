@@ -1173,9 +1173,11 @@ export default function MyListingsPage() {
         if (!matchData) return null;
         return (
           <ShareListingTicket
+            key={shareListingId}
             listing={l}
             match={matchData}
             isHe={isHe}
+            initialOpen={true}
             onClose={() => setShareListingId(null)}
           />
         );
