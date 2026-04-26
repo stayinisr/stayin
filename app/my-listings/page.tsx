@@ -1168,6 +1168,7 @@ export default function MyListingsPage() {
           fifa_match_number: null,
           competition: l.ilMatch.competition,
         } : null;
+        if (!matchData) return null;
         return (
           <ShareListingTicket
             listing={l}
