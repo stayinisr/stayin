@@ -49,6 +49,7 @@ type Props = {
 };
 
 const SITE_URL = "stayin.co.il";
+const fCondensed = "'Barlow Condensed', 'Oswald', Impact, sans-serif";
 const LOGO_SRC = "/stayin-share-logo.png";
 const CUP_SRC = "/stayin-cup-icon.png";
 const STADIUM_SRC = "/stayin-stadium-icon.png";
@@ -404,7 +405,7 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
           {matchNumber !== EMPTY && (
             <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
               <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.28)", marginBottom: 6 }}>MATCH</div>
-              <div style={{ fontSize: 86, fontWeight: 900, letterSpacing: "-.02em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0 0%,rgba(255,255,255,.85) 50%,#1abfb0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", transform: "scaleY(2.2) scaleX(0.75)", display: "inline-block", transformOrigin: "center" }}>
+              <div style={{ fontFamily: fCondensed, fontSize: 140, fontWeight: 900, letterSpacing: "-.02em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0 0%,rgba(255,255,255,.8) 50%,#1abfb0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", display: "inline-block" }}>
                 {matchNumber.replace("#", "")}
               </div>
             </div>
@@ -801,6 +802,7 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         </div>
       </div>
     </div>
+    </>
   ) : null;
 
   return (
