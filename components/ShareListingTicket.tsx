@@ -428,6 +428,8 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 display: "inline-block",
+                transform: "scaleX(1.08)",
+                transformOrigin: "center",
                 textShadow: "none",
                 filter: "drop-shadow(0 4px 24px rgba(26,191,176,.5))",
               }}>
