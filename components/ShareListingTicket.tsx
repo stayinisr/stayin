@@ -400,10 +400,13 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
             <img src={LOGO_SRC} alt="Stayin" crossOrigin="anonymous" style={{ width: 360, height: "auto", objectFit: "contain", display: "block", margin: "0 auto" }} />
           </div>
 
-          {/* Match number — vertical, dramatic */}
+          {/* Match number — horizontally written but vertically stretched */}
           {matchNumber !== EMPTY && (
-            <div style={{ position: "relative", writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: 52, fontWeight: 900, letterSpacing: ".08em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0,rgba(255,255,255,.6),#1abfb0)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", textTransform: "uppercase" as const }}>
-              {matchNumber}
+            <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: ".22em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.28)", marginBottom: 6 }}>MATCH</div>
+              <div style={{ fontSize: 86, fontWeight: 900, letterSpacing: "-.02em", lineHeight: 1, background: "linear-gradient(180deg,#1abfb0 0%,rgba(255,255,255,.85) 50%,#1abfb0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", transform: "scaleY(2.2) scaleX(0.75)", display: "inline-block", transformOrigin: "center" }}>
+                {matchNumber.replace("#", "")}
+              </div>
             </div>
           )}
 
@@ -573,19 +576,22 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
       {/* Divider */}
       <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(13,27,62,.1),transparent)" }} />
       {/* Teams */}
-      <div dir="ltr" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 24 }}>
+        {/* Home */}
+        <div style={{ display: "flex", alignItems: "center", gap: 28, justifyContent: "flex-start" }}>
           <Flag name={match.home_team_name} />
-          <div style={{ fontSize: fitFont(homeName, 100, 7, 10, 60), fontWeight: 900, background: "linear-gradient(135deg,#0d1b3e,#1a3a8f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92 }}>{homeName}</div>
+          <div style={{ fontSize: fitFont(homeName, 96, 7, 10, 58), fontWeight: 900, background: "linear-gradient(135deg,#0d1b3e,#1a3a8f)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92 }}>{homeName}</div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 10, flexShrink: 0, padding: "0 24px" }}>
-          <div style={{ width: 1, height: 48, background: "rgba(13,27,62,.1)" }} />
-          <div style={{ fontSize: 36, color: "rgba(13,27,62,.15)", fontWeight: 300, letterSpacing: ".16em" }}>VS</div>
-          <div style={{ width: 1, height: 48, background: "rgba(13,27,62,.1)" }} />
+        {/* VS */}
+        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 8 }}>
+          <div style={{ width: 1, height: 40, background: "rgba(13,27,62,.08)" }} />
+          <div style={{ fontSize: 32, color: "rgba(13,27,62,.14)", fontWeight: 300, letterSpacing: ".16em" }}>VS</div>
+          <div style={{ width: 1, height: 40, background: "rgba(13,27,62,.08)" }} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 32, flexDirection: "row-reverse" as const }}>
+        {/* Away */}
+        <div style={{ display: "flex", alignItems: "center", gap: 28, justifyContent: "flex-end" }}>
+          <div style={{ fontSize: fitFont(awayName, 96, 7, 10, 58), fontWeight: 900, background: "linear-gradient(135deg,#e63946,#8b0000)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92, textAlign: "right" as const }}>{awayName}</div>
           <Flag name={match.away_team_name} />
-          <div style={{ fontSize: fitFont(awayName, 100, 7, 10, 60), fontWeight: 900, background: "linear-gradient(135deg,#e63946,#0d1b3e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", letterSpacing: "-.04em", lineHeight: .92, textAlign: "right" as const }}>{awayName}</div>
         </div>
       </div>
 
