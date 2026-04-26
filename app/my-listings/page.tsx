@@ -1148,6 +1148,7 @@ export default function MyListingsPage() {
         const l = listings.find(x => x.id === shareListingId);
         if (!l) return null;
         const matchData = l.match ? {
+          id: l.match_id ?? "",
           home_team_name: l.match.home_team_name,
           away_team_name: l.match.away_team_name,
           city: l.match.city,
@@ -1158,6 +1159,7 @@ export default function MyListingsPage() {
           fifa_match_number: l.match.fifa_match_number,
           competition: "wc",
         } : l.ilMatch ? {
+          id: l.israeli_match_id ?? "",
           home_team_name: isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en,
           away_team_name: isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en,
           city: l.ilMatch.city,
