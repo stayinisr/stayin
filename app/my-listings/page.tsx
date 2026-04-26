@@ -8,6 +8,7 @@ import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import { teamName, flagImgSrc } from "../../lib/teams";
 import ShareListingTicket from "../../components/ShareListingTicket";
+import ShareAllTicket from "../../components/ShareAllTicket";
 
 const C = {
   usa: "#1a3a6b",
@@ -1144,6 +1145,34 @@ export default function MyListingsPage() {
         </div>
       </div>
       {/* Share single listing */}
+      {shareAllOpen && (
+        <ShareAllTicket
+          listings={listings
+            .filter(l => l.status === "active" && !isExp(l.expires_at))
+            .map(l => ({
+              id: l.id,
+              type: l.type,
+              price: l.price,
+              quantity: l.quantity,
+              match_id: l.match_id,
+              israeli_match_id: l.israeli_match_id,
+              matchName: l.match
+                ? `${teamName(l.match.home_team_name, isHe)} ${isHe ? "נגד" : "vs"} ${teamName(l.match.away_team_name, isHe)}`
+                : l.ilMatch
+                ? `${isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en} ${isHe ? "נגד" : "vs"} ${isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en}`
+                : "",
+              matchMeta: l.match
+                ? `${l.match.city ?? ""} · ${l.match.match_date?.slice(0,10) ?? ""}`
+                : l.ilMatch
+                ? `${l.ilMatch.city ?? ""} · ${l.ilMatch.match_date?.slice(0,10) ?? ""}`
+                : "",
+              isWC: !!l.match_id,
+            }))}
+          isHe={isHe}
+          onClose={() => setShareAllOpen(false)}
+        />
+      )}
+
       {shareListingId && (() => {
         const l = listings.find(x => x.id === shareListingId);
         if (!l) return null;
