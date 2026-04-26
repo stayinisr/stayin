@@ -355,7 +355,7 @@ const flagCircleStyle: CSSProperties = {
   background: "#fff",
 };
 
-function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLabel: string; isWC?: boolean }) {
+function CardShell({ children, typeLabel, isWC, matchNumber }: { children: ReactNode; typeLabel: string; isWC?: boolean; matchNumber?: string }) {
   const stubGrad = isWC
     ? "linear-gradient(155deg,#1c3a6e 0%,#2a5298 40%,#183a6e 70%,#1a5c2a 100%)"
     : "linear-gradient(155deg,#1a3a8f,#1abfb0)";
@@ -554,7 +554,7 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   ];
 
   return (
-    <CardShell typeLabel={shareType} isWC={isWC}>
+    <CardShell typeLabel={shareType} isWC={isWC} matchNumber={matchNumber}>
       {/* Event badge + Price */}
       <div dir={isHe ? "rtl" : "ltr"} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
