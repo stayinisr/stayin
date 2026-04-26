@@ -48,6 +48,11 @@ type Listing = {
   last_bumped_at?: string | null;
   first_published_at?: string | null;
   archived_at?: string | null;
+  israeli_match_id?: string | null;
+  seated_together?: string | null;
+  seats_block?: string | null;
+  seats_row?: string | null;
+  seats_numbers?: string | null;
   match?: {
     fifa_match_number: number;
     home_team_name: string | null;
