@@ -49,6 +49,9 @@ type Props = {
 };
 
 const SITE_URL = "stayin.co.il";
+const LOGO_SRC = "/stayin-share-logo.png";
+const CUP_SRC = "/stayin-cup-icon.png";
+const STADIUM_SRC = "/stayin-stadium-icon.png";
 const EMPTY = "—";
 const TICKET_WIDTH = 1600;
 const TICKET_HEIGHT = 900;
@@ -151,13 +154,15 @@ function useModalLayout(open: boolean) {
       const mobile = width <= 768;
       setIsMobile(mobile);
 
-      const chromeHeight = mobile ? 260 : 185;
-      const availableWidth = Math.max(260, width - (mobile ? 30 : 84));
-      const availableHeight = Math.max(210, height - chromeHeight);
+      // Leave real room for header + note + action buttons, so the CTA buttons
+      // are visible immediately when the share modal opens.
+      const chromeHeight = mobile ? 430 : 390;
+      const availableWidth = Math.max(260, width - (mobile ? 34 : 120));
+      const availableHeight = Math.max(180, height - chromeHeight);
       const byWidth = availableWidth / TICKET_WIDTH;
       const byHeight = availableHeight / TICKET_HEIGHT;
-      const maxScale = mobile ? 0.48 : 0.78;
-      const minScale = mobile ? 0.22 : 0.36;
+      const maxScale = mobile ? 0.34 : 0.62;
+      const minScale = mobile ? 0.18 : 0.34;
       setPreviewScale(Math.max(minScale, Math.min(maxScale, byWidth, byHeight)));
     }
 
@@ -231,46 +236,76 @@ function smallIcon(type: "ticket" | "clock" | "date" | "pin" | "match" | "people
 }
 
 function TrophySvg({ size = 118, color = cyan2 }: { size?: number; color?: string }) {
+  const glow = "drop-shadow(0 0 10px rgba(20,223,243,.42)) drop-shadow(0 0 22px rgba(155,124,247,.18))";
   return (
-    <svg width={size} height={size * 1.22} viewBox="0 0 120 146" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 16px rgba(20,223,243,.46))" }}>
-      <path d="M35 15C45 6 76 6 86 15C98 26 93 47 82 58C74 66 70 76 75 91C78 101 84 110 87 124H33C36 110 42 101 45 91C50 76 46 66 38 58C27 47 22 26 35 15Z" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M38 21C47 31 62 33 86 19" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".78" />
-      <path d="M43 60C56 54 65 42 77 20" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".8" />
-      <path d="M48 104C60 95 69 83 72 65" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".8" />
-      <path d="M35 124H85L93 137H27L35 124Z" stroke={color} strokeWidth="4" strokeLinejoin="round" />
-      <path d="M31 138H89" stroke={color} strokeWidth="4" strokeLinecap="round" />
-      <path d="M84 27C102 30 108 43 101 55C97 62 89 66 80 66" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".55" />
-      <path d="M36 27C18 30 12 43 19 55C23 62 31 66 40 66" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".55" />
+    <svg width={size} height={size * 1.22} viewBox="0 0 120 146" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: glow }}>
+      <defs>
+        <linearGradient id="stayinTrophyStroke" x1="22" y1="6" x2="100" y2="137" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#22E8FF" />
+          <stop offset="0.48" stopColor="#8FD8FF" />
+          <stop offset="1" stopColor="#A36FF7" />
+        </linearGradient>
+        <radialGradient id="stayinTrophyFill" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(60 55) rotate(90) scale(80 48)">
+          <stop stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="0.55" stopColor="#BFF8FF" stopOpacity="0.34" />
+          <stop offset="1" stopColor="#22E8FF" stopOpacity="0.08" />
+        </radialGradient>
+      </defs>
+      <path d="M35 18C46 7 75 7 86 18c10 10 8 28 0 42-5 9-14 16-15 31-.7 10 5 21 10 31H39c5-10 11-21 10-31-1-15-10-22-15-31-8-14-10-32 1-42Z" fill="url(#stayinTrophyFill)" stroke="url(#stayinTrophyStroke)" strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M37 22c9 13 26 18 49 1" stroke="url(#stayinTrophyStroke)" strokeWidth="3.2" strokeLinecap="round" opacity=".92" />
+      <path d="M47 98c13-11 22-28 25-50" stroke="url(#stayinTrophyStroke)" strokeWidth="3.4" strokeLinecap="round" opacity=".9" />
+      <path d="M54 33c10 11 24 16 34 15" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity=".55" />
+      <path d="M86 31c16 3 25 15 18 29-5 9-14 13-26 12" stroke="url(#stayinTrophyStroke)" strokeWidth="3" strokeLinecap="round" opacity=".62" />
+      <path d="M34 31c-16 3-25 15-18 29 5 9 14 13 26 12" stroke="url(#stayinTrophyStroke)" strokeWidth="3" strokeLinecap="round" opacity=".62" />
+      <path d="M36 122h48l9 15H27l9-15Z" fill="rgba(255,255,255,.26)" stroke="url(#stayinTrophyStroke)" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M31 138h58" stroke="url(#stayinTrophyStroke)" strokeWidth="4.4" strokeLinecap="round" />
     </svg>
   );
 }
 
 function StadiumSvg({ size = 74, color = cyan2 }: { size?: number; color?: string }) {
-  const height = Math.round(size * 0.56);
+  const height = Math.round(size * 0.58);
   return (
-    <svg width={size} height={height} viewBox="0 0 120 68" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 11px rgba(20,223,243,.34))" }}>
-      <ellipse cx="60" cy="31" rx="48" ry="20" stroke={color} strokeWidth="4" />
-      <ellipse cx="60" cy="31" rx="28" ry="10" stroke={color} strokeWidth="3" opacity=".72" />
-      <path d="M13 34v17c0 9 21 15 47 15s47-6 47-15V34" stroke={color} strokeWidth="4" />
-      <path d="M28 48v11M44 52v12M60 53v13M76 52v12M92 48v11" stroke={color} strokeWidth="3" opacity=".82" />
-      <path d="M24 17V4M42 12V2M60 11V1M78 12V2M96 17V4" stroke={color} strokeWidth="3" strokeLinecap="round" opacity=".72" />
+    <svg width={size} height={height} viewBox="0 0 128 74" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", filter: "drop-shadow(0 0 10px rgba(20,223,243,.32))" }}>
+      <defs>
+        <linearGradient id="stayinStadiumStroke" x1="12" y1="10" x2="116" y2="68" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#22E8FF" />
+          <stop offset="1" stopColor="#6FB9FF" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="64" cy="31" rx="50" ry="18" fill="rgba(20,223,243,.08)" stroke="url(#stayinStadiumStroke)" strokeWidth="3.6" />
+      <ellipse cx="64" cy="31" rx="31" ry="10" stroke="url(#stayinStadiumStroke)" strokeWidth="2.6" opacity=".78" />
+      <path d="M14 32v15c0 11 22 19 50 19s50-8 50-19V32" stroke="url(#stayinStadiumStroke)" strokeWidth="3.6" />
+      <path d="M25 46v13M38 50v13M51 52v13M64 53v13M77 52v13M90 50v13M103 46v13" stroke="url(#stayinStadiumStroke)" strokeWidth="2.3" opacity=".76" />
+      <path d="M31 18V5M47 13V2M64 12V1M81 13V2M97 18V5" stroke="url(#stayinStadiumStroke)" strokeWidth="2.5" strokeLinecap="round" opacity=".7" />
     </svg>
   );
 }
 
 function StadiumDecoration() {
   return (
-    <svg width="405" height="270" viewBox="0 0 405 270" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", left: -6, top: 288, opacity: 0.34, filter: "drop-shadow(0 0 18px rgba(10,174,230,.30))" }}>
-      <ellipse cx="190" cy="118" rx="163" ry="72" stroke={cyan2} strokeWidth="2" />
-      <ellipse cx="190" cy="118" rx="105" ry="42" stroke={cyan2} strokeWidth="2" opacity=".7" />
-      <path d="M31 118v56c0 54 318 54 318 0v-56" stroke={cyan2} strokeWidth="2" opacity=".8" />
-      {Array.from({ length: 13 }).map((_, i) => {
-        const x = 48 + i * 24;
-        return <path key={i} d={`M${x} 174v48`} stroke={cyan2} strokeWidth="1.4" opacity=".45" />;
-      })}
-      <path d="M65 73c68-48 191-48 250 0" stroke={cyan2} strokeWidth="1.4" opacity=".55" />
-      <path d="M56 198c76 45 192 47 270 1" stroke={cyan2} strokeWidth="1.4" opacity=".55" />
-    </svg>
+    <div
+      style={{
+        position: "absolute",
+        left: 18,
+        top: 285,
+        width: 374,
+        height: 285,
+        opacity: 0.24,
+        filter: "drop-shadow(0 0 22px rgba(10,174,230,.20))",
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <img
+        src={STADIUM_SRC}
+        alt=""
+        crossOrigin="anonymous"
+        style={{ width: 372, height: 270, objectFit: "contain", display: "block" }}
+      />
+    </div>
   );
 }
 
@@ -286,13 +321,19 @@ function TicketIconMark() {
 
 function StayinLogo() {
   return (
-    <div style={{ direction: "ltr", unicodeBidi: "isolate", display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap" }}>
-        <span style={{ color: navy, fontSize: 62, fontWeight: 940, letterSpacing: "-0.075em", lineHeight: 1 }}>Stay</span>
-        <span style={{ color: cyan2, fontSize: 62, fontWeight: 940, letterSpacing: "-0.075em", lineHeight: 1 }}>in</span>
-        <TicketIconMark />
-      </div>
-      <div style={{ color: cyan2, fontSize: 32, fontWeight: 820, letterSpacing: "0.34em", lineHeight: 1, paddingInlineStart: 14 }}>TICKETS</div>
+    <div style={{ direction: "ltr", unicodeBidi: "isolate", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+      <img
+        src={LOGO_SRC}
+        alt="Stayin Tickets"
+        crossOrigin="anonymous"
+        style={{
+          display: "block",
+          width: 330,
+          height: 142,
+          objectFit: "contain",
+          filter: "drop-shadow(0 10px 18px rgba(16,38,83,.10))",
+        }}
+      />
     </div>
   );
 }
@@ -314,91 +355,72 @@ const flagCircleStyle: CSSProperties = {
   background: "#fff",
 };
 
-function CardShell({ children, typeLabel }: { children: ReactNode; typeLabel: string }) {
+function CardShell({ children, typeLabel, isWC }: { children: ReactNode; typeLabel: string; isWC?: boolean }) {
+  const stubGrad = isWC
+    ? "linear-gradient(155deg,#1c3a6e 0%,#2a5298 40%,#183a6e 70%,#1a5c2a 100%)"
+    : "linear-gradient(155deg,#1a3a8f,#1abfb0)";
+  const topBar = isWC
+    ? "linear-gradient(90deg,#1a3a6b,#c0202c,#1a5c2a)"
+    : "linear-gradient(90deg,#1a3a8f,#006847,#1abfb0)";
+  const isSell = typeLabel === "מכירה" || typeLabel === "Sell";
+
   return (
     <div
       style={{
         width: TICKET_WIDTH,
         height: TICKET_HEIGHT,
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         fontFamily: "var(--font-he, Heebo), var(--font-dm, Arial), sans-serif",
-        color: text,
-        background:
-          "radial-gradient(circle at 88% 12%, rgba(163,111,247,.22), transparent 24%), radial-gradient(circle at 13% 42%, rgba(20,223,243,.20), transparent 30%), linear-gradient(135deg,#fbfdff 0%, #f4fbff 48%, #ffffff 100%)",
-        borderRadius: 48,
-        boxShadow:
-          "0 0 0 2px rgba(132,210,255,.62) inset, 0 0 0 5px rgba(255,255,255,.75) inset, 0 28px 80px rgba(54,128,201,.20), 0 0 52px rgba(20,223,243,.22)",
+        display: "flex",
+        filter: "drop-shadow(0 32px 64px rgba(13,27,62,.2))",
       }}
     >
-      <div style={{ position: "absolute", inset: 14, borderRadius: 38, border: "1px solid rgba(132,210,255,.68)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", inset: 2, borderRadius: 46, border: "2px solid rgba(20,223,243,.32)", pointerEvents: "none" }} />
-
-      {/* ticket cutouts */}
-      {[{ top: -22, left: 390 }, { bottom: -22, left: 390 }, { top: 315, left: -28 }, { top: 315, right: -28 }].map((pos, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            width: i < 2 ? 74 : 72,
-            height: i < 2 ? 74 : 72,
-            borderRadius: 999,
-            background: "#f2f7fb",
-            border: "3px solid rgba(96,171,255,.72)",
-            boxShadow: "0 0 14px rgba(20,223,243,.22)",
-            zIndex: 5,
-            ...pos,
-          }}
-        />
+      {/* Notches — outside overflow so they're clean circles */}
+      {[{ top: -28, left: 460 - 28 }, { bottom: -28, left: 460 - 28 }].map((pos, i) => (
+        <div key={i} style={{ position: "absolute", width: 56, height: 56, borderRadius: 999, background: "#d8dde8", zIndex: 10, ...pos }} />
       ))}
 
-      <div style={{ position: "absolute", left: 410, top: 46, bottom: 46, width: 0, borderLeft: "3px dashed rgba(87,179,230,.44)", zIndex: 6 }} />
-      <div style={{ position: "absolute", left: 384, top: 72, bottom: 72, width: 54, background: "linear-gradient(90deg, transparent, rgba(20,223,243,.06), transparent)", zIndex: 1 }} />
+      {/* Main card */}
+      <div style={{ width: TICKET_WIDTH, height: TICKET_HEIGHT, borderRadius: 48, overflow: "hidden", display: "flex", background: "linear-gradient(145deg,#f0f4fa 0%,#edf1f8 40%,#f2f5fb 100%)", border: "1px solid rgba(13,27,62,.07)", boxShadow: "0 2px 0 rgba(255,255,255,.9) inset" }}>
 
-      <div style={{ position: "absolute", left: 0, top: 0, width: 410, height: TICKET_HEIGHT, overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 16, borderRadius: 36, background: "linear-gradient(180deg,rgba(255,255,255,.54),rgba(238,250,255,.34))" }} />
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 410, background: "linear-gradient(90deg,rgba(20,223,243,.08),transparent 80%)" }} />
-        <div style={{ position: "absolute", left: 62, top: 86, width: 292 }}>
-          <StayinLogo />
-        </div>
-        <StadiumDecoration />
-        <div
-          style={{
-            position: "absolute",
-            left: 92,
-            top: 618,
-            width: 235,
-            height: 78,
-            borderRadius: 28,
-            border: "2.5px solid rgba(20,223,243,.82)",
-            background: "linear-gradient(180deg,rgba(255,255,255,.72),rgba(227,249,255,.62))",
-            color: cyan2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: typeLabel.length > 5 ? 38 : 44,
-            fontWeight: 950,
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            padding: "0 14px",
-            boxShadow: "0 0 22px rgba(20,223,243,.45), inset 0 1px 0 rgba(255,255,255,.9)",
-            textShadow: "0 0 14px rgba(20,223,243,.24)",
-          }}
-        >
-          {typeLabel}
-        </div>
-        <div style={{ position: "absolute", left: 82, top: 744, width: 250, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, color: cyan2, fontSize: 30, fontWeight: 820 }}>
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="15" r="12" stroke={cyan2} strokeWidth="2.2"/><path d="M3 15h24M15 3c4 4 6 8 6 12s-2 8-6 12M15 3c-4 4-6 8-6 12s2 8 6 12" stroke={cyan2} strokeWidth="2"/></svg>
-          <span>{SITE_URL}</span>
-        </div>
-      </div>
+        {/* STUB */}
+        <div style={{ width: 460, flexShrink: 0, background: stubGrad, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", padding: "80px 0 72px" }}>
+          {/* Texture */}
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(55deg,rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 14px,transparent 14px,transparent 28px)" }} />
+          {/* Glow */}
+          <div style={{ position: "absolute", width: "200%", height: "50%", top: "-15%", left: "-50%", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(255,255,255,.1),transparent 70%)" }} />
+          {/* Tear line */}
+          <div style={{ position: "absolute", top: 0, bottom: 0, right: 0, borderRight: "2px dashed rgba(255,255,255,.18)" }} />
 
-      <div style={{ position: "absolute", left: 410, right: 0, top: 0, bottom: 0, overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: -140, top: -135, width: 500, height: 500, borderRadius: 999, background: "radial-gradient(circle, rgba(163,111,247,.16), transparent 65%)" }} />
-        <div style={{ position: "absolute", left: 70, bottom: -120, width: 600, height: 300, borderRadius: 999, background: "radial-gradient(ellipse, rgba(20,223,243,.10), transparent 70%)" }} />
-        {children}
+          {/* Logo */}
+          <div style={{ position: "relative", textAlign: "center" }}>
+            <img src={LOGO_SRC} alt="Stayin" crossOrigin="anonymous" style={{ width: 280, height: "auto", objectFit: "contain", display: "block", margin: "0 auto" }} />
+          </div>
+
+          {/* Badge */}
+          <div style={{ position: "relative", padding: "20px 52px", borderRadius: 999, border: "2.5px solid rgba(255,255,255,.45)", background: "rgba(255,255,255,.12)", color: "#fff", fontSize: typeLabel.length > 4 ? 46 : 52, fontWeight: 900, letterSpacing: "-.5px", lineHeight: 1 }}>
+            {typeLabel}
+          </div>
+
+          {/* URL */}
+          <div style={{ position: "relative", fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,.32)", letterSpacing: ".08em" }}>
+            {SITE_URL}
+          </div>
+        </div>
+
+        {/* BODY */}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          {/* Top stripe */}
+          <div style={{ height: 6, background: topBar, flexShrink: 0 }} />
+          {/* Subtle blobs */}
+          <div style={{ position: "absolute", width: "55%", height: "90%", top: "-30%", right: "-12%", borderRadius: "50%", background: "radial-gradient(circle,rgba(26,58,143,.05),transparent 70%)", pointerEvents: "none" as const }} />
+          <div style={{ position: "absolute", width: "35%", height: "60%", bottom: "-20%", left: "5%", borderRadius: "50%", background: "radial-gradient(circle,rgba(192,32,44,.04),transparent 70%)", pointerEvents: "none" as const }} />
+          {/* Content */}
+          <div style={{ flex: 1, padding: "52px 72px 52px 72px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -523,108 +545,60 @@ function TicketPreview({ listing, match, isHe }: { listing: ShareListing; match:
   ];
 
   return (
-    <CardShell typeLabel={shareType}>
-      <div style={{ position: "absolute", right: 70, top: 62 }}>
-        <TrophySvg size={94} color={cyan2} />
-      </div>
-
-      <div
-        dir={isHe ? "rtl" : "ltr"}
-        style={{
-          position: "absolute",
-          left: 86,
-          right: 100,
-          top: 70,
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            color: navy,
-            fontSize: isHe ? 55 : 52,
-            fontWeight: 950,
-            letterSpacing: isHe ? "0.02em" : "0.06em",
-            textTransform: isHe ? "none" : "uppercase",
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textShadow: "0 0 18px rgba(20,223,243,.24)",
-          }}
-        >
-          {eventTitle(isHe, isWC)}
-        </div>
-        <div style={{ marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 20 }}>
-          <div style={{ width: 92, height: 2, background: "linear-gradient(90deg,transparent,rgba(20,223,243,.7))" }} />
-          <div
-            style={{
-              color: purple,
-              fontSize: isHe ? 32 : 31,
-              fontWeight: 880,
-              letterSpacing: isHe ? "0" : "0.15em",
-              lineHeight: 1,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              textTransform: isHe ? "none" : "uppercase",
-            }}
-          >
-            {stage}
+    <CardShell typeLabel={shareType} isWC={isWC}>
+      {/* Event badge + Price */}
+      <div dir={isHe ? "rtl" : "ltr"} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "rgba(26,58,143,.06)", border: "1px solid rgba(26,58,143,.1)", borderRadius: 8, padding: "6px 18px 6px 12px", marginBottom: 12 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: isWC ? "#1a3a8f" : "#1abfb0", flexShrink: 0 }} />
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase" as const, color: isWC ? "#1a3a8f" : "#1abfb0" }}>{eventTitle(isHe, isWC)}</div>
           </div>
-          <div style={{ width: 92, height: 2, background: "linear-gradient(90deg,rgba(20,223,243,.7),transparent)" }} />
+          <div style={{ fontSize: 22, color: "#7a8fa8", fontWeight: 500 }}>{stage} {city !== EMPTY ? `· ${city}` : ""} {formatDate(match.match_date) !== EMPTY ? `· ${formatDate(match.match_date)}` : ""} {formatTime(match.match_time) !== EMPTY ? `· ${formatTime(match.match_time)}` : ""}</div>
+        </div>
+        <div style={{ textAlign: "left" as const, flexShrink: 0 }}>
+          <div style={{ fontSize: 86, fontWeight: 900, letterSpacing: "-4px", lineHeight: 1, color: "#1a3a8f" }}>{price}</div>
+          <div style={{ fontSize: 18, color: "#94a3b8", fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase" as const, marginTop: 6 }}>{isHe ? "מחיר לכרטיס" : "Price"}</div>
         </div>
       </div>
 
-      <div style={{ position: "absolute", left: 92, top: 260, width: 1030, display: "grid", gridTemplateColumns: "405px 220px 405px", alignItems: "center" }}>
-        <TeamPill name={homeName} flagName={match.home_team_name} side="left" isHe={isHe} />
-        <div style={{ textAlign: "center", color: purple, fontSize: 58, fontWeight: 950, lineHeight: 1, textShadow: "0 0 18px rgba(155,124,247,.35)" }}>VS</div>
-        <TeamPill name={awayName} flagName={match.away_team_name} side="right" isHe={isHe} />
+      {/* Teams */}
+      <div dir="ltr" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <Flag name={match.home_team_name} />
+          <div style={{ fontSize: fitFont(homeName, 72, 7, 10, 44), fontWeight: 900, color: "#0d1b3e", letterSpacing: "-.04em", lineHeight: .95 }}>{homeName}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <div style={{ width: 1, height: 36, background: "rgba(13,27,62,.1)" }} />
+          <div style={{ fontSize: 28, color: "rgba(13,27,62,.18)", fontWeight: 300, letterSpacing: ".12em" }}>VS</div>
+          <div style={{ width: 1, height: 36, background: "rgba(13,27,62,.1)" }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, flexDirection: "row-reverse" as const }}>
+          <Flag name={match.away_team_name} />
+          <div style={{ fontSize: fitFont(awayName, 72, 7, 10, 44), fontWeight: 900, color: "#0d1b3e", letterSpacing: "-.04em", lineHeight: .95, textAlign: "right" as const }}>{awayName}</div>
+        </div>
       </div>
 
-      <div style={{ position: "absolute", left: 96, top: 395, width: 1022, height: 2, background: line }} />
-
-      <div style={{ position: "absolute", left: 96, top: 455, width: 1022 }}>
-        <DataGrid items={rowOne} />
-      </div>
-
-      <div style={{ position: "absolute", left: 96, top: 584, width: 1022, height: 2, borderTop: "2px dashed rgba(84,144,207,.38)" }} />
-
-      <div style={{ position: "absolute", left: 96, top: 646, width: 1022 }}>
-        <DataGrid items={rowTwo} />
-      </div>
-
-      <div style={{ position: "absolute", left: 96, right: 70, top: 770, height: 74, borderRadius: 26, border: "1px solid rgba(132,210,255,.36)", background: "linear-gradient(180deg,rgba(255,255,255,.50),rgba(240,250,255,.34))" }} />
-      <div
-        style={{
-          position: "absolute",
-          left: 122,
-          right: 98,
-          top: 784,
-          display: "flex",
-          alignItems: "center",
-          gap: 24,
-          flexDirection: isHe ? "row-reverse" : "row",
-          minWidth: 0,
-        }}
-      >
-        <StadiumSvg size={78} color={cyan2} />
-        <span
-          dir={isHe ? "rtl" : "ltr"}
-          style={{
-            minWidth: 0,
-            flex: 1,
-            color: text,
-            fontSize: fitFont(stadiumText, 35, 26, 42, 24),
-            fontWeight: 900,
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textAlign: isHe ? "right" : "left",
-          }}
-        >
-          {stadiumText}
-        </span>
+      {/* Info strip */}
+      <div dir={isHe ? "rtl" : "ltr"} style={{ background: "rgba(13,27,62,.04)", border: "1px solid rgba(13,27,62,.06)", borderRadius: 18, padding: "28px 36px", display: "flex", alignItems: "center", gap: 0 }}>
+        {[
+          { l: isHe ? "קטגוריה" : "Cat", v: clean(listing.category) },
+          { l: isHe ? "בלוק" : "Block", v: clean(listing.seats_block) },
+          { l: isHe ? "שורה" : "Row", v: clean(listing.seats_row) },
+          { l: isHe ? "מושבים" : "Seats", v: clean(listing.seats_numbers) },
+          { l: isHe ? "כמות" : "Qty", v: quantity },
+          { l: isHe ? "יחד" : "Together", v: yesNo(listing.seated_together, isHe) },
+        ].map((item, i, arr) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+            <div style={{ flex: 1, textAlign: "center" as const }}>
+              <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase" as const, color: "#94a3b8", marginBottom: 8 }}>{item.l}</div>
+              {item.v === EMPTY
+                ? <div style={{ width: 32, height: 2, background: "#e2e8f0", borderRadius: 1, margin: "14px auto 0" }} />
+                : <div style={{ fontSize: 28, fontWeight: 900, color: "#1e293b", lineHeight: 1 }}>{item.v}</div>
+              }
+            </div>
+            {i < arr.length - 1 && <div style={{ width: 1, height: 40, background: "rgba(13,27,62,.08)", flexShrink: 0 }} />}
+          </div>
+        ))}
       </div>
     </CardShell>
   );
@@ -716,8 +690,9 @@ export default function ShareListingTicketButton({ listing, match, isHe, size = 
         dir={isHe ? "rtl" : "ltr"}
         style={{
           width: isMobile ? "min(100%, 440px)" : "min(1160px, 100%)",
-          maxHeight: "96vh",
-          overflow: "hidden",
+          maxHeight: "94vh",
+          overflowY: "auto",
+          overflowX: "hidden",
           borderRadius: isMobile ? "28px 28px 0 0" : 30,
           background: "rgba(255,255,255,.97)",
           backdropFilter: "blur(24px)",

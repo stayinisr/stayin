@@ -572,15 +572,20 @@ function GoldListing({
                   background: "#25D366",
                   color: "#fff",
                   fontSize: "12px",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   border: "none",
-                  borderRadius: "5px",
+                  borderRadius: "8px",
                   cursor: "pointer",
                   letterSpacing: "0.02em",
                   width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  boxShadow: "0 4px 12px rgba(37,211,102,.25)",
                 }}
               >
-                WhatsApp →
+                💬 WhatsApp
               </button>
             ) : (
               <span style={{ fontSize: "11px", color: "#94a3b8" }}>
@@ -876,14 +881,18 @@ function RegularListing({
                   background: "#25D366",
                   color: "#fff",
                   fontSize: "11px",
-                  fontWeight: 700,
+                  fontWeight: 800,
                   border: "none",
-                  borderRadius: "4px",
+                  borderRadius: "6px",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  boxShadow: "0 3px 10px rgba(37,211,102,.22)",
                 }}
               >
-                WhatsApp →
+                💬 WhatsApp
               </button>
             ) : (
               <span style={{ fontSize: "10px", color: C.faint }}>
@@ -898,9 +907,17 @@ function RegularListing({
                 color: C.faint,
                 textDecoration: "none",
                 textAlign: "center",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                border: "1px solid #f1f5f9",
+                background: "#f8f9fc",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
               }}
             >
-              {isHe ? "דווח" : "Report"}
+              🚩 {isHe ? "דווח" : "Report"}
             </Link>
           </div>
         </div>
