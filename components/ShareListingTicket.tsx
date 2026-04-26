@@ -49,7 +49,7 @@ type Props = {
 };
 
 const SITE_URL = "stayin.co.il";
-const fCondensed = "'Barlow Condensed', 'Oswald', Impact, sans-serif";
+const fCondensed = "'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif";
 const LOGO_SRC = "/stayin-share-logo.png";
 const CUP_SRC = "/stayin-cup-icon.png";
 const STADIUM_SRC = "/stayin-stadium-icon.png";
@@ -148,10 +148,10 @@ function useModalLayout(open: boolean) {
 
   useEffect(() => {
     setMounted(true);
-    if (!document.querySelector('link[href*="Barlow+Condensed"]')) {
+    if (!document.querySelector('link[href*="Bebas+Neue"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&display=swap";
+      link.href = "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap";
       document.head.appendChild(link);
     }
   }, []);
@@ -409,36 +409,29 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
             <img src={LOGO_SRC} alt="Stayin" crossOrigin="anonymous" style={{ width: 360, height: "auto", objectFit: "contain", display: "block", margin: "0 auto" }} />
           </div>
 
-          {/* Match number — condensed, dramatic */}
+          {/* Match number — Barlow Condensed, tall */}
           {matchNumber !== EMPTY && (
-            <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
-              {/* MATCH label with lines */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,transparent,rgba(255,255,255,.35))" }} />
-                <div style={{ fontFamily: fCondensed, fontSize: 22, fontWeight: 700, letterSpacing: ".32em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.45)" }}>MATCH</div>
-                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,rgba(255,255,255,.35),transparent)" }} />
-              </div>
-              {/* Big number */}
+            <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0, flex: 1, justifyContent: "center" }}>
+              {/* MATCH label */}
+              <div style={{ fontFamily: fCondensed, fontSize: 26, fontWeight: 700, letterSpacing: ".45em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.5)", marginBottom: 4 }}>MATCH</div>
+              {/* Thin line above number */}
+              <div style={{ width: 70, height: 1.5, background: "rgba(255,255,255,.25)", marginBottom: 8 }} />
+              {/* BIG NUMBER */}
               <div style={{
                 fontFamily: fCondensed,
-                fontSize: 172,
-                fontWeight: 900,
-                letterSpacing: "-.04em",
-                lineHeight: .88,
-                background: "linear-gradient(160deg, #ffffff 0%, #a8edea 30%, #1abfb0 60%, #0ea5e9 100%)",
+                fontSize: 220,
+                fontWeight: 400,
+                letterSpacing: "-.02em",
+                lineHeight: .82,
+                background: "linear-gradient(175deg,#ffffff 0%,#7df9e8 35%,#1abfb0 65%,#0891b2 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 display: "inline-block",
-                filter: "drop-shadow(0 0 18px rgba(26,191,176,.45))",
+                textShadow: "none",
+                filter: "drop-shadow(0 4px 24px rgba(26,191,176,.5))",
               }}>
                 {(matchNumber ?? "").replace("#", "")}
-              </div>
-              {/* URL below number */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18 }}>
-                <div style={{ width: 20, height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,.3))" }} />
-                <div style={{ fontFamily: fCondensed, fontSize: 20, fontWeight: 700, letterSpacing: ".18em", color: "rgba(255,255,255,.45)", textTransform: "uppercase" as const }}>stayin.co.il</div>
-                <div style={{ width: 20, height: 1, background: "linear-gradient(90deg,rgba(255,255,255,.3),transparent)" }} />
               </div>
             </div>
           )}
@@ -448,12 +441,10 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
             {typeLabel}
           </div>
 
-          {/* URL — only show when no match number */}
-          {matchNumber === EMPTY && (
-            <div style={{ position: "relative", fontSize: 26, fontWeight: 700, color: "rgba(255,255,255,.32)", letterSpacing: ".08em" }}>
-              {SITE_URL}
-            </div>
-          )}
+          {/* URL — always bottom */}
+          <div style={{ position: "relative", fontSize: 24, fontWeight: 700, color: "rgba(255,255,255,.38)", letterSpacing: ".1em" }}>
+            {SITE_URL}
+          </div>
         </div>
 
         {/* BODY */}
