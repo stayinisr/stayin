@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import ToastProvider from "../components/ToastProvider";
 import { LanguageProvider } from "../lib/LanguageContext";
 import { Heebo, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
@@ -39,11 +40,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} ${jakarta.variable} ${dmSans.variable}`}>
-      <body style={{ margin: 0, padding: 0, fontFamily: "var(--font-dm), var(--font-he), sans-serif" }}>
+      <body style={{ margin: 0, padding: 0, fontFamily: "var(--font-dm), var(--font-he), sans-serif", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <LanguageProvider>
           <ToastProvider>
             <Navbar />
-            {children}
+            <main style={{ flex: 1 }}>
+              {children}
+            </main>
+            <Footer />
           </ToastProvider>
         </LanguageProvider>
       </body>
