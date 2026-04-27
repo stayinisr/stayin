@@ -112,7 +112,7 @@ export default function LiveShowsPage() {
           <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:32, alignItems:"center" }}>
             <div>
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
-                STAY IN THE GAME
+                STAY IN THE SHOW
               </div>
               <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:.95, letterSpacing:"-.5px", marginBottom:16,
                 background:"linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)",
@@ -219,7 +219,7 @@ export default function LiveShowsPage() {
                         background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
                         marginBottom:10, position:"relative" }}>🎵 LIVE SHOW</div>
                       {/* Big gradient name */}
-                      <div style={{ fontSize:"clamp(34px,6vw,52px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1.5px",
+                      <div style={{ fontSize:"clamp(42px,6vw,52px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1.5px",
                         background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
                         position:"relative", wordBreak:"break-word" as const }}>
                         {name}

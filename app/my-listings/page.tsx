@@ -415,6 +415,10 @@ export default function MyListingsPage() {
       ).length,
     [listings]
   );
+  const showActiveCount   = useMemo(() => showListings.filter((l: any) => l.status === "active" && !isExp(l.expires_at)).length, [showListings]);
+  const showFeaturedCount = useMemo(() => showListings.filter((l: any) => !!l.is_featured && l.status === "active").length, [showListings]);
+  const SHOW_MAX = 10;
+  const SHOW_MAX_GOLD = 2;
 
   async function handleClose(id: string) {
     const { error } = await supabase
@@ -647,6 +651,16 @@ export default function MyListingsPage() {
                   n: `${featuredCount}/${getPlanLimits(plan).max_featured}`,
                   l: isHe ? "מוזהבות" : "Gold",
                   c: C.gold,
+                },
+                {
+                  n: `${showActiveCount}/10`,
+                  l: isHe ? "🎵 הופעות" : "🎵 Shows",
+                  c: "#7c3aed",
+                },
+                {
+                  n: `${showFeaturedCount}/2`,
+                  l: isHe ? "🎵 Gold" : "🎵 Gold",
+                  c: "#d4a017",
                 },
               ].map((s, i) => (
                 <div
@@ -1236,9 +1250,7 @@ export default function MyListingsPage() {
                         </button>
                       ) : (
                         <button onClick={async () => {
-                          const maxFeat = getPlanLimits(plan).max_featured;
-                          const showFeatCount = showListings.filter((x: any) => x.is_featured).length;
-                          if (showFeatCount >= maxFeat) { toast.warning(isHe ? `מקסימום ${maxFeat} מודעות Gold` : `Max ${maxFeat} featured`); return; }
+                          if (showFeaturedCount >= SHOW_MAX_GOLD) { toast.warning(isHe ? `מקסימום ${SHOW_MAX_GOLD} מודעות Gold להופעות` : `Max ${SHOW_MAX_GOLD} featured show listings`); return; }
                           await supabase.from("show_listings").update({ is_featured: true, first_featured_at: new Date().toISOString() }).eq("id", sl.id);
                           setShowListings(prev => prev.map((x: any) => x.id === sl.id ? { ...x, is_featured: true } : x));
                           toast.success(isHe ? "מודעה הפכה למוזהבת ⭐" : "Listing is now gold ⭐");
