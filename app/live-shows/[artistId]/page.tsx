@@ -34,7 +34,6 @@ type ShowListing = {
   show_date: string | null;
   show_time: string | null;
   venues: { name: string; city: string | null; city_he: string | null } | null;
-  profiles: { full_name: string | null; country: string | null } | null;
   created_at: string;
 };
 
@@ -73,7 +72,7 @@ export default function ArtistShowPage() {
       const [{ data: a }, { data: l }] = await Promise.all([
         supabase.from("artists").select("id,name,name_he").eq("id", artistId).maybeSingle(),
         supabase.from("show_listings")
-          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,created_at,venues(name,city,city_he),profiles(full_name,country)")
+          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,created_at,venues(name,city,city_he)")
           .eq("artist_id", artistId).eq("status","active").gt("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false }),
       ]);
@@ -181,9 +180,6 @@ export default function ArtistShowPage() {
               const date = formatDate(l.show_date);
               const time = formatTime(l.show_time);
               const tt   = ttLabel(l.ticket_type, l.ticket_type_custom, isHe);
-              const sellerInitial = (l.profiles as any)?.full_name?.[0] || "?";
-              const sellerName    = (l.profiles as any)?.full_name || null;
-
               return (
                 <div key={l.id} className="listing-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:8, overflow:"hidden", boxShadow:"0 1px 3px rgba(13,27,62,.04)" }}>
                   <div style={{ height:3, background: isSell ? `linear-gradient(90deg,${C.green},${C.teal})` : `linear-gradient(90deg,${C.navy},#6366f1)` }} />
@@ -239,14 +235,7 @@ export default function ArtistShowPage() {
                           <div style={{ fontSize:13, color:C.hint }}>{isHe?"מחיר גמיש":"Flexible"}</div>
                         )}
 
-                        {sellerName && (
-                          <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:C.hint }}>
-                            <span style={{ width:22, height:22, borderRadius:"50%", background:C.navy, color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, flexShrink:0 }}>
-                              {sellerInitial}
-                            </span>
-                            {sellerName}
-                          </div>
-                        )}
+          
                       </div>
                     </div>
                   </div>

@@ -129,10 +129,10 @@ const BANDS = [
   {
     id: "concerts", en: "Live Concerts", he: "הופעות חיות",
     subEn: "Artists, tours & big nights", subHe: "אמנים, טורים ולילות גדולים",
-    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "View Shows", ctaHe: "הופעות",
+    tagEn: "03 · Live", tagHe: "03 · הופעות", ctaEn: "Soon", ctaHe: "בקרוב",
     href: "/live-shows",
     img: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
-    accent: "rgba(212,160,23,0.24)", top: "#d4a017", soon: false,
+    accent: "rgba(212,160,23,0.24)", top: "#d4a017", soon: true,
     bgGrad: "linear-gradient(135deg,#4a3000,#d4a017)",
   },
   {
@@ -195,7 +195,7 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
           const badge = b.live
             ? { bg: "rgba(230,57,70,.18)", border: "1px solid rgba(230,57,70,.34)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
             : b.soon
-            { bg: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)", color: "#fff", label: isHe ? "צפה" : "View" }
+            ? { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" }
             : { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
           const inner = (
             <>

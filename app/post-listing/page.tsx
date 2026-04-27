@@ -147,6 +147,8 @@ function PostListingPageContent() {
 
   const [submitting,   setSubmitting]   = useState(false);
   const [showSuccess,  setShowSuccess]  = useState(false);
+  const [showSuccessShow, setShowSuccessShow] = useState(false);
+  const [successArtistId, setSuccessArtistId] = useState("");
   const [successMatchId, setSuccessMatchId] = useState("");
 
   // Form state
@@ -286,8 +288,8 @@ function PostListingPageContent() {
       });
       setSubmitting(false);
       if (showErr) { toast.error(isHe ? "פרסום נכשל" : "Failed to post"); return; }
-      toast.success(isHe ? "המודעה פורסמה!" : "Listing posted!");
-      router.push("/live-shows");
+      setSuccessArtistId(artistId);
+      setShowSuccessShow(true);
       return;
     }
     if (league === "il") {
@@ -701,6 +703,20 @@ function PostListingPageContent() {
         </div>
       </div>
 
+      {showSuccessShow && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(13,27,62,.5)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 32px 80px rgba(13,27,62,.2)" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0d1b3e", marginBottom: 10 }}>{isHe ? "המודעה פורסמה!" : "Listing posted!"}</h2>
+            <p style={{ fontSize: 13, color: "#64748b", marginBottom: 24, lineHeight: 1.6 }}>{isHe ? "המודעה שלך מופיעה עכשיו בדף האמן." : "Your listing is now live on the artist page."}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <a href={`/live-shows/${successArtistId}`} style={{ display: "block", padding: "12px", background: C.teal, color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>{isHe ? "צפה במודעות האמן" : "View artist listings"}</a>
+              <a href="/my-listings" style={{ display: "block", padding: "12px", background: C.bg, color: C.text, borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: "none", border: `1px solid ${C.border}` }}>{isHe ? "המודעות שלי" : "My listings"}</a>
+              <button onClick={() => setShowSuccessShow(false)} style={{ padding: "10px", background: "none", border: "none", color: C.hint, fontSize: 12, cursor: "pointer" }}>{isHe ? "פרסם מודעה נוספת" : "Post another listing"}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showSuccess && (
         <SuccessModal
           matchId={successMatchId}
