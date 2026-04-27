@@ -348,7 +348,7 @@ function PostListingPageContent() {
       <div style={{ height: "3px", background: league === "il"
         ? `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)`
         : league === "show"
-        ? `linear-gradient(90deg,${C.navy},${C.teal})`
+        ? `linear-gradient(90deg,${C.blue},${C.teal})`
         : `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)` }} />
 
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem", width: "100%", boxSizing: "border-box" }}>
@@ -365,11 +365,11 @@ function PostListingPageContent() {
             {editId ? (
               isHe ? <><span style={{ color: accentColor }}>עריכת</span> מודעה</> : <><span style={{ color: accentColor }}>Edit</span> Listing</>
             ) : league === "show" ? (
-              isHe ? <><span style={{ color: C.teal }}>פרסם</span> <span style={{ color: C.navy }}>הופעה</span></> : <><span style={{ color: C.teal }}>Post</span> <span style={{ color: C.navy }}>Show</span></>
+              isHe ? <><span style={{ color: C.teal }}>פרסם</span> <span style={{ color: C.text }}>הופעה</span></> : <><span style={{ color: C.teal }}>Post</span> <span style={{ color: C.text }}>Show</span></>
             ) : type === "sell" ? (
-              isHe ? <><span style={{ color: C.green }}>מכור</span> <span style={{ color: C.navy }}>כרטיסים</span></> : <><span style={{ color: C.green }}>Sell</span> <span style={{ color: C.navy }}>Tickets</span></>
+              isHe ? <><span style={{ color: C.green }}>מכור</span> <span style={{ color: C.text }}>כרטיסים</span></> : <><span style={{ color: C.green }}>Sell</span> <span style={{ color: C.text }}>Tickets</span></>
             ) : (
-              isHe ? <><span style={{ color: C.navy }}>חפש</span> <span style={{ color: accentColor }}>כרטיסים</span></> : <><span style={{ color: C.navy }}>Find</span> <span style={{ color: accentColor }}>Tickets</span></>
+              isHe ? <><span style={{ color: C.text }}>חפש</span> <span style={{ color: accentColor }}>כרטיסים</span></> : <><span style={{ color: C.text }}>Find</span> <span style={{ color: accentColor }}>Tickets</span></>
             )}
           </h1>
           <p style={{ fontSize: "13px", color: C.muted, fontWeight: 400, lineHeight: 1.7 }}>
