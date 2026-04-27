@@ -316,11 +316,11 @@ export default function MyListingsPage() {
 
   const [email, setEmail] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
-  const [showListings, setShowListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [shareAllOpen, setShareAllOpen] = useState(false);
   const [shareListingId, setShareListingId] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan>("free");
+  const [showListings, setShowListings] = useState<any[]>([]);
 
   useEffect(() => {
     loadPage();
@@ -1154,23 +1154,23 @@ export default function MyListingsPage() {
           )}
         </div>
       </div>
-      {/* ── SHOW LISTINGS SECTION ── */}
+      {/* ── SHOW LISTINGS ── */}
       {showListings.length > 0 && (
-        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 16px 32px" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: C.teal, letterSpacing: ".1em", textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 16px 32px", boxSizing: "border-box" as const }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.teal, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 12 }}>
             🎵 {isHe ? "הופעות חיות" : "Live Shows"}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
             {showListings.map((sl: any) => {
               const artistName = isHe ? (sl.artists?.name_he || sl.artists?.name) : sl.artists?.name;
               const venueName  = sl.venues?.name || null;
-              const venueCity  = isHe ? sl.venues?.city_he : sl.venues?.city;
-              const isSell = sl.type === "sell";
-              const isActive = sl.status === "active" && (!sl.expires_at || new Date(sl.expires_at) > new Date());
+              const venueCity  = sl.venues?.city_he || null;
+              const isSell     = sl.type === "sell";
+              const expired    = sl.expires_at ? new Date(sl.expires_at) < new Date() : false;
               return (
-                <div key={sl.id} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden", opacity: isActive ? 1 : .6 }}>
+                <div key={sl.id} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden", opacity: expired ? .6 : 1 }}>
                   <div style={{ height: 2, background: `linear-gradient(90deg,${C.teal},${C.blue})` }} />
-                  <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginBottom: 4 }}>{artistName || "—"}</div>
                       <div style={{ fontSize: 11, color: C.hint }}>
@@ -1179,13 +1179,13 @@ export default function MyListingsPage() {
                         {sl.show_time && <span> · {sl.show_time.slice(0,5)}</span>}
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 2, background: isSell ? "rgba(0,104,71,.07)" : "rgba(26,58,143,.07)", color: isSell ? C.green : C.blue, border: `1px solid ${isSell ? "rgba(0,104,71,.2)" : "rgba(26,58,143,.18)"}`, letterSpacing: ".05em", textTransform: "uppercase" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 2, background: isSell ? "rgba(0,104,71,.07)" : "rgba(26,58,143,.07)", color: isSell ? C.green : C.blue, border: `1px solid ${isSell ? "rgba(0,104,71,.2)" : "rgba(26,58,143,.18)"}`, letterSpacing: ".05em", textTransform: "uppercase" as const }}>
                         {isSell ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
                       </span>
-                      {sl.price && <div style={{ fontSize: 16, fontWeight: 900, color: C.text }}>₪{sl.price.toLocaleString()}</div>}
-                      <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "4px 10px", border: `1px solid ${C.border}`, borderRadius: 4 }}>
-                        {isHe ? "👁 צפה" : "👁 View"}
+                      {sl.price && <div style={{ fontSize: 16, fontWeight: 900, color: C.text }}>₪{Number(sl.price).toLocaleString()}</div>}
+                      <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const }}>
+                        👁 {isHe ? "צפה" : "View"}
                       </a>
                     </div>
                   </div>
