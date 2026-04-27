@@ -417,7 +417,6 @@ function PostListingPageContent() {
                 </div>
               </div>
 
-              )}
               {/* ── SHOW FIELDS ── */}
               {league === "show" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
