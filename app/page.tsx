@@ -195,7 +195,7 @@ function ExpandBands({ isHe }: { isHe: boolean }) {
           const badge = b.live
             ? { bg: "rgba(230,57,70,.18)", border: "1px solid rgba(230,57,70,.34)", color: "#ff9090", label: isHe ? "פעיל עכשיו" : "Live now" }
             : b.soon
-            { bg: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.18)", color: "#fff", label: isHe ? "צפה" : "View" }
+            ? { bg: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", color: "rgba(255,255,255,.35)", label: isHe ? "בקרוב" : "Soon" }
             : { bg: "rgba(26,191,176,.15)", border: "1px solid rgba(26,191,176,.3)", color: "#1abfb0", label: isHe ? "חדש" : "New" };
           const inner = (
             <>
