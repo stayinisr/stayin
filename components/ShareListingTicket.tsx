@@ -417,16 +417,16 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
           {matchNumber !== EMPTY && (
             <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0, flex: 1, justifyContent: "center" }}>
               {/* MATCH label */}
-              <div style={{ fontFamily: fCondensed, fontSize: 28, fontWeight: 400, letterSpacing: ".5em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.82)" }}>MATCH</div>
+              <div style={{ fontFamily: fCondensed, fontSize: 46, fontWeight: 400, letterSpacing: ".5em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.82)" }}>MATCH</div>
               {/* Thin line above number */}
               <div style={{ width: 70, height: 1.5, background: "rgba(255,255,255,.25)", marginBottom: 8 }} />
               {/* BIG NUMBER */}
               <div style={{
                 fontFamily: fCondensed,
-                fontSize: 220,
+                fontSize: 460,
                 fontWeight: 400,
                 letterSpacing: "-.02em",
-                lineHeight: .82,
+                lineHeight: .78,
                 background: "linear-gradient(180deg,#ffffff 0%,#ffffff 5%,#a8f0e8 18%,#1abfb0 32%,#ffffff 50%,#0ea5a0 68%,#a8f0e8 82%,#ffffff 95%,#ffffff 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -449,7 +449,7 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
 
           {/* URL — bold, always visible */}
           <div style={{ position: "relative", textAlign: "center" }}>
-            <div style={{ fontFamily: fCondensed, fontSize: 28, fontWeight: 400, letterSpacing: ".18em", color: "#fff", textShadow: "0 0 12px rgba(26,191,176,.6)" }}>
+            <div style={{ fontFamily: fCondensed, fontSize: 38, fontWeight: 400, letterSpacing: ".18em", color: "#fff", textShadow: "0 0 12px rgba(26,191,176,.6)" }}>
               {SITE_URL}
             </div>
             <div style={{ height: 1.5, marginTop: 6, background: "linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)", borderRadius: 1 }} />
