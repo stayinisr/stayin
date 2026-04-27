@@ -33,9 +33,7 @@ type ShowListing = {
   notes: string | null;
   show_date: string | null;
   show_time: string | null;
-  user_id: string | null;
   venues: { name: string; city: string | null; city_he: string | null } | null;
-  profiles: { full_name: string | null; phone: string | null; country: string | null } | null;
   created_at: string;
 };
 
@@ -74,7 +72,7 @@ export default function ArtistShowPage() {
       const [{ data: a }, { data: l }] = await Promise.all([
         supabase.from("artists").select("id,name,name_he").eq("id", artistId).maybeSingle(),
         supabase.from("show_listings")
-          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,user_id,created_at,venues(name,city,city_he),profiles(full_name,phone,country)")
+          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,created_at,venues(name,city,city_he)")
           .eq("artist_id", artistId).eq("status","active").gt("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false }),
       ]);
@@ -118,13 +116,26 @@ export default function ArtistShowPage() {
             ← {isHe?"כל האמנים":"All artists"}
           </Link>
 
-          <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
-            <div style={{ width:56, height:56, borderRadius:14, background:`linear-gradient(135deg,${C.navy},${C.teal})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>🎵</div>
-            <div>
-              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", color:C.teal, marginBottom:8 }}>LIVE SHOWS</div>
-              <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(22px,3.5vw,36px)", fontWeight:isHe?900:800, color:C.text, letterSpacing:isHe?"-.5px":".02em", margin:0 }}>
-                {artistName || <span className="sk" style={{ display:"inline-block", width:200, height:32 }} />}
+          <div style={{ display:"flex", alignItems:"flex-start", gap:20, flexWrap:"wrap" }}>
+            {/* Big gradient icon */}
+            <div style={{ width:72, height:72, borderRadius:18, background:"linear-gradient(135deg,#7c3aed,#e63946)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:34, flexShrink:0, boxShadow:"0 8px 24px rgba(124,58,237,.3)" }}>🎵</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase",
+                background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                marginBottom:10 }}>🎵 LIVE SHOW</div>
+              <h1 style={{ fontFamily: isHe ? fHe : fSyne,
+                fontSize:"clamp(32px,5vw,56px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1.5px", margin:0,
+                background:"linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)",
+                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+                {artistName || <span className="sk" style={{ display:"inline-block", width:200, height:44 }} />}
               </h1>
+              {/* Stats row */}
+              {!loading && (
+                <div style={{ display:"flex", gap:16, marginTop:14, flexWrap:"wrap" }}>
+                  {sellCount > 0 && <span style={{ fontSize:12, color:C.muted }}><strong style={{ color:C.text }}>{sellCount}</strong> {isHe?"מוכרים":"selling"}</span>}
+                  {buyCount > 0 && <span style={{ fontSize:12, color:C.muted }}><strong style={{ color:C.text }}>{buyCount}</strong> {isHe?"מחפשים":"buying"}</span>}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -184,7 +195,7 @@ export default function ArtistShowPage() {
               const tt   = ttLabel(l.ticket_type, l.ticket_type_custom, isHe);
               return (
                 <div key={l.id} className="listing-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden", boxShadow:"0 2px 8px rgba(13,27,62,.06)" }}>
-                  <div style={{ height:3, background: isSell ? `linear-gradient(90deg,${C.green},${C.teal})` : `linear-gradient(90deg,${C.navy},#6366f1)` }} />
+                  <div style={{ height:3, background: isSell ? `linear-gradient(90deg,#7c3aed,#e63946)` : `linear-gradient(90deg,#1a3a8f,#7c3aed)` }} />
                   <div style={{ padding:"16px 18px" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
 
@@ -213,21 +224,12 @@ export default function ArtistShowPage() {
                         )}
 
                         {l.notes && (
-                          <div style={{ fontSize:12, color:C.hint, fontStyle:"italic", borderRight:`2px solid ${C.teal}`, paddingRight:10, lineHeight:1.5, marginTop:6 }}>
+                          <div style={{ fontSize:12, color:C.hint, fontStyle:"italic", borderRight:"2px solid #7c3aed", paddingRight:10, lineHeight:1.5, marginTop:6 }}>
                             "{l.notes}"
                           </div>
                         )}
 
-                        {/* Seller */}
-                        {(l.profiles as any)?.full_name && (
-                          <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:10, fontSize:11, color:C.hint }}>
-                            <span style={{ width:20, height:20, borderRadius:"50%", background:C.navy, color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, flexShrink:0 }}>
-                              {(l.profiles as any).full_name[0]}
-                            </span>
-                            {(l.profiles as any).full_name}
-                            {(l.profiles as any).country && ` · ${(l.profiles as any).country}`}
-                          </div>
-                        )}
+
                       </div>
 
                       {/* Right */}
@@ -241,16 +243,7 @@ export default function ArtistShowPage() {
                           <div style={{ fontSize:13, color:C.hint }}>{isHe?"מחיר גמיש":"Flexible"}</div>
                         )}
 
-                        {/* WhatsApp button */}
-                        {(l.profiles as any)?.phone && (
-                          <a
-                            href={`https://wa.me/${((l.profiles as any).phone as string).replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך להופעה ב-Stayin` : `Hi, I saw your show listing on Stayin`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
-                          >
-                            💬 WhatsApp
-                          </a>
-                        )}
+
 
                         {/* Report */}
                         <a

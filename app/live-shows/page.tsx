@@ -195,46 +195,57 @@ export default function LiveShowsPage() {
             </Link>
           </div>
         ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:14 }}>
             {filtered.map((artist, idx) => {
               const name = isHe ? (artist.name_he || artist.name) : artist.name;
-              const gradients = [
-                `linear-gradient(135deg,#1a3a8f,#1abfb0)`,
-                `linear-gradient(135deg,#006847,#1abfb0)`,
-                `linear-gradient(135deg,#e63946,#1a3a8f)`,
-                `linear-gradient(135deg,#7c3aed,#1abfb0)`,
-                `linear-gradient(135deg,#d4a017,#e63946)`,
-                `linear-gradient(135deg,#1a3a8f,#006847)`,
+              const themes = [
+                { grad: "linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)", blob1: "#7c3aed", blob2: "#e63946" },
+                { grad: "linear-gradient(135deg,#1a3a8f 0%,#4f46e5 50%,#7c3aed 100%)", blob1: "#4f46e5", blob2: "#7c3aed" },
+                { grad: "linear-gradient(135deg,#e63946 0%,#c026d3 50%,#7c3aed 100%)", blob1: "#e63946", blob2: "#7c3aed" },
+                { grad: "linear-gradient(135deg,#1abfb0 0%,#4f46e5 60%,#7c3aed 100%)", blob1: "#1abfb0", blob2: "#7c3aed" },
+                { grad: "linear-gradient(135deg,#d4a017 0%,#e63946 60%,#7c3aed 100%)", blob1: "#d4a017", blob2: "#e63946" },
               ];
-              const grad = gradients[idx % gradients.length];
-              const total = artist.sell_count + artist.buy_count;
+              const theme = themes[idx % themes.length];
               return (
                 <Link key={artist.id} href={`/live-shows/${artist.id}`} style={{ textDecoration:"none" }}>
-                  <div className="artist-card" style={{ borderRadius:14, overflow:"hidden", boxShadow:"0 2px 8px rgba(13,27,62,.08)", position:"relative" }}>
-                    {/* Colored header */}
-                    <div style={{ background:grad, padding:"20px 18px 16px", position:"relative", overflow:"hidden" }}>
-                      <div style={{ position:"absolute", width:120, height:120, top:-40, right:-30, borderRadius:"50%", background:"rgba(255,255,255,.08)", pointerEvents:"none" }} />
-                      <div style={{ position:"absolute", width:80, height:80, bottom:-30, left:-20, borderRadius:"50%", background:"rgba(255,255,255,.06)", pointerEvents:"none" }} />
-                      <div style={{ fontSize:32, marginBottom:10 }}>🎵</div>
-                      <div style={{ fontSize:16, fontWeight:900, color:"#fff", letterSpacing:"-.3px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                  <div className="artist-card" style={{ borderRadius:18, overflow:"hidden", background:"#fff", boxShadow:"0 4px 24px rgba(13,27,62,.10)" }}>
+                    {/* Body with gradient name */}
+                    <div style={{ padding:"28px 22px 20px", position:"relative", overflow:"hidden", minHeight:180, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                      {/* Dot mesh background */}
+                      <div style={{ position:"absolute", inset:0, opacity:.06,
+                        backgroundImage:`radial-gradient(circle, ${theme.blob1} 1px, transparent 1px)`,
+                        backgroundSize:"32px 32px", pointerEvents:"none" }} />
+                      {/* Blobs */}
+                      <div style={{ position:"absolute", width:180, height:180, top:-60, right:-50, borderRadius:"50%",
+                        background:`radial-gradient(circle,${theme.blob1},transparent 70%)`, opacity:.12, pointerEvents:"none" }} />
+                      <div style={{ position:"absolute", width:120, height:120, bottom:-40, left:-30, borderRadius:"50%",
+                        background:`radial-gradient(circle,${theme.blob2},transparent 70%)`, opacity:.10, pointerEvents:"none" }} />
+                      {/* Sub label */}
+                      <div style={{ fontSize:10, fontWeight:800, letterSpacing:".18em", textTransform:"uppercase" as const,
+                        background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                        marginBottom:10, position:"relative" }}>🎵 LIVE SHOW</div>
+                      {/* Big gradient name */}
+                      <div style={{ fontSize:"clamp(34px,6vw,52px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1.5px",
+                        background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                        position:"relative", wordBreak:"break-word" as const }}>
                         {name}
                       </div>
                     </div>
-                    {/* White footer */}
-                    <div style={{ background:C.white, padding:"12px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:"1px solid rgba(13,27,62,.04)" }}>
-                      <div style={{ display:"flex", gap:5 }}>
+                    {/* Footer */}
+                    <div style={{ padding:"10px 22px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:"1px solid rgba(13,27,62,.06)" }}>
+                      <div style={{ display:"flex", gap:5, flexWrap:"wrap" as const }}>
                         {artist.sell_count > 0 && (
-                          <span style={{ fontSize:9, fontWeight:800, padding:"2px 8px", borderRadius:999, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                          <span style={{ fontSize:9, fontWeight:800, padding:"3px 10px", borderRadius:999, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.2)", letterSpacing:".05em", textTransform:"uppercase" as const }}>
                             {artist.sell_count} {isHe?"מוכרים":"selling"}
                           </span>
                         )}
                         {artist.buy_count > 0 && (
-                          <span style={{ fontSize:9, fontWeight:800, padding:"2px 8px", borderRadius:999, background:"rgba(26,58,143,.07)", color:C.navy, border:"1px solid rgba(26,58,143,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                          <span style={{ fontSize:9, fontWeight:800, padding:"3px 10px", borderRadius:999, background:"rgba(26,58,143,.07)", color:C.navy, border:"1px solid rgba(26,58,143,.18)", letterSpacing:".05em", textTransform:"uppercase" as const }}>
                             {artist.buy_count} {isHe?"מחפשים":"buying"}
                           </span>
                         )}
                       </div>
-                      <span style={{ fontSize:12, color:C.hint }}>{isHe?"←":"→"}</span>
+                      <span style={{ fontSize:14, opacity:.3 }}>{isHe?"←":"→"}</span>
                     </div>
                   </div>
                 </Link>
