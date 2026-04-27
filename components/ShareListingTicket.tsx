@@ -423,9 +423,9 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
               {/* BIG NUMBER */}
               <div style={{
                 fontFamily: fCondensed,
-                fontSize: 460,
+                fontSize: 300,
                 fontWeight: 400,
-                letterSpacing: "-.02em",
+                letterSpacing: "-.03em",
                 lineHeight: .78,
                 background: "linear-gradient(180deg,#ffffff 0%,#ffffff 5%,#a8f0e8 18%,#1abfb0 32%,#ffffff 50%,#0ea5a0 68%,#a8f0e8 82%,#ffffff 95%,#ffffff 100%)",
                 WebkitBackgroundClip: "text",
