@@ -82,7 +82,7 @@ export default function ArtistShowPage() {
           .order("created_at", { ascending: false }),
       ]);
       setArtist(artistData || null);
-      setListings((listingsData as ShowListing[]) || []);
+      setListings((listingsData as unknown as ShowListing[]) || []);
       setLoading(false);
     }
     load();
