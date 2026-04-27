@@ -34,6 +34,7 @@ type ShowListing = {
   show_date: string | null;
   show_time: string | null;
   contact_phone: string | null;
+  is_featured: boolean | null;
   venues: { name: string; city: string | null; city_he: string | null } | null;
   created_at: string;
 };
@@ -73,12 +74,13 @@ export default function ArtistShowPage() {
       const [{ data: a }, { data: l }] = await Promise.all([
         supabase.from("artists").select("id,name,name_he").eq("id", artistId).maybeSingle(),
         supabase.from("show_listings")
-          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,contact_phone,created_at,venues(name,city,city_he)")
+          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,contact_phone,is_featured,created_at,venues(name,city,city_he)")
           .eq("artist_id", artistId).eq("status","active").gt("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false }),
       ]);
       setArtist(a || null);
-      setListings((l as unknown as ShowListing[]) || []);
+      const sorted = ((l as unknown as ShowListing[]) || []).sort((a,b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+      setListings(sorted);
       setLoading(false);
     }
     load();
@@ -195,7 +197,7 @@ export default function ArtistShowPage() {
               const time = formatTime(l.show_time);
               const tt   = ttLabel(l.ticket_type, l.ticket_type_custom, isHe);
               return (
-                <div key={l.id} className="listing-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden", boxShadow:"0 2px 8px rgba(13,27,62,.06)" }}>
+                <div key={l.id} className="listing-card" style={{ background: l.is_featured ? "linear-gradient(135deg,#fffdf0,#fff)" : C.white, border: l.is_featured ? "1.5px solid rgba(212,160,23,.5)" : `1px solid ${C.border}`, borderRadius:10, overflow:"hidden", boxShadow: l.is_featured ? "0 4px 20px rgba(212,160,23,.15)" : "0 2px 8px rgba(13,27,62,.06)" }}>
                   <div style={{ height:3, background: isSell ? `linear-gradient(90deg,#7c3aed,#e63946)` : `linear-gradient(90deg,#1a3a8f,#7c3aed)` }} />
                   <div style={{ padding:"16px 18px" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
@@ -203,6 +205,7 @@ export default function ArtistShowPage() {
                       {/* Left */}
                       <div style={{ flex:1, minWidth:180 }}>
                         <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
+                          {l.is_featured && <span style={{ fontSize:9, fontWeight:800, padding:"3px 8px", borderRadius:999, background:"rgba(212,160,23,.12)", color:"#b8860b", border:"1px solid rgba(212,160,23,.3)", letterSpacing:".06em" }}>⭐ GOLD</span>}
                           <span style={{ fontSize:9, fontWeight:800, padding:"3px 8px", borderRadius:999, background:isSell?"rgba(0,104,71,.07)":"rgba(26,58,143,.07)", color:isSell?C.green:C.navy, border:`1px solid ${isSell?"rgba(0,104,71,.2)":"rgba(26,58,143,.18)"}`, letterSpacing:".06em", textTransform:"uppercase" }}>
                             {isSell ? (isHe?"מכירה":"Sell") : (isHe?"קנייה":"Buy")}
                           </span>
@@ -252,16 +255,6 @@ export default function ArtistShowPage() {
                             href={`https://wa.me/${l.contact_phone.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך להופעה ב-Stayin 🎵` : `Hi, I saw your show listing on Stayin 🎵`)}`}
                             target="_blank" rel="noopener noreferrer"
                             style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
-                          >
-                            💬 WhatsApp
-                          </a>
-                        )}
-                        {/* WhatsApp */}
-                        {l.contact_phone && (
-                          <a
-                            href={`https://wa.me/${l.contact_phone.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך ב-Stayin 🎵` : `Hi, I saw your show listing on Stayin 🎵`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
                           >
                             💬 WhatsApp
                           </a>

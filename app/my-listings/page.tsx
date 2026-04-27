@@ -392,6 +392,7 @@ export default function MyListingsPage() {
       .from("show_listings")
       .select("id,type,price,quantity,ticket_type,show_date,show_time,status,created_at,expires_at,artist_id,venue_id,artists(name,name_he),venues(name,city_he)")
       .eq("user_id", user.id)
+      .neq("status", "archived")
       .order("created_at", { ascending: false });
     setShowListings(showRaw || []);
 
