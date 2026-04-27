@@ -122,12 +122,16 @@ function PostListingPageContent() {
 
   // League toggle — default to IL if ?type=israeli
   const [league, setLeague] = useState<LeagueType>(
-    params.get("type") === "israeli" ? "il" : "wc"
+    params.get("type") === "israeli" ? "il" : params.get("tab") === "show" ? "show" : "wc"
   );
 
   // WC matches
   const [wcMatches,  setWcMatches]  = useState<MatchItem[]>([]);
   const [artists,    setArtists]    = useState<{id: string; name: string; name_he: string | null}[]>([]);
+  const [artistSearch,      setArtistSearch]      = useState("");
+  const [showArtistDropdown, setShowArtistDropdown] = useState(false);
+  const [venueSearch,       setVenueSearch]       = useState("");
+  const [showVenueDropdown,  setShowVenueDropdown]  = useState(false);
   const [venues,     setVenues]     = useState<{id: string; name: string; city: string | null; city_he: string | null}[]>([]);
   const [artistId,   setArtistId]   = useState("");
   const [venueId,    setVenueId]    = useState("");
@@ -335,14 +339,16 @@ function PostListingPageContent() {
   const inp: CSSProperties  = { width: "100%", padding: "11px 14px", background: "rgba(255,255,255,0.9)", border: `1px solid ${C.border}`, borderRadius: "6px", fontSize: "13px", color: C.text, outline: "none", boxSizing: "border-box", fontFamily: "var(--font-dm),var(--font-he),sans-serif" };
 
   // Active color based on league
-  const accentColor = league === "il" ? C.blue : C.usa;
-  const currency    = league === "il" ? "₪" : "$";
+  const accentColor = league === "il" ? C.blue : league === "show" ? C.teal : C.usa;
+  const currency    = league === "il" || league === "show" ? "₪" : "$";
 
   return (
     <main style={{ minHeight: "100vh" }}>
       {/* Top bar */}
       <div style={{ height: "3px", background: league === "il"
         ? `linear-gradient(90deg,${C.blue} 33.3%,${C.green} 33.3% 66.6%,${C.teal} 66.6%)`
+        : league === "show"
+        ? `linear-gradient(90deg,${C.navy},${C.teal})`
         : `linear-gradient(90deg,${C.usa} 33.3%,${C.canada} 33.3% 66.6%,${C.mexico} 66.6%)` }} />
 
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem", width: "100%", boxSizing: "border-box" }}>
@@ -350,18 +356,23 @@ function PostListingPageContent() {
           ← {isHe ? "חזרה" : "Back"}
         </Link>
 
-        <div style={{ marginBottom: "24px" }}>
-          <div style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase" as const, color: accentColor, marginBottom: "10px" }}>
+        <div style={{ marginBottom: "28px", paddingTop: "8px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 999, background: `${accentColor}10`, border: `1px solid ${accentColor}25`, fontSize: 11, fontWeight: 700, color: accentColor, marginBottom: 14, letterSpacing: ".06em" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor, display: "inline-block" }} />
             STAY IN THE GAME
           </div>
-          <h1 style={{ fontFamily: "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(22px,3.5vw,34px)", fontWeight: 800, letterSpacing: "-0.5px", color: C.text, lineHeight: 1.1 }}>
-            {editId
-              ? (isHe ? "עריכת מודעה" : "Edit listing")
-              : type === "sell"
-              ? (isHe ? "מכירת כרטיסים" : "Sell tickets")
-              : (isHe ? "חיפוש כרטיסים" : "Looking to buy")}
+          <h1 style={{ fontFamily: isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-syne,'Syne',sans-serif)", fontSize: "clamp(26px,4vw,42px)", fontWeight: isHe ? 900 : 800, letterSpacing: isHe ? "-0.5px" : "0.02em", color: C.text, lineHeight: 1.1, marginBottom: 10 }}>
+            {editId ? (
+              isHe ? <><span style={{ color: accentColor }}>עריכת</span> מודעה</> : <><span style={{ color: accentColor }}>Edit</span> Listing</>
+            ) : league === "show" ? (
+              isHe ? <><span style={{ color: C.teal }}>פרסם</span> <span style={{ color: C.navy }}>הופעה</span></> : <><span style={{ color: C.teal }}>Post</span> <span style={{ color: C.navy }}>Show</span></>
+            ) : type === "sell" ? (
+              isHe ? <><span style={{ color: C.green }}>מכור</span> <span style={{ color: C.navy }}>כרטיסים</span></> : <><span style={{ color: C.green }}>Sell</span> <span style={{ color: C.navy }}>Tickets</span></>
+            ) : (
+              isHe ? <><span style={{ color: C.navy }}>חפש</span> <span style={{ color: accentColor }}>כרטיסים</span></> : <><span style={{ color: C.navy }}>Find</span> <span style={{ color: accentColor }}>Tickets</span></>
+            )}
           </h1>
-          <p style={{ fontSize: "13px", color: C.muted, marginTop: "8px", fontWeight: 300 }}>
+          <p style={{ fontSize: "13px", color: C.muted, fontWeight: 400, lineHeight: 1.7 }}>
             {editId ? t.updateListingDetails : t.postListingSubtitle}
           </p>
         </div>
@@ -374,17 +385,22 @@ function PostListingPageContent() {
               {!editId && (
                 <div>
                   <label style={lbl}>{isHe ? "לאיזה אירוע?" : "Which event?"}</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
                     {([
-                      ["wc",   "🌍", isHe ? "מונדיאל 2026"  : "World Cup 2026"],
-                      ["il",   "⚽", isHe ? "כדורגל ישראלי" : "Israeli Football"],
-                      ["show", "🎵", isHe ? "הופעות חיות"   : "Live Shows"],
-                    ] as [LeagueType, string, string][]).map(([v, icon, label]) => (
-                      <button key={v} type="button" onClick={() => setLeague(v)} style={{ padding: "13px 8px", fontSize: "12px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", background: league === v ? (v === "il" ? C.blue : v === "show" ? C.teal : C.usa) : "rgba(255,255,255,0.9)", color: league === v ? "#fff" : C.hint, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                        <span style={{ fontSize: "20px" }}>{icon}</span>
-                        <span style={{ fontSize: "11px" }}>{label}</span>
-                      </button>
-                    ))}
+                      ["wc",   "🌍", isHe ? "מונדיאל 2026"  : "World Cup 2026",   C.usa,  "33 משחקים · 16 ערים"],
+                      ["il",   "⚽", isHe ? "כדורגל ישראלי" : "Israeli Football", C.blue, "ליגת העל · גביע"],
+                      ["show", "🎵", isHe ? "הופעות חיות"   : "Live Shows",       C.teal, isHe ? "מאות אמנים" : "Hundreds of artists"],
+                    ] as [LeagueType, string, string, string, string][]).map(([v, icon, label, color, sub]) => {
+                      const active = league === v;
+                      return (
+                        <button key={v} type="button" onClick={() => setLeague(v)}
+                          style={{ padding: "14px 10px", fontSize: "12px", fontWeight: 700, border: `1.5px solid ${active ? color : C.border}`, borderRadius: "8px", cursor: "pointer", transition: "all 150ms", background: active ? `${color}10` : "rgba(255,255,255,0.9)", color: active ? color : C.muted, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textAlign: "center" as const }}>
+                          <span style={{ fontSize: "26px", lineHeight: 1 }}>{icon}</span>
+                          <span style={{ fontSize: "12px", fontWeight: 800, color: active ? color : C.text }}>{label}</span>
+                          <span style={{ fontSize: "10px", fontWeight: 400, color: C.hint, letterSpacing: ".01em" }}>{sub}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -401,29 +417,78 @@ function PostListingPageContent() {
                 </div>
               </div>
 
+</>}
               {/* ── SHOW FIELDS ── */}
               {league === "show" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {/* Artist */}
-                  <div>
+                  {/* Artist — with autocomplete */}
+                  <div style={{ position: "relative" }}>
                     <label style={lbl}>{isHe ? "אמן / להקה" : "Artist / Band"}</label>
-                    <select value={artistId} onChange={e => setArtistId(e.target.value)} style={{ ...inp, cursor: "pointer" }}>
-                      <option value="">{isHe ? "בחר אמן..." : "Select artist..."}</option>
-                      {artists.map(a => (
-                        <option key={a.id} value={a.id}>{isHe ? (a.name_he || a.name) : a.name}</option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      value={artistSearch}
+                      onChange={e => { setArtistSearch(e.target.value); setArtistId(""); setShowArtistDropdown(true); }}
+                      onFocus={() => setShowArtistDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowArtistDropdown(false), 150)}
+                      placeholder={isHe ? "הקלד שם אמן..." : "Type artist name..."}
+                      style={{ ...inp }}
+                      autoComplete="off"
+                    />
+                    {showArtistDropdown && artistSearch.length > 0 && (
+                      <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, background: "#fff", border: `1px solid ${C.border}`, borderRadius: "6px", maxHeight: 220, overflowY: "auto", boxShadow: "0 8px 24px rgba(13,27,62,.10)", marginTop: 2 }}>
+                        {artists.filter(a => {
+                          const q = artistSearch.toLowerCase();
+                          return (a.name_he || "").includes(artistSearch) || a.name.toLowerCase().includes(q);
+                        }).slice(0, 8).map(a => (
+                          <div key={a.id}
+                            onMouseDown={() => { setArtistId(a.id); setArtistSearch(isHe ? (a.name_he || a.name) : a.name); setShowArtistDropdown(false); }}
+                            style={{ padding: "10px 14px", fontSize: 13, color: C.text, cursor: "pointer", transition: "background 100ms", borderBottom: `1px solid ${C.border}` }}
+                            onMouseEnter={e => (e.currentTarget.style.background = C.bg)}
+                            onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                          >
+                            {isHe ? (a.name_he || a.name) : a.name}
+                          </div>
+                        ))}
+                        {artists.filter(a => {
+                          const q = artistSearch.toLowerCase();
+                          return (a.name_he || "").includes(artistSearch) || a.name.toLowerCase().includes(q);
+                        }).length === 0 && (
+                          <div style={{ padding: "10px 14px", fontSize: 12, color: C.hint }}>{isHe ? "לא נמצא" : "Not found"}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Venue */}
-                  <div>
-                    <label style={lbl}>{isHe ? "מקום ההופעה" : "Venue"}</label>
-                    <select value={venueId} onChange={e => setVenueId(e.target.value)} style={{ ...inp, cursor: "pointer" }}>
-                      <option value="">{isHe ? "בחר מקום..." : "Select venue..."}</option>
-                      {venues.map(v => (
-                        <option key={v.id} value={v.id}>{v.name}{v.city_he ? ` · ${isHe ? v.city_he : v.city}` : ""}</option>
-                      ))}
-                    </select>
+                  {/* Venue — with autocomplete */}
+                  <div style={{ position: "relative" }}>
+                    <label style={lbl}>{isHe ? "מקום ההופעה" : "Venue"} <span style={{ color: C.hint, fontWeight: 400, textTransform: "none", letterSpacing: 0, fontSize: 10 }}>{isHe ? "(אופציונלי)" : "(optional)"}</span></label>
+                    <input
+                      type="text"
+                      value={venueSearch}
+                      onChange={e => { setVenueSearch(e.target.value); setVenueId(""); setShowVenueDropdown(true); }}
+                      onFocus={() => setShowVenueDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowVenueDropdown(false), 150)}
+                      placeholder={isHe ? "הקלד מקום הופעה..." : "Type venue name..."}
+                      style={{ ...inp }}
+                      autoComplete="off"
+                    />
+                    {showVenueDropdown && venueSearch.length > 0 && (
+                      <div style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50, background: "#fff", border: `1px solid ${C.border}`, borderRadius: "6px", maxHeight: 220, overflowY: "auto", boxShadow: "0 8px 24px rgba(13,27,62,.10)", marginTop: 2 }}>
+                        {venues.filter(v => v.name.includes(venueSearch) || (v.city_he || "").includes(venueSearch) || (v.city || "").toLowerCase().includes(venueSearch.toLowerCase())).slice(0, 8).map(v => (
+                          <div key={v.id}
+                            onMouseDown={() => { setVenueId(v.id); setVenueSearch(`${v.name}${v.city_he ? " · " + (isHe ? v.city_he : v.city) : ""}`); setShowVenueDropdown(false); }}
+                            style={{ padding: "10px 14px", fontSize: 13, color: C.text, cursor: "pointer", transition: "background 100ms", borderBottom: `1px solid ${C.border}` }}
+                            onMouseEnter={e => (e.currentTarget.style.background = C.bg)}
+                            onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                          >
+                            {v.name}{v.city_he ? ` · ${isHe ? v.city_he : v.city}` : ""}
+                          </div>
+                        ))}
+                        {venues.filter(v => v.name.includes(venueSearch) || (v.city_he || "").includes(venueSearch)).length === 0 && (
+                          <div style={{ padding: "10px 14px", fontSize: 12, color: C.hint }}>{isHe ? "לא נמצא" : "Not found"}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Date + Time */}
@@ -462,7 +527,8 @@ function PostListingPageContent() {
                 </div>
               )}
 
-              {/* ── MATCH SELECTOR ── */}
+              {/* ── MATCH SELECTOR — only for wc/il ── */}
+              {league !== "show" && <>
               <div>
                 <label style={lbl}>{t.match}</label>
                 <select dir={isHe ? "rtl" : "ltr"} value={matchId} onChange={(e) => setMatchId(e.target.value)} disabled={loading} style={{ ...inp, cursor: "pointer" }}>
