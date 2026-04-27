@@ -224,7 +224,7 @@ function PostListingPageContent() {
 
   async function handleSubmit() {
     if (!acceptedTerms) { setShowTermsError(true); toast.error(isHe ? "יש לאשר את התנאים כדי לפרסם מודעה" : "You must accept the terms to publish a listing"); return; }
-    if (!matchId) { toast.error(t.selectMatchAlert); return; }
+    if (league !== "show" && !matchId) { toast.error(t.selectMatchAlert); return; }
     if (!price || Number(price) <= 0) { toast.error(t.validPriceAlert); return; }
     if (quantity <= 0) { toast.error(t.validQuantityAlert); return; }
 
