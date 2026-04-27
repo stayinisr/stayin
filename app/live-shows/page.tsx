@@ -89,7 +89,7 @@ export default function LiveShowsPage() {
       `}</style>
 
       {/* Top stripe */}
-      <div style={{ height: 3, background: `linear-gradient(90deg,${C.navy},${C.teal})` }} />
+      <div style={{ height: 3, background: "linear-gradient(90deg,#7c3aed,#e63946)" }} />
 
       {/* Hero — same pattern as WC page */}
       <div style={{ background: "linear-gradient(135deg,#eef4ff 0%,#fdf0f2 50%,#edfff8 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
@@ -104,31 +104,25 @@ export default function LiveShowsPage() {
         <div style={{ ...W, paddingTop: 44, paddingBottom: 40 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, marginBottom:22, ...smallCaps }}>
             <span style={{ display:"flex", gap:4 }}>
-              {[C.teal, C.navy, C.teal].map((c,i) => <span key={i} style={{ width:6, height:6, borderRadius:"50%", background:c, display:"inline-block" }} />)}
+              {["#7c3aed","#e63946","#7c3aed"].map((c,i) => <span key={i} style={{ width:6, height:6, borderRadius:"50%", background:c, display:"inline-block" }} />)}
             </span>
             {isHe ? "הופעות חיות · מרקטפלייס כרטיסים" : "Live Shows · Ticket Marketplace"}
           </div>
 
           <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:32, alignItems:"center" }}>
             <div>
-              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", color:C.teal, marginBottom:16 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
                 STAY IN THE GAME
               </div>
-              {isHe ? (
-                <h1 style={{ fontFamily:fHe, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:1, letterSpacing:"-.5px", marginBottom:16 }}>
-                  <span style={{ color:C.navy }}>כרטיסים</span> <span style={{ color:C.teal }}>להופעות</span><br />
-                  <span style={{ color:C.green }}>ללא </span><span style={{ color:C.navy }}>עמלות.</span>
-                </h1>
-              ) : (
-                <h1 style={{ fontFamily:fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:800, lineHeight:1, letterSpacing:".02em", marginBottom:16 }}>
-                  <span style={{ color:C.navy }}>LIVE</span> <span style={{ color:C.teal }}>SHOWS.</span><br />
-                  <span style={{ color:C.green }}>SKIP </span><span style={{ color:C.navy }}>THE FEES.</span>
-                </h1>
-              )}
+              <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:.95, letterSpacing:"-.5px", marginBottom:16,
+                background:"linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)",
+                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+                {isHe ? <>כרטיסים<br />להופעות.</> : <>Live<br />Shows.</>}
+              </h1>
               <p style={{ fontSize:14, fontWeight:400, color:C.muted, lineHeight:1.8, maxWidth:400, marginBottom:24 }}>
                 {isHe ? "כרטיסים להופעות בין אנשים, בלי עמלה. מצא כרטיס לאמן האהוב עליך." : "Tickets to live shows between people, no fees. Find tickets to your favorite artist."}
               </p>
-              <Link href="/post-listing?tab=show" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 22px", background:C.teal, color:"#fff", borderRadius:6, fontSize:13, fontWeight:700, textDecoration:"none", letterSpacing:".03em" }}>
+              <Link href="/post-listing?tab=show" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 22px", background:"linear-gradient(135deg,#7c3aed,#e63946)", color:"#fff", borderRadius:6, fontSize:13, fontWeight:700, textDecoration:"none", letterSpacing:".03em" }}>
                 🎵 {isHe ? "פרסם מודעה להופעה" : "Post show listing"}
               </Link>
             </div>
@@ -155,7 +149,7 @@ export default function LiveShowsPage() {
             const label = f === "all" ? (isHe?"הכל":"All") : f === "sell" ? (isHe?"מוכרים":"Selling") : (isHe?"מחפשים":"Buying");
             const active = filter === f;
             return (
-              <button key={f} onClick={() => setFilter(f)} style={{ padding:"5px 14px", fontSize:10, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", border:`1px solid ${active ? C.teal : C.border}`, color:active ? C.teal : C.hint, background:active ? "rgba(26,191,176,.06)" : C.white, cursor:"pointer", borderRadius:3, transition:"all 150ms", fontFamily:"var(--font-dm),sans-serif" }}>
+              <button key={f} onClick={() => setFilter(f)} style={{ padding:"5px 14px", fontSize:10, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", border:`1px solid ${active ? "#7c3aed" : C.border}`, color:active ? "#7c3aed" : C.hint, background:active ? "rgba(124,58,237,.06)" : C.white, cursor:"pointer", borderRadius:3, transition:"all 150ms", fontFamily:"var(--font-dm),sans-serif" }}>
                 {label}
               </button>
             );
