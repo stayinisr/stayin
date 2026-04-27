@@ -374,14 +374,15 @@ function PostListingPageContent() {
               {!editId && (
                 <div>
                   <label style={lbl}>{isHe ? "לאיזה אירוע?" : "Which event?"}</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1px", background: C.border, borderRadius: "6px", overflow: "hidden" }}>
                     {([
-                      ["wc",   "🌍", isHe ? "מונדיאל 2026"    : "World Cup 2026"],
-                      ["il",   "⚽", isHe ? "כדורגל ישראלי"   : "Israeli Football"],
-                      ["show", "🎵", isHe ? "הופעות חיות"     : "Live Shows"],
+                      ["wc",   "🌍", isHe ? "מונדיאל 2026"  : "World Cup 2026"],
+                      ["il",   "⚽", isHe ? "כדורגל ישראלי" : "Israeli Football"],
+                      ["show", "🎵", isHe ? "הופעות חיות"   : "Live Shows"],
                     ] as [LeagueType, string, string][]).map(([v, icon, label]) => (
-                      <button key={v} type="button" onClick={() => setLeague(v)} style={{ padding: "11px", fontSize: "12px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", background: league === v ? (v === "il" ? C.blue : v === "show" ? C.teal : C.usa) : "rgba(255,255,255,0.9)", color: league === v ? "#fff" : C.hint }}>
-                        {icon} {label}
+                      <button key={v} type="button" onClick={() => setLeague(v)} style={{ padding: "13px 8px", fontSize: "12px", fontWeight: 700, border: "none", cursor: "pointer", transition: "all 150ms", background: league === v ? (v === "il" ? C.blue : v === "show" ? C.teal : C.usa) : "rgba(255,255,255,0.9)", color: league === v ? "#fff" : C.hint, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                        <span style={{ fontSize: "20px" }}>{icon}</span>
+                        <span style={{ fontSize: "11px" }}>{label}</span>
                       </button>
                     ))}
                   </div>

@@ -1,15 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 
+// ── Design tokens (same as rest of site) ────────────────────────────────────
 const C = {
-  text: "#0d1b3e", navy: "#1a3a8f", teal: "#1abfb0",
-  muted: "#64748b", hint: "#94a3b8", border: "#e8edf5",
-  bg: "#f8f9fc",
+  text:   "#0d1b3e",
+  navy:   "#1a3a8f",
+  red:    "#e63946",
+  green:  "#006847",
+  teal:   "#1abfb0",
+  muted:  "#64748b",
+  hint:   "#94a3b8",
+  border: "#e8edf5",
+  bg:     "#f8f9fc",
+  white:  "#ffffff",
 };
+const W = { maxWidth: "1000px", margin: "0 auto", padding: "0 16px", width: "100%", boxSizing: "border-box" as const };
 
 type Artist = {
   id: string;
@@ -22,16 +31,17 @@ type Artist = {
 export default function LiveShowsPage() {
   const { lang } = useLanguage();
   const isHe = lang === "he";
-  const fBody = isHe ? "var(--font-he,'Heebo',sans-serif)" : "var(--font-dm,'DM Sans',sans-serif)";
+  const fHe   = "var(--font-he,'Heebo',sans-serif)";
   const fSyne = "var(--font-syne,'Syne',sans-serif)";
+  const fBody = isHe ? fHe : "var(--font-dm,'DM Sans',sans-serif)";
 
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [artists,  setArtists]  = useState<Artist[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [filter,   setFilter]   = useState<"all"|"sell"|"buy">("all");
 
   useEffect(() => {
     async function load() {
-      // Get all active show_listings with artist info
       const { data } = await supabase
         .from("show_listings")
         .select("artist_id, type, artists(id, name, name_he)")
@@ -40,142 +50,186 @@ export default function LiveShowsPage() {
 
       if (!data) { setLoading(false); return; }
 
-      // Group by artist
       const map = new Map<string, Artist>();
       for (const row of data) {
         const a = row.artists as any;
         if (!a) continue;
-        if (!map.has(a.id)) {
-          map.set(a.id, { id: a.id, name: a.name, name_he: a.name_he, sell_count: 0, buy_count: 0 });
-        }
-        const entry = map.get(a.id)!;
-        if (row.type === "sell") entry.sell_count++;
-        else entry.buy_count++;
+        if (!map.has(a.id)) map.set(a.id, { id: a.id, name: a.name, name_he: a.name_he, sell_count: 0, buy_count: 0 });
+        const e = map.get(a.id)!;
+        if (row.type === "sell") e.sell_count++; else e.buy_count++;
       }
 
       setArtists(Array.from(map.values()).sort((a, b) =>
-        (isHe ? (a.name_he || a.name) : a.name).localeCompare(isHe ? (b.name_he || b.name) : b.name)
+        (isHe ? (a.name_he || a.name) : a.name).localeCompare(isHe ? (b.name_he || b.name) : b.name, isHe ? "he" : "en")
       ));
       setLoading(false);
     }
     load();
   }, [isHe]);
 
-  const filtered = artists.filter(a => {
-    const q = search.toLowerCase();
-    return !q || a.name.toLowerCase().includes(q) || (a.name_he || "").includes(q);
-  });
+  const filtered = useMemo(() => {
+    return artists.filter(a => {
+      const q = search.toLowerCase();
+      if (q && !a.name.toLowerCase().includes(q) && !(a.name_he || "").includes(q)) return false;
+      if (filter === "sell" && a.sell_count === 0) return false;
+      if (filter === "buy"  && a.buy_count  === 0) return false;
+      return true;
+    });
+  }, [artists, search, filter]);
+
+  const smallCaps = { fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: C.hint } as React.CSSProperties;
 
   return (
-    <main style={{ minHeight: "100vh", fontFamily: fBody }}>
+    <main style={{ background: C.bg, minHeight: "100vh", color: C.text, fontFamily: fBody }}>
+      <style>{`
+        @keyframes shi{from{background-position:-600px 0}to{background-position:600px 0}}
+        .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:4px;}
+        .artist-card:hover{box-shadow:0 4px 20px rgba(13,27,62,.10)!important;transform:translateY(-1px)}
+        .artist-card{transition:box-shadow 150ms,transform 150ms}
+      `}</style>
+
       {/* Top stripe */}
       <div style={{ height: 3, background: `linear-gradient(90deg,${C.navy},${C.teal})` }} />
 
-      {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg,#eef2ff 0%,#fdf0f2 52%,#edfff8 100%)", padding: "48px 16px 40px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", width: 500, height: 500, top: -200, right: -100, borderRadius: "50%", background: "radial-gradient(circle,rgba(26,191,176,.08),transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".2em", textTransform: "uppercase", color: C.teal, marginBottom: 10 }}>STAYIN · LIVE SHOWS</div>
-          <h1 style={{ fontFamily: fSyne, fontSize: "clamp(26px,4vw,42px)", fontWeight: 800, color: C.text, letterSpacing: "-.5px", marginBottom: 10 }}>
-            {isHe ? "🎵 הופעות חיות" : "🎵 Live Shows"}
-          </h1>
-          <p style={{ fontSize: 14, color: C.muted, maxWidth: 500, lineHeight: 1.6 }}>
-            {isHe
-              ? "כרטיסים להופעות בין אנשים, בלי עמלה. מצא כרטיס לאמן האהוב עליך."
-              : "Tickets to live shows between people, no fees. Find tickets to your favorite artist."}
-          </p>
+      {/* Hero — same pattern as WC page */}
+      <div style={{ background: "linear-gradient(135deg,#eef4ff 0%,#fdf0f2 50%,#edfff8 100%)", borderBottom: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+        {[
+          { w:380, t:-100, r:-60,  c:"rgba(26,191,176,.07)"  },
+          { w:300, b:-80,  l:-40,  c:"rgba(26,58,143,.05)"   },
+          { w:240, t:30,   r:"28%",c:"rgba(0,104,71,.04)"    },
+        ].map((b,i) => (
+          <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" }} />
+        ))}
 
-          <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
-            {/* Search */}
+        <div style={{ ...W, paddingTop: 44, paddingBottom: 40 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, marginBottom:22, ...smallCaps }}>
+            <span style={{ display:"flex", gap:4 }}>
+              {[C.teal, C.navy, C.teal].map((c,i) => <span key={i} style={{ width:6, height:6, borderRadius:"50%", background:c, display:"inline-block" }} />)}
+            </span>
+            {isHe ? "הופעות חיות · מרקטפלייס כרטיסים" : "Live Shows · Ticket Marketplace"}
+          </div>
+
+          <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:32, alignItems:"center" }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", color:C.teal, marginBottom:16 }}>
+                STAY IN THE GAME
+              </div>
+              {isHe ? (
+                <h1 style={{ fontFamily:fHe, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:1, letterSpacing:"-.5px", marginBottom:16 }}>
+                  <span style={{ color:C.navy }}>כרטיסים</span> <span style={{ color:C.teal }}>להופעות</span><br />
+                  <span style={{ color:C.green }}>ללא </span><span style={{ color:C.navy }}>עמלות.</span>
+                </h1>
+              ) : (
+                <h1 style={{ fontFamily:fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:800, lineHeight:1, letterSpacing:".02em", marginBottom:16 }}>
+                  <span style={{ color:C.navy }}>LIVE</span> <span style={{ color:C.teal }}>SHOWS.</span><br />
+                  <span style={{ color:C.green }}>SKIP </span><span style={{ color:C.navy }}>THE FEES.</span>
+                </h1>
+              )}
+              <p style={{ fontSize:14, fontWeight:400, color:C.muted, lineHeight:1.8, maxWidth:400, marginBottom:24 }}>
+                {isHe ? "כרטיסים להופעות בין אנשים, בלי עמלה. מצא כרטיס לאמן האהוב עליך." : "Tickets to live shows between people, no fees. Find tickets to your favorite artist."}
+              </p>
+              <Link href="/post-listing?tab=show" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 22px", background:C.teal, color:"#fff", borderRadius:6, fontSize:13, fontWeight:700, textDecoration:"none", letterSpacing:".03em" }}>
+                🎵 {isHe ? "פרסם מודעה להופעה" : "Post show listing"}
+              </Link>
+            </div>
+            <div style={{ fontSize:80, lineHeight:1, opacity:.15, userSelect:"none" }}>🎵</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters bar */}
+      <div style={{ borderBottom:`1px solid ${C.border}`, background:C.white }}>
+        <div style={{ ...W, paddingTop:14, paddingBottom:14, display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+          {/* Search */}
+          <div style={{ position:"relative", flexShrink:0 }}>
+            <span style={{ position:"absolute", right:isHe?10:undefined, left:isHe?undefined:10, top:"50%", transform:"translateY(-50%)", color:C.hint, fontSize:13 }}>🔍</span>
             <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+              type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder={isHe ? "חפש אמן..." : "Search artist..."}
-              style={{ padding: "11px 16px", borderRadius: 8, border: `1px solid ${C.border}`, fontSize: 13, color: C.text, outline: "none", background: "rgba(255,255,255,.9)", width: 260, fontFamily: fBody }}
+              style={{ padding: isHe?"8px 32px 8px 12px":"8px 12px 8px 32px", borderRadius:4, border:`1px solid ${C.border}`, fontSize:12, color:C.text, outline:"none", background:C.white, width:200, fontFamily:fBody }}
             />
-            <Link
-              href="/post-listing?tab=show"
-              style={{ padding: "11px 20px", background: C.teal, color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-            >
-              + {isHe ? "פרסם מודעה" : "Post listing"}
-            </Link>
+          </div>
+
+          {/* Type filter */}
+          {(["all","sell","buy"] as const).map(f => {
+            const label = f === "all" ? (isHe?"הכל":"All") : f === "sell" ? (isHe?"מוכרים":"Selling") : (isHe?"מחפשים":"Buying");
+            const active = filter === f;
+            return (
+              <button key={f} onClick={() => setFilter(f)} style={{ padding:"5px 14px", fontSize:10, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", border:`1px solid ${active ? C.teal : C.border}`, color:active ? C.teal : C.hint, background:active ? "rgba(26,191,176,.06)" : C.white, cursor:"pointer", borderRadius:3, transition:"all 150ms", fontFamily:"var(--font-dm),sans-serif" }}>
+                {label}
+              </button>
+            );
+          })}
+
+          <div style={{ marginRight:"auto", fontSize:12, color:C.hint }}>
+            {!loading && `${filtered.length} ${isHe?"אמנים":"artists"}`}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 16px" }}>
-
+      <div style={{ ...W, paddingTop:28, paddingBottom:48 }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: 60, color: C.hint, fontSize: 14 }}>
-            {isHe ? "טוען..." : "Loading..."}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:12 }}>
+            {Array.from({length:8}).map((_,i) => (
+              <div key={i} style={{ height:76, borderRadius:8, border:`1px solid ${C.border}`, background:C.white, display:"flex", alignItems:"center", gap:14, padding:"0 16px" }}>
+                <div className="sk" style={{ width:40, height:40, borderRadius:10 }} />
+                <div style={{ flex:1, display:"flex", flexDirection:"column", gap:8 }}>
+                  <div className="sk" style={{ height:14, width:"60%" }} />
+                  <div className="sk" style={{ height:10, width:"40%" }} />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 60 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🎵</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 8 }}>
-              {search ? (isHe ? "לא נמצאו תוצאות" : "No results found") : (isHe ? "אין מודעות עדיין" : "No listings yet")}
+          <div style={{ textAlign:"center", padding:"80px 0" }}>
+            <div style={{ fontSize:48, marginBottom:16 }}>🎵</div>
+            <div style={{ fontSize:16, fontWeight:700, color:C.text, marginBottom:8 }}>
+              {search ? (isHe?"לא נמצאו תוצאות":"No results") : (isHe?"אין מודעות עדיין":"No listings yet")}
             </div>
-            <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>
-              {isHe ? "היה הראשון לפרסם מודעה להופעה!" : "Be the first to post a show listing!"}
+            <div style={{ fontSize:13, color:C.muted, marginBottom:24 }}>
+              {isHe?"היה הראשון לפרסם מודעה להופעה!":"Be the first to post a show listing!"}
             </div>
-            <Link href="/post-listing?tab=show" style={{ padding: "10px 20px", background: C.teal, color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-              {isHe ? "פרסם מודעה" : "Post listing"}
+            <Link href="/post-listing?tab=show" style={{ display:"inline-flex", padding:"10px 20px", background:C.teal, color:"#fff", borderRadius:6, fontSize:13, fontWeight:700, textDecoration:"none" }}>
+              {isHe?"פרסם מודעה":"Post listing"}
             </Link>
           </div>
         ) : (
-          <>
-            <div style={{ fontSize: 12, color: C.hint, marginBottom: 20, fontWeight: 600 }}>
-              {filtered.length} {isHe ? "אמנים עם מודעות פעילות" : "artists with active listings"}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
-              {filtered.map(artist => {
-                const displayName = isHe ? (artist.name_he || artist.name) : artist.name;
-                const total = artist.sell_count + artist.buy_count;
-                return (
-                  <Link
-                    key={artist.id}
-                    href={`/live-shows/${artist.id}`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <div
-                      style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, transition: "all 150ms", boxShadow: "0 1px 4px rgba(13,27,62,.04)", cursor: "pointer" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(13,27,62,.1)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(13,27,62,.04)"; (e.currentTarget as HTMLElement).style.transform = "none"; }}
-                    >
-                      {/* Artist icon */}
-                      <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg,${C.navy},${C.teal})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
-                        🎵
-                      </div>
-
-                      {/* Name + counts */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {displayName}
-                        </div>
-                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          {artist.sell_count > 0 && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(0,104,71,.08)", color: "#006847", border: "1px solid rgba(0,104,71,.15)" }}>
-                              {artist.sell_count} {isHe ? "מוכרים" : "selling"}
-                            </span>
-                          )}
-                          {artist.buy_count > 0 && (
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(26,58,143,.08)", color: C.navy, border: "1px solid rgba(26,58,143,.15)" }}>
-                              {artist.buy_count} {isHe ? "מחפשים" : "buying"}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Arrow */}
-                      <div style={{ fontSize: 18, color: C.hint, flexShrink: 0 }}>{isHe ? "←" : "→"}</div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))", gap:10 }}>
+            {filtered.map(artist => {
+              const name = isHe ? (artist.name_he || artist.name) : artist.name;
+              return (
+                <Link key={artist.id} href={`/live-shows/${artist.id}`} style={{ textDecoration:"none" }}>
+                  <div className="artist-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", display:"flex", alignItems:"center", gap:12, boxShadow:"0 1px 3px rgba(13,27,62,.04)" }}>
+                    {/* Icon */}
+                    <div style={{ width:42, height:42, borderRadius:10, background:`linear-gradient(135deg,${C.navy},${C.teal})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
+                      🎵
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </>
+                    {/* Name + badges */}
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        {name}
+                      </div>
+                      <div style={{ display:"flex", gap:5 }}>
+                        {artist.sell_count > 0 && (
+                          <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:2, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                            {artist.sell_count} {isHe?"מוכרים":"selling"}
+                          </span>
+                        )}
+                        {artist.buy_count > 0 && (
+                          <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:2, background:"rgba(26,58,143,.07)", color:C.navy, border:"1px solid rgba(26,58,143,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                            {artist.buy_count} {isHe?"מחפשים":"buying"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Arrow */}
+                    <div style={{ fontSize:14, color:C.hint, flexShrink:0 }}>{isHe?"←":"→"}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         )}
       </div>
     </main>
