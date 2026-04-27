@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <footer style={{ background: C.text, marginTop: 48 }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
+      <div className="footer-inner" style={{ maxWidth: "1100px", margin: "0 auto", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" as const, gap: 12 }}>
 
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -100,8 +100,9 @@ export default function Footer() {
 
       <style>{`
         @media(max-width:640px){
-          .footer-links{flex-wrap:wrap!important;justify-content:center!important;gap:12px!important}
-          .footer-social{justify-content:center!important}
+          .footer-inner{flex-direction:column!important;align-items:center!important;text-align:center;gap:16px!important;padding:18px 16px!important}
+          .footer-links{flex-wrap:wrap!important;justify-content:center!important;gap:10px!important}
+          .footer-social{justify-content:center!important;width:100%!important}
         }
       `}</style>
     </footer>

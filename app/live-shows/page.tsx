@@ -195,36 +195,47 @@ export default function LiveShowsPage() {
             </Link>
           </div>
         ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))", gap:10 }}>
-            {filtered.map(artist => {
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:14 }}>
+            {filtered.map((artist, idx) => {
               const name = isHe ? (artist.name_he || artist.name) : artist.name;
+              const gradients = [
+                `linear-gradient(135deg,#1a3a8f,#1abfb0)`,
+                `linear-gradient(135deg,#006847,#1abfb0)`,
+                `linear-gradient(135deg,#e63946,#1a3a8f)`,
+                `linear-gradient(135deg,#7c3aed,#1abfb0)`,
+                `linear-gradient(135deg,#d4a017,#e63946)`,
+                `linear-gradient(135deg,#1a3a8f,#006847)`,
+              ];
+              const grad = gradients[idx % gradients.length];
+              const total = artist.sell_count + artist.buy_count;
               return (
                 <Link key={artist.id} href={`/live-shows/${artist.id}`} style={{ textDecoration:"none" }}>
-                  <div className="artist-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:8, padding:"14px 16px", display:"flex", alignItems:"center", gap:12, boxShadow:"0 1px 3px rgba(13,27,62,.04)" }}>
-                    {/* Icon */}
-                    <div style={{ width:42, height:42, borderRadius:10, background:`linear-gradient(135deg,${C.navy},${C.teal})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
-                      🎵
-                    </div>
-                    {/* Name + badges */}
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                  <div className="artist-card" style={{ borderRadius:14, overflow:"hidden", boxShadow:"0 2px 8px rgba(13,27,62,.08)", position:"relative" }}>
+                    {/* Colored header */}
+                    <div style={{ background:grad, padding:"20px 18px 16px", position:"relative", overflow:"hidden" }}>
+                      <div style={{ position:"absolute", width:120, height:120, top:-40, right:-30, borderRadius:"50%", background:"rgba(255,255,255,.08)", pointerEvents:"none" }} />
+                      <div style={{ position:"absolute", width:80, height:80, bottom:-30, left:-20, borderRadius:"50%", background:"rgba(255,255,255,.06)", pointerEvents:"none" }} />
+                      <div style={{ fontSize:32, marginBottom:10 }}>🎵</div>
+                      <div style={{ fontSize:16, fontWeight:900, color:"#fff", letterSpacing:"-.3px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
                         {name}
                       </div>
+                    </div>
+                    {/* White footer */}
+                    <div style={{ background:C.white, padding:"12px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:"1px solid rgba(13,27,62,.04)" }}>
                       <div style={{ display:"flex", gap:5 }}>
                         {artist.sell_count > 0 && (
-                          <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:2, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                          <span style={{ fontSize:9, fontWeight:800, padding:"2px 8px", borderRadius:999, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
                             {artist.sell_count} {isHe?"מוכרים":"selling"}
                           </span>
                         )}
                         {artist.buy_count > 0 && (
-                          <span style={{ fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:2, background:"rgba(26,58,143,.07)", color:C.navy, border:"1px solid rgba(26,58,143,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
+                          <span style={{ fontSize:9, fontWeight:800, padding:"2px 8px", borderRadius:999, background:"rgba(26,58,143,.07)", color:C.navy, border:"1px solid rgba(26,58,143,.15)", letterSpacing:".05em", textTransform:"uppercase" }}>
                             {artist.buy_count} {isHe?"מחפשים":"buying"}
                           </span>
                         )}
                       </div>
+                      <span style={{ fontSize:12, color:C.hint }}>{isHe?"←":"→"}</span>
                     </div>
-                    {/* Arrow */}
-                    <div style={{ fontSize:14, color:C.hint, flexShrink:0 }}>{isHe?"←":"→"}</div>
                   </div>
                 </Link>
               );

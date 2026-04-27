@@ -33,7 +33,9 @@ type ShowListing = {
   notes: string | null;
   show_date: string | null;
   show_time: string | null;
+  user_id: string | null;
   venues: { name: string; city: string | null; city_he: string | null } | null;
+  profiles: { full_name: string | null; phone: string | null; country: string | null } | null;
   created_at: string;
 };
 
@@ -72,7 +74,7 @@ export default function ArtistShowPage() {
       const [{ data: a }, { data: l }] = await Promise.all([
         supabase.from("artists").select("id,name,name_he").eq("id", artistId).maybeSingle(),
         supabase.from("show_listings")
-          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,created_at,venues(name,city,city_he)")
+          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,user_id,created_at,venues(name,city,city_he),profiles(full_name,phone,country)")
           .eq("artist_id", artistId).eq("status","active").gt("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false }),
       ]);
@@ -181,22 +183,20 @@ export default function ArtistShowPage() {
               const time = formatTime(l.show_time);
               const tt   = ttLabel(l.ticket_type, l.ticket_type_custom, isHe);
               return (
-                <div key={l.id} className="listing-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:8, overflow:"hidden", boxShadow:"0 1px 3px rgba(13,27,62,.04)" }}>
+                <div key={l.id} className="listing-card" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden", boxShadow:"0 2px 8px rgba(13,27,62,.06)" }}>
                   <div style={{ height:3, background: isSell ? `linear-gradient(90deg,${C.green},${C.teal})` : `linear-gradient(90deg,${C.navy},#6366f1)` }} />
                   <div style={{ padding:"16px 18px" }}>
                     <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
 
                       {/* Left */}
                       <div style={{ flex:1, minWidth:180 }}>
-                        {/* Badges */}
                         <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
-                          <span style={{ fontSize:9, fontWeight:800, padding:"3px 8px", borderRadius:2, background:isSell?"rgba(0,104,71,.07)":"rgba(26,58,143,.07)", color:isSell?C.green:C.navy, border:`1px solid ${isSell?"rgba(0,104,71,.2)":"rgba(26,58,143,.18)"}`, letterSpacing:".06em", textTransform:"uppercase" }}>
+                          <span style={{ fontSize:9, fontWeight:800, padding:"3px 8px", borderRadius:999, background:isSell?"rgba(0,104,71,.07)":"rgba(26,58,143,.07)", color:isSell?C.green:C.navy, border:`1px solid ${isSell?"rgba(0,104,71,.2)":"rgba(26,58,143,.18)"}`, letterSpacing:".06em", textTransform:"uppercase" }}>
                             {isSell ? (isHe?"מכירה":"Sell") : (isHe?"קנייה":"Buy")}
                           </span>
-                          {tt && <span style={{ fontSize:9, fontWeight:600, padding:"3px 8px", borderRadius:2, background:C.bg, color:C.muted, border:`1px solid ${C.border}`, letterSpacing:".04em" }}>{tt}</span>}
+                          {tt && <span style={{ fontSize:9, fontWeight:600, padding:"3px 8px", borderRadius:999, background:C.bg, color:C.muted, border:`1px solid ${C.border}` }}>{tt}</span>}
                         </div>
 
-                        {/* Venue + date */}
                         {(venueName || date) && (
                           <div style={{ fontSize:12, color:C.muted, marginBottom:8, fontWeight:500 }}>
                             {venueName && <span>📍 {venueName}{venueCity?` · ${venueCity}`:""}</span>}
@@ -204,18 +204,28 @@ export default function ArtistShowPage() {
                           </div>
                         )}
 
-                        {/* Seat details */}
                         {(l.seats_row || l.seats_numbers || l.seated_together === "yes") && (
                           <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:8 }}>
-                            {l.seats_row && <span style={{ fontSize:10, padding:"2px 7px", background:C.bg, borderRadius:3, color:C.muted, fontWeight:600, border:`1px solid ${C.border}` }}>{isHe?"שורה":"Row"} {l.seats_row}</span>}
-                            {l.seats_numbers && <span style={{ fontSize:10, padding:"2px 7px", background:C.bg, borderRadius:3, color:C.muted, fontWeight:600, border:`1px solid ${C.border}` }}>{l.seats_numbers}</span>}
-                            {l.seated_together==="yes" && <span style={{ fontSize:10, padding:"2px 7px", background:"rgba(0,104,71,.06)", borderRadius:3, color:C.green, fontWeight:700, border:"1px solid rgba(0,104,71,.15)" }}>✓ {isHe?"יחד":"Together"}</span>}
+                            {l.seats_row && <span style={{ fontSize:10, padding:"2px 7px", background:C.bg, borderRadius:999, color:C.muted, fontWeight:600, border:`1px solid ${C.border}` }}>{isHe?"שורה":"Row"} {l.seats_row}</span>}
+                            {l.seats_numbers && <span style={{ fontSize:10, padding:"2px 7px", background:C.bg, borderRadius:999, color:C.muted, fontWeight:600, border:`1px solid ${C.border}` }}>{l.seats_numbers}</span>}
+                            {l.seated_together==="yes" && <span style={{ fontSize:10, padding:"2px 7px", background:"rgba(0,104,71,.06)", borderRadius:999, color:C.green, fontWeight:700, border:"1px solid rgba(0,104,71,.15)" }}>✓ {isHe?"יחד":"Together"}</span>}
                           </div>
                         )}
 
                         {l.notes && (
-                          <div style={{ fontSize:12, color:C.hint, fontStyle:"italic", borderRight:`2px solid ${C.teal}`, paddingRight:10, lineHeight:1.5 }}>
+                          <div style={{ fontSize:12, color:C.hint, fontStyle:"italic", borderRight:`2px solid ${C.teal}`, paddingRight:10, lineHeight:1.5, marginTop:6 }}>
                             "{l.notes}"
+                          </div>
+                        )}
+
+                        {/* Seller */}
+                        {(l.profiles as any)?.full_name && (
+                          <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:10, fontSize:11, color:C.hint }}>
+                            <span style={{ width:20, height:20, borderRadius:"50%", background:C.navy, color:"#fff", display:"inline-flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, flexShrink:0 }}>
+                              {(l.profiles as any).full_name[0]}
+                            </span>
+                            {(l.profiles as any).full_name}
+                            {(l.profiles as any).country && ` · ${(l.profiles as any).country}`}
                           </div>
                         )}
                       </div>
@@ -223,19 +233,32 @@ export default function ArtistShowPage() {
                       {/* Right */}
                       <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:8, flexShrink:0 }}>
                         {l.price ? (
-                          <div>
-                            <div style={{ fontSize:24, fontWeight:900, color:C.text, letterSpacing:"-.5px", lineHeight:1 }}>
-                              ₪{l.price.toLocaleString()}
-                            </div>
-                            <div style={{ fontSize:10, color:C.hint, marginTop:3, textAlign:"left" }}>
-                              × {l.quantity||1} {isHe?"כרטיסים":"tickets"}
-                            </div>
+                          <div style={{ textAlign:"left" }}>
+                            <div style={{ fontSize:26, fontWeight:900, color:C.text, letterSpacing:"-.5px", lineHeight:1 }}>₪{l.price.toLocaleString()}</div>
+                            <div style={{ fontSize:10, color:C.hint, marginTop:3 }}>× {l.quantity||1} {isHe?"כרטיסים":"tickets"}</div>
                           </div>
                         ) : (
                           <div style={{ fontSize:13, color:C.hint }}>{isHe?"מחיר גמיש":"Flexible"}</div>
                         )}
 
-          
+                        {/* WhatsApp button */}
+                        {(l.profiles as any)?.phone && (
+                          <a
+                            href={`https://wa.me/${((l.profiles as any).phone as string).replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך להופעה ב-Stayin` : `Hi, I saw your show listing on Stayin`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ display:"flex", alignItems:"center", gap:6, padding:"9px 16px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
+                          >
+                            💬 WhatsApp
+                          </a>
+                        )}
+
+                        {/* Report */}
+                        <a
+                          href={`/contact?type=report&listingId=${l.id}&section=show`}
+                          style={{ fontSize:10, color:C.hint, textDecoration:"none", padding:"4px 10px", borderRadius:4, border:`1px solid ${C.border}`, background:C.bg, fontWeight:600 }}
+                        >
+                          🚩 {isHe?"דווח":"Report"}
+                        </a>
                       </div>
                     </div>
                   </div>

@@ -1190,6 +1190,16 @@ export default function MyListingsPage() {
                       <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const }}>
                         👁 {isHe ? "צפה" : "View"}
                       </a>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?")) return;
+                          await supabase.from("show_listings").update({ status: "archived" }).eq("id", sl.id);
+                          setShowListings(prev => prev.filter((x: any) => x.id !== sl.id));
+                        }}
+                        style={{ fontSize: 11, color: C.canada, background: "rgba(230,57,70,.06)", border: "1px solid rgba(230,57,70,.2)", borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}
+                      >
+                        🗑 {isHe ? "מחק" : "Delete"}
+                      </button>
                     </div>
                   </div>
                 </div>
