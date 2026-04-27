@@ -1221,9 +1221,38 @@ export default function MyListingsPage() {
                     </div>
                     {/* Action buttons */}
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+                      {/* Edit */}
+                      <a href={`/post-listing?tab=show&showListingId=${sl.id}`} style={{ fontSize: 11, color: C.muted, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const, background: "#fff" }}>
+                        ✏️ {isHe ? "ערוך" : "Edit"}
+                      </a>
+
+                      {/* Gold */}
+                      {sl.is_featured ? (
+                        <button onClick={async () => {
+                          await supabase.from("show_listings").update({ is_featured: false }).eq("id", sl.id);
+                          setShowListings(prev => prev.map((x: any) => x.id === sl.id ? { ...x, is_featured: false } : x));
+                        }} style={{ fontSize: 11, color: C.muted, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
+                          {isHe ? "הסר Gold" : "Remove Gold"}
+                        </button>
+                      ) : (
+                        <button onClick={async () => {
+                          const maxFeat = getPlanLimits(plan).max_featured;
+                          const showFeatCount = showListings.filter((x: any) => x.is_featured).length;
+                          if (showFeatCount >= maxFeat) { toast.warning(isHe ? `מקסימום ${maxFeat} מודעות Gold` : `Max ${maxFeat} featured`); return; }
+                          await supabase.from("show_listings").update({ is_featured: true, first_featured_at: new Date().toISOString() }).eq("id", sl.id);
+                          setShowListings(prev => prev.map((x: any) => x.id === sl.id ? { ...x, is_featured: true } : x));
+                          toast.success(isHe ? "מודעה הפכה למוזהבת ⭐" : "Listing is now gold ⭐");
+                        }} style={{ fontSize: 11, color: C.gold, background: `rgba(212,160,23,.08)`, border: `1px solid rgba(212,160,23,.3)`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const, fontWeight: 700 }}>
+                          ⭐ Gold
+                        </button>
+                      )}
+
+                      {/* View */}
                       <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const }}>
                         👁 {isHe ? "צפה" : "View"}
                       </a>
+
+                      {/* Close / Renew */}
                       {isActive ? (
                         <button onClick={() => handleShowClose(sl.id)} style={{ fontSize: 11, color: C.muted, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
                           {isHe ? "סגור" : "Close"}
@@ -1233,6 +1262,8 @@ export default function MyListingsPage() {
                           {isHe ? "חדש 7 ימים" : "Renew 7d"}
                         </button>
                       )}
+
+                      {/* Delete */}
                       <button onClick={() => handleShowDelete(sl.id)} style={{ fontSize: 11, color: C.canada, background: "rgba(230,57,70,.06)", border: "1px solid rgba(230,57,70,.2)", borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
                         🗑 {isHe ? "מחק" : "Delete"}
                       </button>
