@@ -49,7 +49,7 @@ type Props = {
 };
 
 const SITE_URL = "stayin.co.il";
-const fCondensed = "'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif";
+const fCondensed = "'Righteous', 'Nunito', sans-serif";
 const LOGO_SRC = "/stayin-share-logo.png";
 const CUP_SRC = "/stayin-cup-icon.png";
 const STADIUM_SRC = "/stayin-stadium-icon.png";
@@ -148,10 +148,10 @@ function useModalLayout(open: boolean) {
 
   useEffect(() => {
     setMounted(true);
-    if (!document.querySelector('link[href*="Bebas+Neue"]')) {
+    if (!document.querySelector('link[href*="Righteous"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap";
+      link.href = "https://fonts.googleapis.com/css2?family=Righteous&display=swap";
       document.head.appendChild(link);
     }
   }, []);
@@ -209,7 +209,11 @@ async function waitForImages(element: HTMLElement) {
     })
   );
 
-  await new Promise<void>((resolve) => setTimeout(resolve, 260));
+  // Wait for fonts
+  if (typeof document !== "undefined" && document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+  await new Promise<void>((resolve) => setTimeout(resolve, 500));
 }
 
 function fitFont(textValue: string, base: number, mediumAt: number, smallAt: number, min = 24) {
@@ -413,7 +417,7 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
           {matchNumber !== EMPTY && (
             <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 0, flex: 1, justifyContent: "center" }}>
               {/* MATCH label */}
-              <div style={{ fontFamily: fCondensed, fontSize: 26, fontWeight: 700, letterSpacing: ".45em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.5)", marginBottom: 4 }}>MATCH</div>
+              <div style={{ fontFamily: fCondensed, fontSize: 28, fontWeight: 400, letterSpacing: ".5em", textTransform: "uppercase" as const, color: "rgba(255,255,255,.82)" }}>MATCH</div>
               {/* Thin line above number */}
               <div style={{ width: 70, height: 1.5, background: "rgba(255,255,255,.25)", marginBottom: 8 }} />
               {/* BIG NUMBER */}
@@ -423,15 +427,15 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
                 fontWeight: 400,
                 letterSpacing: "-.02em",
                 lineHeight: .82,
-                background: "linear-gradient(175deg,#ffffff 0%,#7df9e8 35%,#1abfb0 65%,#0891b2 100%)",
+                background: "linear-gradient(180deg,#ffffff 0%,#ffffff 5%,#a8f0e8 18%,#1abfb0 32%,#ffffff 50%,#0ea5a0 68%,#a8f0e8 82%,#ffffff 95%,#ffffff 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
                 display: "inline-block",
-                transform: "scaleX(1.08)",
+                transform: "scaleX(1.06)",
                 transformOrigin: "center",
                 textShadow: "none",
-                filter: "drop-shadow(0 4px 24px rgba(26,191,176,.5))",
+                filter: "drop-shadow(0 0 2px rgba(26,191,176,.8)) drop-shadow(0 0 6px rgba(26,191,176,.4))",
               }}>
                 {(matchNumber ?? "").replace("#", "")}
               </div>
@@ -443,9 +447,12 @@ function CardShell({ children, typeLabel, isWC, matchNumber }: { children: React
             {typeLabel}
           </div>
 
-          {/* URL — always bottom */}
-          <div style={{ position: "relative", fontSize: 24, fontWeight: 700, color: "rgba(255,255,255,.38)", letterSpacing: ".1em" }}>
-            {SITE_URL}
+          {/* URL — bold, always visible */}
+          <div style={{ position: "relative", textAlign: "center" }}>
+            <div style={{ fontFamily: fCondensed, fontSize: 28, fontWeight: 400, letterSpacing: ".18em", color: "#fff", textShadow: "0 0 12px rgba(26,191,176,.6)" }}>
+              {SITE_URL}
+            </div>
+            <div style={{ height: 1.5, marginTop: 6, background: "linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)", borderRadius: 1 }} />
           </div>
         </div>
 
