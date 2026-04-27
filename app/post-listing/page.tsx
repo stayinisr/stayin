@@ -417,7 +417,7 @@ function PostListingPageContent() {
                 </div>
               </div>
 
-</>}
+              )}
               {/* ── SHOW FIELDS ── */}
               {league === "show" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -528,8 +528,8 @@ function PostListingPageContent() {
               )}
 
               {/* ── MATCH SELECTOR — only for wc/il ── */}
-              {league !== "show" && <>
-              <div>
+              {league !== "show" && (
+                <div>
                 <label style={lbl}>{t.match}</label>
                 <select dir={isHe ? "rtl" : "ltr"} value={matchId} onChange={(e) => setMatchId(e.target.value)} disabled={loading} style={{ ...inp, cursor: "pointer" }}>
                   <option value="">{loading ? t.loading : t.selectMatch}</option>
@@ -539,6 +539,7 @@ function PostListingPageContent() {
                   }
                 </select>
               </div>
+              )}
 
               {/* ── CATEGORY — WC only ── */}
               {league === "wc" && <div>
