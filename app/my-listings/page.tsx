@@ -452,6 +452,32 @@ export default function MyListingsPage() {
     }
   }
 
+  async function handleShowClose(id: string) {
+    const { error } = await supabase.from("show_listings").update({ status: "closed" }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "המודעה נסגרה" : "Listing closed");
+      setShowListings(prev => prev.map((x: any) => x.id === id ? { ...x, status: "closed" } : x));
+    } else toast.error(isHe ? "שגיאה" : "Error");
+  }
+
+  async function handleShowRenew(id: string) {
+    const exp = new Date(Date.now() + 7 * 86400000).toISOString();
+    const { error } = await supabase.from("show_listings").update({ status: "active", expires_at: exp }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "חודש ל-7 ימים ✓" : "Renewed for 7 days ✓");
+      setShowListings(prev => prev.map((x: any) => x.id === id ? { ...x, status: "active", expires_at: exp } : x));
+    }
+  }
+
+  async function handleShowDelete(id: string) {
+    if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?")) return;
+    const { error } = await supabase.from("show_listings").update({ status: "archived" }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "המודעה נמחקה" : "Listing deleted");
+      setShowListings(prev => prev.filter((x: any) => x.id !== id));
+    }
+  }
+
   async function handleFeatureOn(listing: Listing) {
     const maxFeat = getPlanLimits(plan).max_featured;
     if (featuredCount >= maxFeat) {
@@ -1170,34 +1196,44 @@ export default function MyListingsPage() {
               const venueCity  = sl.venues?.city_he || null;
               const isSell     = sl.type === "sell";
               const expired    = sl.expires_at ? new Date(sl.expires_at) < new Date() : false;
+              const isActive   = sl.status === "active" && !expired;
               return (
                 <div key={sl.id} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden", opacity: expired ? .6 : 1 }}>
-                  <div style={{ height: 2, background: `linear-gradient(90deg,${C.teal},${C.blue})` }} />
-                  <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginBottom: 4 }}>{artistName || "—"}</div>
-                      <div style={{ fontSize: 11, color: C.hint }}>
-                        {venueName && <span>📍 {venueName}{venueCity ? ` · ${venueCity}` : ""}</span>}
-                        {sl.show_date && <span>{venueName ? " · " : ""}{sl.show_date.slice(0,10)}</span>}
-                        {sl.show_time && <span> · {sl.show_time.slice(0,5)}</span>}
+                  <div style={{ height: 2, background: "linear-gradient(90deg,#7c3aed,#e63946)" }} />
+                  <div style={{ padding: "14px 16px" }}>
+                    {/* Top row: artist + price */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 2, background: isSell ? "rgba(0,104,71,.07)" : "rgba(26,58,143,.07)", color: isSell ? C.green : C.blue, border: `1px solid ${isSell ? "rgba(0,104,71,.2)" : "rgba(26,58,143,.18)"}`, letterSpacing: ".05em", textTransform: "uppercase" as const }}>
+                            {isSell ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
+                          </span>
+                          {!isActive && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 2, background: "rgba(148,163,184,.1)", color: C.hint, border: `1px solid ${C.border}` }}>{isHe ? "סגור" : "Closed"}</span>}
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 3 }}>{artistName || "—"}</div>
+                        <div style={{ fontSize: 11, color: C.hint }}>
+                          {venueName && <span>📍 {venueName}{venueCity ? ` · ${venueCity}` : ""}</span>}
+                          {sl.show_date && <span>{venueName ? " · " : ""}{sl.show_date.slice(0,10)}</span>}
+                          {sl.show_time && <span> · {sl.show_time.slice(0,5)}</span>}
+                        </div>
                       </div>
+                      {sl.price && <div style={{ fontSize: 18, fontWeight: 900, color: C.text, flexShrink: 0 }}>₪{Number(sl.price).toLocaleString()}</div>}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                      <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 2, background: isSell ? "rgba(0,104,71,.07)" : "rgba(26,58,143,.07)", color: isSell ? C.green : C.blue, border: `1px solid ${isSell ? "rgba(0,104,71,.2)" : "rgba(26,58,143,.18)"}`, letterSpacing: ".05em", textTransform: "uppercase" as const }}>
-                        {isSell ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
-                      </span>
-                      {sl.price && <div style={{ fontSize: 16, fontWeight: 900, color: C.text }}>₪{Number(sl.price).toLocaleString()}</div>}
+                    {/* Action buttons */}
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
                       <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const }}>
                         👁 {isHe ? "צפה" : "View"}
                       </a>
-                      <button
-                        onClick={async () => {
-                          if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?")) return;
-                          await supabase.from("show_listings").update({ status: "archived" }).eq("id", sl.id);
-                          setShowListings(prev => prev.filter((x: any) => x.id !== sl.id));
-                        }}
-                        style={{ fontSize: 11, color: C.canada, background: "rgba(230,57,70,.06)", border: "1px solid rgba(230,57,70,.2)", borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}
-                      >
+                      {isActive ? (
+                        <button onClick={() => handleShowClose(sl.id)} style={{ fontSize: 11, color: C.muted, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
+                          {isHe ? "סגור" : "Close"}
+                        </button>
+                      ) : (
+                        <button onClick={() => handleShowRenew(sl.id)} style={{ fontSize: 11, color: C.blue, background: "rgba(26,58,143,.06)", border: `1px solid rgba(26,58,143,.2)`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const, fontWeight: 700 }}>
+                          {isHe ? "חדש 7 ימים" : "Renew 7d"}
+                        </button>
+                      )}
+                      <button onClick={() => handleShowDelete(sl.id)} style={{ fontSize: 11, color: C.canada, background: "rgba(230,57,70,.06)", border: "1px solid rgba(230,57,70,.2)", borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
                         🗑 {isHe ? "מחק" : "Delete"}
                       </button>
                     </div>
