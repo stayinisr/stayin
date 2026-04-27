@@ -21,6 +21,9 @@ const C = {
   hint: "#94a3b8",
   faint: "#cbd5e1",
   bg: "#f8f9fc",
+  teal: "#1abfb0",
+  blue: "#1a3a8f",
+  green: "#006847",
 };
 
 type Plan = "free" | "premium" | "unlimited";
