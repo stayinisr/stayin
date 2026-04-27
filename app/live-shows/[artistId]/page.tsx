@@ -33,6 +33,7 @@ type ShowListing = {
   notes: string | null;
   show_date: string | null;
   show_time: string | null;
+  contact_phone: string | null;
   venues: { name: string; city: string | null; city_he: string | null } | null;
   created_at: string;
 };
@@ -72,7 +73,7 @@ export default function ArtistShowPage() {
       const [{ data: a }, { data: l }] = await Promise.all([
         supabase.from("artists").select("id,name,name_he").eq("id", artistId).maybeSingle(),
         supabase.from("show_listings")
-          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,created_at,venues(name,city,city_he)")
+          .select("id,type,price,quantity,ticket_type,ticket_type_custom,seats_row,seats_numbers,seated_together,notes,show_date,show_time,contact_phone,created_at,venues(name,city,city_he)")
           .eq("artist_id", artistId).eq("status","active").gt("expires_at", new Date().toISOString())
           .order("created_at", { ascending: false }),
       ]);
@@ -244,6 +245,27 @@ export default function ArtistShowPage() {
                         )}
 
 
+
+                        {/* WhatsApp */}
+                        {l.contact_phone && (
+                          <a
+                            href={`https://wa.me/${l.contact_phone.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך להופעה ב-Stayin 🎵` : `Hi, I saw your show listing on Stayin 🎵`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
+                          >
+                            💬 WhatsApp
+                          </a>
+                        )}
+                        {/* WhatsApp */}
+                        {l.contact_phone && (
+                          <a
+                            href={`https://wa.me/${l.contact_phone.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך ב-Stayin 🎵` : `Hi, I saw your show listing on Stayin 🎵`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
+                          >
+                            💬 WhatsApp
+                          </a>
+                        )}
 
                         {/* Report */}
                         <a

@@ -269,6 +269,9 @@ function PostListingPageContent() {
     if (league === "show") {
       if (!artistId) { toast.error(isHe ? "בחר אמן" : "Select artist"); setSubmitting(false); return; }
       const now2 = new Date().toISOString();
+      // Fetch phone from profile to enable WhatsApp contact
+      const { data: profileData } = await supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle();
+      const contactPhone = (profileData as any)?.phone || null;
       const { error: showErr } = await supabase.from("show_listings").insert({
         user_id: user.id,
         artist_id: artistId,
@@ -285,6 +288,7 @@ function PostListingPageContent() {
         seated_together: quantity > 1 ? seatedTogether : "unknown",
         notes: notes.trim() || null,
         first_published_at: now2,
+        contact_phone: contactPhone,
       });
       setSubmitting(false);
       if (showErr) { toast.error(isHe ? "פרסום נכשל" : "Failed to post"); return; }
