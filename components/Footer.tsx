@@ -31,7 +31,7 @@ export default function Footer() {
           {[
             { he: "מונדיאל 2026",    en: "World Cup 2026",   href: "/sports/world-cup-2026" },
             { he: "כדורגל ישראלי",  en: "Israeli Football",  href: "/sports/football-israel" },
-            { he: "הופעות",          en: "Live Shows",        href: "/live-shows" },
+            { he: " הופעות חיות",          en: "Live Shows",        href: "/live-shows" },
             { he: "פרסם מודעה",     en: "Post listing",       href: "/post-listing" },
           ].map(l => (
             <Link

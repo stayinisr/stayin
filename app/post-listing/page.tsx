@@ -393,7 +393,7 @@ function PostListingPageContent() {
                   <label style={lbl}>{isHe ? "לאיזה אירוע?" : "Which event?"}</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
                     {([
-                      ["wc",   "🌍", isHe ? "מונדיאל 2026"  : "World Cup 2026",   C.usa,  "33 משחקים · 16 ערים"],
+                      ["wc",   "🌍", isHe ? "מונדיאל 2026"  : "World Cup 2026",   C.usa,  "104 משחקים · 16 ערים"],
                       ["il",   "⚽", isHe ? "כדורגל ישראלי" : "Israeli Football", C.blue, "ליגת העל · גביע"],
                       ["show", "🎵", isHe ? "הופעות חיות"   : "Live Shows",       C.teal, isHe ? "מאות אמנים" : "Hundreds of artists"],
                     ] as [LeagueType, string, string, string, string][]).map(([v, icon, label, color, sub]) => {
