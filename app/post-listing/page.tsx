@@ -687,7 +687,7 @@ function PostListingPageContent() {
 
               {/* ── SUBMIT ── */}
               <button type="button" onClick={handleSubmit} disabled={submitting} style={{ padding: "13px", background: accentColor, color: "#fff", fontSize: "13px", fontWeight: 700, border: "none", borderRadius: "6px", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, letterSpacing: "0.02em" }}>
-                {submitting ? t.loading : editId ? t.saveChanges : t.createListing}
+                {submitting ? t.loading : (editId || showEditId) ? t.saveChanges : t.createListing}
               </button>
             </div>
           </div>

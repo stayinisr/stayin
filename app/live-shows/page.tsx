@@ -192,41 +192,44 @@ export default function LiveShowsPage() {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:14 }}>
             {filtered.map((artist, idx) => {
               const name = isHe ? (artist.name_he || artist.name) : artist.name;
-              const themes = [
-                { grad: "linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)", blob1: "#7c3aed", blob2: "#e63946" },
-                { grad: "linear-gradient(135deg,#1a3a8f 0%,#4f46e5 50%,#7c3aed 100%)", blob1: "#4f46e5", blob2: "#7c3aed" },
-                { grad: "linear-gradient(135deg,#e63946 0%,#c026d3 50%,#7c3aed 100%)", blob1: "#e63946", blob2: "#7c3aed" },
-                { grad: "linear-gradient(135deg,#1abfb0 0%,#4f46e5 60%,#7c3aed 100%)", blob1: "#1abfb0", blob2: "#7c3aed" },
-                { grad: "linear-gradient(135deg,#d4a017 0%,#e63946 60%,#7c3aed 100%)", blob1: "#d4a017", blob2: "#e63946" },
+              const grads = [
+                "linear-gradient(135deg,#7c3aed,#e63946)",
+                "linear-gradient(135deg,#e63946,#4f46e5)",
+                "linear-gradient(135deg,#4f46e5,#7c3aed)",
+                "linear-gradient(135deg,#7c3aed,#1abfb0)",
+                "linear-gradient(135deg,#d4a017,#e63946)",
               ];
-              const theme = themes[idx % themes.length];
+              const grad = grads[idx % grads.length];
               return (
                 <Link key={artist.id} href={`/live-shows/${artist.id}`} style={{ textDecoration:"none" }}>
-                  <div className="artist-card" style={{ borderRadius:18, overflow:"hidden", background:"#fff", boxShadow:"0 4px 24px rgba(13,27,62,.10)" }}>
-                    {/* Body with gradient name */}
-                    <div style={{ padding:"28px 22px 20px", position:"relative", overflow:"hidden", minHeight:180, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                      {/* Dot mesh background */}
-                      <div style={{ position:"absolute", inset:0, opacity:.06,
-                        backgroundImage:`radial-gradient(circle, ${theme.blob1} 1px, transparent 1px)`,
-                        backgroundSize:"32px 32px", pointerEvents:"none" }} />
-                      {/* Blobs */}
-                      <div style={{ position:"absolute", width:180, height:180, top:-60, right:-50, borderRadius:"50%",
-                        background:`radial-gradient(circle,${theme.blob1},transparent 70%)`, opacity:.12, pointerEvents:"none" }} />
-                      <div style={{ position:"absolute", width:120, height:120, bottom:-40, left:-30, borderRadius:"50%",
-                        background:`radial-gradient(circle,${theme.blob2},transparent 70%)`, opacity:.10, pointerEvents:"none" }} />
-                      {/* Sub label */}
-                      <div style={{ fontSize:10, fontWeight:800, letterSpacing:".18em", textTransform:"uppercase" as const,
-                        background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
-                        marginBottom:10, position:"relative" }}>🎵 LIVE SHOW</div>
-                      {/* Big gradient name */}
-                      <div style={{ fontSize:"clamp(42px,6vw,52px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1.5px",
-                        background:theme.grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
-                        position:"relative", wordBreak:"break-word" as const }}>
-                        {name}
+                  <div className="artist-card" style={{ borderRadius:16, overflow:"hidden", background:"#fff", boxShadow:"0 4px 20px rgba(13,27,62,.10)" }}>
+                    {/* Body — vinyl + name side by side */}
+                    <div style={{ padding:"20px 18px", display:"flex", alignItems:"center", gap:16, position:"relative", overflow:"hidden", minHeight:120 }}>
+                      {/* Vinyl record */}
+                      <div style={{ width:80, height:80, borderRadius:"50%", flexShrink:0, position:"relative" }}>
+                        {/* Grooves */}
+                        <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg,#1a1a1a 360deg)" }} />
+                        {/* Color overlay */}
+                        <div style={{ position:"absolute", inset:10, borderRadius:"50%", background:grad, opacity:.5 }} />
+                        {/* Shine */}
+                        <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.22) 0%,transparent 55%)" }} />
+                        {/* Center hole */}
+                        <div style={{ position:"absolute", width:14, height:14, borderRadius:"50%", background:"#fff", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+                      </div>
+                      {/* Text */}
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:10, fontWeight:800, letterSpacing:".18em", textTransform:"uppercase" as const,
+                          background:grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                          marginBottom:8 }}>🎵 LIVE SHOW</div>
+                        <div style={{ fontSize:"clamp(22px,3.5vw,30px)", fontWeight:900, lineHeight:.95, letterSpacing:"-1px",
+                          background:grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
+                          wordBreak:"break-word" as const }}>
+                          {name}
+                        </div>
                       </div>
                     </div>
                     {/* Footer */}
-                    <div style={{ padding:"10px 22px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:"1px solid rgba(13,27,62,.06)" }}>
+                    <div style={{ padding:"10px 18px 13px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:"1px solid rgba(13,27,62,.05)" }}>
                       <div style={{ display:"flex", gap:5, flexWrap:"wrap" as const }}>
                         {artist.sell_count > 0 && (
                           <span style={{ fontSize:9, fontWeight:800, padding:"3px 10px", borderRadius:999, background:"rgba(0,104,71,.07)", color:C.green, border:"1px solid rgba(0,104,71,.2)", letterSpacing:".05em", textTransform:"uppercase" as const }}>
@@ -239,7 +242,7 @@ export default function LiveShowsPage() {
                           </span>
                         )}
                       </div>
-                      <span style={{ fontSize:14, opacity:.3 }}>{isHe?"←":"→"}</span>
+                      <span style={{ fontSize:13, opacity:.25 }}>{isHe?"←":"→"}</span>
                     </div>
                   </div>
                 </Link>
