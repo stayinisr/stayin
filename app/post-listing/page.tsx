@@ -118,7 +118,8 @@ function PostListingPageContent() {
 
   const preMatchId = params.get("matchId") || "";
   const preType    = params.get("type") || "sell";
-  const editId     = params.get("listingId") || "";
+  const editId       = params.get("listingId") || "";
+  const showEditId   = params.get("showListingId") || "";
 
   // League toggle — default to IL if ?type=israeli
   const [league, setLeague] = useState<LeagueType>(
@@ -193,7 +194,8 @@ function PostListingPageContent() {
   // Load edit
   useEffect(() => {
     if (editId) loadEdit(editId);
-  }, [editId]);
+    if (showEditId) loadShowEdit(showEditId);
+  }, [editId, showEditId]);
 
   // Pre-fill matchId for WC links
   useEffect(() => {
@@ -217,6 +219,35 @@ function PostListingPageContent() {
     setSeatsBlock(data.seats_block || "");
     setSeatsRow(data.seats_row || "");
     setSeatsNums(data.seats_numbers || "");
+  }
+
+  async function loadShowEdit(id: string) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/auth"); return; }
+    const { data, error } = await supabase
+      .from("show_listings")
+      .select("*,artists(name,name_he),venues(name,city,city_he)")
+      .eq("id", id).eq("user_id", user.id).single();
+    if (error || !data) { router.push("/my-listings"); return; }
+    setLeague("show");
+    setType(data.type);
+    setArtistId(data.artist_id || "");
+    setArtistSearch(data.artists ? (data.artists as any).name_he || (data.artists as any).name : "");
+    setVenueId(data.venue_id || "");
+    setVenueSearch(data.venues ? (data.venues as any).name : "");
+    setShowDate(data.show_date || "");
+    setShowTime(data.show_time || "");
+    setTicketType(data.ticket_type || "standing");
+    setTicketTypeCustom(data.ticket_type_custom || "");
+    setPrice(String(data.price || ""));
+    setQuantity(data.quantity || 1);
+    setSeatsRow(data.seats_row || "");
+    setSeatsNums(data.seats_numbers || "");
+    setSeatedTogether(data.seated_together || "unknown");
+    setNotes(data.notes || "");
+    // Load artists and venues for the dropdowns
+    supabase.from("artists").select("id,name,name_he").order("name_he").then(({ data }) => setArtists(data || []));
+    supabase.from("venues").select("id,name,city,city_he").order("city").then(({ data }) => setVenues(data || []));
   }
 
   const selectedWCMatch = useMemo(() => wcMatches.find(m => m.id === matchId), [wcMatches, matchId]);
@@ -268,6 +299,29 @@ function PostListingPageContent() {
     // Attach to correct match table
     if (league === "show") {
       if (!artistId) { toast.error(isHe ? "בחר אמן" : "Select artist"); setSubmitting(false); return; }
+      // Update existing show listing
+      if (showEditId) {
+        const { error: upErr } = await supabase.from("show_listings").update({
+          artist_id: artistId,
+          venue_id: venueId || null,
+          show_date: showDate || null,
+          show_time: showTime || null,
+          type,
+          price: price ? Number(price) : null,
+          quantity: Number(quantity) || 1,
+          ticket_type: ticketType,
+          ticket_type_custom: ticketType === "other" ? ticketTypeCustom : null,
+          seats_row: seatsRow.trim() || null,
+          seats_numbers: seatsNums.trim() || null,
+          seated_together: seatedTogether,
+          notes: notes.trim() || null,
+        }).eq("id", showEditId).eq("user_id", user.id);
+        setSubmitting(false);
+        if (upErr) { toast.error(isHe ? "עדכון נכשל" : "Update failed"); return; }
+        toast.success(isHe ? "המודעה עודכנה ✓" : "Listing updated ✓");
+        router.push("/my-listings");
+        return;
+      }
       const now2 = new Date().toISOString();
       // Fetch phone from profile to enable WhatsApp contact
       const { data: profileData } = await supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle();
@@ -371,7 +425,9 @@ function PostListingPageContent() {
             {editId ? (
               isHe ? <><span style={{ color: accentColor }}>עריכת</span> מודעה</> : <><span style={{ color: accentColor }}>Edit</span> Listing</>
             ) : league === "show" ? (
-              isHe ? <><span style={{ color: C.teal }}>פרסם</span> <span style={{ color: C.text }}>הופעה</span></> : <><span style={{ color: C.teal }}>Post</span> <span style={{ color: C.text }}>Show</span></>
+              showEditId
+              ? (isHe ? <><span style={{ color: C.teal }}>ערוך</span> <span style={{ color: C.text }}>הופעה</span></> : <><span style={{ color: C.teal }}>Edit</span> <span style={{ color: C.text }}>Show</span></>)
+              : (isHe ? <><span style={{ color: C.teal }}>פרסם</span> <span style={{ color: C.text }}>הופעה</span></> : <><span style={{ color: C.teal }}>Post</span> <span style={{ color: C.text }}>Show</span></>)
             ) : type === "sell" ? (
               isHe ? <><span style={{ color: C.green }}>מכור</span> <span style={{ color: C.text }}>כרטיסים</span></> : <><span style={{ color: C.green }}>Sell</span> <span style={{ color: C.text }}>Tickets</span></>
             ) : (

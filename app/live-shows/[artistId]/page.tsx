@@ -252,7 +252,24 @@ export default function ArtistShowPage() {
                         {/* WhatsApp */}
                         {l.contact_phone && (
                           <a
-                            href={`https://wa.me/${l.contact_phone.replace(/[^0-9]/g,"")}?text=${encodeURIComponent(isHe ? `היי, ראיתי את המודעה שלך להופעה ב-Stayin 🎵` : `Hi, I saw your show listing on Stayin 🎵`)}`}
+                            href={(() => {
+                            const phone = l.contact_phone!.replace(/[^0-9]/g,"");
+                            const isSell = l.type === "sell";
+                            const venue = (l.venues as any);
+                            const vName = venue?.name || "";
+                            const priceStr = l.price ? `₪${l.price.toLocaleString()}` : "";
+                            const dateStr = l.show_date ? l.show_date.slice(0,10) : "";
+                            const msg = isHe
+                              ? `היי 👋
+ראיתי את המודעה שלך ב-Stayin להופעה של ${artistName}${vName ? ` ב${vName}` : ""}${dateStr ? ` (${dateStr})` : ""}.
+${isSell ? `מחיר: ${priceStr} לכרטיס.` : ""}
+אשמח לדבר! 🎵`
+                              : `Hi 👋
+I saw your listing on Stayin for ${artistName}${vName ? ` at ${vName}` : ""}${dateStr ? ` (${dateStr})` : ""}.
+${isSell ? `Price: ${priceStr} per ticket.` : ""}
+Let's talk! 🎵`;
+                            return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+                          })()}
                             target="_blank" rel="noopener noreferrer"
                             style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", background:"#25D366", color:"#fff", borderRadius:6, fontSize:11, fontWeight:800, textDecoration:"none", boxShadow:"0 3px 10px rgba(37,211,102,.22)", whiteSpace:"nowrap" as const }}
                           >
