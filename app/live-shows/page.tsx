@@ -115,8 +115,15 @@ export default function LiveShowsPage() {
           </div>
 
           <div style={{ display:"flex", alignItems:"center", gap:32, justifyContent:"space-between" }}>
-            {/* Mic watermark — left side, transparent */}
-            <img src={MIC_SRC} alt="" className="mic-float" style={{ width:160, height:160, objectFit:"contain", opacity:.12, flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(124,58,237,.2))" }} />
+            {/* Vinyl disc — left side, fully opaque */}
+            <div style={{ flexShrink:0, userSelect:"none" as const }}>
+              <div className="vinyl-spin" style={{ width:180, height:180, borderRadius:"50%", position:"relative", boxShadow:"0 12px 40px rgba(124,58,237,.25)" }}>
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
+                <div style={{ position:"absolute", inset:26, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.85 }} />
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%)" }} />
+                <div style={{ position:"absolute", width:18, height:18, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+              </div>
+            </div>
 
             {/* Text — center */}
             <div style={{ flex:1, minWidth:0 }}>
@@ -136,15 +143,8 @@ export default function LiveShowsPage() {
               </Link>
             </div>
 
-            {/* Vinyl disc — right side, fully opaque */}
-            <div style={{ flexShrink:0, userSelect:"none" as const }}>
-              <div className="vinyl-spin" style={{ width:180, height:180, borderRadius:"50%", position:"relative", boxShadow:"0 12px 40px rgba(124,58,237,.25)" }}>
-                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
-                <div style={{ position:"absolute", inset:26, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.85 }} />
-                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%)" }} />
-                <div style={{ position:"absolute", width:18, height:18, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
-              </div>
-            </div>
+            {/* Mic — right side, transparent */}
+            <img src={MIC_SRC} alt="" className="mic-float" style={{ width:160, height:160, objectFit:"contain", opacity:.12, flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(124,58,237,.2))" }} />
           </div>
         </div>
       </div>
