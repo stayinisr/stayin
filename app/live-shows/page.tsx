@@ -87,6 +87,10 @@ export default function LiveShowsPage() {
         .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:4px;}
         .artist-card:hover{box-shadow:0 4px 20px rgba(13,27,62,.10)!important;transform:translateY(-1px)}
         .artist-card{transition:box-shadow 150ms,transform 150ms}
+        @keyframes float{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-10px) rotate(-8deg)}}
+        @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .mic-float{animation:float 3s ease-in-out infinite}
+        .vinyl-spin{animation:spin-slow 8s linear infinite}
       `}</style>
 
       {/* Top stripe */}
@@ -127,7 +131,15 @@ export default function LiveShowsPage() {
                 🎵 {isHe ? "פרסם מודעה להופעה" : "Post show listing"}
               </Link>
             </div>
-            <div style={{ fontSize:80, lineHeight:1, opacity:.15, userSelect:"none" }}>🎵</div>
+            <div style={{ position:"relative", width:200, height:200, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              {/* Spinning vinyl */}
+              <div className="vinyl-spin" style={{ position:"absolute", width:160, height:160, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg,#1a1a1a 360deg)", opacity:.15, bottom:0, right:0 }}>
+                <div style={{ position:"absolute", inset:20, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.6 }} />
+                <div style={{ position:"absolute", width:20, height:20, borderRadius:"50%", background:"rgba(240,240,240,.9)", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }} />
+              </div>
+              {/* Mic floating */}
+              <img src={MIC_SRC} alt="" className="mic-float" style={{ width:140, height:140, objectFit:"contain", filter:"drop-shadow(0 8px 24px rgba(124,58,237,.3))", opacity:.7, position:"relative", zIndex:2 }} />
+            </div>
           </div>
         </div>
       </div>
@@ -206,8 +218,8 @@ export default function LiveShowsPage() {
                   <div className="artist-card" style={{ borderRadius:16, overflow:"hidden", background:"#fff", boxShadow:"0 4px 20px rgba(13,27,62,.10)" }}>
                     {/* Body — vinyl + name side by side */}
                     <div style={{ padding:"20px 18px", display:"flex", alignItems:"center", gap:16, position:"relative", overflow:"hidden", minHeight:120 }}>
-                      {/* Mic watermark */}
-                      <img src={MIC_SRC} alt="" style={{ position:"absolute", bottom:-20, right:-16, width:110, height:110, objectFit:"contain", opacity:.07, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
+                      {/* Mic watermark — opposite corner from vinyl */}
+                      <img src={MIC_SRC} alt="" style={{ position:"absolute", top:-10, left: isHe ? "auto" : -12, right: isHe ? -12 : "auto", width:90, height:90, objectFit:"contain", opacity:.06, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
                       {/* Vinyl record */}
                       <div style={{ width:80, height:80, borderRadius:"50%", flexShrink:0, position:"relative" }}>
                         {/* Grooves */}

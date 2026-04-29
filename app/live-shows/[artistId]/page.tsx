@@ -101,6 +101,8 @@ export default function ArtistShowPage() {
         .sk{background:linear-gradient(90deg,#f0f4f8 25%,#e8edf5 50%,#f0f4f8 75%);background-size:800px 100%;animation:shi 1.4s infinite linear;border-radius:4px;}
         .listing-card:hover{box-shadow:0 4px 20px rgba(13,27,62,.10)!important}
         .listing-card{transition:box-shadow 150ms}
+        @keyframes float{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-10px) rotate(-8deg)}}
+        .mic-float{animation:float 3s ease-in-out infinite}
       `}</style>
 
       {/* Top stripe */}
@@ -121,10 +123,15 @@ export default function ArtistShowPage() {
           </Link>
 
           <div style={{ display:"flex", alignItems:"flex-start", gap:20, flexWrap:"wrap" }}>
-            {/* Mic watermark in hero */}
-            <img src={MIC_SRC} alt="" style={{ position:"absolute", left:0, bottom:-10, width:160, height:160, objectFit:"contain", opacity:.04, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
-            {/* Big gradient icon */}
-            <div style={{ width:72, height:72, borderRadius:18, background:"linear-gradient(135deg,#7c3aed,#e63946)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:34, flexShrink:0, boxShadow:"0 8px 24px rgba(124,58,237,.3)" }}>🎵</div>
+            {/* Vinyl disc icon */}
+            <div style={{ width:72, height:72, borderRadius:"50%", flexShrink:0, position:"relative", boxShadow:"0 8px 24px rgba(124,58,237,.25)" }}>
+              <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
+              <div style={{ position:"absolute", inset:12, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.7 }} />
+              <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 55%)" }} />
+              <div style={{ position:"absolute", width:12, height:12, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+            </div>
+            {/* Floating mic in hero corner */}
+            <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", left: isHe ? "auto" : 16, right: isHe ? 16 : "auto", top:-10, width:110, height:110, objectFit:"contain", opacity:.12, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase",
                 background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",
