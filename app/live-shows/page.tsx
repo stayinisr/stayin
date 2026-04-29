@@ -114,9 +114,13 @@ export default function LiveShowsPage() {
             {isHe ? "הופעות חיות · מרקטפלייס כרטיסים" : "Live Shows · Ticket Marketplace"}
           </div>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:32, alignItems:"center" }}>
-            <div>
-              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase", background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:32, justifyContent:"space-between" }}>
+            {/* Mic watermark — left side, transparent */}
+            <img src={MIC_SRC} alt="" className="mic-float" style={{ width:160, height:160, objectFit:"contain", opacity:.12, flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(124,58,237,.2))" }} />
+
+            {/* Text — center */}
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase" as const, background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
                 STAY IN THE SHOW
               </div>
               <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:.95, letterSpacing:"-.5px", marginBottom:16,
@@ -131,15 +135,15 @@ export default function LiveShowsPage() {
                 🎵 {isHe ? "פרסם מודעה להופעה" : "Post show listing"}
               </Link>
             </div>
-            <div style={{ position:"relative", width:220, height:220, flexShrink:0, userSelect:"none" }}>
-              {/* Big vinyl disc - decorative */}
-              <div className="vinyl-spin" style={{ width:200, height:200, borderRadius:"50%", position:"relative" }}>
-                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)", opacity:.18 }} />
-                <div style={{ position:"absolute", inset:30, borderRadius:"50%", background:"linear-gradient(135deg,rgba(124,58,237,.15),rgba(230,57,70,.1))" }} />
-                <div style={{ position:"absolute", width:20, height:20, borderRadius:"50%", background:"rgba(200,200,200,.3)", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }} />
+
+            {/* Vinyl disc — right side, fully opaque */}
+            <div style={{ flexShrink:0, userSelect:"none" as const }}>
+              <div className="vinyl-spin" style={{ width:180, height:180, borderRadius:"50%", position:"relative", boxShadow:"0 12px 40px rgba(124,58,237,.25)" }}>
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
+                <div style={{ position:"absolute", inset:26, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.85 }} />
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%)" }} />
+                <div style={{ position:"absolute", width:18, height:18, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
               </div>
-              {/* Mic floating on top of vinyl */}
-              <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", bottom:-10, right:-10, width:130, height:130, objectFit:"contain", filter:"drop-shadow(0 6px 20px rgba(124,58,237,.35))", opacity:.8 }} />
             </div>
           </div>
         </div>

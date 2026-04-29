@@ -116,8 +116,8 @@ export default function ArtistShowPage() {
         ].map((b,i) => (
           <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" }} />
         ))}
-        {/* Mic watermark inside hero */}
-        <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", bottom:-20, left:20, width:140, height:140, objectFit:"contain", opacity:.08, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
+        {/* Mic watermark inside hero — centered, more visible */}
+        <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", bottom:-30, left:"50%", transform:"translateX(-50%)", width:180, height:180, objectFit:"contain", opacity:.07, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
 
         <div style={{ ...W, paddingTop:36, paddingBottom:32 }}>
           <Link href="/live-shows" style={{ display:"inline-flex", alignItems:"center", gap:5, ...smallCaps, textDecoration:"none", marginBottom:16, color:C.hint }}>
@@ -125,12 +125,12 @@ export default function ArtistShowPage() {
           </Link>
 
           <div style={{ display:"flex", alignItems:"flex-start", gap:20, flexWrap:"wrap" }}>
-            {/* Vinyl disc icon */}
-            <div style={{ width:72, height:72, borderRadius:"50%", flexShrink:0, position:"relative", boxShadow:"0 8px 24px rgba(124,58,237,.25)" }}>
+            {/* Vinyl disc icon — bigger */}
+            <div style={{ width:100, height:100, borderRadius:"50%", flexShrink:0, position:"relative", boxShadow:"0 10px 32px rgba(124,58,237,.28)" }}>
               <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
-              <div style={{ position:"absolute", inset:12, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.7 }} />
+              <div style={{ position:"absolute", inset:16, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.8 }} />
               <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 55%)" }} />
-              <div style={{ position:"absolute", width:12, height:12, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+              <div style={{ position:"absolute", width:16, height:16, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
             </div>
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase",
