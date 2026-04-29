@@ -116,6 +116,8 @@ export default function ArtistShowPage() {
         ].map((b,i) => (
           <div key={i} style={{ position:"absolute", width:b.w, height:b.w, borderRadius:"50%", background:`radial-gradient(circle,${b.c},transparent 70%)`, top:(b as any).t, bottom:(b as any).b, left:(b as any).l, right:(b as any).r, pointerEvents:"none" }} />
         ))}
+        {/* Mic watermark inside hero */}
+        <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", bottom:-20, left:20, width:140, height:140, objectFit:"contain", opacity:.08, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
 
         <div style={{ ...W, paddingTop:36, paddingBottom:32 }}>
           <Link href="/live-shows" style={{ display:"inline-flex", alignItems:"center", gap:5, ...smallCaps, textDecoration:"none", marginBottom:16, color:C.hint }}>
@@ -130,8 +132,6 @@ export default function ArtistShowPage() {
               <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 55%)" }} />
               <div style={{ position:"absolute", width:12, height:12, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
             </div>
-            {/* Floating mic in hero corner */}
-            <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", left: isHe ? "auto" : 16, right: isHe ? 16 : "auto", top:-10, width:110, height:110, objectFit:"contain", opacity:.12, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
             <div style={{ flex:1, minWidth:0 }}>
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".2em", textTransform:"uppercase",
                 background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text",

@@ -131,14 +131,15 @@ export default function LiveShowsPage() {
                 🎵 {isHe ? "פרסם מודעה להופעה" : "Post show listing"}
               </Link>
             </div>
-            <div style={{ position:"relative", width:200, height:200, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-              {/* Spinning vinyl */}
-              <div className="vinyl-spin" style={{ position:"absolute", width:160, height:160, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg,#1a1a1a 360deg)", opacity:.15, bottom:0, right:0 }}>
-                <div style={{ position:"absolute", inset:20, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.6 }} />
-                <div style={{ position:"absolute", width:20, height:20, borderRadius:"50%", background:"rgba(240,240,240,.9)", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }} />
+            <div style={{ position:"relative", width:220, height:220, flexShrink:0, userSelect:"none" }}>
+              {/* Big vinyl disc - decorative */}
+              <div className="vinyl-spin" style={{ width:200, height:200, borderRadius:"50%", position:"relative" }}>
+                <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)", opacity:.18 }} />
+                <div style={{ position:"absolute", inset:30, borderRadius:"50%", background:"linear-gradient(135deg,rgba(124,58,237,.15),rgba(230,57,70,.1))" }} />
+                <div style={{ position:"absolute", width:20, height:20, borderRadius:"50%", background:"rgba(200,200,200,.3)", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }} />
               </div>
-              {/* Mic floating */}
-              <img src={MIC_SRC} alt="" className="mic-float" style={{ width:140, height:140, objectFit:"contain", filter:"drop-shadow(0 8px 24px rgba(124,58,237,.3))", opacity:.7, position:"relative", zIndex:2 }} />
+              {/* Mic floating on top of vinyl */}
+              <img src={MIC_SRC} alt="" className="mic-float" style={{ position:"absolute", bottom:-10, right:-10, width:130, height:130, objectFit:"contain", filter:"drop-shadow(0 6px 20px rgba(124,58,237,.35))", opacity:.8 }} />
             </div>
           </div>
         </div>
@@ -218,8 +219,6 @@ export default function LiveShowsPage() {
                   <div className="artist-card" style={{ borderRadius:16, overflow:"hidden", background:"#fff", boxShadow:"0 4px 20px rgba(13,27,62,.10)" }}>
                     {/* Body — vinyl + name side by side */}
                     <div style={{ padding:"20px 18px", display:"flex", alignItems:"center", gap:16, position:"relative", overflow:"hidden", minHeight:120 }}>
-                      {/* Mic watermark — opposite corner from vinyl */}
-                      <img src={MIC_SRC} alt="" style={{ position:"absolute", top:-10, left: isHe ? "auto" : -12, right: isHe ? -12 : "auto", width:90, height:90, objectFit:"contain", opacity:.06, pointerEvents:"none", mixBlendMode:"multiply" as const }} />
                       {/* Vinyl record */}
                       <div style={{ width:80, height:80, borderRadius:"50%", flexShrink:0, position:"relative" }}>
                         {/* Grooves */}
