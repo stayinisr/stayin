@@ -91,6 +91,12 @@ export default function LiveShowsPage() {
         @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         .mic-float{animation:float 3s ease-in-out infinite}
         .vinyl-spin{animation:spin-slow 8s linear infinite}
+        @media(max-width:640px){
+          .hero-vinyl{display:none!important}
+          .hero-mic{display:none!important}
+          .hero-mobile-row{display:flex!important}
+        }
+        .hero-mobile-row{display:none}
       `}</style>
 
       {/* Top stripe */}
@@ -114,9 +120,11 @@ export default function LiveShowsPage() {
             {isHe ? "הופעות חיות · מרקטפלייס כרטיסים" : "Live Shows · Ticket Marketplace"}
           </div>
 
+          {/* Desktop: vinyl left + text center + mic right */}
+          {/* Mobile: text only, vinyl as small accent */}
           <div style={{ display:"flex", alignItems:"center", gap:32, justifyContent:"space-between" }}>
-            {/* Vinyl disc — left side, fully opaque */}
-            <div style={{ flexShrink:0, userSelect:"none" as const }}>
+            {/* Vinyl — hidden on mobile */}
+            <div className="hero-vinyl" style={{ flexShrink:0, userSelect:"none" as const }}>
               <div className="vinyl-spin" style={{ width:180, height:180, borderRadius:"50%", position:"relative", boxShadow:"0 12px 40px rgba(124,58,237,.25)" }}>
                 <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
                 <div style={{ position:"absolute", inset:26, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.85 }} />
@@ -125,12 +133,22 @@ export default function LiveShowsPage() {
               </div>
             </div>
 
-            {/* Text — center */}
+            {/* Text */}
             <div style={{ flex:1, minWidth:0 }}>
+              {/* Mobile-only: vinyl + mic above text */}
+              <div className="hero-mobile-row" style={{ alignItems:"center", justifyContent:"center", gap:20, marginBottom:20 }}>
+                <div className="vinyl-spin" style={{ width:80, height:80, borderRadius:"50%", position:"relative", flexShrink:0, boxShadow:"0 6px 20px rgba(124,58,237,.2)" }}>
+                  <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
+                  <div style={{ position:"absolute", inset:12, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)", opacity:.85 }} />
+                  <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%)" }} />
+                  <div style={{ position:"absolute", width:10, height:10, borderRadius:"50%", background:"#f8f9fc", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+                </div>
+                <img src={MIC_SRC} alt="" className="mic-float" style={{ width:80, height:80, objectFit:"contain", opacity:.5, filter:"drop-shadow(0 4px 12px rgba(124,58,237,.3))" }} />
+              </div>
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase" as const, background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
                 STAY IN THE SHOW
               </div>
-              <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(36px,5vw,60px)", fontWeight:900, lineHeight:.95, letterSpacing:"-.5px", marginBottom:16,
+              <h1 style={{ fontFamily: isHe ? fHe : fSyne, fontSize:"clamp(28px,5vw,60px)", fontWeight:900, lineHeight:.95, letterSpacing:"-.5px", marginBottom:16,
                 background:"linear-gradient(135deg,#7c3aed 0%,#c026d3 40%,#e63946 100%)",
                 WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
                 {isHe ? <>כרטיסים<br />להופעות.</> : <>Live<br />Shows.</>}
@@ -143,8 +161,8 @@ export default function LiveShowsPage() {
               </Link>
             </div>
 
-            {/* Mic — right side, transparent */}
-            <img src={MIC_SRC} alt="" className="mic-float" style={{ width:160, height:160, objectFit:"contain", opacity:.12, flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(124,58,237,.2))" }} />
+            {/* Mic — hidden on mobile */}
+            <img src={MIC_SRC} alt="" className="mic-float hero-mic" style={{ width:160, height:160, objectFit:"contain", opacity:.12, flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(124,58,237,.2))" }} />
           </div>
         </div>
       </div>
