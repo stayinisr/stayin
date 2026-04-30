@@ -44,7 +44,7 @@ const STUB_W = 260;
 const ROW_H = 120;
 const STUB_HEADER_H = 100;
 const STUB_FOOTER_H = 70;
-const COL_SB = 80; const COL_TEAMS = 480; const COL_META = 320; const COL_SEATS = 300; const COL_PRICE = 180;
+const COL_SB = 60; const COL_TEAMS = 400; const COL_META = 270; const COL_SEATS = 260; const COL_PRICE = 170;
 
 function dv(v: unknown) { if (!v) return null; const s = String(v).trim(); return s || null; }
 function fmtDate(v?: string | null) { if (!v) return null; const dt = new Date(v); if (isNaN(dt.getTime())) return null; return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}`; }
