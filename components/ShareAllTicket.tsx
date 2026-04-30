@@ -122,7 +122,24 @@ function AllCard({ listings, isHe }: { listings: ListingWithMatch[]; isHe: boole
             const away = teamName(m?.away_team_name,isHe);
             const stage = stageShort(l.match?.stage,isHe);
             const cityRaw = dv(m?.city);
-            const city = cityRaw ? cityRaw.replace(/new\s+jersey/i,"NY/NJ").replace(/new\s+york/i,"New York").replace(/los\s+angeles/i,"LA").replace(/san\s+francisco/i,"SF") : null;
+            const city = cityRaw ? cityRaw
+              .replace(/new\s+york\s+new\s+jersey/i,"NY/NJ")
+              .replace(/new\s+jersey/i,"NJ")
+              .replace(/new\s+york/i,"NY")
+              .replace(/los\s+angeles/i,"LA")
+              .replace(/san\s+francisco/i,"SF")
+              .replace(/dallas\s+fort\s+worth/i,"DAL")
+              .replace(/kansas\s+city/i,"KC")
+              .replace(/seattle/i,"SEA")
+              .replace(/miami/i,"MIA")
+              .replace(/boston/i,"BOS")
+              .replace(/philadelphia/i,"PHI")
+              .replace(/guadalajara/i,"GDL")
+              .replace(/monterrey/i,"MTY")
+              .replace(/mexico\s+city/i,"CDMX")
+              .replace(/toronto/i,"TOR")
+              .replace(/vancouver/i,"VAN")
+              : null;
             const date = fmtDate(m?.match_date);
             const price = l.price?`$${Number(l.price).toLocaleString()}`:"—";
             const qty = l.quantity?`×${l.quantity}`:"—";
