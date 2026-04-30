@@ -137,8 +137,8 @@ export default function LiveShowsPage() {
 
             {/* Text */}
             <div style={{ flex:1, minWidth:0 }}>
-              {/* Mobile: large vinyl centered, very transparent watermark */}
-        <div className="hero-poster-vinyl vinyl-spin" style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:240, height:240, borderRadius:"50%", opacity:.07, pointerEvents:"none" }}>
+              {/* Mobile: large vinyl offset by language direction */}
+        <div className="hero-poster-vinyl vinyl-spin" style={{ position:"absolute", top:"50%", left: isHe ? "20%" : "80%", transform:"translate(-50%,-50%)", width:240, height:240, borderRadius:"50%", opacity:.07, pointerEvents:"none" }}>
           <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
           <div style={{ position:"absolute", inset:36, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)" }} />
           <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%)" }} />
