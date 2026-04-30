@@ -1312,7 +1312,6 @@ export default function MyListingsPage() {
                 away_team_name: l.match.away_team_name,
                 city: l.match.city,
                 match_date: l.match.match_date,
-                match_time: l.match.match_time ?? null,
                 stage: l.match.stage,
               } : null,
               ilMatch: l.ilMatch ? {
