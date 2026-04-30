@@ -1298,21 +1298,31 @@ export default function MyListingsPage() {
             .map(l => ({
               id: l.id,
               type: l.type,
+              category: l.category,
               price: l.price,
               quantity: l.quantity,
-              match_id: l.match_id,
-              israeli_match_id: l.israeli_match_id,
-              matchName: l.match
-                ? `${teamName(l.match.home_team_name, isHe)} ${isHe ? "נגד" : "vs"} ${teamName(l.match.away_team_name, isHe)}`
-                : l.ilMatch
-                ? `${isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en} ${isHe ? "נגד" : "vs"} ${isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en}`
-                : "",
-              matchMeta: l.match
-                ? `${l.match.city ?? ""} · ${l.match.match_date?.slice(0,10) ?? ""}`
-                : l.ilMatch
-                ? `${l.ilMatch.city ?? ""} · ${l.ilMatch.match_date?.slice(0,10) ?? ""}`
-                : "",
-              isWC: !!l.match_id,
+              seats_block: l.seats_block,
+              seats_row: l.seats_row,
+              seats_numbers: l.seats_numbers,
+              seated_together: l.seated_together,
+              match: l.match ? {
+                id: l.match_id ?? "",
+                fifa_match_number: l.match.fifa_match_number,
+                home_team_name: l.match.home_team_name,
+                away_team_name: l.match.away_team_name,
+                city: l.match.city,
+                match_date: l.match.match_date,
+                match_time: l.match.match_time ?? null,
+                stage: l.match.stage,
+              } : null,
+              ilMatch: l.ilMatch ? {
+                id: l.israeli_match_id ?? "",
+                home_team_name: isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en,
+                away_team_name: isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en,
+                city: l.ilMatch.city,
+                match_date: l.ilMatch.match_date,
+                match_time: l.ilMatch.match_time ?? null,
+              } : null,
             }))}
           isHe={isHe}
           onClose={() => setShareAllOpen(false)}
