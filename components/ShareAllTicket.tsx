@@ -44,7 +44,7 @@ const STUB_W = 260;
 const ROW_H = 120;
 const STUB_HEADER_H = 100;
 const STUB_FOOTER_H = 70;
-const COL_SB = 60; const COL_TEAMS = 400; const COL_META = 270; const COL_SEATS = 260; const COL_PRICE = 170;
+const COL_SB = 0; const COL_TEAMS = 430; const COL_META = 270; const COL_SEATS = 290; const COL_PRICE = 170;
 
 function dv(v: unknown) { if (!v) return null; const s = String(v).trim(); return s || null; }
 function fmtDate(v?: string | null) { if (!v) return null; const dt = new Date(v); if (isNaN(dt.getTime())) return null; return `${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}`; }
@@ -97,8 +97,6 @@ function AllCard({ listings, isHe }: { listings: ListingWithMatch[]; isHe: boole
 
           {/* Header row */}
           <div style={{height:STUB_HEADER_H-6,display:"flex",alignItems:"center",padding:"0 36px",gap:0,borderBottom:`1.5px solid ${C.border}`,flexShrink:0,background:"rgba(13,27,62,.02)"}}>
-            <div style={{width:COL_SB,flexShrink:0}}/>
-            <Div h={32}/>
             <div style={{width:COL_TEAMS,flexShrink:0,textAlign:"center"}}><span style={{fontSize:15,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:C.hint}}>{isHe?"משחק":"MATCH"}</span></div>
             <Div h={32}/>
             <div style={{width:COL_META,flexShrink:0,display:"flex",justifyContent:"space-around"}}>
@@ -123,11 +121,12 @@ function AllCard({ listings, isHe }: { listings: ListingWithMatch[]; isHe: boole
             const home = teamName(m?.home_team_name,isHe);
             const away = teamName(m?.away_team_name,isHe);
             const stage = stageShort(l.match?.stage,isHe);
-            const city = dv(m?.city);
+            const cityRaw = dv(m?.city);
+            const city = cityRaw ? cityRaw.replace(/new\s+jersey/i,"NY/NJ").replace(/new\s+york/i,"New York").replace(/los\s+angeles/i,"LA").replace(/san\s+francisco/i,"SF") : null;
             const date = fmtDate(m?.match_date);
             const price = l.price?`$${Number(l.price).toLocaleString()}`:"—";
             const qty = l.quantity?`×${l.quantity}`:"—";
-            const cat = dv(l.category)||"—";
+            const cat = l.category ? (String(l.category).replace(/[^0-9]/g,"")||dv(l.category)||"—") : "—";
             const blk = dv(l.seats_block)||"—";
             const row = dv(l.seats_row)||"—";
             const hFlag = flagImgSrc(m?.home_team_name);
@@ -136,10 +135,7 @@ function AllCard({ listings, isHe }: { listings: ListingWithMatch[]; isHe: boole
             const cell=(val:string,color=C.text,size=28)=><div style={{textAlign:"center",minWidth:50}}><div style={{fontSize:size,fontWeight:900,color,lineHeight:1}}>{val}</div></div>;
             return (
               <div key={l.id} style={{height:ROW_H,display:"flex",alignItems:"center",padding:"0 36px",gap:0,borderBottom:idx<listings.length-1?`1px solid ${C.border}`:"none",background:idx%2?"rgba(13,27,62,.018)":"transparent",flexShrink:0}}>
-                <div style={{width:COL_SB,flexShrink:0,display:"flex",justifyContent:"center"}}>
-                  <div style={{width:46,height:46,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:900,background:isSell?"rgba(0,104,71,.1)":"rgba(26,58,143,.1)",color:isSell?"#006847":"#1a3a8f",border:`2px solid ${isSell?"rgba(0,104,71,.25)":"rgba(26,58,143,.22)"}`}}>{isSell?"S":"B"}</div>
-                </div>
-                <Div/>
+                
                 <div style={{width:COL_TEAMS,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",gap:14}}>
                   {hFlag?<img src={hFlag} alt="" style={fSt}/>:<div style={{...fSt,background:"linear-gradient(135deg,#c8d6e5,#a8bfd0)"}}/>}
                   <div style={{fontSize:26,fontWeight:900,color:navy,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:140}}>{home}</div>
