@@ -138,15 +138,15 @@ export default function LiveShowsPage() {
 
             {/* Text */}
             <div style={{ flex:1, minWidth:0 }}>
-              {/* Mobile-only: vinyl peeking from right corner */}
-        <div className="hero-poster-vinyl vinyl-spin" style={{ position:"absolute", top:-40, right:-40, width:180, height:180, borderRadius:"50%", opacity:.25, pointerEvents:"none" }}>
+              {/* Mobile: small vinyl top-right corner */}
+        <div className="hero-poster-vinyl vinyl-spin" style={{ position:"absolute", top:-30, right:-30, width:120, height:120, borderRadius:"50%", opacity:.18, pointerEvents:"none" }}>
           <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"conic-gradient(#1a1a1a 0deg,#2d2d2d 30deg,#1a1a1a 60deg,#2d2d2d 90deg,#1a1a1a 120deg,#2d2d2d 150deg,#1a1a1a 180deg,#2d2d2d 210deg,#1a1a1a 240deg,#2d2d2d 270deg,#1a1a1a 300deg,#2d2d2d 330deg)" }} />
-          <div style={{ position:"absolute", inset:28, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)" }} />
-          <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 50%)" }} />
-          <div style={{ position:"absolute", width:16, height:16, borderRadius:"50%", background:"#f0f4fa", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
+          <div style={{ position:"absolute", inset:18, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#e63946)" }} />
+          <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 50%)" }} />
+          <div style={{ position:"absolute", width:12, height:12, borderRadius:"50%", background:"#f0f4fa", top:"50%", left:"50%", transform:"translate(-50%,-50%)", zIndex:2 }} />
         </div>
-        {/* Mobile-only: mic peeking from bottom-left */}
-        <img src={MIC_SRC} alt="" className="hero-poster-mic mic-float" style={{ position:"absolute", bottom:-30, left:-20, width:140, height:140, objectFit:"contain", opacity:.15, pointerEvents:"none", filter:"drop-shadow(0 4px 16px rgba(124,58,237,.3))" }} />
+        {/* Mobile: small mic bottom-left corner */}
+        <img src={MIC_SRC} alt="" className="hero-poster-mic" style={{ position:"absolute", bottom:-16, left:-10, width:100, height:100, objectFit:"contain", opacity:.12, pointerEvents:"none", filter:"drop-shadow(0 2px 8px rgba(124,58,237,.2))" }} />
               <div style={{ fontSize:11, fontWeight:800, letterSpacing:".24em", textTransform:"uppercase" as const, background:"linear-gradient(135deg,#7c3aed,#e63946)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:16 }}>
                 STAY IN THE SHOW
               </div>
