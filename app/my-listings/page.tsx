@@ -1292,6 +1292,7 @@ export default function MyListingsPage() {
       {/* Share single listing */}
       {shareAllOpen && (
         <ShareAllTicket
+          open={shareAllOpen}
           listings={listings
             .filter(l => l.status === "active" && !isExp(l.expires_at))
             .map(l => ({

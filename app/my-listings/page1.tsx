@@ -7,6 +7,8 @@ import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../lib/LanguageContext";
 import { useToast } from "../../components/ToastProvider";
 import { teamName, flagImgSrc } from "../../lib/teams";
+import ShareListingTicket from "../../components/ShareListingTicket";
+import ShareAllTicket from "../../components/ShareAllTicket";
 
 const C = {
   usa: "#1a3a6b",
@@ -19,6 +21,9 @@ const C = {
   hint: "#94a3b8",
   faint: "#cbd5e1",
   bg: "#f8f9fc",
+  teal: "#1abfb0",
+  blue: "#1a3a8f",
+  green: "#006847",
 };
 
 type Plan = "free" | "premium" | "unlimited";
@@ -47,12 +52,31 @@ type Listing = {
   last_bumped_at?: string | null;
   first_published_at?: string | null;
   archived_at?: string | null;
+  israeli_match_id?: string | null;
+  seated_together?: string | null;
+  seats_block?: string | null;
+  seats_row?: string | null;
+  seats_numbers?: string | null;
   match?: {
     fifa_match_number: number;
     home_team_name: string | null;
     away_team_name: string | null;
     city: string;
     match_date: string;
+    stage?: string | null;
+  } | null;
+  ilMatch?: {
+    home_team: string;
+    away_team: string;
+    home_team_en: string;
+    away_team_en: string;
+    city: string | null;
+    stadium: string | null;
+    match_date: string;
+    match_time: string | null;
+    round: string;
+    round_en: string;
+    competition: string;
     stage?: string | null;
   } | null;
 };
@@ -296,7 +320,10 @@ export default function MyListingsPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareAllOpen, setShareAllOpen] = useState(false);
+  const [shareListingId, setShareListingId] = useState<string | null>(null);
   const [plan, setPlan] = useState<Plan>("free");
+  const [showListings, setShowListings] = useState<any[]>([]);
 
   useEffect(() => {
     loadPage();
@@ -331,23 +358,44 @@ export default function MyListingsPage() {
       .is("archived_at", null)
       .order("created_at", { ascending: false });
 
-    const ids = [...new Set((raw || []).map((l: any) => l.match_id))];
+    const wcIds = [...new Set((raw || []).filter((l: any) => l.match_id).map((l: any) => l.match_id))];
+    const ilIds = [...new Set((raw || []).filter((l: any) => l.israeli_match_id).map((l: any) => l.israeli_match_id))];
     let mMap: Record<string, any> = {};
+    let ilMap: Record<string, any> = {};
 
-    if (ids.length) {
+    if (wcIds.length) {
       const { data: md } = await supabase
         .from("matches")
-        .select(
-          "id,fifa_match_number,home_team_name,away_team_name,city,match_date,stage"
-        )
-        .in("id", ids);
-
+        .select("id,fifa_match_number,home_team_name,away_team_name,city,match_date,stage")
+        .in("id", wcIds);
       mMap = Object.fromEntries((md || []).map((m: any) => [m.id, m]));
     }
 
+    if (ilIds.length) {
+      const { data: ild } = await supabase
+        .from("israeli_matches")
+        .select("id,home_team,away_team,home_team_en,away_team_en,city,stadium,match_date,match_time,round,round_en,competition")
+        .in("id", ilIds);
+      ilMap = Object.fromEntries((ild || []).map((m: any) => [m.id, m]));
+    }
+
     setListings(
-      (raw || []).map((l: any) => ({ ...l, match: mMap[l.match_id] || null }))
+      (raw || []).map((l: any) => ({
+        ...l,
+        match: l.match_id ? mMap[l.match_id] || null : null,
+        ilMatch: l.israeli_match_id ? ilMap[l.israeli_match_id] || null : null,
+      }))
     );
+
+    // Fetch show listings
+    const { data: showRaw } = await supabase
+      .from("show_listings")
+      .select("id,type,price,quantity,ticket_type,show_date,show_time,status,created_at,expires_at,artist_id,venue_id,artists(name,name_he),venues(name,city_he)")
+      .eq("user_id", user.id)
+      .neq("status", "archived")
+      .order("created_at", { ascending: false });
+    setShowListings(showRaw || []);
+
     setLoading(false);
   }
 
@@ -368,6 +416,10 @@ export default function MyListingsPage() {
       ).length,
     [listings]
   );
+  const showActiveCount   = useMemo(() => showListings.filter((l: any) => l.status === "active" && !isExp(l.expires_at)).length, [showListings]);
+  const showFeaturedCount = useMemo(() => showListings.filter((l: any) => !!l.is_featured && l.status === "active").length, [showListings]);
+  const SHOW_MAX = 10;
+  const SHOW_MAX_GOLD = 2;
 
   async function handleClose(id: string) {
     const { error } = await supabase
@@ -402,6 +454,32 @@ export default function MyListingsPage() {
     if (!error) {
       toast.success(isHe ? "המודעה נמחקה" : "Listing deleted");
       loadPage();
+    }
+  }
+
+  async function handleShowClose(id: string) {
+    const { error } = await supabase.from("show_listings").update({ status: "closed" }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "המודעה נסגרה" : "Listing closed");
+      setShowListings(prev => prev.map((x: any) => x.id === id ? { ...x, status: "closed" } : x));
+    } else toast.error(isHe ? "שגיאה" : "Error");
+  }
+
+  async function handleShowRenew(id: string) {
+    const exp = new Date(Date.now() + 7 * 86400000).toISOString();
+    const { error } = await supabase.from("show_listings").update({ status: "active", expires_at: exp }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "חודש ל-7 ימים ✓" : "Renewed for 7 days ✓");
+      setShowListings(prev => prev.map((x: any) => x.id === id ? { ...x, status: "active", expires_at: exp } : x));
+    }
+  }
+
+  async function handleShowDelete(id: string) {
+    if (!confirm(isHe ? "למחוק את המודעה?" : "Delete this listing?")) return;
+    const { error } = await supabase.from("show_listings").update({ status: "archived" }).eq("id", id);
+    if (!error) {
+      toast.success(isHe ? "המודעה נמחקה" : "Listing deleted");
+      setShowListings(prev => prev.filter((x: any) => x.id !== id));
     }
   }
 
@@ -575,6 +653,16 @@ export default function MyListingsPage() {
                   l: isHe ? "מוזהבות" : "Gold",
                   c: C.gold,
                 },
+                {
+                  n: `${showActiveCount}/10`,
+                  l: isHe ? "🎵 הופעות" : "🎵 Shows",
+                  c: "#7c3aed",
+                },
+                {
+                  n: `${showFeaturedCount}/2`,
+                  l: isHe ? "🎵 Gold" : "🎵 Gold",
+                  c: "#d4a017",
+                },
               ].map((s, i) => (
                 <div
                   key={i}
@@ -610,18 +698,15 @@ export default function MyListingsPage() {
               ))}
             </div>
 
+            <button
+              onClick={() => setShareAllOpen(true)}
+              style={{ padding: "11px 18px", fontSize: "12px", fontWeight: 700, background: "#25D366", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              📤 {isHe ? "שתף הכל" : "Share all"}
+            </button>
             <Link
               href="/post-listing"
-              style={{
-                padding: "11px 20px",
-                background: C.usa,
-                color: "#fff",
-                fontSize: "12px",
-                fontWeight: 700,
-                borderRadius: "6px",
-                textDecoration: "none",
-                letterSpacing: "0.02em",
-              }}
+              style={{ padding: "11px 20px", background: C.usa, color: "#fff", fontSize: "12px", fontWeight: 700, borderRadius: "6px", textDecoration: "none", letterSpacing: "0.02em" }}
             >
               + {isHe ? "מודעה חדשה" : "New listing"}
             </Link>
@@ -858,25 +943,22 @@ export default function MyListingsPage() {
                               {isHe ? "משחק" : "Match"}{" "}
                               {listing.match.fifa_match_number} ·
                             </span>
-
-                            <TeamInline
-                              name={listing.match.home_team_name}
-                              stage={listing.match.stage}
-                              isHe={isHe}
-                            />
-
-                            <span style={{ color: C.hint, fontWeight: 400 }}>
-                              {isHe ? "נגד" : "vs"}
+                            <TeamInline name={listing.match.home_team_name} stage={listing.match.stage} isHe={isHe} />
+                            <span style={{ color: C.hint, fontWeight: 400 }}>{isHe ? "נגד" : "vs"}</span>
+                            <TeamInline name={listing.match.away_team_name} stage={listing.match.stage} isHe={isHe} />
+                            <span style={{ flexBasis: "100%" }}>{formatMatchMeta(listing.match, isHe)}</span>
+                          </>
+                        ) : listing.ilMatch ? (
+                          <>
+                            <span style={{ fontWeight: 600 }}>
+                              {isHe ? listing.ilMatch.home_team : listing.ilMatch.home_team_en}
+                              {" "}{isHe ? "נגד" : "vs"}{" "}
+                              {isHe ? listing.ilMatch.away_team : listing.ilMatch.away_team_en}
                             </span>
-
-                            <TeamInline
-                              name={listing.match.away_team_name}
-                              stage={listing.match.stage}
-                              isHe={isHe}
-                            />
-
-                            <span style={{ flexBasis: "100%" }}>
-                              {formatMatchMeta(listing.match, isHe)}
+                            <span style={{ flexBasis: "100%", color: C.hint, fontWeight: 400 }}>
+                              {isHe ? listing.ilMatch.round : listing.ilMatch.round_en}
+                              {listing.ilMatch.city ? ` · ${listing.ilMatch.city}` : ""}
+                              {" · "}{listing.ilMatch.match_date?.slice(0,10)}
                             </span>
                           </>
                         ) : (
@@ -923,6 +1005,27 @@ export default function MyListingsPage() {
                           </span>
                         )}
                       </div>
+
+                      {/* Seat details */}
+                      {(listing.category || listing.seats_block || listing.seats_row || listing.seats_numbers || listing.seated_together) && (
+                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+                          {listing.category && (
+                            <span style={{ fontSize: "10px", padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", color: C.hint, fontWeight: 600 }}>{listing.category}</span>
+                          )}
+                          {listing.seats_block && (
+                            <span style={{ fontSize: "10px", padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", color: C.muted, fontWeight: 600 }}>{isHe ? "בלוק" : "Blk"} {listing.seats_block}</span>
+                          )}
+                          {listing.seats_row && (
+                            <span style={{ fontSize: "10px", padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", color: C.muted, fontWeight: 600 }}>{isHe ? "שורה" : "Row"} {listing.seats_row}</span>
+                          )}
+                          {listing.seats_numbers && (
+                            <span style={{ fontSize: "10px", padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", color: C.muted, fontWeight: 600 }}>{listing.seats_numbers}</span>
+                          )}
+                          {listing.seated_together === "yes" && (
+                            <span style={{ fontSize: "10px", padding: "2px 8px", background: "rgba(34,197,94,0.08)", borderRadius: "4px", color: "#15803d", fontWeight: 700 }}>✓ {isHe ? "יחד" : "Together"}</span>
+                          )}
+                        </div>
+                      )}
 
                       {listing.notes && (
                         <p
@@ -1056,21 +1159,18 @@ export default function MyListingsPage() {
                         )}
 
                         <Link
-                          href={`/matches/${listing.match_id}`}
-                          style={{
-                            padding: "6px 12px",
-                            fontSize: "11px",
-                            fontWeight: 600,
-                            border: `1px solid ${C.border}`,
-                            borderRadius: "5px",
-                            background: "#fff",
-                            color: C.hint,
-                            textDecoration: "none",
-                            whiteSpace: "nowrap",
-                          }}
+                          href={listing.match_id ? `/matches/${listing.match_id}` : `/sports/football-israel/${listing.israeli_match_id}`}
+                          style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${C.border}`, borderRadius: "5px", background: "#fff", color: C.hint, textDecoration: "none", whiteSpace: "nowrap" }}
                         >
                           {isHe ? "👁 צפה" : "👁 View"}
                         </Link>
+
+                        <button
+                          onClick={() => setShareListingId(listing.id)}
+                          style={{ padding: "6px 12px", fontSize: "11px", fontWeight: 700, border: "1px solid rgba(37,211,102,.3)", borderRadius: "5px", background: "rgba(37,211,102,.06)", color: "#15803d", cursor: "pointer", whiteSpace: "nowrap" as const }}
+                        >
+                          📤 {isHe ? "שתף" : "Share"}
+                        </button>
 
                         <button
                           onClick={() => handleDelete(listing.id)}
@@ -1098,6 +1198,164 @@ export default function MyListingsPage() {
           )}
         </div>
       </div>
+      {/* ── SHOW LISTINGS ── */}
+      {showListings.length > 0 && (
+        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 16px 32px", boxSizing: "border-box" as const }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: C.teal, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 12 }}>
+            🎵 {isHe ? "הופעות חיות" : "Live Shows"}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
+            {showListings.map((sl: any) => {
+              const artistName = isHe ? (sl.artists?.name_he || sl.artists?.name) : sl.artists?.name;
+              const venueName  = sl.venues?.name || null;
+              const venueCity  = sl.venues?.city_he || null;
+              const isSell     = sl.type === "sell";
+              const expired    = sl.expires_at ? new Date(sl.expires_at) < new Date() : false;
+              const isActive   = sl.status === "active" && !expired;
+              return (
+                <div key={sl.id} style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden", opacity: expired ? .6 : 1 }}>
+                  <div style={{ height: 2, background: "linear-gradient(90deg,#7c3aed,#e63946)" }} />
+                  <div style={{ padding: "14px 16px" }}>
+                    {/* Top row: artist + price */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 8px", borderRadius: 2, background: isSell ? "rgba(0,104,71,.07)" : "rgba(26,58,143,.07)", color: isSell ? C.green : C.blue, border: `1px solid ${isSell ? "rgba(0,104,71,.2)" : "rgba(26,58,143,.18)"}`, letterSpacing: ".05em", textTransform: "uppercase" as const }}>
+                            {isSell ? (isHe ? "מכירה" : "Sell") : (isHe ? "קנייה" : "Buy")}
+                          </span>
+                          {!isActive && <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 2, background: "rgba(148,163,184,.1)", color: C.hint, border: `1px solid ${C.border}` }}>{isHe ? "סגור" : "Closed"}</span>}
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 3 }}>{artistName || "—"}</div>
+                        <div style={{ fontSize: 11, color: C.hint }}>
+                          {venueName && <span>📍 {venueName}{venueCity ? ` · ${venueCity}` : ""}</span>}
+                          {sl.show_date && <span>{venueName ? " · " : ""}{sl.show_date.slice(0,10)}</span>}
+                          {sl.show_time && <span> · {sl.show_time.slice(0,5)}</span>}
+                        </div>
+                      </div>
+                      {sl.price && <div style={{ fontSize: 18, fontWeight: 900, color: C.text, flexShrink: 0 }}>₪{Number(sl.price).toLocaleString()}</div>}
+                    </div>
+                    {/* Action buttons */}
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+                      {/* Edit */}
+                      <a href={`/post-listing?tab=show&showListingId=${sl.id}`} style={{ fontSize: 11, color: C.muted, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const, background: "#fff" }}>
+                        ✏️ {isHe ? "ערוך" : "Edit"}
+                      </a>
+
+                      {/* Gold */}
+                      {sl.is_featured ? (
+                        <button onClick={async () => {
+                          await supabase.from("show_listings").update({ is_featured: false }).eq("id", sl.id);
+                          setShowListings(prev => prev.map((x: any) => x.id === sl.id ? { ...x, is_featured: false } : x));
+                        }} style={{ fontSize: 11, color: C.muted, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
+                          {isHe ? "הסר Gold" : "Remove Gold"}
+                        </button>
+                      ) : (
+                        <button onClick={async () => {
+                          if (showFeaturedCount >= SHOW_MAX_GOLD) { toast.warning(isHe ? `מקסימום ${SHOW_MAX_GOLD} מודעות Gold להופעות` : `Max ${SHOW_MAX_GOLD} featured show listings`); return; }
+                          await supabase.from("show_listings").update({ is_featured: true, first_featured_at: new Date().toISOString() }).eq("id", sl.id);
+                          setShowListings(prev => prev.map((x: any) => x.id === sl.id ? { ...x, is_featured: true } : x));
+                          toast.success(isHe ? "מודעה הפכה למוזהבת ⭐" : "Listing is now gold ⭐");
+                        }} style={{ fontSize: 11, color: C.gold, background: `rgba(212,160,23,.08)`, border: `1px solid rgba(212,160,23,.3)`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const, fontWeight: 700 }}>
+                          ⭐ Gold
+                        </button>
+                      )}
+
+                      {/* View */}
+                      <a href={`/live-shows/${sl.artist_id}`} style={{ fontSize: 11, color: C.hint, textDecoration: "none", padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 4, whiteSpace: "nowrap" as const }}>
+                        👁 {isHe ? "צפה" : "View"}
+                      </a>
+
+                      {/* Close / Renew */}
+                      {isActive ? (
+                        <button onClick={() => handleShowClose(sl.id)} style={{ fontSize: 11, color: C.muted, background: "#fff", border: `1px solid ${C.border}`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
+                          {isHe ? "סגור" : "Close"}
+                        </button>
+                      ) : (
+                        <button onClick={() => handleShowRenew(sl.id)} style={{ fontSize: 11, color: C.blue, background: "rgba(26,58,143,.06)", border: `1px solid rgba(26,58,143,.2)`, borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const, fontWeight: 700 }}>
+                          {isHe ? "חדש 7 ימים" : "Renew 7d"}
+                        </button>
+                      )}
+
+                      {/* Delete */}
+                      <button onClick={() => handleShowDelete(sl.id)} style={{ fontSize: 11, color: C.canada, background: "rgba(230,57,70,.06)", border: "1px solid rgba(230,57,70,.2)", borderRadius: 4, cursor: "pointer", padding: "5px 10px", whiteSpace: "nowrap" as const }}>
+                        🗑 {isHe ? "מחק" : "Delete"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Share single listing */}
+      {shareAllOpen && (
+        <ShareAllTicket
+          listings={listings
+            .filter(l => l.status === "active" && !isExp(l.expires_at))
+            .map(l => ({
+              id: l.id,
+              type: l.type,
+              price: l.price,
+              quantity: l.quantity,
+              match_id: l.match_id,
+              israeli_match_id: l.israeli_match_id,
+              matchName: l.match
+                ? `${teamName(l.match.home_team_name, isHe)} ${isHe ? "נגד" : "vs"} ${teamName(l.match.away_team_name, isHe)}`
+                : l.ilMatch
+                ? `${isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en} ${isHe ? "נגד" : "vs"} ${isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en}`
+                : "",
+              matchMeta: l.match
+                ? `${l.match.city ?? ""} · ${l.match.match_date?.slice(0,10) ?? ""}`
+                : l.ilMatch
+                ? `${l.ilMatch.city ?? ""} · ${l.ilMatch.match_date?.slice(0,10) ?? ""}`
+                : "",
+              isWC: !!l.match_id,
+            }))}
+          isHe={isHe}
+          onClose={() => setShareAllOpen(false)}
+        />
+      )}
+
+      {shareListingId && (() => {
+        const l = listings.find(x => x.id === shareListingId);
+        if (!l) return null;
+        const matchData = l.match ? {
+          id: l.match_id ?? "",
+          home_team_name: l.match.home_team_name,
+          away_team_name: l.match.away_team_name,
+          city: l.match.city,
+          stadium: null,
+          match_date: l.match.match_date,
+          match_time: null,
+          stage: l.match.stage,
+          fifa_match_number: l.match.fifa_match_number,
+          competition: "wc",
+        } : l.ilMatch ? {
+          id: l.israeli_match_id ?? "",
+          home_team_name: isHe ? l.ilMatch.home_team : l.ilMatch.home_team_en,
+          away_team_name: isHe ? l.ilMatch.away_team : l.ilMatch.away_team_en,
+          city: l.ilMatch.city,
+          stadium: l.ilMatch.stadium,
+          match_date: l.ilMatch.match_date,
+          match_time: l.ilMatch.match_time,
+          stage: isHe ? l.ilMatch.round : l.ilMatch.round_en,
+          fifa_match_number: null,
+          competition: l.ilMatch.competition,
+        } : null;
+        if (!matchData) return null;
+        return (
+          <ShareListingTicket
+            key={shareListingId}
+            listing={l}
+            match={matchData}
+            isHe={isHe}
+            initialOpen={true}
+            onClose={() => setShareListingId(null)}
+          />
+        );
+      })()}
     </main>
   );
 }
