@@ -78,14 +78,84 @@ export default function Navbar() {
         .modal-enter { animation: modal-in 220ms cubic-bezier(0.16,1,0.3,1) both; }
 
         /* Bottom nav */
-        .bnav { position:fixed;bottom:0;left:0;right:0;z-index:100;display:none;height:82px;background:#fff;box-shadow:0 -12px 32px rgba(15,23,42,.12);overflow:visible; }
-        .bnav-item { display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex:1;-webkit-tap-highlight-color:transparent;transition:transform 150ms; }
-        .bnav-item:active { transform:scale(.88); }
-        .bnav-label { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:.05em; }
-        .bnav-item.active .bnav-label { color:#0d1b3e; }
-        .bnav-item.active svg { stroke:#0d1b3e; }
-        .bnav-plus { width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#1abfb0);display:flex;align-items:center;justify-content:center;position:absolute;top:-22px;box-shadow:0 8px 28px rgba(124,58,237,.45),0 2px 0 rgba(255,255,255,.3) inset; }
-        .bnav-plus:active { transform:scale(.9); }
+        .bnav {
+          position:fixed;
+          bottom:0;
+          left:0;
+          right:0;
+          z-index:100;
+          display:none;
+          height:88px;
+          background:rgba(255,255,255,.985);
+          backdrop-filter:blur(18px);
+          -webkit-backdrop-filter:blur(18px);
+          border-top:1px solid rgba(15,23,42,.055);
+          box-shadow:0 -18px 44px rgba(15,23,42,.10);
+          overflow:visible;
+        }
+        .bnav::before {
+          content:"";
+          position:absolute;
+          inset:0;
+          pointer-events:none;
+          background:
+            radial-gradient(circle at 50% -22px, rgba(20,200,212,.13), transparent 34%),
+            linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,251,255,.99));
+        }
+        .bnav-item {
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:4px;
+          cursor:pointer;
+          flex:1;
+          min-width:0;
+          -webkit-tap-highlight-color:transparent;
+          transition:transform 150ms ease, opacity 150ms ease;
+        }
+        .bnav-item:active { transform:scale(.92); }
+        .bnav-label {
+          max-width:58px;
+          font-size:9px;
+          line-height:1.05;
+          font-weight:850;
+          color:#8b98aa;
+          letter-spacing:-.01em;
+          text-align:center;
+          white-space:normal;
+        }
+        .bnav-item svg { filter:drop-shadow(0 1px 0 rgba(255,255,255,.85)); }
+        .bnav-item.active .bnav-label { color:#10213f; }
+        .bnav-item.active svg { stroke:#10213f; }
+        .bnav-item.active { transform:translateY(-1px); }
+        .bnav-plus {
+          width:56px;
+          height:56px;
+          border-radius:20px;
+          background:linear-gradient(135deg,#16d4df 0%,#0d6efd 100%);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          position:absolute;
+          top:-26px;
+          border:4px solid rgba(255,255,255,.96);
+          box-shadow:
+            0 16px 34px rgba(13,110,253,.30),
+            0 6px 16px rgba(20,200,212,.22),
+            inset 0 1px 0 rgba(255,255,255,.40);
+          transition:transform 160ms ease, box-shadow 160ms ease;
+        }
+        .bnav-plus:active { transform:scale(.92) translateY(1px); }
+        .bnav-plus::after {
+          content:"";
+          position:absolute;
+          inset:-8px;
+          border-radius:26px;
+          background:linear-gradient(135deg, rgba(20,200,212,.16), rgba(13,110,253,.12));
+          z-index:-1;
+          filter:blur(4px);
+        }
 
         @media(max-width:639px) {
           .bnav { display:block; }
@@ -190,7 +260,7 @@ export default function Navbar() {
           <path d="M0 22 Q0 0 22 0 L155 0 Q173 0 178 16 Q187.5 46 197 16 Q202 0 220 0 L353 0 Q375 0 375 22 L375 76 L0 76 Z" fill="#ffffff" filter="url(#nav-shadow)"/>
         </svg>
 
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:70, display:"flex", alignItems:"center", justifyContent:"space-around", padding:"0 4px 10px", background:"#ffffff" }}>
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:74, display:"flex", alignItems:"center", justifyContent:"space-around", padding:"0 6px 12px" }}>
 
           {/* Home */}
           <div className={`bnav-item${isActive("/") && pathname === "/" ? " active" : ""}`} onClick={() => window.location.href="/"}>
@@ -226,7 +296,7 @@ export default function Navbar() {
               <circle cx="12" cy="12" r="3"/>
               <path d="M12 5v14M2 9h4v6H2M22 9h-4v6h4"/>
             </svg>
-            <span className="bnav-label">{isHe ? "כדורגל" : "Football"}</span>
+            <span className="bnav-label">{isHe ? "כדורגל ישראלי" : "Israeli"}</span>
           </div>
 
           {/* Shows */}

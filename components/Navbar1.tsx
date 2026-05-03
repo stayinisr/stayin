@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../lib/LanguageContext";
 
@@ -14,34 +15,22 @@ export default function Navbar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
   const menuRef = useRef<HTMLDivElement | null>(null);
   const { lang, setLang, t } = useLanguage();
   const isHe = lang === "he";
+  const pathname = usePathname();
 
   useEffect(() => {
     loadUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const email = session?.user?.email ?? null;
-        setUserEmail(email);
-        if (session?.user?.id) {
-          fetchProfile(session.user.id);
-        } else {
-          setIsAdmin(false);
-          setFullName(null);
-        }
-      }
-    );
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const email = session?.user?.email ?? null;
+      setUserEmail(email);
+      if (session?.user?.id) fetchProfile(session.user.id);
+      else { setIsAdmin(false); setFullName(null); }
+    });
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      subscription.unsubscribe();
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => { subscription.unsubscribe(); window.removeEventListener("scroll", onScroll); };
   }, []);
 
   useEffect(() => {
@@ -60,11 +49,7 @@ export default function Navbar() {
   }
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("is_admin, full_name")
-      .eq("id", userId)
-      .maybeSingle();
+    const { data } = await supabase.from("profiles").select("is_admin, full_name").eq("id", userId).maybeSingle();
     setIsAdmin(!!data?.is_admin);
     setFullName(data?.full_name ?? null);
   }
@@ -73,11 +58,8 @@ export default function Navbar() {
     setLoggingOut(true);
     await supabase.auth.signOut();
     setLoggingOut(false);
-    setUserEmail(null);
-    setFullName(null);
-    setIsAdmin(false);
-    setShowMenu(false);
-    setShowLogoutConfirm(false);
+    setUserEmail(null); setFullName(null); setIsAdmin(false);
+    setShowMenu(false); setShowLogoutConfirm(false);
     window.location.href = "/";
   }
 
@@ -85,249 +67,105 @@ export default function Navbar() {
     ? fullName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
     : userEmail?.[0]?.toUpperCase() ?? "?";
 
+  const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/");
+
   return (
     <>
       <style>{`
-        @keyframes menu-in {
-          from { opacity: 0; transform: translateY(-8px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0)    scale(1); }
-        }
+        @keyframes menu-in { from{opacity:0;transform:translateY(-8px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
         .nav-menu-enter { animation: menu-in 200ms cubic-bezier(0.16,1,0.3,1) both; }
-        @keyframes modal-in {
-          from { opacity: 0; transform: scale(0.96); }
-          to   { opacity: 1; transform: scale(1); }
-        }
+        @keyframes modal-in { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
         .modal-enter { animation: modal-in 220ms cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Bottom nav */
+        .bnav { position:fixed;bottom:0;left:0;right:0;z-index:100;display:none;height:82px;background:#fff;box-shadow:0 -12px 32px rgba(15,23,42,.12);overflow:visible; }
+        .bnav-item { display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex:1;-webkit-tap-highlight-color:transparent;transition:transform 150ms; }
+        .bnav-item:active { transform:scale(.88); }
+        .bnav-label { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:.05em; }
+        .bnav-item.active .bnav-label { color:#0d1b3e; }
+        .bnav-item.active svg { stroke:#0d1b3e; }
+        .bnav-plus { width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#1abfb0);display:flex;align-items:center;justify-content:center;position:absolute;top:-22px;box-shadow:0 8px 28px rgba(124,58,237,.45),0 2px 0 rgba(255,255,255,.3) inset; }
+        .bnav-plus:active { transform:scale(.9); }
+
+        @media(max-width:639px) {
+          .bnav { display:block; }
+          .hide-on-mobile { display:none!important; }
+          .nav-post-btn-text { display:none; }
+        }
+        @media(min-width:640px) {
+          .show-on-mobile-only { display:none!important; }
+        }
       `}</style>
 
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          transition: "background 240ms ease, box-shadow 240ms ease, border-color 240ms ease",
-          background: scrolled
-            ? "rgba(255,255,255,0.88)"
-            : "rgba(255,255,255,0.72)",
-          backdropFilter: "blur(18px)",
-          WebkitBackdropFilter: "blur(18px)",
-          borderBottom: `1px solid ${scrolled ? "rgba(16,33,63,0.1)" : "rgba(16,33,63,0.06)"}`,
-          boxShadow: scrolled ? "0 2px 24px rgba(16,33,63,0.07)" : "none",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            padding: "0 1rem",
-            height: "60px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+      {/* ── TOP NAVBAR ── */}
+      <header style={{ position:"sticky", top:0, zIndex:50, transition:"background 240ms ease,box-shadow 240ms ease", background: scrolled ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.72)", backdropFilter:"blur(18px)", WebkitBackdropFilter:"blur(18px)", borderBottom:`1px solid ${scrolled ? "rgba(16,33,63,0.1)" : "rgba(16,33,63,0.06)"}`, boxShadow: scrolled ? "0 2px 24px rgba(16,33,63,0.07)" : "none" }}>
+        <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"0 1rem", height:"60px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+
           {/* LOGO */}
-          <Link href="/" style={{ display: "flex", alignItems: "center" }}>
-            <Image
-              src="/stayin-logo-transparent.png"
-              alt="Stayin"
-              width={130}
-              height={34}
-              priority
-              style={{ height: "auto", width: "auto", maxHeight: "36px" }}
-            />
+          <Link href="/" style={{ display:"flex", alignItems:"center" }}>
+            <Image src="/stayin-logo-transparent.png" alt="Stayin" width={130} height={34} priority style={{ height:"auto", width:"auto", maxHeight:"36px" }} />
           </Link>
 
           {/* RIGHT */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
 
-            {/* LANGUAGE PILL */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                background: "rgba(16,33,63,0.05)",
-                borderRadius: "999px",
-                padding: "3px",
-                gap: "2px",
-              }}
-            >
-              {(["en", "he"] as const).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  style={{
-                    padding: "4px 10px",
-                    borderRadius: "999px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 180ms ease",
-                    background: lang === l
-                      ? "linear-gradient(135deg, #14c8d4, #0d6efd)"
-                      : "transparent",
-                    color: lang === l ? "#fff" : "var(--text-secondary)",
-                  }}
-                >
+            {/* My listings — mobile top nav */}
+            {userEmail && (
+              <Link href="/my-listings" className="show-on-mobile-only" style={{ display:"flex", alignItems:"center", gap:5, padding:"6px 12px", borderRadius:9, fontSize:12, fontWeight:700, background:"rgba(26,58,143,.07)", color:"#1a3a8f", textDecoration:"none", border:"1px solid rgba(26,58,143,.15)" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a3a8f" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                {isHe ? "שלי" : "Mine"}
+              </Link>
+            )}
+
+            {/* Language pill */}
+            <div style={{ display:"flex", alignItems:"center", background:"rgba(16,33,63,0.05)", borderRadius:"999px", padding:"3px", gap:"2px" }}>
+              {(["en","he"] as const).map((l) => (
+                <button key={l} onClick={() => setLang(l)} style={{ padding:"4px 10px", borderRadius:"999px", fontSize:"13px", fontWeight:600, border:"none", cursor:"pointer", transition:"all 180ms ease", background: lang === l ? "linear-gradient(135deg,#14c8d4,#0d6efd)" : "transparent", color: lang === l ? "#fff" : "var(--text-secondary)" }}>
                   {l === "en" ? "🇺🇸 EN" : "🇮🇱 HE"}
                 </button>
               ))}
             </div>
 
-            {/* POST LISTING shortcut */}
+            {/* Post listing — desktop */}
             {userEmail && (
-              <Link
-                href="/post-listing"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  padding: "7px 14px",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  background: "linear-gradient(135deg, #14c8d4 0%, #0d6efd 100%)",
-                  color: "#fff",
-                  textDecoration: "none",
-                  transition: "opacity 180ms, transform 180ms",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "0.88";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.opacity = "1";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                }}
-              >
-                <span style={{ fontSize: "15px" }}>+</span>
+              <Link href="/post-listing" className="hide-on-mobile" style={{ display:"flex", alignItems:"center", gap:"6px", padding:"7px 14px", borderRadius:"10px", fontSize:"13px", fontWeight:600, background:"linear-gradient(135deg,#14c8d4 0%,#0d6efd 100%)", color:"#fff", textDecoration:"none", transition:"opacity 180ms,transform 180ms" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity="0.88"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity="1"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}>
+                <span style={{ fontSize:"15px" }}>+</span>
                 <span className="nav-post-btn-text">{isHe ? "פרסם מודעה" : "Post listing"}</span>
               </Link>
             )}
 
-            {/* AVATAR / LOGIN */}
+            {/* Avatar / Login */}
             {userEmail ? (
-              <div ref={menuRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setShowMenu((p) => !p)}
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #14c8d4, #0d6efd)",
-                    border: "2px solid rgba(255,255,255,0.8)",
-                    boxShadow: "0 0 0 1px rgba(20,200,212,0.3)",
-                    color: "#fff",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "transform 180ms, box-shadow 180ms",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "scale(1.06)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px rgba(20,200,212,0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 1px rgba(20,200,212,0.3)";
-                  }}
-                >
+              <div ref={menuRef} style={{ position:"relative" }}>
+                <button onClick={() => setShowMenu(p => !p)} style={{ width:"36px", height:"36px", borderRadius:"50%", background:"linear-gradient(135deg,#14c8d4,#0d6efd)", border:"2px solid rgba(255,255,255,0.8)", boxShadow:"0 0 0 1px rgba(20,200,212,0.3)", color:"#fff", fontSize:"13px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"transform 180ms,box-shadow 180ms" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="scale(1.06)"; (e.currentTarget as HTMLElement).style.boxShadow="0 0 0 3px rgba(20,200,212,0.3)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow="0 0 0 1px rgba(20,200,212,0.3)"; }}>
                   {initials}
                 </button>
 
                 {showMenu && (
-                  <div
-                    className="nav-menu-enter"
-                    style={{
-                      position: "absolute",
-                      [isHe ? "left" : "right"]: 0,
-                      top: "calc(100% + 10px)",
-                      width: "260px",
-                      background: "rgba(255,255,255,0.95)",
-                      backdropFilter: "blur(20px)",
-                      WebkitBackdropFilter: "blur(20px)",
-                      border: "1px solid rgba(16,33,63,0.1)",
-                      borderRadius: "16px",
-                      boxShadow: "0 16px 48px rgba(16,33,63,0.14)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {/* Header */}
-                    <div
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid rgba(16,33,63,0.07)",
-                        background: "linear-gradient(135deg, rgba(20,200,212,0.06), rgba(13,110,253,0.06))",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <div
-                          style={{
-                            width: "34px",
-                            height: "34px",
-                            borderRadius: "50%",
-                            background: "linear-gradient(135deg, #14c8d4, #0d6efd)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#fff",
-                            fontSize: "13px",
-                            fontWeight: 700,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {initials}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          {fullName && (
-                            <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "1px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {fullName}
-                            </div>
-                          )}
-                          <div style={{ fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {userEmail}
-                          </div>
+                  <div className="nav-menu-enter" style={{ position:"absolute", [isHe?"left":"right"]:0, top:"calc(100% + 10px)", width:"260px", background:"rgba(255,255,255,0.95)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", border:"1px solid rgba(16,33,63,0.1)", borderRadius:"16px", boxShadow:"0 16px 48px rgba(16,33,63,0.14)", overflow:"hidden" }}>
+                    <div style={{ padding:"14px 16px", borderBottom:"1px solid rgba(16,33,63,0.07)", background:"linear-gradient(135deg,rgba(20,200,212,0.06),rgba(13,110,253,0.06))" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                        <div style={{ width:"34px", height:"34px", borderRadius:"50%", background:"linear-gradient(135deg,#14c8d4,#0d6efd)", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:"13px", fontWeight:700, flexShrink:0 }}>{initials}</div>
+                        <div style={{ minWidth:0 }}>
+                          {fullName && <div style={{ fontSize:"14px", fontWeight:600, color:"var(--text-primary)", marginBottom:"1px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{fullName}</div>}
+                          <div style={{ fontSize:"12px", color:"var(--text-muted)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{userEmail}</div>
                         </div>
                       </div>
                     </div>
-
-                    {/* Links */}
-                    <div style={{ padding: "8px" }}>
-                      {isAdmin && (
-                        <MenuLink href="/admin" icon="⚙" label={t.adminPanel} />
-                      )}
+                    <div style={{ padding:"8px" }}>
+                      {isAdmin && <MenuLink href="/admin" icon="⚙" label={t.adminPanel} />}
                       <MenuLink href="/my-listings" icon="📋" label={t.myListings} />
                       <MenuLink href="/my-account" icon="👤" label={isHe ? "החשבון שלי" : "My account"} />
                       <MenuLink href="/complete-profile" icon="✏️" label={t.editProfile} />
-
-                      <div style={{ height: "1px", background: "rgba(16,33,63,0.07)", margin: "6px 4px" }} />
-
-                      <button
-                        onClick={() => { setShowMenu(false); setShowLogoutConfirm(true); }}
-                        style={{
-                          width: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                          padding: "9px 12px",
-                          borderRadius: "10px",
-                          border: "none",
-                          background: "transparent",
-                          cursor: "pointer",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#ef4444",
-                          transition: "background 150ms",
-                          textAlign: isHe ? "right" : "left",
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                      >
-                        <span style={{ fontSize: "15px" }}>↩</span>
+                      <div style={{ height:"1px", background:"rgba(16,33,63,0.07)", margin:"6px 4px" }} />
+                      <button onClick={() => { setShowMenu(false); setShowLogoutConfirm(true); }} style={{ width:"100%", display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"10px", border:"none", background:"transparent", cursor:"pointer", fontSize:"13px", fontWeight:500, color:"#ef4444", transition:"background 150ms", textAlign: isHe ? "right" : "left" }}
+                        onMouseEnter={e => (e.currentTarget.style.background="rgba(239,68,68,0.07)")}
+                        onMouseLeave={e => (e.currentTarget.style.background="transparent")}>
+                        <span style={{ fontSize:"15px" }}>↩</span>
                         {t.logout}
                       </button>
                     </div>
@@ -335,21 +173,9 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <Link
-                href="/auth"
-                style={{
-                  padding: "7px 16px",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  background: "linear-gradient(135deg, #14c8d4 0%, #0d6efd 100%)",
-                  color: "#fff",
-                  textDecoration: "none",
-                  transition: "opacity 180ms",
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.88")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}
-              >
+              <Link href="/auth" style={{ padding:"7px 16px", borderRadius:"10px", fontSize:"13px", fontWeight:600, background:"linear-gradient(135deg,#14c8d4 0%,#0d6efd 100%)", color:"#fff", textDecoration:"none", transition:"opacity 180ms" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.opacity="0.88")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.opacity="1")}>
                 {t.login} / {t.signup}
               </Link>
             )}
@@ -357,77 +183,80 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* LOGOUT MODAL */}
+      {/* ── BOTTOM NAV (mobile only) ── */}
+      <nav className="bnav">
+        <svg style={{ position:"absolute", top:0, left:0, width:"100%", height:76 }} viewBox="0 0 375 76" preserveAspectRatio="none">
+          <filter id="nav-shadow"><feDropShadow dx="0" dy="-3" stdDeviation="6" floodOpacity="0.06"/></filter>
+          <path d="M0 22 Q0 0 22 0 L155 0 Q173 0 178 16 Q187.5 46 197 16 Q202 0 220 0 L353 0 Q375 0 375 22 L375 76 L0 76 Z" fill="#ffffff" filter="url(#nav-shadow)"/>
+        </svg>
+
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:70, display:"flex", alignItems:"center", justifyContent:"space-around", padding:"0 4px 10px", background:"#ffffff" }}>
+
+          {/* Home */}
+          <div className={`bnav-item${isActive("/") && pathname === "/" ? " active" : ""}`} onClick={() => window.location.href="/"}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12L12 3l10 9"/>
+              <path d="M5 10v9a1 1 0 0 0 1 1h4v-5h4v5h4a1 1 0 0 0 1-1v-9"/>
+            </svg>
+            <span className="bnav-label">{isHe ? "בית" : "Home"}</span>
+          </div>
+
+          {/* World Cup */}
+          <div className={`bnav-item${isActive("/sports/world-cup-2026") ? " active" : ""}`} onClick={() => window.location.href="/sports/world-cup-2026"}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 3h10v7a5 5 0 0 1-10 0V3Z"/>
+              <path d="M8 21h8M12 17v4M7 6H4a2 2 0 0 0 0 4h3M17 6h3a2 2 0 0 1 0 4h-3"/>
+            </svg>
+            <span className="bnav-label">{isHe ? "מונדיאל" : "WC 2026"}</span>
+          </div>
+
+          {/* Plus center */}
+          <div style={{ flex:1, display:"flex", justifyContent:"center", alignItems:"flex-start", position:"relative" }}>
+            <div className="bnav-plus" onClick={() => window.location.href="/post-listing"}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Israeli Football */}
+          <div className={`bnav-item${isActive("/sports/football-israel") ? " active" : ""}`} onClick={() => window.location.href="/sports/football-israel"}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 5v14M2 9h4v6H2M22 9h-4v6h4"/>
+            </svg>
+            <span className="bnav-label">{isHe ? "כדורגל" : "Football"}</span>
+          </div>
+
+          {/* Shows */}
+          <div className={`bnav-item${isActive("/live-shows") ? " active" : ""}`} onClick={() => window.location.href="/live-shows"}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18V6l12-2v12"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </svg>
+            <span className="bnav-label">{isHe ? "הופעות" : "Shows"}</span>
+          </div>
+
+        </div>
+      </nav>
+
+      {/* ── LOGOUT MODAL ── */}
       {showLogoutConfirm && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(16,33,63,0.4)",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999,
-            padding: "1.5rem",
-          }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowLogoutConfirm(false); }}
-        >
-          <div
-            className="modal-enter"
-            style={{
-              background: "#fff",
-              borderRadius: "20px",
-              padding: "2rem",
-              width: "100%",
-              maxWidth: "360px",
-              textAlign: "center",
-              boxShadow: "0 24px 64px rgba(16,33,63,0.18)",
-            }}
-          >
-            <div style={{ fontSize: "36px", marginBottom: "12px" }}>👋</div>
-            <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px", color: "var(--text-primary)" }}>
-              {isHe ? "להתנתק?" : "Log out?"}
-            </h3>
-            <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>
-              {isHe ? "תוכל להתחבר שוב בכל רגע" : "You can log in again anytime"}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button
-                onClick={logout}
-                disabled={loggingOut}
-                style={{
-                  padding: "12px",
-                  borderRadius: "12px",
-                  background: "#ef4444",
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: "14px",
-                  border: "none",
-                  cursor: loggingOut ? "not-allowed" : "pointer",
-                  opacity: loggingOut ? 0.7 : 1,
-                  transition: "opacity 180ms",
-                }}
-              >
+        <div style={{ position:"fixed", inset:0, background:"rgba(16,33,63,0.4)", backdropFilter:"blur(4px)", WebkitBackdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:"1.5rem" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowLogoutConfirm(false); }}>
+          <div className="modal-enter" style={{ background:"#fff", borderRadius:"20px", padding:"2rem", width:"100%", maxWidth:"360px", textAlign:"center", boxShadow:"0 24px 64px rgba(16,33,63,0.18)" }}>
+            <div style={{ fontSize:"36px", marginBottom:"12px" }}>👋</div>
+            <h3 style={{ fontSize:"18px", fontWeight:700, marginBottom:"8px", color:"var(--text-primary)" }}>{isHe ? "להתנתק?" : "Log out?"}</h3>
+            <p style={{ fontSize:"14px", color:"var(--text-secondary)", marginBottom:"24px" }}>{isHe ? "תוכל להתחבר שוב בכל רגע" : "You can log in again anytime"}</p>
+            <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+              <button onClick={logout} disabled={loggingOut} style={{ padding:"12px", borderRadius:"12px", background:"#ef4444", color:"#fff", fontWeight:700, fontSize:"14px", border:"none", cursor: loggingOut ? "not-allowed" : "pointer", opacity: loggingOut ? 0.7 : 1, transition:"opacity 180ms" }}>
                 {loggingOut ? (isHe ? "מתנתק..." : "Logging out...") : (isHe ? "התנתק" : "Log out")}
               </button>
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                style={{
-                  padding: "12px",
-                  borderRadius: "12px",
-                  border: "1px solid var(--border-soft)",
-                  background: "#fff",
-                  color: "var(--text-secondary)",
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  transition: "background 180ms",
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#f7fbff")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "#fff")}
-              >
+              <button onClick={() => setShowLogoutConfirm(false)} style={{ padding:"12px", borderRadius:"12px", border:"1px solid var(--border-soft)", background:"#fff", color:"var(--text-secondary)", fontWeight:600, fontSize:"14px", cursor:"pointer" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background="#f7fbff")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background="#fff")}>
                 {isHe ? "ביטול" : "Cancel"}
               </button>
             </div>
@@ -440,24 +269,10 @@ export default function Navbar() {
 
 function MenuLink({ href, icon, label }: { href: string; icon: string; label: string }) {
   return (
-    <Link
-      href={href}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        padding: "9px 12px",
-        borderRadius: "10px",
-        fontSize: "13px",
-        fontWeight: 500,
-        color: "var(--text-primary)",
-        textDecoration: "none",
-        transition: "background 150ms",
-      }}
-      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(20,200,212,0.07)")}
-      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
-    >
-      <span style={{ fontSize: "15px" }}>{icon}</span>
+    <Link href={href} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"9px 12px", borderRadius:"10px", fontSize:"13px", fontWeight:500, color:"var(--text-primary)", textDecoration:"none", transition:"background 150ms" }}
+      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background="rgba(20,200,212,0.07)")}
+      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background="transparent")}>
+      <span style={{ fontSize:"15px" }}>{icon}</span>
       {label}
     </Link>
   );
