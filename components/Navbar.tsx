@@ -78,7 +78,7 @@ export default function Navbar() {
         .modal-enter { animation: modal-in 220ms cubic-bezier(0.16,1,0.3,1) both; }
 
         /* Bottom nav */
-        .bnav { position:fixed;bottom:0;left:0;right:0;z-index:100;display:none; }
+        .bnav { position:fixed;bottom:0;left:0;right:0;z-index:100;display:none;height:82px;background:#fff;box-shadow:0 -12px 32px rgba(15,23,42,.12);overflow:visible; }
         .bnav-item { display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex:1;-webkit-tap-highlight-color:transparent;transition:transform 150ms; }
         .bnav-item:active { transform:scale(.88); }
         .bnav-label { font-size:9px;font-weight:800;color:#94a3b8;letter-spacing:.05em; }
@@ -187,10 +187,10 @@ export default function Navbar() {
       <nav className="bnav">
         <svg style={{ position:"absolute", top:0, left:0, width:"100%", height:76 }} viewBox="0 0 375 76" preserveAspectRatio="none">
           <filter id="nav-shadow"><feDropShadow dx="0" dy="-3" stdDeviation="6" floodOpacity="0.06"/></filter>
-          <path d="M0 22 Q0 0 22 0 L155 0 Q173 0 178 16 Q187.5 46 197 16 Q202 0 220 0 L353 0 Q375 0 375 22 L375 76 L0 76 Z" fill="white" filter="url(#nav-shadow)"/>
+          <path d="M0 22 Q0 0 22 0 L155 0 Q173 0 178 16 Q187.5 46 197 16 Q202 0 220 0 L353 0 Q375 0 375 22 L375 76 L0 76 Z" fill="#ffffff" filter="url(#nav-shadow)"/>
         </svg>
 
-        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:70, display:"flex", alignItems:"center", justifyContent:"space-around", padding:"0 4px 10px" }}>
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:70, display:"flex", alignItems:"center", justifyContent:"space-around", padding:"0 4px 10px", background:"#ffffff" }}>
 
           {/* Home */}
           <div className={`bnav-item${isActive("/") && pathname === "/" ? " active" : ""}`} onClick={() => window.location.href="/"}>
