@@ -30,6 +30,7 @@ export default function Footer() {
         <div className="footer-links" style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, alignItems: "center" }}>
           {[
             { he: "מונדיאל 2026",    en: "World Cup 2026",   href: "/sports/world-cup-2026" },
+            { he: "סימולטור מונדיאל", en: "WC Simulator",     href: "/sports/world-cup-2026/predict" },
             { he: "כדורגל ישראלי",  en: "Israeli Football",  href: "/sports/football-israel" },
             { he: " הופעות חיות",          en: "Live Shows",        href: "/live-shows" },
             { he: "פרסם מודעה",     en: "Post listing",       href: "/post-listing" },

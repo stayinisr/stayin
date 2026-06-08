@@ -813,6 +813,37 @@ export default function Home() {
                   flexWrap: "wrap",
                 }}
               >
+                <Link
+                  href="/sports/world-cup-2026/predict"
+                  style={{
+                    padding: "12px 22px",
+                    background: `linear-gradient(135deg, ${C.usa}, ${C.canada} 80%, #d4a017)`,
+                    color: "#fff",
+                    fontSize: "13px",
+                    fontWeight: 800,
+                    borderRadius: "4px",
+                    textDecoration: "none",
+                    letterSpacing: "0.04em",
+                    border: "none",
+                    boxShadow: "0 4px 14px rgba(26,58,107,0.28)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    transition: "transform 150ms, box-shadow 150ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 18px rgba(26,58,107,0.36)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 14px rgba(26,58,107,0.28)";
+                  }}
+                >
+                  <span style={{ fontSize: "15px" }}>🏆</span>
+                  {isHe ? "בנה את התחזית שלך" : "Build your prediction"}
+                </Link>
+
                 <a
                   href="#matches"
                   style={{
