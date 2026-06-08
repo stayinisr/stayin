@@ -15,7 +15,9 @@ import {
   assignThirdsToR32,
   autoBestThird,
   computeAllGroupTables,
+  computeBracketLayout,
   computeGroupTable,
+  getChampionPath,
   groupMatches,
   groupTeams,
   loadState,
@@ -691,65 +693,134 @@ function QuickRankEditor({
   state: PredictionState;
   setState: (mut: (s: PredictionState) => PredictionState) => void;
 }) {
-  const order: string[] =
-    state.quickRanks[letter] && (state.quickRanks[letter] as string[]).every(Boolean)
-      ? (state.quickRanks[letter] as string[])
-      : teams;
+  // Click team to assign next rank (1→2→3→4). Click again to clear its rank
+  // (others shift up). When 3 are ranked, the last unranked team auto-fills 4.
+  // Partial rankings persist so the badges stay between renders.
+  const saved = state.quickRanks[letter];
+  const ranked: string[] = saved ? [...saved] : [];
 
-  const move = (i: number, dir: -1 | 1) => {
-    const next = [...order];
-    const j = i + dir;
-    if (j < 0 || j >= next.length) return;
-    [next[i], next[j]] = [next[j]!, next[i]!];
-    setState((s) => ({
-      ...s,
-      quickRanks: { ...s.quickRanks, [letter]: next as [string, string, string, string] },
-    }));
+  const persist = (next: string[]) => {
+    setState((s) => {
+      const out = { ...s.quickRanks };
+      if (next.length === 0) {
+        delete out[letter];
+      } else {
+        out[letter] = next;
+      }
+      return { ...s, quickRanks: out };
+    });
   };
 
+  const click = (t: string) => {
+    const i = ranked.indexOf(t);
+    if (i !== -1) {
+      // Clear this team's rank — others shift up.
+      const next = ranked.filter((x) => x !== t);
+      persist(next);
+      return;
+    }
+    if (ranked.length >= 4) return;
+    const next = [...ranked, t];
+    // Auto-fill rank 4 if only one team is left.
+    if (next.length === 3) {
+      const leftover = teams.find((x) => !next.includes(x));
+      if (leftover) next.push(leftover);
+    }
+    persist(next);
+  };
+
+  const rankOf = (t: string): number | null => {
+    const i = ranked.indexOf(t);
+    return i === -1 ? null : i + 1;
+  };
+
+  // Display teams in alphabetical order of NAME for stability; ranked badges
+  // tell the user the position. Optionally sort ranked-first.
+  const list = [...teams].sort((a, b) => {
+    const ra = rankOf(a) ?? 99;
+    const rb = rankOf(b) ?? 99;
+    if (ra !== rb) return ra - rb;
+    return a.localeCompare(b);
+  });
+
+  const allDone = ranked.length === 4;
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {order.map((t, i) => (
-        <div key={t} style={{
-          background: C.white, border: `1px solid ${C.border}`, borderRadius: 5,
-          padding: "10px 12px", display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: 4,
-            background: i === 0 ? C.usa : i === 1 ? C.canada : i === 2 ? C.gold : C.faint,
-            color: C.white, fontFamily: fSyne, fontWeight: 800, fontSize: 13,
-            display: "grid", placeItems: "center",
-          }}>{i + 1}</div>
-          <span style={{
-            width: 22, height: 16, borderRadius: 3, overflow: "hidden",
-            background: C.white, border: "1px solid rgba(13,27,62,0.1)",
-            display: "inline-flex", flexShrink: 0,
-          }}>
-            {flagImgSrc(t) && <img src={flagImgSrc(t)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-          </span>
-          <div style={{
-            flex: 1, fontFamily: isHe ? fHe : fEn, fontSize: 14, fontWeight: 600, color: C.text,
-          }}>{teamName(t, isHe)}</div>
-          <button
-            onClick={() => move(i, -1)}
-            disabled={i === 0}
-            style={{
-              width: 28, height: 28, borderRadius: 4, border: `1px solid ${C.border}`,
-              background: C.white, cursor: i === 0 ? "not-allowed" : "pointer",
-              opacity: i === 0 ? 0.4 : 1, fontSize: 14, fontWeight: 700, color: C.muted,
-            }}
-          >↑</button>
-          <button
-            onClick={() => move(i, 1)}
-            disabled={i === order.length - 1}
-            style={{
-              width: 28, height: 28, borderRadius: 4, border: `1px solid ${C.border}`,
-              background: C.white, cursor: i === order.length - 1 ? "not-allowed" : "pointer",
-              opacity: i === order.length - 1 ? 0.4 : 1, fontSize: 14, fontWeight: 700, color: C.muted,
-            }}
-          >↓</button>
-        </div>
-      ))}
+    <div>
+      <div style={{
+        fontSize: 12, color: allDone ? C.mexico : C.muted,
+        fontFamily: fBody(isHe), marginBottom: 10,
+      }}>
+        {allDone
+          ? (isHe ? "✓ הבית מדורג. לחץ קבוצה כדי לשנות." : "✓ Group ranked. Click a team to change.")
+          : (isHe
+              ? `לחץ על קבוצה לפי הסדר: 1 → 2 → 3 → 4 (כרגע ${ranked.length}/4)`
+              : `Click teams in order: 1 → 2 → 3 → 4 (currently ${ranked.length}/4)`)}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {list.map((t) => {
+          const rank = rankOf(t);
+          const isRanked = rank != null;
+          const badgeColor =
+            rank === 1 ? C.usa :
+            rank === 2 ? C.canada :
+            rank === 3 ? C.gold :
+            rank === 4 ? C.faint : C.border;
+          return (
+            <div
+              key={t}
+              onClick={() => click(t)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); click(t); } }}
+              style={{
+                background: isRanked ? "rgba(26,58,107,0.04)" : C.white,
+                border: `1px solid ${isRanked ? badgeColor : C.border}`,
+                borderRadius: 5, padding: "10px 12px",
+                display: "flex", alignItems: "center", gap: 10,
+                cursor: "pointer", userSelect: "none",
+                transition: "background 120ms, border-color 120ms",
+                position: "relative",
+              }}
+            >
+              <div style={{
+                width: 26, height: 26, borderRadius: 4,
+                background: isRanked ? badgeColor : "transparent",
+                border: isRanked ? "none" : `1px dashed ${C.faint}`,
+                color: isRanked ? C.white : C.faint,
+                fontFamily: fSyne, fontWeight: 800, fontSize: 13,
+                display: "grid", placeItems: "center", flexShrink: 0,
+              }}>{rank ?? "·"}</div>
+
+              <span style={{
+                width: 22, height: 16, borderRadius: 3, overflow: "hidden",
+                background: C.white, border: "1px solid rgba(13,27,62,0.1)",
+                display: "inline-flex", flexShrink: 0,
+              }}>
+                {flagImgSrc(t) && <img src={flagImgSrc(t)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+              </span>
+
+              <div style={{
+                flex: 1, fontFamily: isHe ? fHe : fEn, fontSize: 14, fontWeight: 600, color: C.text,
+              }}>{teamName(t, isHe)}</div>
+
+              {isRanked && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); click(t); }}
+                  title={isHe ? "בטל" : "Clear"}
+                  style={{
+                    width: 22, height: 22, borderRadius: "50%",
+                    border: "none", background: "rgba(13,27,62,0.06)",
+                    color: C.muted, cursor: "pointer", fontSize: 13, fontWeight: 700,
+                    display: "grid", placeItems: "center",
+                  }}
+                >×</button>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -982,13 +1053,26 @@ function BestThirdScreen({
   onBack: () => void;
   onNext: () => void;
 }) {
-  const selected = (state.bestThird.length === 8 ? state.bestThird : autoBest);
+  // Seed once with the auto-suggested set, then trust state as truth so the
+  // user's deselections / selections actually stick.
+  useEffect(() => {
+    if (state.bestThird.length === 0 && autoBest.length === 8) {
+      setState((s) => ({ ...s, bestThird: [...autoBest] }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selected = state.bestThird;
 
   const toggle = (g: GroupLetter) => {
     setState((s) => {
-      let list = s.bestThird.length === 8 ? [...s.bestThird] : [...autoBest];
-      if (list.includes(g)) list = list.filter((x) => x !== g);
-      else if (list.length < 8) list.push(g);
+      const list = [...s.bestThird];
+      const i = list.indexOf(g);
+      if (i !== -1) {
+        list.splice(i, 1);
+      } else if (list.length < 8) {
+        list.push(g);
+      }
       return { ...s, bestThird: list };
     });
   };
@@ -1222,6 +1306,25 @@ function SummaryScreen({
     ? (championPick === "home" ? resolvedFinal.home : resolvedFinal.away)
     : null;
 
+  // Login gate for share — sharing is only available to authenticated users.
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setAuthEmail(session?.user?.email ?? null);
+      setAuthChecked(true);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthEmail(session?.user?.email ?? null);
+      setAuthChecked(true);
+    });
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
+  }, []);
+  const loggedIn = !!authEmail;
+
   const shareRef = useRef<HTMLDivElement>(null);
 
   const onShare = useCallback(async () => {
@@ -1274,14 +1377,33 @@ function SummaryScreen({
         )}
 
         <div style={{ marginTop: 18, display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
-          <button
-            onClick={onShare}
-            style={{
-              padding: "10px 18px", background: C.white, color: C.text, border: "none",
-              borderRadius: 4, fontSize: 12, fontWeight: 800, letterSpacing: "0.05em",
-              textTransform: "uppercase", cursor: "pointer",
-            }}
-          >{isHe ? "שתף תחזית" : "Share prediction"}</button>
+          {authChecked && loggedIn ? (
+            <button
+              onClick={onShare}
+              style={{
+                padding: "10px 18px", background: C.white, color: C.text, border: "none",
+                borderRadius: 4, fontSize: 12, fontWeight: 800, letterSpacing: "0.05em",
+                textTransform: "uppercase", cursor: "pointer",
+              }}
+            >{isHe ? "שתף תחזית" : "Share prediction"}</button>
+          ) : (
+            <Link
+              href={`/auth?next=${encodeURIComponent("/sports/world-cup-2026/predict")}`}
+              style={{
+                padding: "10px 18px", background: C.white, color: C.text,
+                borderRadius: 4, fontSize: 12, fontWeight: 800, letterSpacing: "0.05em",
+                textTransform: "uppercase", cursor: "pointer", textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 8,
+              }}
+              title={isHe ? "התחבר כדי לשתף" : "Log in to share"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              {isHe ? "התחבר כדי לשתף" : "Log in to share"}
+            </Link>
+          )}
           <button
             onClick={onEdit}
             style={{
@@ -1301,6 +1423,15 @@ function SummaryScreen({
             }}
           >{isHe ? "התחל מחדש" : "Reset"}</button>
         </div>
+
+        {authChecked && loggedIn && (
+          <div style={{
+            marginTop: 12, fontSize: 11, color: "rgba(255,255,255,0.65)",
+            fontFamily: fBody(isHe),
+          }}>
+            {isHe ? `מחובר כ-${authEmail}` : `Signed in as ${authEmail}`}
+          </div>
+        )}
       </div>
 
       {/* Bracket */}
@@ -1378,44 +1509,136 @@ function BracketTree({
   state: PredictionState;
   thirdsAssignment: Record<number, GroupLetter>;
 }) {
-  const cols: { label: string; matches: MatchItem[] }[] = [
-    { label: stageLabel("Round of 32", isHe), matches: matches.filter((m) => m.stage === "Round of 32") },
-    { label: stageLabel("Round of 16", isHe), matches: matches.filter((m) => m.stage === "Round of 16") },
-    { label: stageLabel("Quarter Finals", isHe), matches: matches.filter((m) => m.stage === "Quarter Finals") },
-    { label: stageLabel("Semi Finals", isHe), matches: matches.filter((m) => m.stage === "Semi Finals") },
-    { label: stageLabel("Final", isHe), matches: matches.filter((m) => m.stage === "Final") },
+  const layout = useMemo(() => computeBracketLayout(matches), [matches]);
+  const champPath = useMemo(
+    () => getChampionPath(matches, state.knockoutWinners),
+    [matches, state.knockoutWinners],
+  );
+
+  // Each round renders as a flex column with space-around. As long as every
+  // column shares the same height and box height, R16 boxes will visually
+  // centre between their two R32 feeders, QF between R16 pairs, and so on.
+  const cols: { label: string; items: MatchItem[] }[] = [
+    { label: stageLabel("Round of 32", isHe), items: layout.r32 },
+    { label: stageLabel("Round of 16", isHe), items: layout.r16 },
+    { label: stageLabel("Quarter Finals", isHe), items: layout.qf },
+    { label: stageLabel("Semi Finals", isHe), items: layout.sf },
+    { label: stageLabel("Final", isHe), items: layout.final ? [layout.final] : [] },
   ];
 
+  const BOX_H = 56; // px — match height
+  const GAP_R32 = 8; // vertical gap between R32 boxes
+  const totalH = layout.r32.length * (BOX_H + GAP_R32);
+
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto", paddingBottom: 8 }}>
       <div style={{
-        display: "grid", gridTemplateColumns: `repeat(${cols.length}, minmax(180px,1fr))`,
-        gap: 12, minWidth: cols.length * 200,
+        display: "flex", gap: 24, minWidth: cols.length * 200,
+        alignItems: "stretch",
       }}>
         {cols.map((col, ci) => (
-          <div key={col.label} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.hint, marginBottom: 2 }}>
-              {col.label}
+          <div key={col.label} style={{
+            flex: 1, minWidth: 180, display: "flex", flexDirection: "column",
+          }}>
+            <div style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: "0.16em",
+              textTransform: "uppercase", color: C.hint, marginBottom: 8,
+              textAlign: "center",
+            }}>{col.label}</div>
+
+            <div style={{
+              height: totalH, display: "flex", flexDirection: "column",
+              justifyContent: "space-around",
+            }}>
+              {col.items.map((m) => {
+                const r = resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
+                const winnerSide = state.knockoutWinners[m.id];
+                const onPath = champPath.has(m.id);
+                return (
+                  <BracketCard
+                    key={m.id}
+                    isHe={isHe}
+                    match={m}
+                    homeTeam={r.home}
+                    awayTeam={r.away}
+                    homeLabel={r.homeLabel}
+                    awayLabel={r.awayLabel}
+                    winnerSide={winnerSide}
+                    onPath={onPath}
+                  />
+                );
+              })}
             </div>
-            {col.matches.map((m) => {
-              const r = resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
-              const winnerSide = state.knockoutWinners[m.id];
-              const homeWon = winnerSide === "home";
-              const awayWon = winnerSide === "away";
-              return (
-                <div key={m.id} style={{
-                  background: C.white, border: `1px solid ${C.border}`, borderRadius: 4, overflow: "hidden",
-                  fontSize: 11,
-                }}>
-                  <BracketSide isHe={isHe} won={homeWon} team={r.home} label={r.homeLabel} />
-                  <div style={{ height: 1, background: C.border }} />
-                  <BracketSide isHe={isHe} won={awayWon} team={r.away} label={r.awayLabel} />
-                </div>
-              );
-            })}
           </div>
         ))}
       </div>
+
+      {layout.third && (
+        <div style={{
+          marginTop: 22, padding: "12px 14px",
+          background: C.white, border: `1px dashed ${C.faint}`, borderRadius: 5,
+          maxWidth: 360,
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: "0.16em",
+            textTransform: "uppercase", color: C.hint, marginBottom: 6,
+          }}>
+            {stageLabel("Third Place", isHe)} · #{layout.third.fifa_match_number}
+          </div>
+          {(() => {
+            const r = resolveKnockoutTeams(layout.third!, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
+            const winnerSide = state.knockoutWinners[layout.third!.id];
+            return (
+              <BracketCard
+                isHe={isHe}
+                match={layout.third!}
+                homeTeam={r.home}
+                awayTeam={r.away}
+                homeLabel={r.homeLabel}
+                awayLabel={r.awayLabel}
+                winnerSide={winnerSide}
+                onPath={false}
+                hideMatchNumber
+              />
+            );
+          })()}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BracketCard({
+  isHe, match, homeTeam, awayTeam, homeLabel, awayLabel, winnerSide, onPath, hideMatchNumber,
+}: {
+  isHe: boolean;
+  match: MatchItem;
+  homeTeam: string | null;
+  awayTeam: string | null;
+  homeLabel: string;
+  awayLabel: string;
+  winnerSide: "home" | "away" | undefined;
+  onPath: boolean;
+  hideMatchNumber?: boolean;
+}) {
+  return (
+    <div style={{
+      background: C.white,
+      border: `1px solid ${onPath ? C.gold : C.border}`,
+      boxShadow: onPath ? `0 0 0 1px ${C.gold}` : "0 1px 2px rgba(13,27,62,0.04)",
+      borderRadius: 4, overflow: "hidden", position: "relative",
+    }}>
+      {!hideMatchNumber && (
+        <div style={{
+          position: "absolute", top: 2, right: 6,
+          fontSize: 8, fontWeight: 800, letterSpacing: "0.08em",
+          color: onPath ? C.gold : C.faint,
+          fontFamily: fSyne, pointerEvents: "none",
+        }}>#{match.fifa_match_number}</div>
+      )}
+      <BracketSide isHe={isHe} won={winnerSide === "home"} team={homeTeam} label={homeLabel} />
+      <div style={{ height: 1, background: C.border }} />
+      <BracketSide isHe={isHe} won={winnerSide === "away"} team={awayTeam} label={awayLabel} />
     </div>
   );
 }
@@ -1423,19 +1646,19 @@ function BracketTree({
 function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; team: string | null; label: string }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 6, padding: "6px 8px",
-      background: won ? "rgba(26,58,107,0.07)" : "transparent",
+      display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
+      background: won ? "rgba(212,160,23,0.10)" : "transparent",
       color: won ? C.text : team ? C.text : C.hint,
-      fontWeight: won ? 800 : 600,
+      fontWeight: won ? 800 : 600, minHeight: 26,
     }}>
       {team && flagImgSrc(team) && (
-        <span style={{ width: 16, height: 12, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+        <span style={{ width: 18, height: 13, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
           <img src={flagImgSrc(team)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </span>
       )}
       <span style={{
         fontFamily: isHe ? fHe : fEn, fontSize: 11,
-        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
       }}>{team ? teamName(team, isHe) : label}</span>
     </div>
   );

@@ -46,7 +46,9 @@ export type PredictionState = {
   mode: Mode | null;
   scores: Record<string, FullScore>;
   results: Record<string, PartialResult>;
-  quickRanks: Partial<Record<GroupLetter, [string, string, string, string]>>;
+  // Partial rankings are allowed (e.g. user has only picked rank 1 so far);
+  // the prediction is complete when the list has 4 entries.
+  quickRanks: Partial<Record<GroupLetter, string[]>>;
   tiebreaks: Partial<Record<GroupLetter, string[]>>;
   bestThird: GroupLetter[];
   knockoutWinners: Record<string, "home" | "away">;
@@ -118,9 +120,10 @@ export function computeGroupTable(
   for (const t of teams) rows.set(t, emptyRow(t));
 
   if (state.mode === "quick") {
-    // No scores; just use the user's manual ranking.
+    // Use the user's manual ranking when complete; otherwise fall back to
+    // alphabetical so the table still renders something coherent.
     const ranks = state.quickRanks[letter];
-    const order = ranks && ranks.every(Boolean) ? ranks : teams;
+    const order = ranks && ranks.length === 4 ? ranks : teams;
     return { group: letter, rows: order.map(emptyRow) };
   }
 
@@ -374,6 +377,91 @@ export function resolveKnockoutTeams(
   const h = resolveSide(match.home_team_name, 0);
   const a = resolveSide(match.away_team_name, 1);
   return { home: h.team, away: a.team, homeLabel: h.label, awayLabel: a.label };
+}
+
+// ── Bracket visual order ──────────────────────────────────────────────────────
+
+// Given the matches list, walks the knockout tree from the Final downward
+// and returns each round's matches in top-to-bottom visual order. This is
+// what makes the bracket render as a proper tree where every R16 box sits
+// centered between its two R32 feeders.
+export type BracketLayout = {
+  r32: MatchItem[];
+  r16: MatchItem[];
+  qf: MatchItem[];
+  sf: MatchItem[];
+  final: MatchItem | null;
+  third: MatchItem | null;
+};
+
+export function computeBracketLayout(matches: MatchItem[]): BracketLayout {
+  const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
+  const final = matches.find((m) => m.stage === "Final") || null;
+  const third = matches.find((m) => m.stage === "Third Place") || null;
+
+  // Walk down: for each match, recursively get its two feeder matches.
+  function feeders(m: MatchItem): MatchItem[] {
+    const h = parseSlot(m.home_team_name);
+    const a = parseSlot(m.away_team_name);
+    const out: MatchItem[] = [];
+    if (h.kind === "winner") {
+      const up = byNum.get(h.matchNumber);
+      if (up) out.push(up);
+    }
+    if (a.kind === "winner") {
+      const up = byNum.get(a.matchNumber);
+      if (up) out.push(up);
+    }
+    return out;
+  }
+
+  // BFS by round: SF children of Final → top half (101) then bottom half (102).
+  // Each level's order is the concatenation of the previous level's feeders.
+  if (!final) {
+    return { r32: [], r16: [], qf: [], sf: [], final: null, third };
+  }
+
+  let level = [final];
+  const sf: MatchItem[] = []; const qf: MatchItem[] = [];
+  const r16: MatchItem[] = []; const r32: MatchItem[] = [];
+
+  for (let depth = 0; depth < 4; depth++) {
+    const next: MatchItem[] = [];
+    for (const m of level) {
+      for (const f of feeders(m)) next.push(f);
+    }
+    if (depth === 0) sf.push(...next);
+    if (depth === 1) qf.push(...next);
+    if (depth === 2) r16.push(...next);
+    if (depth === 3) r32.push(...next);
+    level = next;
+  }
+
+  return { r32, r16, qf, sf, final, third };
+}
+
+// Tracks which side won at each round to highlight the champion's path.
+export function getChampionPath(
+  matches: MatchItem[],
+  knockoutWinners: Record<string, "home" | "away">,
+): Set<string> {
+  const finalMatch = matches.find((m) => m.stage === "Final");
+  if (!finalMatch || !knockoutWinners[finalMatch.id]) return new Set();
+  const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
+  const path = new Set<string>();
+  const visit = (m: MatchItem) => {
+    const w = knockoutWinners[m.id];
+    if (!w) return;
+    path.add(m.id);
+    const wantSide = w === "home" ? m.home_team_name : m.away_team_name;
+    const slot = parseSlot(wantSide);
+    if (slot.kind === "winner") {
+      const up = byNum.get(slot.matchNumber);
+      if (up) visit(up);
+    }
+  };
+  visit(finalMatch);
+  return path;
 }
 
 // ── Storage ───────────────────────────────────────────────────────────────────
