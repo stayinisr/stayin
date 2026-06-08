@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { toPng } from "html-to-image";
 import { supabase } from "../../../../lib/supabase";
 import { useLanguage } from "../../../../lib/LanguageContext";
 import { teamName, flagImgSrc } from "../../../../lib/teams";
+import ShareCard, { SHARE_W, SHARE_H } from "./ShareCard";
 import {
   EMPTY_STATE,
   GROUP_LETTERS,
@@ -156,6 +159,34 @@ export default function PredictPage() {
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", paddingBottom: 60 }}>
+      <style>{`
+        @media (max-width: 880px) {
+          .predict-group-grid { grid-template-columns: 1fr !important; }
+          .predict-group-table-wrap { order: 2; }
+          .predict-group-editor-wrap { order: 1; }
+        }
+        @media (max-width: 520px) {
+          .predict-table-row.stats,
+          .predict-table-head {
+            grid-template-columns: 18px 1fr 26px 32px !important;
+          }
+          .predict-table-row.stats .cell-w,
+          .predict-table-row.stats .cell-d,
+          .predict-table-row.stats .cell-gf,
+          .predict-table-row.stats .cell-ga,
+          .predict-table-head .cell-w,
+          .predict-table-head .cell-d,
+          .predict-table-head .cell-gf,
+          .predict-table-head .cell-ga { display: none !important; }
+          .predict-match-card-grid {
+            grid-template-columns: 1fr !important;
+            row-gap: 8px;
+          }
+          .predict-match-side {
+            justify-content: center !important;
+          }
+        }
+      `}</style>
       <Header
         isHe={isHe}
         step={step}
@@ -496,7 +527,7 @@ function GroupScreen({
       <div style={{
         display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,360px)", gap: 18,
       }} className="predict-group-grid">
-        <div>
+        <div className="predict-group-editor-wrap">
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.hint }}>
               {isHe ? `בית ${letter}` : `Group ${letter}`}
@@ -527,7 +558,7 @@ function GroupScreen({
           )}
         </div>
 
-        <div>
+        <div className="predict-group-table-wrap">
           <GroupTableView isHe={isHe} table={table} mode={state.mode!} />
         </div>
       </div>
@@ -577,12 +608,12 @@ function MatchEditor({
         <span style={{ color: C.muted, fontWeight: 600 }}>{match.city}</span>
       </div>
 
-      <div style={{
+      <div className="predict-match-card-grid" style={{
         display: "grid",
         gridTemplateColumns: state.mode === "full" ? "1fr 110px 1fr" : "1fr auto 1fr",
         alignItems: "center", gap: 10,
       }}>
-        <div style={{
+        <div className="predict-match-side" style={{
           display: "flex", alignItems: "center", gap: 8,
           justifyContent: isHe ? "flex-end" : "flex-start",
           fontFamily: isHe ? fHe : fEn, fontSize: 14, fontWeight: 600, color: C.text,
@@ -616,7 +647,7 @@ function MatchEditor({
           />
         )}
 
-        <div style={{
+        <div className="predict-match-side" style={{
           display: "flex", alignItems: "center", gap: 8,
           justifyContent: isHe ? "flex-start" : "flex-end",
           fontFamily: isHe ? fHe : fEn, fontSize: 14, fontWeight: 600, color: C.text,
@@ -854,15 +885,19 @@ function GroupTableView({
       </div>
       <div style={{ display: "grid", gap: 6 }}>
         {table.rows.map((r: any, i: number) => (
-          <div key={r.team + i} style={{
-            display: "grid",
-            gridTemplateColumns: mode === "quick" || compact
-              ? "20px 1fr"
-              : "20px 1fr 24px 24px 24px 30px 30px 30px",
-            alignItems: "center", gap: 6,
-            padding: "6px 4px",
-            borderBottom: i < table.rows.length - 1 ? `1px solid ${C.border}` : "none",
-          }}>
+          <div
+            key={r.team + i}
+            className={"predict-table-row " + (mode === "quick" || compact ? "rank" : "stats")}
+            style={{
+              display: "grid",
+              gridTemplateColumns: mode === "quick" || compact
+                ? "20px 1fr"
+                : "20px 1fr 24px 24px 24px 30px 30px 30px",
+              alignItems: "center", gap: 6,
+              padding: "6px 4px",
+              borderBottom: i < table.rows.length - 1 ? `1px solid ${C.border}` : "none",
+            }}
+          >
             <div style={{
               width: 18, height: 18, borderRadius: 3, fontSize: 10, fontWeight: 800,
               fontFamily: fSyne, display: "grid", placeItems: "center",
@@ -885,12 +920,12 @@ function GroupTableView({
 
             {!(mode === "quick" || compact) && (
               <>
-                <CellNum value={r.played} />
-                <CellNum value={r.won} />
-                <CellNum value={r.drawn} />
-                <CellNum value={r.gf} muted />
-                <CellNum value={r.ga} muted />
-                <CellNum value={r.points} bold />
+                <CellNum className="cell-p" value={r.played} />
+                <CellNum className="cell-w" value={r.won} />
+                <CellNum className="cell-d" value={r.drawn} />
+                <CellNum className="cell-gf" value={r.gf} muted />
+                <CellNum className="cell-ga" value={r.ga} muted />
+                <CellNum className="cell-pts" value={r.points} bold />
               </>
             )}
           </div>
@@ -898,22 +933,25 @@ function GroupTableView({
       </div>
 
       {!(mode === "quick" || compact) && (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "20px 1fr 24px 24px 24px 30px 30px 30px",
-          gap: 6, marginTop: 6, paddingTop: 4, borderTop: `1px solid ${C.border}`,
-          fontSize: 9, color: C.hint, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase",
-        }}>
-          <span /><span /><span>{labels.p}</span><span>{labels.w}</span><span>{labels.d}</span><span>{labels.gf}</span><span>{labels.ga}</span><span>{labels.pts}</span>
+        <div
+          className="predict-table-head"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "20px 1fr 24px 24px 24px 30px 30px 30px",
+            gap: 6, marginTop: 6, paddingTop: 4, borderTop: `1px solid ${C.border}`,
+            fontSize: 9, color: C.hint, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase",
+          }}
+        >
+          <span /><span /><span className="cell-p">{labels.p}</span><span className="cell-w">{labels.w}</span><span className="cell-d">{labels.d}</span><span className="cell-gf">{labels.gf}</span><span className="cell-ga">{labels.ga}</span><span className="cell-pts">{labels.pts}</span>
         </div>
       )}
     </div>
   );
 }
 
-function CellNum({ value, muted, bold }: { value: number; muted?: boolean; bold?: boolean }) {
+function CellNum({ value, muted, bold, className }: { value: number; muted?: boolean; bold?: boolean; className?: string }) {
   return (
-    <div style={{
+    <div className={className} style={{
       textAlign: "center", fontFamily: fSyne, fontSize: 12,
       fontWeight: bold ? 900 : 600,
       color: bold ? C.text : muted ? C.hint : C.muted,
@@ -1325,30 +1363,22 @@ function SummaryScreen({
   }, []);
   const loggedIn = !!authEmail;
 
-  const shareRef = useRef<HTMLDivElement>(null);
-
-  const onShare = useCallback(async () => {
-    const text = champion
-      ? (isHe
-        ? `התחזית שלי למונדיאל 2026 — האלופה: ${teamName(champion, true)} 🏆\n${window.location.origin}/sports/world-cup-2026/predict`
-        : `My World Cup 2026 prediction — Champion: ${teamName(champion, false)} 🏆\n${window.location.origin}/sports/world-cup-2026/predict`)
-      : (isHe ? "התחזית שלי למונדיאל 2026" : "My World Cup 2026 prediction");
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Stayin · WC 2026", text });
-        return;
-      } catch { /* user cancelled */ }
-    }
-    try {
-      await navigator.clipboard.writeText(text);
-      alert(isHe ? "הקישור הועתק" : "Copied to clipboard");
-    } catch {
-      alert(text);
-    }
-  }, [champion, isHe]);
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
-    <div ref={shareRef}>
+    <div>
+      {shareOpen && (
+        <ShareModal
+          isHe={isHe}
+          champion={champion}
+          authorName={authEmail ? authEmail.split("@")[0] || null : null}
+          state={state}
+          matches={matches}
+          tables={tables}
+          thirdsAssignment={thirdsAssignment}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
       {/* Champion banner */}
       <div style={{
         background: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
@@ -1379,13 +1409,17 @@ function SummaryScreen({
         <div style={{ marginTop: 18, display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
           {authChecked && loggedIn ? (
             <button
-              onClick={onShare}
+              onClick={() => setShareOpen(true)}
               style={{
                 padding: "10px 18px", background: C.white, color: C.text, border: "none",
                 borderRadius: 4, fontSize: 12, fontWeight: 800, letterSpacing: "0.05em",
                 textTransform: "uppercase", cursor: "pointer",
+                display: "inline-flex", alignItems: "center", gap: 8,
               }}
-            >{isHe ? "שתף תחזית" : "Share prediction"}</button>
+            >
+              <span style={{ fontSize: 14 }}>📸</span>
+              {isHe ? "שתף תמונה" : "Share image"}
+            </button>
           ) : (
             <Link
               href={`/auth?next=${encodeURIComponent("/sports/world-cup-2026/predict")}`}
@@ -1710,5 +1744,280 @@ function NavRow({
         >{nextLabel || (isHe ? "הבא ←" : "Next →")}</button>
       </div>
     </div>
+  );
+}
+
+// ── Share modal ──────────────────────────────────────────────────────────────
+
+function ShareModal({
+  isHe, champion, authorName, state, matches, tables, thirdsAssignment, onClose,
+}: {
+  isHe: boolean;
+  champion: string | null;
+  authorName: string | null;
+  state: PredictionState;
+  matches: MatchItem[];
+  tables: any[];
+  thirdsAssignment: Record<number, GroupLetter>;
+  onClose: () => void;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [viewportW, setViewportW] = useState(typeof window === "undefined" ? 800 : window.innerWidth);
+
+  useEffect(() => {
+    setMounted(true);
+    const handler = () => setViewportW(window.innerWidth);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  // Preview scale — render the 1080×1350 card scaled down so users see it
+  // before they share. Cap the preview at 360px wide on mobile.
+  const isMobile = viewportW < 640;
+  const previewW = Math.min(viewportW - 64, isMobile ? 360 : 440);
+  const scale = previewW / SHARE_W;
+  const previewH = SHARE_H * scale;
+
+  async function waitReady(el: HTMLElement) {
+    const imgs = Array.from(el.querySelectorAll("img"));
+    await Promise.all(imgs.map((img) =>
+      img.complete && img.naturalWidth > 0
+        ? Promise.resolve()
+        : new Promise<void>((res) => { img.onload = img.onerror = () => res(); }),
+    ));
+    if ((document as any).fonts?.ready) await (document as any).fonts.ready;
+    await new Promise<void>((res) => setTimeout(res, 600));
+  }
+
+  async function makeImage(): Promise<string | null> {
+    if (!cardRef.current) return null;
+    setBusy(true);
+    try {
+      await waitReady(cardRef.current);
+      const opts = { cacheBust: true, pixelRatio: 2, backgroundColor: "#fdfbf6" };
+      // Run twice — first run primes image decoding in html-to-image, the
+      // second produces a clean snapshot. Same pattern as ShareAllTicket.
+      await toPng(cardRef.current, opts);
+      await new Promise<void>((res) => setTimeout(res, 120));
+      return await toPng(cardRef.current, opts);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDownload() {
+    const url = await makeImage();
+    if (!url) return;
+    const a = document.createElement("a");
+    a.download = "stayin-wc2026-prediction.png";
+    a.href = url;
+    a.click();
+  }
+
+  async function handleShare() {
+    const url = await makeImage();
+    const text = champion
+      ? (isHe
+        ? `התחזית שלי למונדיאל 2026 ב-Stayin 🏆\nהאלופה: ${teamName(champion, true)}\nstayin.co.il`
+        : `My World Cup 2026 prediction on Stayin 🏆\nChampion: ${teamName(champion, false)}\nstayin.co.il`)
+      : (isHe ? "התחזית שלי למונדיאל 2026 ב-Stayin" : "My World Cup 2026 prediction on Stayin");
+
+    if (url && (navigator as any).canShare) {
+      try {
+        const blob = await (await fetch(url)).blob();
+        const file = new File([blob], "stayin-wc2026-prediction.png", { type: "image/png" });
+        if ((navigator as any).canShare({ files: [file] })) {
+          await (navigator as any).share({ title: "Stayin · WC 2026", text, files: [file] });
+          return;
+        }
+      } catch { /* fall through */ }
+    }
+    // Fallback: WhatsApp web share with text only (no file).
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  }
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 999999,
+        background: "rgba(5,12,28,0.72)", backdropFilter: "blur(14px)",
+        display: "flex", alignItems: isMobile ? "flex-end" : "center",
+        justifyContent: "center", padding: isMobile ? 0 : 18,
+      }}
+    >
+      <div
+        dir={isHe ? "rtl" : "ltr"}
+        style={{
+          width: isMobile ? "100%" : "min(560px,100%)",
+          maxHeight: "94vh", overflowY: "auto", overflowX: "hidden",
+          borderRadius: isMobile ? "28px 28px 0 0" : 24,
+          background: "rgba(255,255,255,0.97)",
+          boxShadow: "0 -40px 90px rgba(13,27,62,0.2)",
+        }}
+      >
+        {isMobile && (
+          <div style={{
+            width: 36, height: 4, background: "#e2e8f0",
+            borderRadius: 99, margin: "12px auto 0",
+          }} />
+        )}
+
+        <div style={{
+          padding: "16px 20px 12px",
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+          borderBottom: "1px solid rgba(13,27,62,0.06)",
+        }}>
+          <div>
+            <div style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
+              textTransform: "uppercase", color: C.usa, marginBottom: 4,
+              fontFamily: fSyne,
+            }}>Stayin · {isHe ? "שיתוף" : "Share"}</div>
+            <div style={{
+              fontSize: 18, fontWeight: 900, color: C.text, letterSpacing: "-0.01em",
+            }}>{isHe ? "שתף את התחזית" : "Share your prediction"}</div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
+              {isHe ? "תמונה מוכנה לוואטסאפ ואינסטגרם" : "Ready for WhatsApp & Instagram"}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              width: 32, height: 32, borderRadius: 10, background: "#f1f5f9",
+              border: "1px solid #e8edf5", color: C.muted, fontSize: 16,
+              cursor: "pointer", display: "flex", alignItems: "center",
+              justifyContent: "center", flexShrink: 0,
+            }}
+          >×</button>
+        </div>
+
+        {/* Preview area */}
+        <div style={{
+          margin: "14px 16px", borderRadius: 18, overflow: "hidden",
+          boxShadow: "0 8px 36px rgba(13,27,62,0.16), 0 0 0 1px rgba(13,27,62,0.06)",
+          background: "#fdfbf6",
+        }}>
+          <div style={{
+            width: "100%", height: Math.ceil(previewH),
+            overflow: "hidden", display: "flex",
+            justifyContent: "center", alignItems: "flex-start",
+          }}>
+            <div style={{
+              width: SHARE_W, height: SHARE_H,
+              transform: `scale(${scale})`, transformOrigin: "top left",
+              flexShrink: 0,
+            }}>
+              <div ref={cardRef} style={{ width: SHARE_W, height: SHARE_H }}>
+                <ShareCard
+                  isHe={isHe}
+                  state={state}
+                  matches={matches}
+                  tables={tables}
+                  thirdsAssignment={thirdsAssignment}
+                  authorName={authorName}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          margin: "0 16px 14px", padding: "10px 14px",
+          background: "rgba(212,160,23,0.08)",
+          border: "1px solid rgba(212,160,23,0.22)",
+          borderRadius: 10, display: "flex", alignItems: "center", gap: 8,
+        }}>
+          <div style={{
+            width: 6, height: 6, borderRadius: "50%",
+            background: C.gold, flexShrink: 0,
+          }} />
+          <div style={{ fontSize: 11, color: "#5a4500", fontWeight: 500, lineHeight: 1.4 }}>
+            {isHe
+              ? "פתחתי תמונה — שתף לוואטסאפ או שמור לאינסטגרם סטוריז"
+              : "PNG ready — share to WhatsApp or save for Instagram stories"}
+          </div>
+        </div>
+
+        <div style={{ padding: "0 16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={busy}
+            style={{
+              width: "100%", height: 56, borderRadius: 16, border: "none",
+              cursor: busy ? "wait" : "pointer",
+              background: "linear-gradient(135deg,#25D366,#20BA5A)",
+              color: "#fff", display: "flex", alignItems: "center", gap: 12,
+              padding: "0 20px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)",
+              opacity: busy ? 0.7 : 1,
+            }}
+          >
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: "rgba(255,255,255,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, flexShrink: 0,
+            }}>💬</div>
+            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+              <div style={{ fontSize: 15, fontWeight: 800 }}>
+                {busy
+                  ? (isHe ? "מכין תמונה..." : "Creating image...")
+                  : (isHe ? "שתף בוואטסאפ" : "Share on WhatsApp")}
+              </div>
+              {!busy && (
+                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+                  {isHe ? "התחזית כתמונה לקבוצה / סטטוס" : "Image to group or status"}
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 16, opacity: 0.7 }}>{isHe ? "←" : "→"}</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={busy}
+            style={{
+              width: "100%", height: 52, borderRadius: 14,
+              border: `1px solid ${C.usa}26`,
+              cursor: busy ? "wait" : "pointer",
+              background: `${C.usa}10`,
+              color: C.usa, display: "flex", alignItems: "center", gap: 12,
+              padding: "0 16px", opacity: busy ? 0.7 : 1,
+            }}
+          >
+            <div style={{
+              width: 30, height: 30, borderRadius: 8,
+              background: `${C.usa}18`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 15, flexShrink: 0,
+            }}>⬇</div>
+            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>
+                {busy
+                  ? (isHe ? "..." : "...")
+                  : (isHe ? "הורד תמונה" : "Download PNG")}
+              </div>
+              <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+                {isHe ? "לשמירה ופרסום באינסטגרם" : "Save and post to Instagram"}
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
