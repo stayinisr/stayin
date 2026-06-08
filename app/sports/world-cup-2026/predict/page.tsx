@@ -284,7 +284,7 @@ function Header({
   onReset: () => void;
   hasState: boolean;
 }) {
-  const title = isHe ? "מחזיק את גביע העולם" : "Hold the World Cup";
+  const title = isHe ? "סימולטור מונדיאל 2026" : "World Cup 2026 Simulator";
   const sub = isHe
     ? "בנה את הטורניר המושלם שלך — מבתי הקבוצות ועד גמר 2026"
     : "Build your perfect tournament — from groups to the 2026 final";
@@ -1053,15 +1053,7 @@ function BestThirdScreen({
   onBack: () => void;
   onNext: () => void;
 }) {
-  // Seed once with the auto-suggested set, then trust state as truth so the
-  // user's deselections / selections actually stick.
-  useEffect(() => {
-    if (state.bestThird.length === 0 && autoBest.length === 8) {
-      setState((s) => ({ ...s, bestThird: [...autoBest] }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  // No auto-seeding — the user picks the 8 deliberately. State is the truth.
   const selected = state.bestThird;
 
   const toggle = (g: GroupLetter) => {
@@ -1087,9 +1079,9 @@ function BestThirdScreen({
           {isHe ? "8 הנבחרות הטובות ביותר מהמקום השלישי" : "Best 8 third-placed teams"}
         </div>
         <div style={{ fontFamily: fBody(isHe), fontSize: 13, color: C.muted, marginTop: 6, maxWidth: 640 }}>
-          {state.mode === "quick"
-            ? (isHe ? "בחר 8 בתים שמהם הקבוצה השלישית עולה לשלב הנוקאאוט." : "Pick 8 groups whose 3rd-placed team qualifies for the knockout round.")
-            : (isHe ? "אלו 8 הנבחרות הטובות מבין השלישיות. אפשר לשנות אם תרצה." : "These are the top 8 third-placed teams. Adjust if you want.")}
+          {isHe
+            ? "בחר 8 בתים שמהם הנבחרת השלישית עולה לשלב הנוקאאוט. הסדר שתבחר קובע את העדיפות בעת השיבוץ."
+            : "Pick 8 groups whose 3rd-placed team qualifies. The order you click sets their seeding."}
         </div>
       </div>
 
@@ -1541,9 +1533,10 @@ function BracketTree({
             flex: 1, minWidth: 180, display: "flex", flexDirection: "column",
           }}>
             <div style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: "0.16em",
-              textTransform: "uppercase", color: C.hint, marginBottom: 8,
-              textAlign: "center",
+              fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
+              textTransform: "uppercase", color: C.usa, marginBottom: 10,
+              textAlign: "center", fontFamily: fSyne,
+              paddingBottom: 6, borderBottom: `1px solid ${C.border}`,
             }}>{col.label}</div>
 
             <div style={{
@@ -1575,13 +1568,15 @@ function BracketTree({
 
       {layout.third && (
         <div style={{
-          marginTop: 22, padding: "12px 14px",
-          background: C.white, border: `1px dashed ${C.faint}`, borderRadius: 5,
-          maxWidth: 360,
+          marginTop: 22, padding: "14px 16px",
+          background: C.white, border: `1px solid #b9c1d1`, borderRadius: 5,
+          boxShadow: "0 1px 3px rgba(13,27,62,0.08)",
+          maxWidth: 380,
         }}>
           <div style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: "0.16em",
-            textTransform: "uppercase", color: C.hint, marginBottom: 6,
+            fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
+            textTransform: "uppercase", color: C.usa, marginBottom: 8,
+            fontFamily: fSyne,
           }}>
             {stageLabel("Third Place", isHe)} · #{layout.third.fifa_match_number}
           </div>
@@ -1624,20 +1619,22 @@ function BracketCard({
   return (
     <div style={{
       background: C.white,
-      border: `1px solid ${onPath ? C.gold : C.border}`,
-      boxShadow: onPath ? `0 0 0 1px ${C.gold}` : "0 1px 2px rgba(13,27,62,0.04)",
-      borderRadius: 4, overflow: "hidden", position: "relative",
+      border: `1px solid ${onPath ? C.gold : "#b9c1d1"}`,
+      boxShadow: onPath
+        ? `0 0 0 2px ${C.gold}, 0 4px 12px rgba(212,160,23,0.18)`
+        : "0 1px 3px rgba(13,27,62,0.10), 0 1px 1px rgba(13,27,62,0.06)",
+      borderRadius: 5, overflow: "hidden", position: "relative",
     }}>
       {!hideMatchNumber && (
         <div style={{
-          position: "absolute", top: 2, right: 6,
-          fontSize: 8, fontWeight: 800, letterSpacing: "0.08em",
-          color: onPath ? C.gold : C.faint,
+          position: "absolute", top: 3, right: 7,
+          fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
+          color: onPath ? C.gold : C.muted,
           fontFamily: fSyne, pointerEvents: "none",
         }}>#{match.fifa_match_number}</div>
       )}
       <BracketSide isHe={isHe} won={winnerSide === "home"} team={homeTeam} label={homeLabel} />
-      <div style={{ height: 1, background: C.border }} />
+      <div style={{ height: 1, background: "#d4dbe8" }} />
       <BracketSide isHe={isHe} won={winnerSide === "away"} team={awayTeam} label={awayLabel} />
     </div>
   );
@@ -1646,10 +1643,10 @@ function BracketCard({
 function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; team: string | null; label: string }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
-      background: won ? "rgba(212,160,23,0.10)" : "transparent",
-      color: won ? C.text : team ? C.text : C.hint,
-      fontWeight: won ? 800 : 600, minHeight: 26,
+      display: "flex", alignItems: "center", gap: 7, padding: "8px 10px",
+      background: won ? "rgba(212,160,23,0.18)" : "transparent",
+      color: won ? "#5a3d00" : team ? C.text : C.muted,
+      fontWeight: won ? 800 : 700, minHeight: 28,
     }}>
       {team && flagImgSrc(team) && (
         <span style={{ width: 18, height: 13, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
@@ -1657,8 +1654,9 @@ function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; 
         </span>
       )}
       <span style={{
-        fontFamily: isHe ? fHe : fEn, fontSize: 11,
+        fontFamily: isHe ? fHe : fEn, fontSize: 12,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
+        letterSpacing: isHe ? 0 : "-0.1px",
       }}>{team ? teamName(team, isHe) : label}</span>
     </div>
   );
