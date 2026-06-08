@@ -567,8 +567,14 @@ function MatchEditor({
       background: C.white, border: `1px solid ${C.border}`, borderRadius: 5,
       padding: "12px 14px",
     }}>
-      <div style={{ fontSize: 9, color: C.faint, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>
-        #{String(match.fifa_match_number).padStart(2, "0")} · {match.city}
+      <div style={{
+        fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+        textTransform: "uppercase", marginBottom: 10, fontFamily: fSyne,
+        display: "flex", gap: 8, alignItems: "center",
+      }}>
+        <span style={{ color: C.usa }}>#{String(match.fifa_match_number).padStart(2, "0")}</span>
+        <span style={{ color: C.faint }}>·</span>
+        <span style={{ color: C.muted, fontWeight: 600 }}>{match.city}</span>
       </div>
 
       <div style={{
@@ -1258,14 +1264,16 @@ function KnockoutGameCard({
 
   return (
     <div style={{
-      background: C.white, border: `1px solid ${C.border}`, borderRadius: 5, padding: 10,
+      background: C.white, border: `1px solid #b9c1d1`, borderRadius: 5, padding: 10,
+      boxShadow: "0 1px 3px rgba(13,27,62,0.08)",
     }}>
       <div style={{
-        fontSize: 9, color: C.faint, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8,
-        display: "flex", justifyContent: "space-between", gap: 8,
+        fontSize: 11, color: C.text, fontWeight: 700, letterSpacing: "0.08em",
+        textTransform: "uppercase", marginBottom: 10, fontFamily: fSyne,
+        display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center",
       }}>
-        <span>#{String(match.fifa_match_number).padStart(2, "0")}</span>
-        <span>{match.city}</span>
+        <span style={{ color: C.usa }}>#{String(match.fifa_match_number).padStart(2, "0")}</span>
+        <span style={{ color: C.muted, fontWeight: 600 }}>{match.city}</span>
       </div>
       <div style={{ display: "flex", alignItems: "stretch", gap: 6 }}>
         <Side label={resolved.homeLabel} team={resolved.home} side="home" />
