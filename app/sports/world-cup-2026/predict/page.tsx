@@ -8,6 +8,7 @@ import { supabase } from "../../../../lib/supabase";
 import { useLanguage } from "../../../../lib/LanguageContext";
 import { teamName, flagImgSrc } from "../../../../lib/teams";
 import ShareCard, { SHARE_W, SHARE_H } from "./ShareCard";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   EMPTY_STATE,
   GROUP_LETTERS,
@@ -20,6 +21,7 @@ import {
   computeAllGroupTables,
   computeBracketLayout,
   computeGroupTable,
+  computeTwoSidedBracket,
   getChampionPath,
   groupMatches,
   groupTeams,
@@ -394,95 +396,379 @@ function ModeScreen({
   onPick: (m: Mode) => void;
   onContinue: () => void;
 }) {
-  const modes: { id: Mode; emoji: string; titleHe: string; titleEn: string; descHe: string; descEn: string; accent: string }[] = [
+  const modes: { id: Mode; emoji: string; iconBg: string; titleHe: string; titleEn: string; descHe: string; descEn: string; accent: string; gradient: string; durationHe: string; durationEn: string; }[] = [
     {
-      id: "full", emoji: "🎯", accent: C.usa,
+      id: "full", emoji: "🎯", iconBg: `linear-gradient(135deg, ${C.usa}, #2a5298)`, accent: C.usa,
       titleHe: "חיזוי מלא", titleEn: "Full prediction",
-      descHe: "מלא תוצאה מספרית לכל משחק. נחשב לך אוטומטית נקודות, שערים, הפרשים וטבלה.",
-      descEn: "Enter a numeric score for every match. We auto-compute points, goals, GD and the table.",
+      descHe: "תוצאה מספרית לכל משחק. נקודות, שערים, הפרשים וטבלה — הכל מחושב אוטומטית.",
+      descEn: "Numeric score for every match. Auto-compute points, goals, GD and the table.",
+      gradient: `linear-gradient(135deg, ${C.usa}, #2a5298 60%, ${C.gold})`,
+      durationHe: "~15 דק׳", durationEn: "~15 min",
     },
     {
-      id: "partial", emoji: "⚖️", accent: C.canada,
+      id: "partial", emoji: "⚖️", iconBg: `linear-gradient(135deg, ${C.canada}, #ff7676)`, accent: C.canada,
       titleHe: "חיזוי חלקי", titleEn: "Partial prediction",
-      descHe: "לכל משחק תבחר ניצחון א׳ / תיקו / ניצחון ב׳. במקרה של תיקו בטבלה — תסדר את הקבוצות ידנית.",
+      descHe: "לכל משחק תבחר ניצחון א׳ / תיקו / ניצחון ב׳. סידור ידני במקרה של תיקו בטבלה.",
       descEn: "Pick W/D/L for each match. Resolve table ties manually when needed.",
+      gradient: `linear-gradient(135deg, ${C.canada}, #ff8686 70%, ${C.gold})`,
+      durationHe: "~7 דק׳", durationEn: "~7 min",
     },
     {
-      id: "quick", emoji: "⚡", accent: C.mexico,
+      id: "quick", emoji: "⚡", iconBg: `linear-gradient(135deg, ${C.mexico}, #1abfb0)`, accent: C.mexico,
       titleHe: "חיזוי מהיר", titleEn: "Quick prediction",
-      descHe: "בלי לעבור על משחקים — דרג את 4 הקבוצות בכל בית מהמובילה לאחרונה.",
-      descEn: "Skip matches — just rank the 4 teams in each group from top to bottom.",
+      descHe: "בלי לעבור על משחקים — דרג ידנית את 4 הקבוצות בכל בית.",
+      descEn: "Skip matches — just rank the 4 teams in each group.",
+      gradient: `linear-gradient(135deg, ${C.mexico}, #1abfb0 70%, ${C.gold})`,
+      durationHe: "~3 דק׳", durationEn: "~3 min",
     },
   ];
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
+      {/* Decorative background field — animated soft gradients */}
+      <div aria-hidden style={{
+        position: "absolute", inset: -40, overflow: "hidden", zIndex: 0,
+        pointerEvents: "none", borderRadius: 16,
+      }}>
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.85 }}
+          transition={{ duration: 1.2 }}
+          style={{
+            position: "absolute", width: 460, height: 460, borderRadius: "50%",
+            top: -120, left: "-8%",
+            background: `radial-gradient(circle, ${C.usa}22, transparent 70%)`,
+            filter: "blur(8px)",
+          }}
+        />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.85 }}
+          transition={{ duration: 1.2, delay: 0.15 }}
+          style={{
+            position: "absolute", width: 380, height: 380, borderRadius: "50%",
+            top: 40, right: "-5%",
+            background: `radial-gradient(circle, ${C.canada}22, transparent 70%)`,
+            filter: "blur(8px)",
+          }}
+        />
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.85 }}
+          transition={{ duration: 1.2, delay: 0.3 }}
+          style={{
+            position: "absolute", width: 320, height: 320, borderRadius: "50%",
+            bottom: -100, left: "32%",
+            background: `radial-gradient(circle, ${C.gold}33, transparent 70%)`,
+            filter: "blur(8px)",
+          }}
+        />
+        {/* Soft animated dots */}
+        {[
+          { top: "12%", left: "18%", size: 6, delay: 0 },
+          { top: "28%", right: "22%", size: 8, delay: 0.4 },
+          { top: "60%", left: "12%", size: 5, delay: 0.8 },
+          { top: "78%", right: "28%", size: 7, delay: 1.2 },
+          { top: "44%", left: "48%", size: 4, delay: 1.6 },
+        ].map((d, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: [0.4, 0.9, 0.4],
+              scale: [0.8, 1.2, 0.8],
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 4, delay: d.delay, repeat: Infinity, ease: "easeInOut",
+            }}
+            style={{
+              position: "absolute",
+              top: d.top as string, left: (d.left as string) || undefined,
+              right: (d.right as string) || undefined,
+              width: d.size, height: d.size, borderRadius: "50%",
+              background: `linear-gradient(135deg, ${C.gold}, ${C.canada})`,
+              boxShadow: `0 0 16px ${C.gold}88`,
+            }}
+          />
+        ))}
+      </div>
+
       {state.mode && (
-        <div style={{
-          background: "rgba(26,191,176,0.08)", border: "1px solid rgba(26,191,176,0.25)",
-          padding: "12px 14px", borderRadius: 6, marginBottom: 18,
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap",
-        }}>
-          <div style={{ fontSize: 13, color: C.text, fontFamily: fBody(isHe) }}>
-            {isHe ? "יש לך תחזית קיימת. אפשר להמשיך או להתחיל בחירת מצב מחדש." : "You have a saved prediction. Continue or pick a new mode."}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: "rgba(26,191,176,0.10)",
+            border: "1px solid rgba(26,191,176,0.30)",
+            backdropFilter: "blur(10px)",
+            padding: "12px 16px", borderRadius: 10, marginBottom: 22,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            gap: 10, flexWrap: "wrap", position: "relative", zIndex: 1,
+          }}
+        >
+          <div style={{ fontSize: 13, color: C.text, fontFamily: fBody(isHe), fontWeight: 500 }}>
+            {isHe
+              ? "✨ יש לך תחזית פעילה — תוכל להמשיך מהמקום שעצרת."
+              : "✨ You have an active prediction — pick up where you left off."}
           </div>
           <button
             onClick={onContinue}
             style={{
-              padding: "8px 14px", background: C.usa, color: C.white, border: "none",
-              borderRadius: 4, fontSize: 12, fontWeight: 700, letterSpacing: "0.05em",
+              padding: "9px 18px",
+              background: `linear-gradient(135deg, ${C.usa}, ${C.canada})`,
+              color: C.white, border: "none",
+              borderRadius: 6, fontSize: 12, fontWeight: 800, letterSpacing: "0.06em",
               textTransform: "uppercase", cursor: "pointer",
+              boxShadow: `0 6px 18px ${C.usa}40`,
             }}
-          >{isHe ? "המשך תחזית" : "Continue"}</button>
-        </div>
+          >{isHe ? "המשך תחזית →" : "Continue →"}</button>
+        </motion.div>
       )}
 
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.hint, marginBottom: 4 }}>
-          {isHe ? "צעד 1 מתוך 4" : "Step 1 of 4"}
-        </div>
-        <div style={{ fontFamily: fSyne, fontSize: 24, fontWeight: 900, letterSpacing: "-0.02em", color: C.text }}>
-          {isHe ? "בחר מצב חיזוי" : "Pick prediction mode"}
-        </div>
+      {/* Hero block with animated trophy + headline */}
+      <div style={{
+        position: "relative", zIndex: 1, textAlign: "center",
+        padding: "10px 0 28px",
+      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "5px 14px", borderRadius: 99,
+            background: `linear-gradient(135deg, ${C.usa}15, ${C.canada}15, ${C.gold}15)`,
+            border: `1px solid ${C.usa}25`, marginBottom: 14,
+            fontSize: 10, fontWeight: 800, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: C.usa, fontFamily: fSyne,
+          }}
+        >
+          <motion.span
+            animate={{ rotate: [0, -8, 8, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            style={{ display: "inline-block" }}
+          >🏆</motion.span>
+          {isHe ? "סימולטור מונדיאל 2026" : "World Cup 2026 Simulator"}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.05 }}
+          style={{
+            fontFamily: fSyne,
+            fontSize: "clamp(36px, 6vw, 56px)",
+            fontWeight: 900, letterSpacing: "-0.03em",
+            color: C.text, lineHeight: 1.05, marginBottom: 12,
+          }}
+        >
+          {isHe ? (
+            <>
+              <span>בחר את ה</span>
+              <span style={{
+                background: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>סגנון</span>
+              <span> שלך</span>
+            </>
+          ) : (
+            <>
+              <span>Pick your </span>
+              <span style={{
+                background: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>style</span>
+            </>
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          style={{
+            fontSize: 15, color: C.muted, maxWidth: 540, margin: "0 auto",
+            lineHeight: 1.65, fontFamily: fBody(isHe),
+          }}
+        >
+          {isHe
+            ? "מבתי הקבוצות ועד הגמר. כל קבוצה, כל משחק, כל מהלך — בידיים שלך."
+            : "From the group stage to the final. Every team, every match, every move — in your hands."}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          style={{
+            display: "flex", justifyContent: "center", gap: 24, flexWrap: "wrap",
+            marginTop: 18, fontFamily: fSyne,
+          }}
+        >
+          {[
+            { v: "104", l: isHe ? "משחקים" : "Matches" },
+            { v: "48", l: isHe ? "נבחרות" : "Teams" },
+            { v: "12", l: isHe ? "בתים" : "Groups" },
+          ].map((s) => (
+            <div key={s.l} style={{ textAlign: "center" }}>
+              <div style={{
+                fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em",
+                background: `linear-gradient(135deg, ${C.usa}, ${C.canada})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>{s.v}</div>
+              <div style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: "0.2em",
+                textTransform: "uppercase", color: C.muted, marginTop: 2,
+              }}>{s.l}</div>
+            </div>
+          ))}
+        </motion.div>
       </div>
 
+      {/* Mode cards grid */}
       <div style={{
+        position: "relative", zIndex: 1,
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-        gap: 14,
+        gap: 16,
       }}>
-        {modes.map((m) => {
+        {modes.map((m, idx) => {
           const selected = state.mode === m.id;
           return (
-            <button
+            <ModeCard
               key={m.id}
-              onClick={() => onPick(m.id)}
-              style={{
-                background: C.white, border: `1px solid ${selected ? m.accent : C.border}`,
-                borderRadius: 6, padding: 22, textAlign: isHe ? "right" : "left",
-                cursor: "pointer", transition: "border-color 150ms, transform 150ms",
-                boxShadow: selected ? `0 0 0 3px ${m.accent}22` : "0 1px 2px rgba(13,27,62,0.04)",
-                position: "relative",
-              }}
-            >
-              <div style={{ height: 2, background: m.accent, position: "absolute", top: 0, left: 0, right: 0 }} />
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{m.emoji}</div>
-              <div style={{
-                fontFamily: fSyne, fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em",
-                color: C.text, marginBottom: 8,
-              }}>
-                {isHe ? m.titleHe : m.titleEn}
-              </div>
-              <div style={{
-                fontFamily: fBody(isHe), fontSize: 13, color: C.muted, lineHeight: 1.6,
-              }}>
-                {isHe ? m.descHe : m.descEn}
-              </div>
-            </button>
+              mode={m}
+              isHe={isHe}
+              selected={selected}
+              idx={idx}
+              onPick={() => onPick(m.id)}
+            />
           );
         })}
       </div>
     </div>
+  );
+}
+
+function ModeCard({
+  mode, isHe, selected, idx, onPick,
+}: {
+  mode: {
+    id: Mode; emoji: string; iconBg: string;
+    titleHe: string; titleEn: string;
+    descHe: string; descEn: string;
+    accent: string; gradient: string;
+    durationHe: string; durationEn: string;
+  };
+  isHe: boolean;
+  selected: boolean;
+  idx: number;
+  onPick: () => void;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 24, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, delay: 0.15 + idx * 0.08, ease: "easeOut" }}
+      whileHover={{ y: -6 }}
+      whileTap={{ scale: 0.985 }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onClick={onPick}
+      style={{
+        background: C.white,
+        border: `1px solid ${selected ? mode.accent : "#e0e6ef"}`,
+        borderRadius: 14, padding: "26px 22px 22px",
+        textAlign: isHe ? "right" : "left",
+        cursor: "pointer",
+        boxShadow: selected
+          ? `0 0 0 3px ${mode.accent}26, 0 18px 40px ${mode.accent}20`
+          : hover
+            ? `0 14px 36px rgba(13,27,62,0.14), 0 0 0 1px ${mode.accent}22`
+            : "0 2px 6px rgba(13,27,62,0.05)",
+        transition: "box-shadow 200ms",
+        position: "relative", overflow: "hidden",
+      }}
+    >
+      {/* Top accent bar gradient */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 4,
+        background: mode.gradient,
+      }} />
+
+      {/* Animated glow on hover */}
+      <motion.div
+        animate={{ opacity: hover ? 0.6 : 0 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          position: "absolute", top: -80, right: -80,
+          width: 240, height: 240, borderRadius: "50%",
+          background: `radial-gradient(circle, ${mode.accent}25, transparent 70%)`,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Icon block */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        marginBottom: 18, gap: 10,
+      }}>
+        <motion.div
+          animate={hover ? { rotate: [-3, 3, -3], scale: 1.08 } : { rotate: 0, scale: 1 }}
+          transition={{ duration: 1.2, repeat: hover ? Infinity : 0 }}
+          style={{
+            width: 56, height: 56, borderRadius: 14,
+            background: mode.iconBg,
+            display: "grid", placeItems: "center",
+            fontSize: 28,
+            boxShadow: `0 8px 20px ${mode.accent}38`,
+            flexShrink: 0,
+          }}
+        >{mode.emoji}</motion.div>
+
+        <div style={{
+          fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
+          textTransform: "uppercase", color: mode.accent,
+          padding: "5px 10px", borderRadius: 99,
+          background: `${mode.accent}10`, border: `1px solid ${mode.accent}25`,
+          fontFamily: fSyne,
+        }}>
+          ⏱ {isHe ? mode.durationHe : mode.durationEn}
+        </div>
+      </div>
+
+      <div style={{
+        fontFamily: fSyne, fontSize: 22, fontWeight: 900,
+        letterSpacing: "-0.02em", color: C.text, marginBottom: 8,
+      }}>
+        {isHe ? mode.titleHe : mode.titleEn}
+      </div>
+      <div style={{
+        fontFamily: fBody(isHe), fontSize: 13, color: C.muted, lineHeight: 1.65,
+        marginBottom: 16,
+      }}>
+        {isHe ? mode.descHe : mode.descEn}
+      </div>
+
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        fontFamily: fSyne, fontSize: 12, fontWeight: 800,
+        letterSpacing: "0.06em", textTransform: "uppercase",
+        color: mode.accent,
+      }}>
+        {isHe ? "התחל" : "Start"}
+        <motion.span
+          animate={hover ? { x: isHe ? -4 : 4 } : { x: 0 }}
+          transition={{ duration: 0.2 }}
+          style={{ display: "inline-block" }}
+        >{isHe ? "←" : "→"}</motion.span>
+      </div>
+    </motion.button>
   );
 }
 
@@ -1543,102 +1829,247 @@ function BracketTree({
   state: PredictionState;
   thirdsAssignment: Record<number, GroupLetter>;
 }) {
-  const layout = useMemo(() => computeBracketLayout(matches), [matches]);
+  const bracket = useMemo(() => computeTwoSidedBracket(matches), [matches]);
   const champPath = useMemo(
     () => getChampionPath(matches, state.knockoutWinners),
     [matches, state.knockoutWinners],
   );
 
-  // Each round renders as a flex column with space-around. As long as every
-  // column shares the same height and box height, R16 boxes will visually
-  // centre between their two R32 feeders, QF between R16 pairs, and so on.
-  const cols: { label: string; items: MatchItem[] }[] = [
-    { label: stageLabel("Round of 32", isHe), items: layout.r32 },
-    { label: stageLabel("Round of 16", isHe), items: layout.r16 },
-    { label: stageLabel("Quarter Finals", isHe), items: layout.qf },
-    { label: stageLabel("Semi Finals", isHe), items: layout.sf },
-    { label: stageLabel("Final", isHe), items: layout.final ? [layout.final] : [] },
-  ];
+  // Card geometry — keep R32 cards stacked with a small gap so the whole
+  // column has predictable height; deeper rounds use space-around so they
+  // sit centred between their feeders.
+  const BOX_H = 60;
+  const R32_GAP = 8;
+  const R32_COUNT = Math.max(bracket.r32L.length, bracket.r32R.length);
+  const totalH = Math.max(1, R32_COUNT) * (BOX_H + R32_GAP);
 
-  const BOX_H = 56; // px — match height
-  const GAP_R32 = 8; // vertical gap between R32 boxes
-  const totalH = layout.r32.length * (BOX_H + GAP_R32);
+  // ── Connector lines (SVG overlay) ────────────────────────────────────────
+  // After mount, measure each card's DOM rect and draw an SVG path from the
+  // feeder's outer edge to the next match's inner edge.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const setCardRef = (id: string) => (el: HTMLDivElement | null) => {
+    cardRefs.current.set(id, el);
+  };
+  type Line = { d: string; gold: boolean };
+  const [lines, setLines] = useState<Line[]>([]);
+  const [svgSize, setSvgSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+
+  useEffect(() => {
+    function recompute() {
+      const c = containerRef.current;
+      if (!c) return;
+      const cb = c.getBoundingClientRect();
+      setSvgSize({ w: cb.width, h: cb.height });
+
+      const all = matches;
+      const byNum = new Map(all.map((m) => [m.fifa_match_number, m]));
+      const next: Line[] = [];
+      // Walk every knockout match. For each W{n} slot inside it, draw a
+      // connector from match #n (the feeder) to this match (the child).
+      const koMatches = all.filter((m) => !m.stage.startsWith("Group") && m.stage !== "Third Place");
+      for (const child of koMatches) {
+        const childEl = cardRefs.current.get(child.id);
+        if (!childEl) continue;
+        const cr = childEl.getBoundingClientRect();
+        // For each side (home/away) that's a W{n} feeder, find the feeder match.
+        const slots = [
+          { raw: child.home_team_name, side: "home" as const },
+          { raw: child.away_team_name, side: "away" as const },
+        ];
+        // Which physical side of the child sits the feeder on? Left half
+        // matches are connected from their RIGHT edge → child's LEFT edge.
+        // Right half matches are connected from their LEFT edge → child's RIGHT.
+        const childOnRight =
+          bracket.r32R.includes(child) ||
+          bracket.r16R.includes(child) ||
+          bracket.qfR.includes(child) ||
+          child === bracket.sfR;
+        for (const s of slots) {
+          if (!s.raw) continue;
+          // Parse the W{n} pointer using the same logic as in logic.ts.
+          const m = s.raw.match(/^W(\d+)$/);
+          if (!m) continue;
+          const feederNum = parseInt(m[1]!, 10);
+          const feeder = byNum.get(feederNum);
+          if (!feeder) continue;
+          const feederEl = cardRefs.current.get(feeder.id);
+          if (!feederEl) continue;
+          const fr = feederEl.getBoundingClientRect();
+
+          // Coordinates relative to the container.
+          const fy = fr.top + fr.height / 2 - cb.top;
+          const cy = cr.top + cr.height / 2 - cb.top;
+          let fx: number, cx: number;
+          if (!childOnRight) {
+            // Left side: feeder is to the LEFT of child.
+            fx = fr.right - cb.left;
+            cx = cr.left - cb.left;
+          } else {
+            // Right side mirrored.
+            fx = fr.left - cb.left;
+            cx = cr.right - cb.left;
+          }
+          // Midpoint X creates the classic bracket "C" shape.
+          const mx = (fx + cx) / 2;
+          const d = `M ${fx} ${fy} L ${mx} ${fy} L ${mx} ${cy} L ${cx} ${cy}`;
+          const gold = champPath.has(child.id) && champPath.has(feeder.id);
+          next.push({ d, gold });
+        }
+      }
+      setLines(next);
+    }
+    recompute();
+    // Re-measure after fonts load and on resize.
+    const t = setTimeout(recompute, 200);
+    window.addEventListener("resize", recompute);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", recompute);
+    };
+  }, [bracket, matches, champPath, state.knockoutWinners]);
+
+  // ── Render helpers ──────────────────────────────────────────────────────
+  function renderCard(m: MatchItem, opts?: { hideHeader?: boolean }) {
+    const r = resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
+    const winnerSide = state.knockoutWinners[m.id];
+    const onPath = champPath.has(m.id);
+    return (
+      <BracketCard
+        key={m.id}
+        innerRef={setCardRef(m.id)}
+        isHe={isHe}
+        match={m}
+        homeTeam={r.home}
+        awayTeam={r.away}
+        homeLabel={r.homeLabel}
+        awayLabel={r.awayLabel}
+        winnerSide={winnerSide}
+        onPath={onPath}
+        hideHeader={opts?.hideHeader}
+        boxHeight={BOX_H}
+      />
+    );
+  }
+
+  function renderColumn(label: string, items: MatchItem[], height: number) {
+    return (
+      <div style={{
+        flex: "0 0 auto", minWidth: 188, display: "flex", flexDirection: "column",
+      }}>
+        <div style={{
+          fontSize: 10, fontWeight: 800, letterSpacing: "0.2em",
+          textTransform: "uppercase", color: C.usa, marginBottom: 12,
+          textAlign: "center", fontFamily: fSyne,
+          paddingBottom: 6, borderBottom: `1px solid ${C.border}`,
+        }}>{label}</div>
+        <div style={{
+          height, display: "flex", flexDirection: "column",
+          justifyContent: "space-around", gap: 0,
+        }}>
+          {items.map((m) => renderCard(m))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ overflowX: "auto", paddingBottom: 8 }}>
-      <div style={{
-        display: "flex", gap: 24, minWidth: cols.length * 200,
-        alignItems: "stretch",
-      }}>
-        {cols.map((col, ci) => (
-          <div key={col.label} style={{
-            flex: 1, minWidth: 180, display: "flex", flexDirection: "column",
-          }}>
-            <div style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
-              textTransform: "uppercase", color: C.usa, marginBottom: 10,
-              textAlign: "center", fontFamily: fSyne,
-              paddingBottom: 6, borderBottom: `1px solid ${C.border}`,
-            }}>{col.label}</div>
+      <div
+        ref={containerRef}
+        style={{
+          position: "relative",
+          display: "flex", alignItems: "flex-start",
+          gap: 28, minWidth: 1500, padding: "0 4px",
+        }}
+      >
+        {/* SVG overlay with connectors */}
+        <svg
+          style={{
+            position: "absolute", inset: 0,
+            width: svgSize.w, height: svgSize.h,
+            pointerEvents: "none", zIndex: 1,
+          }}
+        >
+          {lines.map((l, i) => (
+            <path
+              key={i}
+              d={l.d}
+              fill="none"
+              stroke={l.gold ? C.gold : "#b9c1d1"}
+              strokeWidth={l.gold ? 2.5 : 1.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={l.gold ? 0.95 : 0.7}
+            />
+          ))}
+        </svg>
 
-            <div style={{
-              height: totalH, display: "flex", flexDirection: "column",
-              justifyContent: "space-around",
-            }}>
-              {col.items.map((m) => {
-                const r = resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
-                const winnerSide = state.knockoutWinners[m.id];
-                const onPath = champPath.has(m.id);
-                return (
-                  <BracketCard
-                    key={m.id}
-                    isHe={isHe}
-                    match={m}
-                    homeTeam={r.home}
-                    awayTeam={r.away}
-                    homeLabel={r.homeLabel}
-                    awayLabel={r.awayLabel}
-                    winnerSide={winnerSide}
-                    onPath={onPath}
-                  />
-                );
-              })}
-            </div>
+        {/* LEFT HALF: R32 → R16 → QF → SF */}
+        <div style={{ display: "flex", gap: 28, position: "relative", zIndex: 2 }}>
+          {renderColumn(stageLabel("Round of 32", isHe), bracket.r32L, totalH)}
+          {renderColumn(stageLabel("Round of 16", isHe), bracket.r16L, totalH)}
+          {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfL, totalH)}
+          {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfL ? [bracket.sfL] : [], totalH)}
+        </div>
+
+        {/* CENTER: Final */}
+        <div style={{
+          flex: "0 0 auto", minWidth: 220,
+          display: "flex", flexDirection: "column", alignItems: "center",
+          paddingTop: 0, position: "relative", zIndex: 2,
+        }}>
+          <div style={{
+            fontSize: 11, fontWeight: 900, letterSpacing: "0.32em",
+            textTransform: "uppercase",
+            background: `linear-gradient(135deg, ${C.usa}, ${C.gold})`,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            marginBottom: 14, fontFamily: fSyne, textAlign: "center",
+          }}>
+            🏆 {stageLabel("Final", isHe)}
           </div>
-        ))}
+          <div style={{
+            height: totalH, display: "flex", flexDirection: "column",
+            justifyContent: "center", width: "100%",
+          }}>
+            {bracket.final && (
+              <div style={{
+                padding: 3, borderRadius: 8,
+                background: `linear-gradient(135deg, ${C.gold}, ${C.canada}, ${C.usa})`,
+                boxShadow: `0 12px 30px ${C.gold}40`,
+              }}>
+                {renderCard(bracket.final)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT HALF: SF → QF → R16 → R32 */}
+        <div style={{ display: "flex", gap: 28, position: "relative", zIndex: 2 }}>
+          {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfR ? [bracket.sfR] : [], totalH)}
+          {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfR, totalH)}
+          {renderColumn(stageLabel("Round of 16", isHe), bracket.r16R, totalH)}
+          {renderColumn(stageLabel("Round of 32", isHe), bracket.r32R, totalH)}
+        </div>
       </div>
 
-      {layout.third && (
+      {bracket.third && (
         <div style={{
-          marginTop: 22, padding: "14px 16px",
-          background: C.white, border: `1px solid #b9c1d1`, borderRadius: 5,
+          marginTop: 28, padding: "14px 16px",
+          background: C.white, border: `1px solid #b9c1d1`, borderRadius: 8,
           boxShadow: "0 1px 3px rgba(13,27,62,0.08)",
           maxWidth: 380,
         }}>
           <div style={{
             fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
-            textTransform: "uppercase", color: C.usa, marginBottom: 8,
+            textTransform: "uppercase", color: C.usa, marginBottom: 10,
             fontFamily: fSyne,
           }}>
-            {stageLabel("Third Place", isHe)} · #{layout.third.fifa_match_number}
+            🥉 {stageLabel("Third Place", isHe)}
           </div>
-          {(() => {
-            const r = resolveKnockoutTeams(layout.third!, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
-            const winnerSide = state.knockoutWinners[layout.third!.id];
-            return (
-              <BracketCard
-                isHe={isHe}
-                match={layout.third!}
-                homeTeam={r.home}
-                awayTeam={r.away}
-                homeLabel={r.homeLabel}
-                awayLabel={r.awayLabel}
-                winnerSide={winnerSide}
-                onPath={false}
-                hideMatchNumber
-              />
-            );
-          })()}
+          {renderCard(bracket.third, { hideHeader: false })}
         </div>
       )}
     </div>
@@ -1646,7 +2077,8 @@ function BracketTree({
 }
 
 function BracketCard({
-  isHe, match, homeTeam, awayTeam, homeLabel, awayLabel, winnerSide, onPath, hideMatchNumber,
+  isHe, match, homeTeam, awayTeam, homeLabel, awayLabel, winnerSide, onPath,
+  hideHeader, boxHeight, innerRef,
 }: {
   isHe: boolean;
   match: MatchItem;
@@ -1656,28 +2088,49 @@ function BracketCard({
   awayLabel: string;
   winnerSide: "home" | "away" | undefined;
   onPath: boolean;
-  hideMatchNumber?: boolean;
+  hideHeader?: boolean;
+  boxHeight?: number;
+  innerRef?: (el: HTMLDivElement | null) => void;
 }) {
   return (
-    <div style={{
-      background: C.white,
-      border: `1px solid ${onPath ? C.gold : "#b9c1d1"}`,
-      boxShadow: onPath
-        ? `0 0 0 2px ${C.gold}, 0 4px 12px rgba(212,160,23,0.18)`
-        : "0 1px 3px rgba(13,27,62,0.10), 0 1px 1px rgba(13,27,62,0.06)",
-      borderRadius: 5, overflow: "hidden", position: "relative",
-    }}>
-      {!hideMatchNumber && (
+    <div>
+      {!hideHeader && (
         <div style={{
-          position: "absolute", top: 3, right: 7,
-          fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-          color: onPath ? C.gold : C.muted,
-          fontFamily: fSyne, pointerEvents: "none",
-        }}>#{match.fifa_match_number}</div>
+          display: "flex", alignItems: "baseline", gap: 6,
+          margin: "0 4px 5px", fontFamily: fSyne,
+          justifyContent: "space-between",
+        }}>
+          <span style={{
+            fontSize: 9, fontWeight: 800, letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: onPath ? C.gold : C.usa, opacity: onPath ? 1 : 0.85,
+          }}>#{match.fifa_match_number}</span>
+          {match.city && (
+            <span style={{
+              fontSize: 8, fontWeight: 600, letterSpacing: "0.08em",
+              textTransform: "uppercase", color: C.muted, opacity: 0.7,
+              maxWidth: "70%", overflow: "hidden", textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}>{match.city}</span>
+          )}
+        </div>
       )}
-      <BracketSide isHe={isHe} won={winnerSide === "home"} team={homeTeam} label={homeLabel} />
-      <div style={{ height: 1, background: "#d4dbe8" }} />
-      <BracketSide isHe={isHe} won={winnerSide === "away"} team={awayTeam} label={awayLabel} />
+      <div
+        ref={innerRef}
+        style={{
+          background: C.white,
+          border: `1px solid ${onPath ? C.gold : "#b9c1d1"}`,
+          boxShadow: onPath
+            ? `0 0 0 2px ${C.gold}, 0 6px 16px rgba(212,160,23,0.22)`
+            : "0 1px 3px rgba(13,27,62,0.10), 0 1px 1px rgba(13,27,62,0.06)",
+          borderRadius: 5, overflow: "hidden", position: "relative",
+          height: boxHeight,
+        }}
+      >
+        <BracketSide isHe={isHe} won={winnerSide === "home"} team={homeTeam} label={homeLabel} />
+        <div style={{ height: 1, background: "#d4dbe8" }} />
+        <BracketSide isHe={isHe} won={winnerSide === "away"} team={awayTeam} label={awayLabel} />
+      </div>
     </div>
   );
 }

@@ -394,6 +394,86 @@ export type BracketLayout = {
   third: MatchItem | null;
 };
 
+// Two-sided bracket layout — splits the knockout tree at the Final so the
+// left half (feeders of SF #101) renders on the left and the right half
+// (feeders of SF #102) renders on the right, mirrored. Final sits in the
+// middle. This is the classic FIFA / NCAA bracket shape.
+export type TwoSidedBracket = {
+  // Left half — columns ordered FROM the edge inward (R32 → SF).
+  r32L: MatchItem[];
+  r16L: MatchItem[];
+  qfL: MatchItem[];
+  sfL: MatchItem | null;
+  // Center
+  final: MatchItem | null;
+  // Right half — columns ordered FROM SF outward (SF → R32).
+  sfR: MatchItem | null;
+  qfR: MatchItem[];
+  r16R: MatchItem[];
+  r32R: MatchItem[];
+  // Side game
+  third: MatchItem | null;
+};
+
+export function computeTwoSidedBracket(matches: MatchItem[]): TwoSidedBracket {
+  const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
+  const final = matches.find((m) => m.stage === "Final") || null;
+  const third = matches.find((m) => m.stage === "Third Place") || null;
+  if (!final) {
+    return {
+      r32L: [], r16L: [], qfL: [], sfL: null,
+      final: null,
+      sfR: null, qfR: [], r16R: [], r32R: [],
+      third,
+    };
+  }
+
+  function feeders(m: MatchItem): MatchItem[] {
+    const out: MatchItem[] = [];
+    for (const raw of [m.home_team_name, m.away_team_name]) {
+      const s = parseSlot(raw);
+      if (s.kind === "winner") {
+        const up = byNum.get(s.matchNumber);
+        if (up) out.push(up);
+      }
+    }
+    return out;
+  }
+
+  // Collect all feeders under a node (top-down), excluding the node itself.
+  function collectDown(root: MatchItem): MatchItem[][] {
+    // Returns matches by depth — level 0 is root's feeders, level 1 is their
+    // feeders, etc. Depth 3 for SF subtree means R32 boxes.
+    const levels: MatchItem[][] = [];
+    let frontier = feeders(root);
+    while (frontier.length) {
+      levels.push(frontier);
+      const next: MatchItem[] = [];
+      for (const m of frontier) for (const f of feeders(m)) next.push(f);
+      frontier = next;
+    }
+    return levels;
+  }
+
+  const [leftSF, rightSF] = feeders(final); // SF #101 left, SF #102 right
+  const leftLevels = leftSF ? collectDown(leftSF) : [];
+  const rightLevels = rightSF ? collectDown(rightSF) : [];
+
+  return {
+    // levels[0]=QFs, [1]=R16s, [2]=R32s
+    r32L: leftLevels[2] || [],
+    r16L: leftLevels[1] || [],
+    qfL: leftLevels[0] || [],
+    sfL: leftSF || null,
+    final,
+    sfR: rightSF || null,
+    qfR: rightLevels[0] || [],
+    r16R: rightLevels[1] || [],
+    r32R: rightLevels[2] || [],
+    third,
+  };
+}
+
 export function computeBracketLayout(matches: MatchItem[]): BracketLayout {
   const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
   const final = matches.find((m) => m.stage === "Final") || null;
