@@ -8,6 +8,7 @@ import { supabase } from "../../../../lib/supabase";
 import { useLanguage } from "../../../../lib/LanguageContext";
 import { teamName, flagImgSrc } from "../../../../lib/teams";
 import ShareCard, { SHARE_W, SHARE_H } from "./ShareCard";
+import BracketShareCard, { BRACKET_SHARE_W, BRACKET_SHARE_H } from "./BracketShareCard";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   EMPTY_STATE,
@@ -2283,6 +2284,8 @@ function NavRow({
 
 // ── Share modal ──────────────────────────────────────────────────────────────
 
+type ShareType = "summary" | "bracket";
+
 function ShareModal({
   isHe, champion, authorName, state, matches, tables, thirdsAssignment, onClose,
 }: {
@@ -2298,6 +2301,7 @@ function ShareModal({
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [shareType, setShareType] = useState<ShareType | null>(null);
   const [viewportW, setViewportW] = useState(typeof window === "undefined" ? 800 : window.innerWidth);
 
   useEffect(() => {
@@ -2313,12 +2317,14 @@ function ShareModal({
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Preview scale — render the 1080×1350 card scaled down so users see it
-  // before they share. Cap the preview at 360px wide on mobile.
   const isMobile = viewportW < 640;
-  const previewW = Math.min(viewportW - 64, isMobile ? 360 : 440);
-  const scale = previewW / SHARE_W;
-  const previewH = SHARE_H * scale;
+
+  // Card dimensions depend on selected share type.
+  const cardW = shareType === "bracket" ? BRACKET_SHARE_W : SHARE_W;
+  const cardH = shareType === "bracket" ? BRACKET_SHARE_H : SHARE_H;
+  const previewMaxW = Math.min(viewportW - 64, isMobile ? 360 : 460);
+  const scale = previewMaxW / cardW;
+  const previewH = cardH * scale;
 
   async function waitReady(el: HTMLElement) {
     const imgs = Array.from(el.querySelectorAll("img"));
@@ -2328,7 +2334,7 @@ function ShareModal({
         : new Promise<void>((res) => { img.onload = img.onerror = () => res(); }),
     ));
     if ((document as any).fonts?.ready) await (document as any).fonts.ready;
-    await new Promise<void>((res) => setTimeout(res, 600));
+    await new Promise<void>((res) => setTimeout(res, 700));
   }
 
   async function makeImage(): Promise<string | null> {
@@ -2337,8 +2343,6 @@ function ShareModal({
     try {
       await waitReady(cardRef.current);
       const opts = { cacheBust: true, pixelRatio: 2, backgroundColor: "#fdfbf6" };
-      // Run twice — first run primes image decoding in html-to-image, the
-      // second produces a clean snapshot. Same pattern as ShareAllTicket.
       await toPng(cardRef.current, opts);
       await new Promise<void>((res) => setTimeout(res, 120));
       return await toPng(cardRef.current, opts);
@@ -2347,38 +2351,255 @@ function ShareModal({
     }
   }
 
+  function fileName(): string {
+    return shareType === "bracket"
+      ? "stayin-wc2026-bracket.png"
+      : "stayin-wc2026-prediction.png";
+  }
+
   async function handleDownload() {
     const url = await makeImage();
     if (!url) return;
     const a = document.createElement("a");
-    a.download = "stayin-wc2026-prediction.png";
+    a.download = fileName();
     a.href = url;
     a.click();
   }
 
   async function handleShare() {
     const url = await makeImage();
-    const text = champion
+    const champText = champion
+      ? (isHe ? `האלופה: ${teamName(champion, true)}` : `Champion: ${teamName(champion, false)}`)
+      : "";
+    const text = shareType === "bracket"
       ? (isHe
-        ? `התחזית שלי למונדיאל 2026 ב-Stayin 🏆\nהאלופה: ${teamName(champion, true)}\nstayin.co.il`
-        : `My World Cup 2026 prediction on Stayin 🏆\nChampion: ${teamName(champion, false)}\nstayin.co.il`)
-      : (isHe ? "התחזית שלי למונדיאל 2026 ב-Stayin" : "My World Cup 2026 prediction on Stayin");
+        ? `עץ הנוקאאוט שלי למונדיאל 2026 ⚔️\n${champText}\nstayin.co.il/predict`
+        : `My World Cup 2026 knockout bracket ⚔️\n${champText}\nstayin.co.il/predict`)
+      : (isHe
+        ? `התחזית שלי למונדיאל 2026 🏆\n${champText}\nstayin.co.il/predict`
+        : `My World Cup 2026 prediction 🏆\n${champText}\nstayin.co.il/predict`);
 
     if (url && (navigator as any).canShare) {
       try {
         const blob = await (await fetch(url)).blob();
-        const file = new File([blob], "stayin-wc2026-prediction.png", { type: "image/png" });
+        const file = new File([blob], fileName(), { type: "image/png" });
         if ((navigator as any).canShare({ files: [file] })) {
           await (navigator as any).share({ title: "Stayin · WC 2026", text, files: [file] });
           return;
         }
       } catch { /* fall through */ }
     }
-    // Fallback: WhatsApp web share with text only (no file).
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   }
 
   if (!mounted) return null;
+
+  // ── Type selector screen ─────────────────────────────────────────────────
+  const TypeSelector = () => {
+    const options: { id: ShareType; emoji: string; titleHe: string; titleEn: string; descHe: string; descEn: string; accent: string; gradient: string }[] = [
+      {
+        id: "summary",
+        emoji: "🏆",
+        titleHe: "סיכום עם האלופה",
+        titleEn: "Champion summary",
+        descHe: "תמונת פורטרט עם האלופה, ארבע הגדולות ומנצחי כל הבתים — מושלמת לסטוריז.",
+        descEn: "Portrait card with champion, final four and group winners — perfect for stories.",
+        accent: C.usa,
+        gradient: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
+      },
+      {
+        id: "bracket",
+        emoji: "⚔️",
+        titleHe: "עץ הנוקאאוט המלא",
+        titleEn: "Full knockout bracket",
+        descHe: "כל 31 משחקי הנוקאאוט בתמונה ריבועית אחת, עם פסים מחברים והאלופה למטה.",
+        descEn: "All 31 knockout matches in one square image with connecting lines and the champion banner.",
+        accent: C.canada,
+        gradient: `linear-gradient(135deg, ${C.canada}, ${C.gold}, ${C.usa})`,
+      },
+    ];
+
+    return (
+      <div style={{ padding: "8px 16px 22px" }}>
+        <div style={{
+          fontSize: 11, color: C.muted, marginBottom: 14, lineHeight: 1.5,
+        }}>
+          {isHe ? "בחר איזו תמונה לשתף — כל אחת מותאמת אחרת:" : "Pick which image to share — each is designed differently:"}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {options.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => setShareType(opt.id)}
+              style={{
+                width: "100%", textAlign: isHe ? "right" : "left",
+                background: C.white, border: `1px solid ${C.border}`,
+                borderRadius: 14, padding: "16px 18px",
+                cursor: "pointer", display: "flex", gap: 14,
+                alignItems: "flex-start", transition: "transform 150ms, box-shadow 150ms",
+                position: "relative", overflow: "hidden",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 10px 28px ${opt.accent}26`;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "none";
+              }}
+            >
+              <div style={{ height: 4, position: "absolute", top: 0, left: 0, right: 0, background: opt.gradient }} />
+              <div style={{
+                width: 56, height: 56, borderRadius: 12,
+                background: opt.gradient,
+                display: "grid", placeItems: "center", fontSize: 26,
+                flexShrink: 0,
+                boxShadow: `0 8px 18px ${opt.accent}40`,
+              }}>{opt.emoji}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: fSyne, fontSize: 16, fontWeight: 900,
+                  color: C.text, letterSpacing: "-0.01em", marginBottom: 4,
+                }}>{isHe ? opt.titleHe : opt.titleEn}</div>
+                <div style={{
+                  fontSize: 12, color: C.muted, lineHeight: 1.5,
+                }}>{isHe ? opt.descHe : opt.descEn}</div>
+              </div>
+              <div style={{
+                fontSize: 18, color: opt.accent, fontWeight: 800,
+                alignSelf: "center", flexShrink: 0,
+              }}>{isHe ? "←" : "→"}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Preview + actions screen ─────────────────────────────────────────────
+  const PreviewActions = () => (
+    <>
+      <div style={{
+        margin: "10px 16px", borderRadius: 16, overflow: "hidden",
+        boxShadow: "0 8px 36px rgba(13,27,62,0.16), 0 0 0 1px rgba(13,27,62,0.06)",
+        background: "#fdfbf6",
+      }}>
+        <div style={{
+          width: "100%", height: Math.ceil(previewH),
+          overflow: "hidden", display: "flex",
+          justifyContent: "center", alignItems: "flex-start",
+        }}>
+          <div style={{
+            width: cardW, height: cardH,
+            transform: `scale(${scale})`, transformOrigin: "top left",
+            flexShrink: 0,
+          }}>
+            <div ref={cardRef} style={{ width: cardW, height: cardH }}>
+              {shareType === "bracket" ? (
+                <BracketShareCard
+                  isHe={isHe}
+                  state={state}
+                  matches={matches}
+                  tables={tables}
+                  thirdsAssignment={thirdsAssignment}
+                  authorName={authorName}
+                />
+              ) : (
+                <ShareCard
+                  isHe={isHe}
+                  state={state}
+                  matches={matches}
+                  tables={tables}
+                  thirdsAssignment={thirdsAssignment}
+                  authorName={authorName}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        margin: "0 16px 12px", padding: "10px 14px",
+        background: "rgba(212,160,23,0.08)",
+        border: "1px solid rgba(212,160,23,0.22)",
+        borderRadius: 10, display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, flexShrink: 0 }} />
+        <div style={{ fontSize: 11, color: "#5a4500", fontWeight: 500, lineHeight: 1.4 }}>
+          {isHe
+            ? "התמונה מוכנה לשליחה בוואטסאפ ולשמירה לאינסטגרם"
+            : "Ready for WhatsApp share and Instagram save"}
+        </div>
+      </div>
+
+      <div style={{ padding: "0 16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <button
+          type="button"
+          onClick={handleShare}
+          disabled={busy}
+          style={{
+            width: "100%", height: 56, borderRadius: 16, border: "none",
+            cursor: busy ? "wait" : "pointer",
+            background: "linear-gradient(135deg,#25D366,#20BA5A)",
+            color: "#fff", display: "flex", alignItems: "center", gap: 12,
+            padding: "0 20px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)",
+            opacity: busy ? 0.7 : 1,
+          }}
+        >
+          <div style={{
+            width: 34, height: 34, borderRadius: 10,
+            background: "rgba(255,255,255,0.18)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 18, flexShrink: 0,
+          }}>💬</div>
+          <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>
+              {busy
+                ? (isHe ? "מכין תמונה..." : "Creating image...")
+                : (isHe ? "שתף בוואטסאפ" : "Share on WhatsApp")}
+            </div>
+            {!busy && (
+              <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+                {isHe ? "התמונה תיפתח לבחירת קבוצה / איש קשר" : "Pick a group or contact"}
+              </div>
+            )}
+          </div>
+          <div style={{ fontSize: 16, opacity: 0.7 }}>{isHe ? "←" : "→"}</div>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={busy}
+          style={{
+            width: "100%", height: 52, borderRadius: 14,
+            border: `1px solid ${C.usa}26`,
+            cursor: busy ? "wait" : "pointer",
+            background: `${C.usa}10`,
+            color: C.usa, display: "flex", alignItems: "center", gap: 12,
+            padding: "0 16px", opacity: busy ? 0.7 : 1,
+          }}
+        >
+          <div style={{
+            width: 30, height: 30, borderRadius: 8,
+            background: `${C.usa}18`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 15, flexShrink: 0,
+          }}>⬇</div>
+          <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>
+              {busy ? "..." : (isHe ? "הורד תמונה" : "Download PNG")}
+            </div>
+            <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+              {isHe ? "לשמירה ולפרסום באינסטגרם" : "Save and post to Instagram"}
+            </div>
+          </div>
+        </button>
+      </div>
+    </>
+  );
 
   return createPortal(
     <div
@@ -2412,17 +2633,41 @@ function ShareModal({
           display: "flex", alignItems: "flex-start", justifyContent: "space-between",
           borderBottom: "1px solid rgba(13,27,62,0.06)",
         }}>
-          <div>
-            <div style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
-              textTransform: "uppercase", color: C.usa, marginBottom: 4,
-              fontFamily: fSyne,
-            }}>Stayin · {isHe ? "שיתוף" : "Share"}</div>
-            <div style={{
-              fontSize: 18, fontWeight: 900, color: C.text, letterSpacing: "-0.01em",
-            }}>{isHe ? "שתף את התחזית" : "Share your prediction"}</div>
-            <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
-              {isHe ? "תמונה מוכנה לוואטסאפ ואינסטגרם" : "Ready for WhatsApp & Instagram"}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {shareType && (
+              <button
+                type="button"
+                onClick={() => setShareType(null)}
+                title={isHe ? "בחר תמונה אחרת" : "Pick another image"}
+                style={{
+                  width: 30, height: 30, borderRadius: 8,
+                  background: "rgba(13,27,62,0.04)",
+                  border: "1px solid #e8edf5", color: C.muted,
+                  fontSize: 14, fontWeight: 800, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+              >{isHe ? "→" : "←"}</button>
+            )}
+            <div>
+              <div style={{
+                fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
+                textTransform: "uppercase", color: C.usa, marginBottom: 4,
+                fontFamily: fSyne,
+              }}>Stayin · {isHe ? "שיתוף" : "Share"}</div>
+              <div style={{
+                fontSize: 17, fontWeight: 900, color: C.text, letterSpacing: "-0.01em",
+              }}>
+                {shareType === "bracket"
+                  ? (isHe ? "עץ הנוקאאוט" : "Knockout bracket")
+                  : shareType === "summary"
+                    ? (isHe ? "סיכום התחזית" : "Prediction summary")
+                    : (isHe ? "מה לשתף?" : "What to share?")}
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
+                {shareType
+                  ? (isHe ? "תצוגה מקדימה — לפי הקליק יוצרים את התמונה" : "Preview — image is generated on click")
+                  : (isHe ? "בחר את הסוג שמתאים לך" : "Pick the type that fits")}
+              </div>
             </div>
           </div>
           <button
@@ -2437,119 +2682,7 @@ function ShareModal({
           >×</button>
         </div>
 
-        {/* Preview area */}
-        <div style={{
-          margin: "14px 16px", borderRadius: 18, overflow: "hidden",
-          boxShadow: "0 8px 36px rgba(13,27,62,0.16), 0 0 0 1px rgba(13,27,62,0.06)",
-          background: "#fdfbf6",
-        }}>
-          <div style={{
-            width: "100%", height: Math.ceil(previewH),
-            overflow: "hidden", display: "flex",
-            justifyContent: "center", alignItems: "flex-start",
-          }}>
-            <div style={{
-              width: SHARE_W, height: SHARE_H,
-              transform: `scale(${scale})`, transformOrigin: "top left",
-              flexShrink: 0,
-            }}>
-              <div ref={cardRef} style={{ width: SHARE_W, height: SHARE_H }}>
-                <ShareCard
-                  isHe={isHe}
-                  state={state}
-                  matches={matches}
-                  tables={tables}
-                  thirdsAssignment={thirdsAssignment}
-                  authorName={authorName}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          margin: "0 16px 14px", padding: "10px 14px",
-          background: "rgba(212,160,23,0.08)",
-          border: "1px solid rgba(212,160,23,0.22)",
-          borderRadius: 10, display: "flex", alignItems: "center", gap: 8,
-        }}>
-          <div style={{
-            width: 6, height: 6, borderRadius: "50%",
-            background: C.gold, flexShrink: 0,
-          }} />
-          <div style={{ fontSize: 11, color: "#5a4500", fontWeight: 500, lineHeight: 1.4 }}>
-            {isHe
-              ? "פתחתי תמונה — שתף לוואטסאפ או שמור לאינסטגרם סטוריז"
-              : "PNG ready — share to WhatsApp or save for Instagram stories"}
-          </div>
-        </div>
-
-        <div style={{ padding: "0 16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={busy}
-            style={{
-              width: "100%", height: 56, borderRadius: 16, border: "none",
-              cursor: busy ? "wait" : "pointer",
-              background: "linear-gradient(135deg,#25D366,#20BA5A)",
-              color: "#fff", display: "flex", alignItems: "center", gap: 12,
-              padding: "0 20px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)",
-              opacity: busy ? 0.7 : 1,
-            }}
-          >
-            <div style={{
-              width: 34, height: 34, borderRadius: 10,
-              background: "rgba(255,255,255,0.18)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 18, flexShrink: 0,
-            }}>💬</div>
-            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
-              <div style={{ fontSize: 15, fontWeight: 800 }}>
-                {busy
-                  ? (isHe ? "מכין תמונה..." : "Creating image...")
-                  : (isHe ? "שתף בוואטסאפ" : "Share on WhatsApp")}
-              </div>
-              {!busy && (
-                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
-                  {isHe ? "התחזית כתמונה לקבוצה / סטטוס" : "Image to group or status"}
-                </div>
-              )}
-            </div>
-            <div style={{ fontSize: 16, opacity: 0.7 }}>{isHe ? "←" : "→"}</div>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={busy}
-            style={{
-              width: "100%", height: 52, borderRadius: 14,
-              border: `1px solid ${C.usa}26`,
-              cursor: busy ? "wait" : "pointer",
-              background: `${C.usa}10`,
-              color: C.usa, display: "flex", alignItems: "center", gap: 12,
-              padding: "0 16px", opacity: busy ? 0.7 : 1,
-            }}
-          >
-            <div style={{
-              width: 30, height: 30, borderRadius: 8,
-              background: `${C.usa}18`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 15, flexShrink: 0,
-            }}>⬇</div>
-            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
-              <div style={{ fontSize: 14, fontWeight: 800 }}>
-                {busy
-                  ? (isHe ? "..." : "...")
-                  : (isHe ? "הורד תמונה" : "Download PNG")}
-              </div>
-              <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
-                {isHe ? "לשמירה ופרסום באינסטגרם" : "Save and post to Instagram"}
-              </div>
-            </div>
-          </button>
-        </div>
+        {shareType ? <PreviewActions /> : <TypeSelector />}
       </div>
     </div>,
     document.body,
