@@ -324,17 +324,41 @@ function Header({
 
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${C.usa} 0%, ${C.navy} 60%, ${C.canada} 100%)`,
+      position: "relative",
+      background: `linear-gradient(135deg, ${C.usa} 0%, ${C.navy} 50%, ${C.canada} 90%, ${C.gold} 100%)`,
       color: C.white,
-      padding: "28px 16px 20px",
+      padding: "26px 16px 22px",
       borderBottom: `1px solid ${C.border}`,
+      overflow: "hidden",
     }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      {/* Decorative orbs */}
+      <div aria-hidden style={{
+        position: "absolute", width: 380, height: 380, borderRadius: "50%",
+        top: -160, right: -100,
+        background: `radial-gradient(circle, ${C.gold}40, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+      <div aria-hidden style={{
+        position: "absolute", width: 280, height: 280, borderRadius: "50%",
+        bottom: -120, left: "20%",
+        background: `radial-gradient(circle, ${C.canada}50, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+
+      <div style={{
+        position: "relative", zIndex: 1,
+        maxWidth: 1100, margin: "0 auto",
+        display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+      }}>
         <Link
           href="/sports/world-cup-2026"
           style={{
             fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase",
-            color: "rgba(255,255,255,0.7)", textDecoration: "none",
+            color: "rgba(255,255,255,0.75)", textDecoration: "none",
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 10px", borderRadius: 4,
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
           }}
         >
           ← {isHe ? "חזרה למשחקים" : "Back to matches"}
@@ -346,39 +370,59 @@ function Header({
             style={{
               padding: "5px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.05em",
               borderRadius: 4, border: "1px solid rgba(255,255,255,0.25)",
-              background: "rgba(0,0,0,0.15)", color: C.white, cursor: "pointer",
+              background: "rgba(0,0,0,0.18)", color: C.white, cursor: "pointer",
+              transition: "background 150ms",
             }}
           >
             {isHe ? "התחל מחדש" : "Reset"}
           </button>
         )}
       </div>
-      <div style={{ maxWidth: 1100, margin: "16px auto 0" }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "14px auto 0" }}>
         <div style={{
-          fontFamily: fSyne, fontSize: "clamp(28px,4vw,40px)", fontWeight: 900,
+          fontFamily: fSyne, fontSize: "clamp(26px,3.6vw,38px)", fontWeight: 900,
           letterSpacing: "-0.03em", lineHeight: 1.05,
-        }}>{title}</div>
-        <div style={{ fontFamily: fBody(isHe), fontSize: 14, color: "rgba(255,255,255,0.75)", marginTop: 6 }}>{sub}</div>
+          display: "inline-flex", alignItems: "center", gap: 12,
+        }}>
+          <motion.span
+            animate={{ rotate: [0, -6, 6, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{ display: "inline-block" }}
+          >🏆</motion.span>
+          {title}
+        </div>
+        <div style={{ fontFamily: fBody(isHe), fontSize: 14, color: "rgba(255,255,255,0.78)", marginTop: 6 }}>{sub}</div>
       </div>
 
       {step.kind !== "mode" && (
-        <div style={{ maxWidth: 1100, margin: "20px auto 0", display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{
+          position: "relative", zIndex: 1,
+          maxWidth: 1100, margin: "18px auto 0",
+          display: "flex", flexWrap: "wrap", gap: 6,
+        }}>
           {[
-            { key: "groups", label: isHe ? "בתים" : "Groups", active: step.kind === "group" || step.kind === "tiebreak", done: step.kind !== "group" && step.kind !== "tiebreak" },
-            { key: "third", label: isHe ? "8 הטובות ביותר" : "Best 3rd", active: step.kind === "bestthird", done: step.kind === "knockout" || step.kind === "summary" },
-            { key: "ko", label: isHe ? "נוקאאוט" : "Knockout", active: step.kind === "knockout", done: step.kind === "summary" },
-            { key: "sum", label: isHe ? "סיכום" : "Summary", active: step.kind === "summary", done: false },
+            { key: "groups", label: isHe ? "בתים" : "Groups", icon: "🌐", active: step.kind === "group" || step.kind === "tiebreak", done: step.kind !== "group" && step.kind !== "tiebreak" },
+            { key: "third", label: isHe ? "8 הטובות ביותר" : "Best 3rd", icon: "🥉", active: step.kind === "bestthird", done: step.kind === "knockout" || step.kind === "summary" },
+            { key: "ko", label: isHe ? "נוקאאוט" : "Knockout", icon: "⚔️", active: step.kind === "knockout", done: step.kind === "summary" },
+            { key: "sum", label: isHe ? "סיכום" : "Summary", icon: "🏆", active: step.kind === "summary", done: false },
           ].map((c) => (
             <span
               key={c.key}
               style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                padding: "4px 10px", borderRadius: 3,
-                background: c.active ? "rgba(255,255,255,0.18)" : c.done ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.08)",
-                color: c.active ? C.white : c.done ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.45)",
-                border: c.active ? "1px solid rgba(255,255,255,0.3)" : "1px solid transparent",
+                fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase",
+                padding: "5px 11px", borderRadius: 99,
+                background: c.active
+                  ? "rgba(255,255,255,0.22)"
+                  : c.done ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.08)",
+                color: c.active ? C.white : c.done ? "rgba(255,255,255,0.62)" : "rgba(255,255,255,0.45)",
+                border: c.active ? `1px solid rgba(255,255,255,0.4)` : "1px solid transparent",
+                display: "inline-flex", alignItems: "center", gap: 5,
+                backdropFilter: c.active ? "blur(8px)" : undefined,
               }}
-            >{c.label}</span>
+            >
+              <span style={{ fontSize: 11 }}>{c.icon}</span>
+              {c.label}
+            </span>
           ))}
         </div>
       )}
@@ -1835,17 +1879,28 @@ function BracketTree({
     [matches, state.knockoutWinners],
   );
 
-  // Card geometry — keep R32 cards stacked with a small gap so the whole
-  // column has predictable height; deeper rounds use space-around so they
-  // sit centred between their feeders.
-  const BOX_H = 60;
-  const R32_GAP = 8;
+  // Card geometry — compact cards so the whole bracket fits with room
+  // to breathe. Deeper rounds use space-around so they sit centred between
+  // their two feeders.
+  const BOX_H = 46;
+  const R32_GAP = 6;
   const R32_COUNT = Math.max(bracket.r32L.length, bracket.r32R.length);
-  const totalH = Math.max(1, R32_COUNT) * (BOX_H + R32_GAP);
+  const totalH = Math.max(1, R32_COUNT) * (BOX_H + R32_GAP) + 20;
+
+  // Quick lookup: is a given match on the LEFT half of the bracket?
+  // The Final is in neither half; SF_L/Final are LEFT, SF_R is RIGHT.
+  const leftIds = useMemo(() => {
+    const s = new Set<string>();
+    for (const arr of [bracket.r32L, bracket.r16L, bracket.qfL]) for (const m of arr) s.add(m.id);
+    if (bracket.sfL) s.add(bracket.sfL.id);
+    return s;
+  }, [bracket]);
 
   // ── Connector lines (SVG overlay) ────────────────────────────────────────
-  // After mount, measure each card's DOM rect and draw an SVG path from the
-  // feeder's outer edge to the next match's inner edge.
+  // After mount we measure each card's DOM rect and draw an SVG "C" path
+  // from each feeder's outer edge to its child's inner edge. Side detection
+  // is based on the FEEDER's position so the SF→Final connectors (one from
+  // each half) render correctly.
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
   const setCardRef = (id: string) => (el: HTMLDivElement | null) => {
@@ -1860,35 +1915,21 @@ function BracketTree({
       const c = containerRef.current;
       if (!c) return;
       const cb = c.getBoundingClientRect();
-      setSvgSize({ w: cb.width, h: cb.height });
+      setSvgSize({ w: c.scrollWidth, h: c.scrollHeight });
 
-      const all = matches;
-      const byNum = new Map(all.map((m) => [m.fifa_match_number, m]));
+      const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
       const next: Line[] = [];
-      // Walk every knockout match. For each W{n} slot inside it, draw a
-      // connector from match #n (the feeder) to this match (the child).
-      const koMatches = all.filter((m) => !m.stage.startsWith("Group") && m.stage !== "Third Place");
+      const koMatches = matches.filter(
+        (m) => !m.stage.startsWith("Group") && m.stage !== "Third Place",
+      );
       for (const child of koMatches) {
         const childEl = cardRefs.current.get(child.id);
         if (!childEl) continue;
         const cr = childEl.getBoundingClientRect();
-        // For each side (home/away) that's a W{n} feeder, find the feeder match.
-        const slots = [
-          { raw: child.home_team_name, side: "home" as const },
-          { raw: child.away_team_name, side: "away" as const },
-        ];
-        // Which physical side of the child sits the feeder on? Left half
-        // matches are connected from their RIGHT edge → child's LEFT edge.
-        // Right half matches are connected from their LEFT edge → child's RIGHT.
-        const childOnRight =
-          bracket.r32R.includes(child) ||
-          bracket.r16R.includes(child) ||
-          bracket.qfR.includes(child) ||
-          child === bracket.sfR;
-        for (const s of slots) {
-          if (!s.raw) continue;
-          // Parse the W{n} pointer using the same logic as in logic.ts.
-          const m = s.raw.match(/^W(\d+)$/);
+        const slots = [child.home_team_name, child.away_team_name];
+        for (const raw of slots) {
+          if (!raw) continue;
+          const m = raw.match(/^W(\d+)$/);
           if (!m) continue;
           const feederNum = parseInt(m[1]!, 10);
           const feeder = byNum.get(feederNum);
@@ -1897,20 +1938,20 @@ function BracketTree({
           if (!feederEl) continue;
           const fr = feederEl.getBoundingClientRect();
 
-          // Coordinates relative to the container.
+          // Side decided by FEEDER position — works for left-half pairs,
+          // right-half pairs, and the two SF→Final connectors.
+          const feederOnLeft = leftIds.has(feeder.id);
+
           const fy = fr.top + fr.height / 2 - cb.top;
           const cy = cr.top + cr.height / 2 - cb.top;
           let fx: number, cx: number;
-          if (!childOnRight) {
-            // Left side: feeder is to the LEFT of child.
+          if (feederOnLeft) {
             fx = fr.right - cb.left;
             cx = cr.left - cb.left;
           } else {
-            // Right side mirrored.
             fx = fr.left - cb.left;
             cx = cr.right - cb.left;
           }
-          // Midpoint X creates the classic bracket "C" shape.
           const mx = (fx + cx) / 2;
           const d = `M ${fx} ${fy} L ${mx} ${fy} L ${mx} ${cy} L ${cx} ${cy}`;
           const gold = champPath.has(child.id) && champPath.has(feeder.id);
@@ -1920,14 +1961,29 @@ function BracketTree({
       setLines(next);
     }
     recompute();
-    // Re-measure after fonts load and on resize.
-    const t = setTimeout(recompute, 200);
+    // Re-measure after fonts/images load and on resize. The ResizeObserver
+    // catches reflows from late-loading flag images that would otherwise
+    // leave half the connector lines pointing at stale positions.
+    const t1 = setTimeout(recompute, 150);
+    const t2 = setTimeout(recompute, 600);
     window.addEventListener("resize", recompute);
+    let ro: ResizeObserver | null = null;
+    if (containerRef.current && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(recompute);
+      ro.observe(containerRef.current);
+    }
+    // Re-measure each time a flag <img> finishes loading.
+    const imgs = containerRef.current?.querySelectorAll("img") ?? [];
+    const onLoad = () => recompute();
+    imgs.forEach((img) => img.addEventListener("load", onLoad));
     return () => {
-      clearTimeout(t);
+      clearTimeout(t1);
+      clearTimeout(t2);
       window.removeEventListener("resize", recompute);
+      ro?.disconnect();
+      imgs.forEach((img) => img.removeEventListener("load", onLoad));
     };
-  }, [bracket, matches, champPath, state.knockoutWinners]);
+  }, [bracket, matches, champPath, state.knockoutWinners, leftIds]);
 
   // ── Render helpers ──────────────────────────────────────────────────────
   function renderCard(m: MatchItem, opts?: { hideHeader?: boolean }) {
@@ -1974,102 +2030,126 @@ function BracketTree({
   }
 
   return (
-    <div style={{ overflowX: "auto", paddingBottom: 8 }}>
-      <div
-        ref={containerRef}
-        style={{
-          position: "relative",
-          display: "flex", alignItems: "flex-start",
-          gap: 28, minWidth: 1500, padding: "0 4px",
-        }}
-      >
-        {/* SVG overlay with connectors */}
-        <svg
+    <div>
+      {/* Scrollable bracket area — forced LTR so the canonical
+          left-half/center/right-half orientation renders the same way
+          regardless of page language. Card text still respects its own
+          direction inside. */}
+      <div style={{ overflowX: "auto", paddingBottom: 16 }} dir="ltr">
+        <div
+          ref={containerRef}
           style={{
-            position: "absolute", inset: 0,
-            width: svgSize.w, height: svgSize.h,
-            pointerEvents: "none", zIndex: 1,
+            position: "relative",
+            display: "flex", alignItems: "flex-start",
+            gap: 22, minWidth: 1400, padding: "8px 4px 8px",
           }}
         >
-          {lines.map((l, i) => (
-            <path
-              key={i}
-              d={l.d}
-              fill="none"
-              stroke={l.gold ? C.gold : "#b9c1d1"}
-              strokeWidth={l.gold ? 2.5 : 1.4}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={l.gold ? 0.95 : 0.7}
-            />
-          ))}
-        </svg>
+          <svg
+            style={{
+              position: "absolute", top: 0, left: 0,
+              width: svgSize.w, height: svgSize.h,
+              pointerEvents: "none", zIndex: 1,
+            }}
+          >
+            {lines.map((l, i) => (
+              <path
+                key={i}
+                d={l.d}
+                fill="none"
+                stroke={l.gold ? C.gold : "#a8b1c5"}
+                strokeWidth={l.gold ? 2.6 : 1.4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={l.gold ? 0.95 : 0.65}
+              />
+            ))}
+          </svg>
 
-        {/* LEFT HALF: R32 → R16 → QF → SF */}
-        <div style={{ display: "flex", gap: 28, position: "relative", zIndex: 2 }}>
-          {renderColumn(stageLabel("Round of 32", isHe), bracket.r32L, totalH)}
-          {renderColumn(stageLabel("Round of 16", isHe), bracket.r16L, totalH)}
-          {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfL, totalH)}
-          {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfL ? [bracket.sfL] : [], totalH)}
-        </div>
-
-        {/* CENTER: Final */}
-        <div style={{
-          flex: "0 0 auto", minWidth: 220,
-          display: "flex", flexDirection: "column", alignItems: "center",
-          paddingTop: 0, position: "relative", zIndex: 2,
-        }}>
-          <div style={{
-            fontSize: 11, fontWeight: 900, letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            background: `linear-gradient(135deg, ${C.usa}, ${C.gold})`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            marginBottom: 14, fontFamily: fSyne, textAlign: "center",
-          }}>
-            🏆 {stageLabel("Final", isHe)}
+          {/* LEFT HALF */}
+          <div style={{ display: "flex", gap: 22, position: "relative", zIndex: 2 }}>
+            {renderColumn(stageLabel("Round of 32", isHe), bracket.r32L, totalH)}
+            {renderColumn(stageLabel("Round of 16", isHe), bracket.r16L, totalH)}
+            {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfL, totalH)}
+            {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfL ? [bracket.sfL] : [], totalH)}
           </div>
-          <div style={{
-            height: totalH, display: "flex", flexDirection: "column",
-            justifyContent: "center", width: "100%",
-          }}>
-            {bracket.final && (
-              <div style={{
-                padding: 3, borderRadius: 8,
-                background: `linear-gradient(135deg, ${C.gold}, ${C.canada}, ${C.usa})`,
-                boxShadow: `0 12px 30px ${C.gold}40`,
-              }}>
-                {renderCard(bracket.final)}
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* RIGHT HALF: SF → QF → R16 → R32 */}
-        <div style={{ display: "flex", gap: 28, position: "relative", zIndex: 2 }}>
-          {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfR ? [bracket.sfR] : [], totalH)}
-          {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfR, totalH)}
-          {renderColumn(stageLabel("Round of 16", isHe), bracket.r16R, totalH)}
-          {renderColumn(stageLabel("Round of 32", isHe), bracket.r32R, totalH)}
+          {/* CENTER: Final */}
+          <div style={{
+            flex: "0 0 auto", minWidth: 230,
+            display: "flex", flexDirection: "column", alignItems: "center",
+            position: "relative", zIndex: 2,
+          }}>
+            <div style={{
+              fontSize: 10, fontWeight: 900, letterSpacing: "0.32em",
+              textTransform: "uppercase",
+              background: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              marginBottom: 12, fontFamily: fSyne, textAlign: "center",
+              paddingBottom: 6, borderBottom: `1px solid ${C.border}`,
+              width: "100%",
+            }}>
+              🏆 {stageLabel("Final", isHe)}
+            </div>
+            <div style={{
+              height: totalH, display: "flex", flexDirection: "column",
+              justifyContent: "center", width: "100%",
+            }}>
+              {bracket.final && (
+                <div style={{ position: "relative" }}>
+                  {/* Pulse halo */}
+                  <motion.div
+                    aria-hidden
+                    animate={{ scale: [1, 1.06, 1], opacity: [0.45, 0.7, 0.45] }}
+                    transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                      position: "absolute", inset: -8, borderRadius: 14,
+                      background: `radial-gradient(circle, ${C.gold}80, transparent 70%)`,
+                      pointerEvents: "none", zIndex: 0,
+                    }}
+                  />
+                  <div style={{
+                    position: "relative", zIndex: 1,
+                    padding: 3, borderRadius: 10,
+                    background: `linear-gradient(135deg, ${C.gold}, ${C.canada}, ${C.usa})`,
+                    boxShadow: `0 14px 32px ${C.gold}50`,
+                  }}>
+                    {renderCard(bracket.final)}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT HALF */}
+          <div style={{ display: "flex", gap: 22, position: "relative", zIndex: 2 }}>
+            {renderColumn(stageLabel("Semi Finals", isHe), bracket.sfR ? [bracket.sfR] : [], totalH)}
+            {renderColumn(stageLabel("Quarter Finals", isHe), bracket.qfR, totalH)}
+            {renderColumn(stageLabel("Round of 16", isHe), bracket.r16R, totalH)}
+            {renderColumn(stageLabel("Round of 32", isHe), bracket.r32R, totalH)}
+          </div>
         </div>
       </div>
 
+      {/* Third place — separate section to avoid SVG / scroll-area overlap */}
       {bracket.third && (
         <div style={{
-          marginTop: 28, padding: "14px 16px",
-          background: C.white, border: `1px solid #b9c1d1`, borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(13,27,62,0.08)",
-          maxWidth: 380,
+          marginTop: 36, padding: "16px 18px",
+          background: `linear-gradient(135deg, #fff 0%, #fffaf0 100%)`,
+          border: `1px solid #d4b88e`, borderRadius: 10,
+          boxShadow: "0 4px 14px rgba(13,27,62,0.07)",
+          maxWidth: 420,
         }}>
           <div style={{
-            fontSize: 10, fontWeight: 800, letterSpacing: "0.18em",
-            textTransform: "uppercase", color: C.usa, marginBottom: 10,
-            fontFamily: fSyne,
+            fontSize: 10, fontWeight: 800, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: "#8a5a00", marginBottom: 12,
+            fontFamily: fSyne, display: "flex", alignItems: "center", gap: 8,
           }}>
-            🥉 {stageLabel("Third Place", isHe)}
+            <span style={{ fontSize: 16 }}>🥉</span>
+            {stageLabel("Third Place", isHe)}
           </div>
-          {renderCard(bracket.third, { hideHeader: false })}
+          {renderCard(bracket.third)}
         </div>
       )}
     </div>
@@ -2138,18 +2218,19 @@ function BracketCard({
 function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; team: string | null; label: string }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 7, padding: "8px 10px",
-      background: won ? "rgba(212,160,23,0.18)" : "transparent",
+      display: "flex", alignItems: "center", gap: 6, padding: "4px 9px",
+      background: won ? "rgba(212,160,23,0.20)" : "transparent",
       color: won ? "#5a3d00" : team ? C.text : C.muted,
-      fontWeight: won ? 800 : 700, minHeight: 28,
+      fontWeight: won ? 800 : 700,
+      flex: 1, minHeight: 0,
     }}>
       {team && flagImgSrc(team) && (
-        <span style={{ width: 18, height: 13, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+        <span style={{ width: 16, height: 12, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
           <img src={flagImgSrc(team)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </span>
       )}
       <span style={{
-        fontFamily: isHe ? fHe : fEn, fontSize: 12,
+        fontFamily: isHe ? fHe : fEn, fontSize: 11.5,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
         letterSpacing: isHe ? 0 : "-0.1px",
       }}>{team ? teamName(team, isHe) : label}</span>
