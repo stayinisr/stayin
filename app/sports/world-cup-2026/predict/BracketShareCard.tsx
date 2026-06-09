@@ -1,6 +1,6 @@
 "use client";
 
-import { teamName, flagImgSrc } from "../../../../lib/teams";
+import { teamName, teamCode3, flagImgSrc } from "../../../../lib/teams";
 import {
   computeTwoSidedBracket,
   parseSlot,
@@ -11,65 +11,61 @@ import {
   type PredictionState,
 } from "./logic";
 
+// ── Palette (Vibrant block-based, Stadium Night) ─────────────────────────────
 const C = {
+  bg0: "#050d22",
+  bg1: "#0d1b3e",
+  bg2: "#1a3a6b",
   navy: "#0d1b3e",
   navyMid: "#1a3a6b",
   red: "#e63946",
   green: "#006847",
   gold: "#d4a017",
-  goldDark: "#8a5a00",
-  white: "#ffffff",
+  goldBright: "#f5c542",
   cream: "#fdfbf6",
-  border: "#b9c1d1",
-  muted: "#64748b",
+  white: "#ffffff",
+  ink: "#0a1228",
+  card: "#ffffff",
+  cardDim: "#e9eef7",
+  textMuted: "#94a3b8",
+  border: "rgba(255,255,255,0.08)",
 };
 
 const LOGO_SRC = "/stayin-share-logo.png";
-const fSyne = "var(--font-syne,'Plus Jakarta Sans','Heebo',sans-serif)";
+
+// Font stacks — Plus Jakarta Sans is already loaded in the app as the Syne
+// alias. Heebo for Hebrew. Match the existing app conventions.
+const fDisp = "var(--font-syne,'Plus Jakarta Sans','Inter',sans-serif)";
 const fHe = "var(--font-he,'Heebo',sans-serif)";
 
-// Fixed 1500×1500 square card — works great on Instagram and WhatsApp
-// without horizontal cropping. The bracket is rendered with hardcoded
-// coordinates so the SVG connectors don't need a DOM-measurement pass.
 export const BRACKET_SHARE_W = 1500;
 export const BRACKET_SHARE_H = 1500;
 
-// ── Bracket grid ─────────────────────────────────────────────────────────────
-// All coordinates are within the 1500x1500 canvas.
-const CARD_W = 132;
-const CARD_H = 56;
-const ROW_H_R32 = 80;   // vertical spacing between R32 cards
-const COL_GAP_X = 36;   // horizontal gap between columns
+// ── Bracket geometry ─────────────────────────────────────────────────────────
+const CARD_W = 144;
+const CARD_H = 64;
+const ROW_H = 92; // vertical pitch between R32 cards (gives generous breathing room)
+const COL_GAP = 28;
 
-// Bracket grid origin (top-left of leftmost R32 column).
-const GRID_TOP = 320;
-const GRID_LEFT_X = 60;
-const COL_W = CARD_W + COL_GAP_X;
+const GRID_TOP = 360;
+const GRID_LEFT_X = 50;
+const COL_W = CARD_W + COL_GAP;
 
-// Column x positions (left half)
 const X_R32_L = GRID_LEFT_X;
 const X_R16_L = X_R32_L + COL_W;
 const X_QF_L  = X_R16_L + COL_W;
 const X_SF_L  = X_QF_L  + COL_W;
-// Final
-const X_FINAL = X_SF_L  + COL_W + 24;
-// Right half (mirrored)
-const X_SF_R  = X_FINAL + COL_W + 24;
+const X_FINAL = X_SF_L  + COL_W + 36;
+const X_SF_R  = X_FINAL + COL_W + 36;
 const X_QF_R  = X_SF_R  + COL_W;
 const X_R16_R = X_QF_R  + COL_W;
 const X_R32_R = X_R16_R + COL_W;
 
-// Card Y positions per round.
-// R32: 8 boxes per side, top-stacked.
-function yR32(i: number) { return GRID_TOP + i * ROW_H_R32; }
-// R16: centered between pairs of R32.
-function yR16(i: number) { return (yR32(i * 2) + yR32(i * 2 + 1)) / 2; }
-// QF: between pairs of R16.
-function yQF(i: number)  { return (yR16(i * 2) + yR16(i * 2 + 1)) / 2; }
-// SF: between pairs of QF.
-function ySF(i: number)  { return (yQF(i * 2) + yQF(i * 2 + 1)) / 2; }
-// Final centered.
-function yFinal() { return (ySF(0) + ySF(1)) / 2; }
+const yR32 = (i: number) => GRID_TOP + i * ROW_H;
+const yR16 = (i: number) => (yR32(i * 2) + yR32(i * 2 + 1)) / 2;
+const yQF  = (i: number) => (yR16(i * 2) + yR16(i * 2 + 1)) / 2;
+const ySF  = (i: number) => (yQF(i * 2) + yQF(i * 2 + 1)) / 2;
+const yFinal = () => (ySF(0) + ySF(1)) / 2;
 
 export default function BracketShareCard({
   isHe,
@@ -87,8 +83,9 @@ export default function BracketShareCard({
   authorName?: string | null;
 }) {
   const bracket = computeTwoSidedBracket(matches);
+
+  // Champion path traversal
   const champPath = new Set<string>();
-  // Walk champion path
   (function walk() {
     if (!bracket.final) return;
     const byNum = new Map(matches.map((m) => [m.fifa_match_number, m]));
@@ -106,7 +103,7 @@ export default function BracketShareCard({
     visit(bracket.final);
   })();
 
-  // ── Compute each match's (x, y) on the canvas ────────────────────────────
+  // ── Position every match on the canvas ────────────────────────────────
   const positions = new Map<string, { x: number; y: number; side: "L" | "R" | "C" }>();
   bracket.r32L.forEach((m, i) => positions.set(m.id, { x: X_R32_L, y: yR32(i), side: "L" }));
   bracket.r16L.forEach((m, i) => positions.set(m.id, { x: X_R16_L, y: yR16(i), side: "L" }));
@@ -118,7 +115,7 @@ export default function BracketShareCard({
   bracket.r16R.forEach((m, i) => positions.set(m.id, { x: X_R16_R, y: yR16(i + 4), side: "R" }));
   bracket.r32R.forEach((m, i) => positions.set(m.id, { x: X_R32_R, y: yR32(i + 8), side: "R" }));
 
-  // ── Compute connector paths ──────────────────────────────────────────────
+  // ── Connectors ───────────────────────────────────────────────────────
   type Line = { d: string; gold: boolean };
   const lines: Line[] = [];
   const allKo = matches.filter((m) => !m.stage.startsWith("Group") && m.stage !== "Third Place");
@@ -131,23 +128,15 @@ export default function BracketShareCard({
       if (!raw) continue;
       const m = raw.match(/^W(\d+)$/);
       if (!m) continue;
-      const feederNum = parseInt(m[1]!, 10);
-      const feeder = byNum.get(feederNum);
+      const feeder = byNum.get(parseInt(m[1]!, 10));
       if (!feeder) continue;
       const fPos = positions.get(feeder.id);
       if (!fPos) continue;
-      // Feeder card center y; feeder side dictates which edge to use.
       const feederIsLeft = fPos.side === "L";
       const fy = fPos.y + CARD_H / 2;
       const cy = cPos.y + CARD_H / 2;
-      let fx: number, cx: number;
-      if (feederIsLeft) {
-        fx = fPos.x + CARD_W; // right edge
-        cx = cPos.x;          // left edge of child
-      } else {
-        fx = fPos.x;          // left edge
-        cx = cPos.x + CARD_W; // right edge of child
-      }
+      const fx = feederIsLeft ? fPos.x + CARD_W : fPos.x;
+      const cx = feederIsLeft ? cPos.x : cPos.x + CARD_W;
       const mx = (fx + cx) / 2;
       const d = `M ${fx} ${fy} L ${mx} ${fy} L ${mx} ${cy} L ${cx} ${cy}`;
       const gold = champPath.has(child.id) && champPath.has(feeder.id);
@@ -155,18 +144,18 @@ export default function BracketShareCard({
     }
   }
 
-  // Helper: resolve teams for a match
-  function resolveCard(m: MatchItem) {
+  // ── Resolve teams for each match ─────────────────────────────────────
+  function resolve(m: MatchItem) {
     return resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
   }
 
   const finalMatch = bracket.final;
-  const finalResolved = finalMatch ? resolveCard(finalMatch) : null;
+  const fr = finalMatch ? resolve(finalMatch) : null;
   const championPick = finalMatch ? state.knockoutWinners[finalMatch.id] : undefined;
   const champion =
-    finalResolved && championPick
-      ? championPick === "home" ? finalResolved.home : finalResolved.away
-      : null;
+    fr && championPick ? (championPick === "home" ? fr.home : fr.away) : null;
+  const finalist =
+    fr && championPick ? (championPick === "home" ? fr.away : fr.home) : null;
 
   return (
     <div
@@ -174,52 +163,56 @@ export default function BracketShareCard({
         width: BRACKET_SHARE_W,
         height: BRACKET_SHARE_H,
         position: "relative",
-        background: `linear-gradient(165deg, ${C.cream} 0%, #f4ecd6 35%, #f8d9a8 70%, #f4b88a 100%)`,
-        fontFamily: fHe,
-        direction: "ltr", // bracket always renders LTR
+        background: `radial-gradient(ellipse at 50% 38%, ${C.bg2} 0%, ${C.bg1} 38%, ${C.bg0} 100%)`,
+        color: C.white,
+        fontFamily: fDisp,
+        direction: "ltr",
         overflow: "hidden",
-        color: C.navy,
       }}
     >
-      {/* Background decorations */}
+      {/* Stadium glow + diagonal stripe texture */}
       <div style={{
-        position: "absolute", width: 800, height: 800, borderRadius: "50%",
-        top: -300, left: -250,
-        background: `radial-gradient(circle, ${C.navyMid}1f, transparent 65%)`,
+        position: "absolute", inset: 0,
+        backgroundImage:
+          "repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 14px)",
+      }} />
+      <div style={{
+        position: "absolute", width: 1100, height: 1100, borderRadius: "50%",
+        top: -440, left: 200,
+        background: `radial-gradient(circle, ${C.goldBright}1f, transparent 65%)`,
       }} />
       <div style={{
         position: "absolute", width: 700, height: 700, borderRadius: "50%",
-        bottom: -260, right: -200,
-        background: `radial-gradient(circle, ${C.red}1f, transparent 65%)`,
+        bottom: -200, left: -200,
+        background: `radial-gradient(circle, ${C.red}2a, transparent 65%)`,
       }} />
       <div style={{
-        position: "absolute", width: 500, height: 500, borderRadius: "50%",
-        top: 280, right: 200,
-        background: `radial-gradient(circle, ${C.gold}26, transparent 70%)`,
+        position: "absolute", width: 700, height: 700, borderRadius: "50%",
+        bottom: -200, right: -200,
+        background: `radial-gradient(circle, ${C.navyMid}40, transparent 65%)`,
       }} />
 
-      {/* Top stripe */}
+      {/* Top tri-color block */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: 10,
+        position: "absolute", top: 0, left: 0, right: 0, height: 14,
         background: `linear-gradient(90deg, ${C.navyMid} 33%, ${C.red} 33% 66%, ${C.green} 66%)`,
       }} />
 
-      {/* Header */}
+      {/* Header brand row */}
       <div style={{
         position: "absolute", top: 56, left: 60, right: 60,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        zIndex: 5,
+        zIndex: 6,
       }}>
         <img
           src={LOGO_SRC}
           alt="Stayin"
           crossOrigin="anonymous"
-          style={{ height: 64, objectFit: "contain" }}
+          style={{ height: 60, objectFit: "contain", filter: "brightness(0) invert(1)" }}
         />
         <div style={{
-          fontSize: 22, fontWeight: 800, color: C.navy,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          fontFamily: fSyne, opacity: 0.7,
+          fontSize: 22, fontWeight: 900, color: C.goldBright,
+          letterSpacing: "0.32em", textTransform: "uppercase",
         }}>
           STAYIN.CO.IL
         </div>
@@ -227,57 +220,64 @@ export default function BracketShareCard({
 
       {/* Title */}
       <div style={{
-        position: "absolute", top: 150, left: 0, right: 0,
-        textAlign: "center", zIndex: 5,
+        position: "absolute", top: 156, left: 0, right: 0,
+        textAlign: "center", zIndex: 6,
       }}>
         <div style={{
-          fontSize: 18, fontWeight: 800, color: C.navyMid,
-          letterSpacing: "0.32em", textTransform: "uppercase",
-          fontFamily: fSyne, marginBottom: 12,
+          fontSize: 18, fontWeight: 800, color: C.goldBright,
+          letterSpacing: "0.46em", textTransform: "uppercase",
+          marginBottom: 16,
         }}>
           {isHe ? "סימולטור מונדיאל 2026" : "World Cup 2026 Simulator"}
         </div>
         <div style={{
-          fontSize: 56, fontWeight: 900, color: C.navy,
-          fontFamily: fHe, letterSpacing: "-0.02em", lineHeight: 1,
+          fontSize: 88, fontWeight: 900, color: C.white,
+          fontFamily: isHe ? fHe : fDisp,
+          letterSpacing: "-0.04em", lineHeight: 0.95,
+          textShadow: "0 4px 18px rgba(0,0,0,0.45)",
         }}>
-          {isHe ? "עץ הנוקאאוט שלי" : "My Knockout Bracket"}
+          {isHe ? "עץ הנוקאאוט שלי" : "MY KNOCKOUT BRACKET"}
         </div>
         {authorName && (
           <div style={{
-            fontSize: 18, color: C.navy, opacity: 0.7,
-            marginTop: 8, fontWeight: 600,
-          }}>{authorName}</div>
+            marginTop: 14,
+            display: "inline-block",
+            padding: "6px 18px",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.16)",
+            borderRadius: 99,
+            fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.85)",
+            letterSpacing: "0.06em",
+            fontFamily: isHe ? fHe : fDisp,
+          }}>
+            {authorName}
+          </div>
         )}
       </div>
 
-      {/* Round labels at top of each column */}
-      <div style={{ position: "absolute", top: 270, left: 0, right: 0, zIndex: 4 }}>
+      {/* Round labels */}
+      <div style={{ position: "absolute", top: 310, left: 0, right: 0, zIndex: 5 }}>
         {[
           { x: X_R32_L, label: "R32" },
           { x: X_R16_L, label: "R16" },
           { x: X_QF_L,  label: "QF"  },
           { x: X_SF_L,  label: "SF"  },
-          { x: X_FINAL, label: isHe ? "גמר" : "FINAL", isFinal: true },
+          { x: X_FINAL, label: "FINAL", final: true },
           { x: X_SF_R,  label: "SF"  },
           { x: X_QF_R,  label: "QF"  },
           { x: X_R16_R, label: "R16" },
           { x: X_R32_R, label: "R32" },
         ].map((col, i) => (
           <div key={i} style={{
-            position: "absolute", left: col.x, top: 0,
-            width: CARD_W, textAlign: "center",
-            fontSize: col.isFinal ? 13 : 10,
-            fontWeight: 900, fontFamily: fSyne,
-            letterSpacing: "0.2em", textTransform: "uppercase",
-            color: col.isFinal ? C.gold : C.navyMid,
-          }}>
-            {col.isFinal && "🏆 "}{col.label}
-          </div>
+            position: "absolute", left: col.x, width: CARD_W, textAlign: "center",
+            fontSize: col.final ? 18 : 13, fontWeight: 900,
+            letterSpacing: col.final ? "0.34em" : "0.28em", textTransform: "uppercase",
+            color: col.final ? C.goldBright : "rgba(255,255,255,0.5)",
+          }}>{col.label}</div>
         ))}
       </div>
 
-      {/* SVG connector overlay */}
+      {/* Connector SVG */}
       <svg
         style={{
           position: "absolute", top: 0, left: 0,
@@ -285,16 +285,21 @@ export default function BracketShareCard({
           pointerEvents: "none", zIndex: 2,
         }}
       >
+        <defs>
+          <linearGradient id="goldLine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={C.goldBright} />
+            <stop offset="100%" stopColor={C.gold} />
+          </linearGradient>
+        </defs>
         {lines.map((l, i) => (
           <path
             key={i}
             d={l.d}
             fill="none"
-            stroke={l.gold ? C.gold : "#9aa5bb"}
-            strokeWidth={l.gold ? 3 : 1.6}
+            stroke={l.gold ? "url(#goldLine)" : "rgba(255,255,255,0.20)"}
+            strokeWidth={l.gold ? 3.4 : 1.6}
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity={l.gold ? 0.95 : 0.7}
           />
         ))}
       </svg>
@@ -303,53 +308,57 @@ export default function BracketShareCard({
       {[...positions.entries()].map(([id, pos]) => {
         const m = matches.find((x) => x.id === id);
         if (!m) return null;
-        const r = resolveCard(m);
-        const isFinal = pos.side === "C";
+        const r = resolve(m);
         return (
           <Card
             key={id}
-            isHe={isHe}
             x={pos.x}
             y={pos.y}
-            w={CARD_W}
-            h={CARD_H}
             home={r.home}
             away={r.away}
-            homeLabel={r.homeLabel}
-            awayLabel={r.awayLabel}
             winnerSide={state.knockoutWinners[m.id]}
             matchNum={m.fifa_match_number}
             onPath={champPath.has(m.id)}
-            isFinal={isFinal}
+            isFinal={pos.side === "C"}
           />
         );
       })}
 
       {/* Champion footer */}
       <div style={{
-        position: "absolute", bottom: 60, left: 60, right: 60,
-        background: C.navy, borderRadius: 20, padding: "22px 28px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        boxShadow: "0 20px 40px rgba(13,27,62,0.30)",
+        position: "absolute", bottom: 56, left: 60, right: 60,
         zIndex: 10,
+        background: `linear-gradient(135deg, ${C.navyMid} 0%, ${C.navy} 60%, ${C.ink} 100%)`,
+        border: `2px solid ${C.goldBright}`,
+        borderRadius: 24, padding: "30px 36px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        boxShadow: `0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px ${C.goldBright}30, inset 0 1px 0 rgba(255,255,255,0.06)`,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div style={{ fontSize: 44 }}>🏆</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+          {/* Big trophy */}
+          <div style={{
+            width: 92, height: 92, borderRadius: 18,
+            background: `linear-gradient(135deg, ${C.goldBright}, ${C.gold} 70%, ${C.red})`,
+            display: "grid", placeItems: "center",
+            fontSize: 56,
+            boxShadow: `0 12px 28px ${C.gold}60`,
+            flexShrink: 0,
+          }}>🏆</div>
+
           <div>
             <div style={{
-              fontSize: 11, fontWeight: 800, letterSpacing: "0.28em",
-              textTransform: "uppercase", color: C.gold,
-              fontFamily: fSyne, marginBottom: 4,
+              fontSize: 13, fontWeight: 900, letterSpacing: "0.38em",
+              textTransform: "uppercase", color: C.goldBright,
+              marginBottom: 6,
             }}>
-              {isHe ? "האלופה שלי" : "My Champion"}
+              {isHe ? "האלופה שלי" : "MY CHAMPION"}
             </div>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 12,
-            }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               {champion && flagImgSrc(champion) && (
                 <span style={{
-                  width: 56, height: 40, borderRadius: 5, overflow: "hidden",
-                  border: `2px solid ${C.gold}`, flexShrink: 0,
+                  width: 68, height: 50, borderRadius: 6, overflow: "hidden",
+                  border: `3px solid ${C.goldBright}`, flexShrink: 0,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                 }}>
                   <img
                     src={flagImgSrc(champion).replace("/w40/", "/w160/")}
@@ -360,25 +369,47 @@ export default function BracketShareCard({
                 </span>
               )}
               <div style={{
-                fontSize: 36, fontWeight: 900, color: C.white,
-                fontFamily: fHe, letterSpacing: "-0.01em",
+                fontSize: 56, fontWeight: 900, color: C.white,
+                fontFamily: isHe ? fHe : fDisp,
+                letterSpacing: "-0.02em", lineHeight: 1,
               }}>
-                {champion ? teamName(champion, isHe) : (isHe ? "טרם נקבעה" : "TBD")}
+                {champion ? teamName(champion, isHe) : (isHe ? "TBD" : "TBD")}
               </div>
+              {champion && (
+                <div style={{
+                  fontSize: 28, fontWeight: 900, color: C.goldBright,
+                  letterSpacing: "0.14em",
+                  paddingLeft: 14,
+                  borderLeft: `2px solid ${C.goldBright}40`,
+                }}>
+                  {teamCode3(champion)}
+                </div>
+              )}
             </div>
+            {finalist && (
+              <div style={{
+                marginTop: 6, fontSize: 14,
+                color: "rgba(255,255,255,0.55)", fontWeight: 600,
+                fontFamily: isHe ? fHe : fDisp,
+              }}>
+                {isHe ? `בגמר נגד ${teamName(finalist, true)} (${teamCode3(finalist)})`
+                      : `Beat ${teamName(finalist, false)} (${teamCode3(finalist)}) in the final`}
+              </div>
+            )}
           </div>
         </div>
+
         <div style={{ textAlign: "right" }}>
           <div style={{
-            fontSize: 11, fontWeight: 800, letterSpacing: "0.28em",
-            textTransform: "uppercase", color: C.gold,
-            fontFamily: fSyne, marginBottom: 4,
+            fontSize: 12, fontWeight: 900, letterSpacing: "0.32em",
+            textTransform: "uppercase", color: C.goldBright,
+            marginBottom: 6,
           }}>
-            {isHe ? "צור את שלך" : "Build your own"}
+            {isHe ? "צור את שלך" : "BUILD YOURS"}
           </div>
           <div style={{
-            fontSize: 22, fontWeight: 800, color: C.white,
-            fontFamily: fSyne,
+            fontSize: 28, fontWeight: 900, color: C.white,
+            letterSpacing: "-0.005em",
           }}>
             stayin.co.il/predict
           </div>
@@ -388,63 +419,103 @@ export default function BracketShareCard({
   );
 }
 
+// ── Match card ───────────────────────────────────────────────────────────────
+
 function Card({
-  isHe, x, y, w, h, home, away, homeLabel, awayLabel, winnerSide, matchNum, onPath, isFinal,
+  x, y, home, away, winnerSide, matchNum, onPath, isFinal,
 }: {
-  isHe: boolean;
-  x: number; y: number; w: number; h: number;
+  x: number; y: number;
   home: string | null; away: string | null;
-  homeLabel: string; awayLabel: string;
   winnerSide: "home" | "away" | undefined;
   matchNum: number;
   onPath: boolean;
   isFinal?: boolean;
 }) {
+  const w = isFinal ? CARD_W + 10 : CARD_W;
+  const h = isFinal ? CARD_H + 12 : CARD_H;
+  const xOffset = isFinal ? -5 : 0;
+  const yOffset = isFinal ? -6 : 0;
+
   return (
     <div style={{
-      position: "absolute", left: x, top: y, width: w, height: h, zIndex: 3,
+      position: "absolute", left: x + xOffset, top: y + yOffset,
+      width: w, height: h, zIndex: 3,
     }}>
-      {/* Match # */}
+      {/* Match number badge */}
       <div style={{
-        position: "absolute", top: -16, left: 0, right: 0,
-        fontSize: 10, fontWeight: 800, letterSpacing: "0.14em",
-        color: onPath ? C.goldDark : C.navyMid, opacity: onPath ? 1 : 0.6,
-        textAlign: "center", fontFamily: fSyne,
-      }}>
-        #{matchNum}
-      </div>
+        position: "absolute",
+        top: -14, left: "50%", transform: "translateX(-50%)",
+        fontSize: 10, fontWeight: 900, letterSpacing: "0.18em",
+        color: onPath || isFinal ? C.goldBright : "rgba(255,255,255,0.45)",
+        background: onPath || isFinal ? "rgba(212,160,23,0.16)" : "rgba(0,0,0,0.35)",
+        border: onPath || isFinal
+          ? `1px solid ${C.goldBright}`
+          : "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 99, padding: "1px 8px",
+        whiteSpace: "nowrap",
+      }}>#{matchNum}</div>
+
+      {/* Card body */}
       <div style={{
-        width: w, height: h, borderRadius: 5,
-        background: C.white,
-        border: isFinal
-          ? `2px solid ${C.gold}`
-          : `1px solid ${onPath ? C.gold : C.border}`,
-        boxShadow: isFinal
-          ? `0 0 0 3px ${C.gold}, 0 12px 24px ${C.gold}40`
+        width: w, height: h, borderRadius: 7,
+        background: isFinal
+          ? `linear-gradient(180deg, #1a3a6b 0%, #0d1b3e 100%)`
           : onPath
-            ? `0 0 0 2px ${C.gold}, 0 4px 10px ${C.gold}20`
-            : "0 1px 3px rgba(13,27,62,0.10)",
-        overflow: "hidden", display: "flex", flexDirection: "column",
+            ? `linear-gradient(180deg, rgba(212,160,23,0.15) 0%, rgba(212,160,23,0.05) 100%)`
+            : "rgba(255,255,255,0.04)",
+        border: isFinal
+          ? `2px solid ${C.goldBright}`
+          : onPath
+            ? `1.5px solid ${C.goldBright}`
+            : "1px solid rgba(255,255,255,0.10)",
+        boxShadow: isFinal
+          ? `0 0 0 4px ${C.goldBright}30, 0 14px 36px ${C.goldBright}40`
+          : onPath
+            ? `0 6px 18px ${C.goldBright}26`
+            : "0 2px 6px rgba(0,0,0,0.25)",
+        overflow: "hidden",
+        display: "flex", flexDirection: "column",
       }}>
-        <Side isHe={isHe} team={home} label={homeLabel} won={winnerSide === "home"} />
-        <div style={{ height: 1, background: "#d4dbe8" }} />
-        <Side isHe={isHe} team={away} label={awayLabel} won={winnerSide === "away"} />
+        <Side team={home} won={winnerSide === "home"} isFinal={!!isFinal} />
+        <div style={{
+          height: 1,
+          background: isFinal
+            ? `${C.goldBright}55`
+            : "rgba(255,255,255,0.10)",
+        }} />
+        <Side team={away} won={winnerSide === "away"} isFinal={!!isFinal} />
       </div>
     </div>
   );
 }
 
-function Side({ isHe, team, label, won }: { isHe: boolean; team: string | null; label: string; won: boolean }) {
+function Side({ team, won, isFinal }: { team: string | null; won: boolean; isFinal: boolean }) {
+  const code = teamCode3(team);
   return (
     <div style={{
-      flex: 1, display: "flex", alignItems: "center", gap: 6,
-      padding: "0 8px",
-      background: won ? "rgba(212,160,23,0.22)" : "transparent",
-      color: won ? "#5a3d00" : team ? C.navy : C.muted,
-      fontWeight: won ? 800 : 700,
+      flex: 1, display: "flex", alignItems: "center", gap: 8,
+      padding: "0 9px",
+      background: won
+        ? `linear-gradient(90deg, ${C.goldBright}38 0%, ${C.gold}22 100%)`
+        : "transparent",
+      color: won ? C.white : team ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)",
+      fontWeight: 900,
+      position: "relative",
     }}>
+      {/* Winner tick on the leading edge */}
+      {won && (
+        <div style={{
+          position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+          background: C.goldBright,
+        }} />
+      )}
+
       {team && flagImgSrc(team) && (
-        <span style={{ width: 18, height: 13, borderRadius: 2, overflow: "hidden", flexShrink: 0 }}>
+        <span style={{
+          width: isFinal ? 28 : 24, height: isFinal ? 21 : 18,
+          borderRadius: 3, overflow: "hidden", flexShrink: 0,
+          border: won ? `1px solid ${C.goldBright}` : "1px solid rgba(255,255,255,0.18)",
+        }}>
           <img
             src={flagImgSrc(team).replace("/w40/", "/w80/")}
             alt=""
@@ -453,10 +524,17 @@ function Side({ isHe, team, label, won }: { isHe: boolean; team: string | null; 
           />
         </span>
       )}
+
       <span style={{
-        fontFamily: fHe, fontSize: 12,
-        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
-      }}>{team ? teamName(team, isHe) : label}</span>
+        flex: 1,
+        fontSize: isFinal ? 22 : 18,
+        fontWeight: 900,
+        letterSpacing: "0.04em",
+        color: won ? C.white : team ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.35)",
+        textShadow: won ? "0 1px 2px rgba(0,0,0,0.3)" : "none",
+      }}>
+        {code || (team ? team.slice(0, 3).toUpperCase() : "—")}
+      </span>
     </div>
   );
 }

@@ -2298,11 +2298,16 @@ function ShareModal({
   thirdsAssignment: Record<number, GroupLetter>;
   onClose: () => void;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const bracketRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [shareType, setShareType] = useState<ShareType | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0); // 0 = summary, 1 = bracket
   const [viewportW, setViewportW] = useState(typeof window === "undefined" ? 800 : window.innerWidth);
+  // Cache the generated PNG per card type so a click after preview is instant.
+  const pngCache = useRef<Map<ShareType, string>>(new Map());
 
   useEffect(() => {
     setMounted(true);
@@ -2318,13 +2323,19 @@ function ShareModal({
   }, []);
 
   const isMobile = viewportW < 640;
+  const slideW = isMobile ? viewportW : Math.min(viewportW - 36, 540);
 
-  // Card dimensions depend on selected share type.
-  const cardW = shareType === "bracket" ? BRACKET_SHARE_W : SHARE_W;
-  const cardH = shareType === "bracket" ? BRACKET_SHARE_H : SHARE_H;
-  const previewMaxW = Math.min(viewportW - 64, isMobile ? 360 : 460);
-  const scale = previewMaxW / cardW;
-  const previewH = cardH * scale;
+  // Each preview is rendered at its native aspect ratio inside the slide.
+  const summaryPreviewW = Math.min(slideW - 32, isMobile ? 320 : 420);
+  const summaryScale = summaryPreviewW / SHARE_W;
+  const summaryPreviewH = SHARE_H * summaryScale;
+
+  const bracketPreviewW = Math.min(slideW - 32, isMobile ? 320 : 460);
+  const bracketScale = bracketPreviewW / BRACKET_SHARE_W;
+  const bracketPreviewH = BRACKET_SHARE_H * bracketScale;
+
+  const shareType: ShareType = activeIdx === 0 ? "summary" : "bracket";
+  const currentRef = activeIdx === 0 ? summaryRef : bracketRef;
 
   async function waitReady(el: HTMLElement) {
     const imgs = Array.from(el.querySelectorAll("img"));
@@ -2334,18 +2345,28 @@ function ShareModal({
         : new Promise<void>((res) => { img.onload = img.onerror = () => res(); }),
     ));
     if ((document as any).fonts?.ready) await (document as any).fonts.ready;
-    await new Promise<void>((res) => setTimeout(res, 700));
+    // Shorter delay than ShareAllTicket — html-to-image's prime pass below
+    // already handles late-decoding images, so we only need a tiny settle.
+    await new Promise<void>((res) => setTimeout(res, 250));
   }
 
   async function makeImage(): Promise<string | null> {
-    if (!cardRef.current) return null;
+    const cached = pngCache.current.get(shareType);
+    if (cached) return cached;
+    if (!currentRef.current) return null;
     setBusy(true);
     try {
-      await waitReady(cardRef.current);
-      const opts = { cacheBust: true, pixelRatio: 2, backgroundColor: "#fdfbf6" };
-      await toPng(cardRef.current, opts);
-      await new Promise<void>((res) => setTimeout(res, 120));
-      return await toPng(cardRef.current, opts);
+      await waitReady(currentRef.current);
+      const opts = {
+        cacheBust: false, pixelRatio: 2,
+        backgroundColor: shareType === "bracket" ? "#0d1b3e" : "#fdfbf6",
+      };
+      // Prime + capture. First call lets html-to-image inline images, second
+      // produces the clean snapshot.
+      await toPng(currentRef.current, opts);
+      const url = await toPng(currentRef.current, opts);
+      pngCache.current.set(shareType, url);
+      return url;
     } finally {
       setBusy(false);
     }
@@ -2392,214 +2413,75 @@ function ShareModal({
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   }
 
+  // ── Scroll snap navigation ───────────────────────────────────────────
+  function scrollToIdx(idx: number) {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTo({ left: idx * slideW, behavior: "smooth" });
+    setActiveIdx(idx);
+  }
+
+  function onScroll() {
+    if (!scrollRef.current) return;
+    const idx = Math.round(scrollRef.current.scrollLeft / slideW);
+    if (idx !== activeIdx) setActiveIdx(idx);
+  }
+
   if (!mounted) return null;
 
-  // ── Type selector screen ─────────────────────────────────────────────────
-  const TypeSelector = () => {
-    const options: { id: ShareType; emoji: string; titleHe: string; titleEn: string; descHe: string; descEn: string; accent: string; gradient: string }[] = [
-      {
-        id: "summary",
-        emoji: "🏆",
-        titleHe: "סיכום עם האלופה",
-        titleEn: "Champion summary",
-        descHe: "תמונת פורטרט עם האלופה, ארבע הגדולות ומנצחי כל הבתים — מושלמת לסטוריז.",
-        descEn: "Portrait card with champion, final four and group winners — perfect for stories.",
-        accent: C.usa,
-        gradient: `linear-gradient(135deg, ${C.usa}, ${C.canada}, ${C.gold})`,
-      },
-      {
-        id: "bracket",
-        emoji: "⚔️",
-        titleHe: "עץ הנוקאאוט המלא",
-        titleEn: "Full knockout bracket",
-        descHe: "כל 31 משחקי הנוקאאוט בתמונה ריבועית אחת, עם פסים מחברים והאלופה למטה.",
-        descEn: "All 31 knockout matches in one square image with connecting lines and the champion banner.",
-        accent: C.canada,
-        gradient: `linear-gradient(135deg, ${C.canada}, ${C.gold}, ${C.usa})`,
-      },
-    ];
+  const titles: Record<ShareType, { he: string; en: string; emoji: string; tag: string }> = {
+    summary: { he: "סיכום עם האלופה", en: "Champion summary", emoji: "🏆", tag: "1080×1350" },
+    bracket: { he: "עץ הנוקאאוט", en: "Knockout bracket", emoji: "⚔️", tag: "1500×1500" },
+  };
+  const current = titles[shareType];
 
+  // Slide renderer — same chrome for both, just swap the preview content.
+  function Slide({ idx, label, scale, previewW, previewH, children }: {
+    idx: number; label: { he: string; en: string; emoji: string; tag: string };
+    scale: number; previewW: number; previewH: number; children: React.ReactNode;
+  }) {
     return (
-      <div style={{ padding: "8px 16px 22px" }}>
+      <div style={{
+        flex: `0 0 ${slideW}px`, width: slideW,
+        scrollSnapAlign: "start",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "8px 16px 0",
+      }}>
         <div style={{
-          fontSize: 11, color: C.muted, marginBottom: 14, lineHeight: 1.5,
+          display: "inline-flex", alignItems: "center", gap: 8,
+          padding: "5px 12px", borderRadius: 99,
+          background: "rgba(13,27,62,0.06)",
+          marginBottom: 12,
         }}>
-          {isHe ? "בחר איזו תמונה לשתף — כל אחת מותאמת אחרת:" : "Pick which image to share — each is designed differently:"}
+          <span style={{ fontSize: 14 }}>{label.emoji}</span>
+          <span style={{
+            fontSize: 10, fontWeight: 900, letterSpacing: "0.14em",
+            textTransform: "uppercase", color: C.text,
+          }}>{isHe ? label.he : label.en}</span>
+          <span style={{
+            fontSize: 9, color: C.muted, fontFamily: fSyne, fontWeight: 700,
+          }}>{label.tag}</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {options.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setShareType(opt.id)}
-              style={{
-                width: "100%", textAlign: isHe ? "right" : "left",
-                background: C.white, border: `1px solid ${C.border}`,
-                borderRadius: 14, padding: "16px 18px",
-                cursor: "pointer", display: "flex", gap: 14,
-                alignItems: "flex-start", transition: "transform 150ms, box-shadow 150ms",
-                position: "relative", overflow: "hidden",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 10px 28px ${opt.accent}26`;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            >
-              <div style={{ height: 4, position: "absolute", top: 0, left: 0, right: 0, background: opt.gradient }} />
-              <div style={{
-                width: 56, height: 56, borderRadius: 12,
-                background: opt.gradient,
-                display: "grid", placeItems: "center", fontSize: 26,
-                flexShrink: 0,
-                boxShadow: `0 8px 18px ${opt.accent}40`,
-              }}>{opt.emoji}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontFamily: fSyne, fontSize: 16, fontWeight: 900,
-                  color: C.text, letterSpacing: "-0.01em", marginBottom: 4,
-                }}>{isHe ? opt.titleHe : opt.titleEn}</div>
-                <div style={{
-                  fontSize: 12, color: C.muted, lineHeight: 1.5,
-                }}>{isHe ? opt.descHe : opt.descEn}</div>
-              </div>
-              <div style={{
-                fontSize: 18, color: opt.accent, fontWeight: 800,
-                alignSelf: "center", flexShrink: 0,
-              }}>{isHe ? "←" : "→"}</div>
-            </button>
-          ))}
+        <div style={{
+          width: previewW, borderRadius: 16, overflow: "hidden",
+          boxShadow: idx === activeIdx
+            ? "0 14px 36px rgba(13,27,62,0.22), 0 0 0 1px rgba(13,27,62,0.08)"
+            : "0 4px 14px rgba(13,27,62,0.10), 0 0 0 1px rgba(13,27,62,0.06)",
+          background: shareType === "bracket" && idx === 1 ? "#0d1b3e" : "#fdfbf6",
+          transition: "box-shadow 200ms",
+          transform: idx === activeIdx ? "scale(1)" : "scale(0.96)",
+          transformOrigin: "center top",
+        }}>
+          <div style={{
+            width: previewW, height: Math.ceil(previewH),
+            overflow: "hidden",
+            display: "flex", justifyContent: "center", alignItems: "flex-start",
+          }}>
+            {children}
+          </div>
         </div>
       </div>
     );
-  };
-
-  // ── Preview + actions screen ─────────────────────────────────────────────
-  const PreviewActions = () => (
-    <>
-      <div style={{
-        margin: "10px 16px", borderRadius: 16, overflow: "hidden",
-        boxShadow: "0 8px 36px rgba(13,27,62,0.16), 0 0 0 1px rgba(13,27,62,0.06)",
-        background: "#fdfbf6",
-      }}>
-        <div style={{
-          width: "100%", height: Math.ceil(previewH),
-          overflow: "hidden", display: "flex",
-          justifyContent: "center", alignItems: "flex-start",
-        }}>
-          <div style={{
-            width: cardW, height: cardH,
-            transform: `scale(${scale})`, transformOrigin: "top left",
-            flexShrink: 0,
-          }}>
-            <div ref={cardRef} style={{ width: cardW, height: cardH }}>
-              {shareType === "bracket" ? (
-                <BracketShareCard
-                  isHe={isHe}
-                  state={state}
-                  matches={matches}
-                  tables={tables}
-                  thirdsAssignment={thirdsAssignment}
-                  authorName={authorName}
-                />
-              ) : (
-                <ShareCard
-                  isHe={isHe}
-                  state={state}
-                  matches={matches}
-                  tables={tables}
-                  thirdsAssignment={thirdsAssignment}
-                  authorName={authorName}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        margin: "0 16px 12px", padding: "10px 14px",
-        background: "rgba(212,160,23,0.08)",
-        border: "1px solid rgba(212,160,23,0.22)",
-        borderRadius: 10, display: "flex", alignItems: "center", gap: 8,
-      }}>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, flexShrink: 0 }} />
-        <div style={{ fontSize: 11, color: "#5a4500", fontWeight: 500, lineHeight: 1.4 }}>
-          {isHe
-            ? "התמונה מוכנה לשליחה בוואטסאפ ולשמירה לאינסטגרם"
-            : "Ready for WhatsApp share and Instagram save"}
-        </div>
-      </div>
-
-      <div style={{ padding: "0 16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <button
-          type="button"
-          onClick={handleShare}
-          disabled={busy}
-          style={{
-            width: "100%", height: 56, borderRadius: 16, border: "none",
-            cursor: busy ? "wait" : "pointer",
-            background: "linear-gradient(135deg,#25D366,#20BA5A)",
-            color: "#fff", display: "flex", alignItems: "center", gap: 12,
-            padding: "0 20px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)",
-            opacity: busy ? 0.7 : 1,
-          }}
-        >
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: "rgba(255,255,255,0.18)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, flexShrink: 0,
-          }}>💬</div>
-          <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>
-              {busy
-                ? (isHe ? "מכין תמונה..." : "Creating image...")
-                : (isHe ? "שתף בוואטסאפ" : "Share on WhatsApp")}
-            </div>
-            {!busy && (
-              <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
-                {isHe ? "התמונה תיפתח לבחירת קבוצה / איש קשר" : "Pick a group or contact"}
-              </div>
-            )}
-          </div>
-          <div style={{ fontSize: 16, opacity: 0.7 }}>{isHe ? "←" : "→"}</div>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={busy}
-          style={{
-            width: "100%", height: 52, borderRadius: 14,
-            border: `1px solid ${C.usa}26`,
-            cursor: busy ? "wait" : "pointer",
-            background: `${C.usa}10`,
-            color: C.usa, display: "flex", alignItems: "center", gap: 12,
-            padding: "0 16px", opacity: busy ? 0.7 : 1,
-          }}
-        >
-          <div style={{
-            width: 30, height: 30, borderRadius: 8,
-            background: `${C.usa}18`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 15, flexShrink: 0,
-          }}>⬇</div>
-          <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
-            <div style={{ fontSize: 14, fontWeight: 800 }}>
-              {busy ? "..." : (isHe ? "הורד תמונה" : "Download PNG")}
-            </div>
-            <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
-              {isHe ? "לשמירה ולפרסום באינסטגרם" : "Save and post to Instagram"}
-            </div>
-          </div>
-        </button>
-      </div>
-    </>
-  );
+  }
 
   return createPortal(
     <div
@@ -2614,7 +2496,7 @@ function ShareModal({
       <div
         dir={isHe ? "rtl" : "ltr"}
         style={{
-          width: isMobile ? "100%" : "min(560px,100%)",
+          width: isMobile ? "100%" : "min(580px,100%)",
           maxHeight: "94vh", overflowY: "auto", overflowX: "hidden",
           borderRadius: isMobile ? "28px 28px 0 0" : 24,
           background: "rgba(255,255,255,0.97)",
@@ -2628,46 +2510,27 @@ function ShareModal({
           }} />
         )}
 
+        {/* Header */}
         <div style={{
           padding: "16px 20px 12px",
           display: "flex", alignItems: "flex-start", justifyContent: "space-between",
           borderBottom: "1px solid rgba(13,27,62,0.06)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {shareType && (
-              <button
-                type="button"
-                onClick={() => setShareType(null)}
-                title={isHe ? "בחר תמונה אחרת" : "Pick another image"}
-                style={{
-                  width: 30, height: 30, borderRadius: 8,
-                  background: "rgba(13,27,62,0.04)",
-                  border: "1px solid #e8edf5", color: C.muted,
-                  fontSize: 14, fontWeight: 800, cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >{isHe ? "→" : "←"}</button>
-            )}
-            <div>
-              <div style={{
-                fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
-                textTransform: "uppercase", color: C.usa, marginBottom: 4,
-                fontFamily: fSyne,
-              }}>Stayin · {isHe ? "שיתוף" : "Share"}</div>
-              <div style={{
-                fontSize: 17, fontWeight: 900, color: C.text, letterSpacing: "-0.01em",
-              }}>
-                {shareType === "bracket"
-                  ? (isHe ? "עץ הנוקאאוט" : "Knockout bracket")
-                  : shareType === "summary"
-                    ? (isHe ? "סיכום התחזית" : "Prediction summary")
-                    : (isHe ? "מה לשתף?" : "What to share?")}
-              </div>
-              <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
-                {shareType
-                  ? (isHe ? "תצוגה מקדימה — לפי הקליק יוצרים את התמונה" : "Preview — image is generated on click")
-                  : (isHe ? "בחר את הסוג שמתאים לך" : "Pick the type that fits")}
-              </div>
+          <div>
+            <div style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: "0.16em",
+              textTransform: "uppercase", color: C.usa, marginBottom: 4,
+              fontFamily: fSyne,
+            }}>Stayin · {isHe ? "שיתוף" : "Share"}</div>
+            <div style={{
+              fontSize: 18, fontWeight: 900, color: C.text, letterSpacing: "-0.01em",
+            }}>
+              {current.emoji} {isHe ? current.he : current.en}
+            </div>
+            <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
+              {isHe
+                ? "החלק/גלול כדי לראות את 2 האפשרויות"
+                : "Swipe or scroll to see both options"}
             </div>
           </div>
           <button
@@ -2682,7 +2545,199 @@ function ShareModal({
           >×</button>
         </div>
 
-        {shareType ? <PreviewActions /> : <TypeSelector />}
+        {/* Horizontal scroll-snap with both previews. The user can swipe on
+            mobile or use the dots / desktop arrows to switch. */}
+        <div style={{ position: "relative" }}>
+          <div
+            ref={scrollRef}
+            onScroll={onScroll}
+            style={{
+              display: "flex",
+              overflowX: "auto", overflowY: "hidden",
+              scrollSnapType: "x mandatory",
+              scrollBehavior: "smooth",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              direction: "ltr",
+              paddingTop: 14, paddingBottom: 8,
+            }}
+          >
+            <style>{`
+              .stayin-share-scroll::-webkit-scrollbar { display: none; }
+            `}</style>
+
+            <Slide
+              idx={0}
+              label={titles.summary}
+              scale={summaryScale}
+              previewW={summaryPreviewW}
+              previewH={summaryPreviewH}
+            >
+              <div style={{
+                width: SHARE_W, height: SHARE_H,
+                transform: `scale(${summaryScale})`, transformOrigin: "top left",
+                flexShrink: 0,
+              }}>
+                <div ref={summaryRef} style={{ width: SHARE_W, height: SHARE_H }}>
+                  <ShareCard
+                    isHe={isHe}
+                    state={state}
+                    matches={matches}
+                    tables={tables}
+                    thirdsAssignment={thirdsAssignment}
+                    authorName={authorName}
+                  />
+                </div>
+              </div>
+            </Slide>
+
+            <Slide
+              idx={1}
+              label={titles.bracket}
+              scale={bracketScale}
+              previewW={bracketPreviewW}
+              previewH={bracketPreviewH}
+            >
+              <div style={{
+                width: BRACKET_SHARE_W, height: BRACKET_SHARE_H,
+                transform: `scale(${bracketScale})`, transformOrigin: "top left",
+                flexShrink: 0,
+              }}>
+                <div ref={bracketRef} style={{ width: BRACKET_SHARE_W, height: BRACKET_SHARE_H }}>
+                  <BracketShareCard
+                    isHe={isHe}
+                    state={state}
+                    matches={matches}
+                    tables={tables}
+                    thirdsAssignment={thirdsAssignment}
+                    authorName={authorName}
+                  />
+                </div>
+              </div>
+            </Slide>
+          </div>
+
+          {/* Desktop arrows */}
+          {!isMobile && activeIdx > 0 && (
+            <button
+              type="button"
+              onClick={() => scrollToIdx(activeIdx - 1)}
+              aria-label="Previous"
+              style={{
+                position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)",
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(255,255,255,0.92)", border: "1px solid #e8edf5",
+                color: C.text, fontSize: 16, fontWeight: 900, cursor: "pointer",
+                display: "grid", placeItems: "center",
+                boxShadow: "0 4px 12px rgba(13,27,62,0.18)",
+              }}
+            >‹</button>
+          )}
+          {!isMobile && activeIdx < 1 && (
+            <button
+              type="button"
+              onClick={() => scrollToIdx(activeIdx + 1)}
+              aria-label="Next"
+              style={{
+                position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
+                width: 36, height: 36, borderRadius: "50%",
+                background: "rgba(255,255,255,0.92)", border: "1px solid #e8edf5",
+                color: C.text, fontSize: 16, fontWeight: 900, cursor: "pointer",
+                display: "grid", placeItems: "center",
+                boxShadow: "0 4px 12px rgba(13,27,62,0.18)",
+              }}
+            >›</button>
+          )}
+        </div>
+
+        {/* Dots */}
+        <div style={{
+          display: "flex", justifyContent: "center", gap: 8, marginTop: 6,
+        }}>
+          {[0, 1].map((i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => scrollToIdx(i)}
+              aria-label={`View ${i + 1}`}
+              style={{
+                width: activeIdx === i ? 24 : 8, height: 8,
+                borderRadius: 99, border: "none",
+                background: activeIdx === i ? C.usa : "rgba(13,27,62,0.20)",
+                cursor: "pointer", transition: "width 200ms, background 200ms",
+                padding: 0,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Actions */}
+        <div style={{ padding: "12px 16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={busy}
+            style={{
+              width: "100%", height: 56, borderRadius: 16, border: "none",
+              cursor: busy ? "wait" : "pointer",
+              background: "linear-gradient(135deg,#25D366,#20BA5A)",
+              color: "#fff", display: "flex", alignItems: "center", gap: 12,
+              padding: "0 20px", boxShadow: "0 4px 16px rgba(37,211,102,0.3)",
+              opacity: busy ? 0.7 : 1,
+            }}
+          >
+            <div style={{
+              width: 34, height: 34, borderRadius: 10,
+              background: "rgba(255,255,255,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, flexShrink: 0,
+            }}>💬</div>
+            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+              <div style={{ fontSize: 15, fontWeight: 800 }}>
+                {busy
+                  ? (isHe ? "מכין תמונה..." : "Creating image...")
+                  : (isHe
+                    ? (shareType === "bracket" ? "שתף את הברקט" : "שתף את הסיכום")
+                    : (shareType === "bracket" ? "Share bracket" : "Share summary"))}
+              </div>
+              {!busy && (
+                <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+                  {isHe ? "וואטסאפ / קבוצה / סטטוס" : "WhatsApp · group · status"}
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 16, opacity: 0.7 }}>{isHe ? "←" : "→"}</div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={busy}
+            style={{
+              width: "100%", height: 52, borderRadius: 14,
+              border: `1px solid ${C.usa}26`,
+              cursor: busy ? "wait" : "pointer",
+              background: `${C.usa}10`,
+              color: C.usa, display: "flex", alignItems: "center", gap: 12,
+              padding: "0 16px", opacity: busy ? 0.7 : 1,
+            }}
+          >
+            <div style={{
+              width: 30, height: 30, borderRadius: 8,
+              background: `${C.usa}18`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 15, flexShrink: 0,
+            }}>⬇</div>
+            <div style={{ flex: 1, textAlign: isHe ? "right" : "left" }}>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>
+                {busy ? "..." : (isHe ? "הורד תמונה" : "Download PNG")}
+              </div>
+              <div style={{ fontSize: 10, opacity: 0.75, marginTop: 1 }}>
+                {isHe ? "אינסטגרם / שמירה למכשיר" : "Save and post to Instagram"}
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
     </div>,
     document.body,

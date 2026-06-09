@@ -168,3 +168,57 @@ export function flagImgSrc(name: string | null | undefined): string {
   const code = teamCode(name);
   return code ? `https://flagcdn.com/w40/${code}.png` : "";
 }
+
+// FIFA 3-letter code mapping for compact tournament displays.
+// Keyed by the canonical English name as used in the matches table.
+const TEAM_CODE3: Record<string, string> = {
+  Argentina: "ARG", Brazil: "BRA", Colombia: "COL", Uruguay: "URU",
+  Ecuador: "ECU", Venezuela: "VEN", Bolivia: "BOL", Paraguay: "PAR",
+  Chile: "CHI", Peru: "PER",
+  France: "FRA", England: "ENG", Spain: "ESP", Germany: "GER",
+  Portugal: "POR", Netherlands: "NED", Belgium: "BEL", Italy: "ITA",
+  Switzerland: "SUI", Croatia: "CRO", Denmark: "DEN", Austria: "AUT",
+  Turkey: "TUR", "Türkiye": "TUR", Scotland: "SCO", Serbia: "SRB",
+  Hungary: "HUN", "Czech Republic": "CZE", Czechia: "CZE", Slovakia: "SVK",
+  Poland: "POL", Ukraine: "UKR", Romania: "ROU", Greece: "GRE",
+  Albania: "ALB", Slovenia: "SVN", Norway: "NOR", Sweden: "SWE",
+  Wales: "WAL", "Northern Ireland": "NIR", Ireland: "IRL", Iceland: "ISL",
+  Finland: "FIN", Georgia: "GEO", "Bosnia-Herzegovina": "BIH",
+  Montenegro: "MNE", "North Macedonia": "MKD", Kosovo: "KOS",
+  Bulgaria: "BUL", Israel: "ISR", Luxembourg: "LUX",
+  Kazakhstan: "KAZ", Azerbaijan: "AZE", Armenia: "ARM", Belarus: "BLR",
+  Lithuania: "LTU", Latvia: "LVA", Estonia: "EST", Moldova: "MDA",
+  Cyprus: "CYP",
+  "United States": "USA", USA: "USA", Mexico: "MEX", Canada: "CAN",
+  Jamaica: "JAM", Panama: "PAN", Honduras: "HON", "Costa Rica": "CRC",
+  "El Salvador": "SLV", "Trinidad and Tobago": "TRI", Cuba: "CUB",
+  Haiti: "HAI", Guatemala: "GUA", "Curaçao": "CUW",
+  Morocco: "MAR", Senegal: "SEN", Egypt: "EGY", Nigeria: "NGA",
+  Cameroon: "CMR", Ghana: "GHA", "Ivory Coast": "CIV", "Côte d'Ivoire": "CIV",
+  Algeria: "ALG", Tunisia: "TUN", Mali: "MLI", "Burkina Faso": "BFA",
+  "South Africa": "RSA", "Congo DR": "COD", "Cabo Verde": "CPV",
+  Zambia: "ZAM", Tanzania: "TAN", Uganda: "UGA", Guinea: "GUI",
+  Kenya: "KEN", Zimbabwe: "ZIM", Mozambique: "MOZ", Angola: "ANG",
+  Gabon: "GAB", "Equatorial Guinea": "EQG", Benin: "BEN",
+  Ethiopia: "ETH", Sudan: "SUD", Libya: "LBY",
+  Japan: "JPN", "South Korea": "KOR", "Korea Republic": "KOR",
+  "IR Iran": "IRN", "Saudi Arabia": "KSA", Australia: "AUS",
+  Qatar: "QAT", "United Arab Emirates": "UAE", UAE: "UAE",
+  Uzbekistan: "UZB", Iraq: "IRQ", Oman: "OMA", Jordan: "JOR",
+  Bahrain: "BHR", Kuwait: "KUW", China: "CHN",
+  Kyrgyzstan: "KGZ", Tajikistan: "TJK", India: "IND", Thailand: "THA",
+  Vietnam: "VIE", Indonesia: "IDN", Philippines: "PHI",
+  "New Zealand": "NZL", Fiji: "FIJ", "Papua New Guinea": "PNG",
+};
+
+// 3-letter code (FIFA-style). Falls back to first 3 uppercase letters
+// of the name (with diacritics stripped) when unknown.
+export function teamCode3(name: string | null | undefined): string {
+  if (!name) return "";
+  if (TEAM_CODE3[name]) return TEAM_CODE3[name]!;
+  const stripped = name
+    .normalize("NFD").replace(/\p{Diacritic}/gu, "")
+    .replace(/[^A-Za-z]/g, "")
+    .toUpperCase();
+  return stripped.slice(0, 3) || "TBD";
+}
