@@ -1332,7 +1332,7 @@ function TiebreakScreen({
       ) : (
         <div style={{ display: "grid", gap: 14 }}>
           {tied.map((g) => {
-            const t = tables.find((x) => x.group === g)!;
+            const t = tables.find((x) => x.group === g) ?? { group: g, rows: [] };
             return (
               <div key={g} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 6, padding: 14 }}>
                 <div style={{ fontFamily: fSyne, fontWeight: 800, fontSize: 16, marginBottom: 10 }}>
@@ -1468,7 +1468,7 @@ function BestThirdScreen({
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 10,
       }}>
         {GROUP_LETTERS.map((g) => {
-          const t = tables.find((x) => x.group === g)!;
+          const t = tables.find((x) => x.group === g) ?? { group: g, rows: [] as any[] };
           const third = t.rows[2];
           const active = selected.includes(g);
           const rank = active ? selected.indexOf(g) + 1 : null;
