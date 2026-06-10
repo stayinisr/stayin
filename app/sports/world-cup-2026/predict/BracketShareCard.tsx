@@ -22,50 +22,46 @@ const C = {
   green: "#006847",
   gold: "#d4a017",
   goldBright: "#f5c542",
-  cream: "#fdfbf6",
   white: "#ffffff",
   ink: "#0a1228",
-  card: "#ffffff",
-  cardDim: "#e9eef7",
-  textMuted: "#94a3b8",
-  border: "rgba(255,255,255,0.08)",
 };
 
 const LOGO_SRC = "/stayin-share-logo.png";
-
-// Font stacks — Plus Jakarta Sans is already loaded in the app as the Syne
-// alias. Heebo for Hebrew. Match the existing app conventions.
 const fDisp = "var(--font-syne,'Plus Jakarta Sans','Inter',sans-serif)";
 const fHe = "var(--font-he,'Heebo',sans-serif)";
 
 export const BRACKET_SHARE_W = 1500;
 export const BRACKET_SHARE_H = 1500;
 
-// ── Bracket geometry ─────────────────────────────────────────────────────────
-const CARD_W = 144;
-const CARD_H = 64;
-const ROW_H = 92; // vertical pitch between R32 cards (gives generous breathing room)
-const COL_GAP = 28;
+// ── Symmetric bracket geometry ───────────────────────────────────────────────
+// 9 columns across a 1500px canvas with equal 40px margins:
+//   9×132 cards + 8×24 gaps + 2×20 extra padding around the Final = 1420.
+// Both halves span the SAME vertical range (8 rows each side, mirrored),
+// so the Final sits exactly at the canvas' horizontal AND vertical centre.
+const CARD_W = 132;
+const CARD_H = 66;
+const ROW_H = 104;
+const COL_GAP = 24;
+const FINAL_GAP = 20;
 
-const GRID_TOP = 360;
-const GRID_LEFT_X = 50;
-const COL_W = CARD_W + COL_GAP;
+const GRID_TOP = 352;
+const COL_W = CARD_W + COL_GAP; // 156
 
-const X_R32_L = GRID_LEFT_X;
-const X_R16_L = X_R32_L + COL_W;
-const X_QF_L  = X_R16_L + COL_W;
-const X_SF_L  = X_QF_L  + COL_W;
-const X_FINAL = X_SF_L  + COL_W + 36;
-const X_SF_R  = X_FINAL + COL_W + 36;
-const X_QF_R  = X_SF_R  + COL_W;
-const X_R16_R = X_QF_R  + COL_W;
-const X_R32_R = X_R16_R + COL_W;
+const X_R32_L = 40;
+const X_R16_L = X_R32_L + COL_W;          // 196
+const X_QF_L  = X_R16_L + COL_W;          // 352
+const X_SF_L  = X_QF_L  + COL_W;          // 508
+const X_FINAL = X_SF_L  + COL_W + FINAL_GAP; // 684 → centre 750 = canvas centre
+const X_SF_R  = X_FINAL + COL_W + FINAL_GAP; // 860
+const X_QF_R  = X_SF_R  + COL_W;          // 1016
+const X_R16_R = X_QF_R  + COL_W;          // 1172
+const X_R32_R = X_R16_R + COL_W;          // 1328 → right edge 1460, margin 40 ✓
 
 const yR32 = (i: number) => GRID_TOP + i * ROW_H;
 const yR16 = (i: number) => (yR32(i * 2) + yR32(i * 2 + 1)) / 2;
 const yQF  = (i: number) => (yR16(i * 2) + yR16(i * 2 + 1)) / 2;
-const ySF  = (i: number) => (yQF(i * 2) + yQF(i * 2 + 1)) / 2;
-const yFinal = () => (ySF(0) + ySF(1)) / 2;
+const ySF  = () => (yQF(0) + yQF(1)) / 2; // vertical centre of the half
+const yFinal = ySF;
 
 export default function BracketShareCard({
   isHe,
@@ -103,17 +99,17 @@ export default function BracketShareCard({
     visit(bracket.final);
   })();
 
-  // ── Position every match on the canvas ────────────────────────────────
+  // ── Position every match — right half MIRRORS the left half's heights ──
   const positions = new Map<string, { x: number; y: number; side: "L" | "R" | "C" }>();
   bracket.r32L.forEach((m, i) => positions.set(m.id, { x: X_R32_L, y: yR32(i), side: "L" }));
   bracket.r16L.forEach((m, i) => positions.set(m.id, { x: X_R16_L, y: yR16(i), side: "L" }));
   bracket.qfL.forEach( (m, i) => positions.set(m.id, { x: X_QF_L,  y: yQF(i),  side: "L" }));
-  if (bracket.sfL) positions.set(bracket.sfL.id, { x: X_SF_L, y: ySF(0), side: "L" });
+  if (bracket.sfL) positions.set(bracket.sfL.id, { x: X_SF_L, y: ySF(), side: "L" });
   if (bracket.final) positions.set(bracket.final.id, { x: X_FINAL, y: yFinal(), side: "C" });
-  if (bracket.sfR) positions.set(bracket.sfR.id, { x: X_SF_R, y: ySF(1), side: "R" });
-  bracket.qfR.forEach( (m, i) => positions.set(m.id, { x: X_QF_R,  y: yQF(i + 2),  side: "R" }));
-  bracket.r16R.forEach((m, i) => positions.set(m.id, { x: X_R16_R, y: yR16(i + 4), side: "R" }));
-  bracket.r32R.forEach((m, i) => positions.set(m.id, { x: X_R32_R, y: yR32(i + 8), side: "R" }));
+  if (bracket.sfR) positions.set(bracket.sfR.id, { x: X_SF_R, y: ySF(), side: "R" });
+  bracket.qfR.forEach( (m, i) => positions.set(m.id, { x: X_QF_R,  y: yQF(i),  side: "R" }));
+  bracket.r16R.forEach((m, i) => positions.set(m.id, { x: X_R16_R, y: yR16(i), side: "R" }));
+  bracket.r32R.forEach((m, i) => positions.set(m.id, { x: X_R32_R, y: yR32(i), side: "R" }));
 
   // ── Connectors ───────────────────────────────────────────────────────
   type Line = { d: string; gold: boolean };
@@ -144,7 +140,6 @@ export default function BracketShareCard({
     }
   }
 
-  // ── Resolve teams for each match ─────────────────────────────────────
   function resolve(m: MatchItem) {
     return resolveKnockoutTeams(m, matches, tables, state.knockoutWinners, thirdsAssignment, isHe);
   }
@@ -157,39 +152,41 @@ export default function BracketShareCard({
   const finalist =
     fr && championPick ? (championPick === "home" ? fr.away : fr.home) : null;
 
+  const finalY = yFinal();
+
   return (
     <div
       style={{
         width: BRACKET_SHARE_W,
         height: BRACKET_SHARE_H,
         position: "relative",
-        background: `radial-gradient(ellipse at 50% 38%, ${C.bg2} 0%, ${C.bg1} 38%, ${C.bg0} 100%)`,
+        background: `radial-gradient(ellipse at 50% 40%, ${C.bg2} 0%, ${C.bg1} 40%, ${C.bg0} 100%)`,
         color: C.white,
         fontFamily: fDisp,
         direction: "ltr",
         overflow: "hidden",
       }}
     >
-      {/* Stadium glow + diagonal stripe texture */}
+      {/* Stadium texture + glows */}
       <div style={{
         position: "absolute", inset: 0,
         backgroundImage:
           "repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 14px)",
       }} />
       <div style={{
-        position: "absolute", width: 1100, height: 1100, borderRadius: "50%",
-        top: -440, left: 200,
-        background: `radial-gradient(circle, ${C.goldBright}1f, transparent 65%)`,
+        position: "absolute", width: 900, height: 900, borderRadius: "50%",
+        top: finalY - 450 + CARD_H / 2, left: 750 - 450,
+        background: `radial-gradient(circle, ${C.goldBright}1c, transparent 62%)`,
       }} />
       <div style={{
-        position: "absolute", width: 700, height: 700, borderRadius: "50%",
-        bottom: -200, left: -200,
-        background: `radial-gradient(circle, ${C.red}2a, transparent 65%)`,
+        position: "absolute", width: 640, height: 640, borderRadius: "50%",
+        bottom: -220, left: -220,
+        background: `radial-gradient(circle, ${C.red}26, transparent 65%)`,
       }} />
       <div style={{
-        position: "absolute", width: 700, height: 700, borderRadius: "50%",
-        bottom: -200, right: -200,
-        background: `radial-gradient(circle, ${C.navyMid}40, transparent 65%)`,
+        position: "absolute", width: 640, height: 640, borderRadius: "50%",
+        bottom: -220, right: -220,
+        background: `radial-gradient(circle, ${C.green}26, transparent 65%)`,
       }} />
 
       {/* Top tri-color block */}
@@ -200,7 +197,7 @@ export default function BracketShareCard({
 
       {/* Header brand row */}
       <div style={{
-        position: "absolute", top: 56, left: 60, right: 60,
+        position: "absolute", top: 52, left: 60, right: 60,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         zIndex: 6,
       }}>
@@ -208,10 +205,10 @@ export default function BracketShareCard({
           src={LOGO_SRC}
           alt="Stayin"
           crossOrigin="anonymous"
-          style={{ height: 60, objectFit: "contain", filter: "brightness(0) invert(1)" }}
+          style={{ height: 56, objectFit: "contain", filter: "brightness(0) invert(1)" }}
         />
         <div style={{
-          fontSize: 22, fontWeight: 900, color: C.goldBright,
+          fontSize: 20, fontWeight: 900, color: C.goldBright,
           letterSpacing: "0.32em", textTransform: "uppercase",
         }}>
           STAYIN.CO.IL
@@ -220,33 +217,33 @@ export default function BracketShareCard({
 
       {/* Title */}
       <div style={{
-        position: "absolute", top: 156, left: 0, right: 0,
+        position: "absolute", top: 138, left: 0, right: 0,
         textAlign: "center", zIndex: 6,
       }}>
         <div style={{
-          fontSize: 18, fontWeight: 800, color: C.goldBright,
-          letterSpacing: "0.46em", textTransform: "uppercase",
-          marginBottom: 16,
+          fontSize: 17, fontWeight: 800, color: C.goldBright,
+          letterSpacing: "0.44em", textTransform: "uppercase",
+          marginBottom: 12,
         }}>
           {isHe ? "סימולטור מונדיאל 2026" : "World Cup 2026 Simulator"}
         </div>
         <div style={{
-          fontSize: 88, fontWeight: 900, color: C.white,
+          fontSize: 68, fontWeight: 900, color: C.white,
           fontFamily: isHe ? fHe : fDisp,
-          letterSpacing: "-0.04em", lineHeight: 0.95,
+          letterSpacing: "-0.03em", lineHeight: 1,
           textShadow: "0 4px 18px rgba(0,0,0,0.45)",
         }}>
           {isHe ? "עץ הנוקאאוט שלי" : "MY KNOCKOUT BRACKET"}
         </div>
         {authorName && (
           <div style={{
-            marginTop: 14,
+            marginTop: 12,
             display: "inline-block",
-            padding: "6px 18px",
+            padding: "5px 16px",
             background: "rgba(255,255,255,0.08)",
             border: "1px solid rgba(255,255,255,0.16)",
             borderRadius: 99,
-            fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.85)",
+            fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.85)",
             letterSpacing: "0.06em",
             fontFamily: isHe ? fHe : fDisp,
           }}>
@@ -255,14 +252,13 @@ export default function BracketShareCard({
         )}
       </div>
 
-      {/* Round labels */}
-      <div style={{ position: "absolute", top: 310, left: 0, right: 0, zIndex: 5 }}>
+      {/* Round labels — mirrored, FINAL centred */}
+      <div style={{ position: "absolute", top: 312, left: 0, right: 0, zIndex: 5 }}>
         {[
           { x: X_R32_L, label: "R32" },
           { x: X_R16_L, label: "R16" },
           { x: X_QF_L,  label: "QF"  },
           { x: X_SF_L,  label: "SF"  },
-          { x: X_FINAL, label: "FINAL", final: true },
           { x: X_SF_R,  label: "SF"  },
           { x: X_QF_R,  label: "QF"  },
           { x: X_R16_R, label: "R16" },
@@ -270,9 +266,9 @@ export default function BracketShareCard({
         ].map((col, i) => (
           <div key={i} style={{
             position: "absolute", left: col.x, width: CARD_W, textAlign: "center",
-            fontSize: col.final ? 18 : 13, fontWeight: 900,
-            letterSpacing: col.final ? "0.34em" : "0.28em", textTransform: "uppercase",
-            color: col.final ? C.goldBright : "rgba(255,255,255,0.5)",
+            fontSize: 13, fontWeight: 900,
+            letterSpacing: "0.28em", textTransform: "uppercase",
+            color: "rgba(255,255,255,0.5)",
           }}>{col.label}</div>
         ))}
       </div>
@@ -304,7 +300,60 @@ export default function BracketShareCard({
         ))}
       </svg>
 
-      {/* Render every match card */}
+      {/* FINAL column embellishments — trophy above, champion chip below */}
+      <div style={{
+        position: "absolute", left: X_FINAL - FINAL_GAP, width: CARD_W + FINAL_GAP * 2,
+        top: finalY - 128, textAlign: "center", zIndex: 4,
+      }}>
+        <div style={{ fontSize: 56, lineHeight: 1, filter: `drop-shadow(0 6px 16px ${C.goldBright}70)` }}>🏆</div>
+        <div style={{
+          marginTop: 6,
+          fontSize: 16, fontWeight: 900, letterSpacing: "0.4em",
+          textTransform: "uppercase", color: C.goldBright,
+        }}>FINAL</div>
+      </div>
+      {champion && (
+        <div style={{
+          position: "absolute", left: X_FINAL - FINAL_GAP, width: CARD_W + FINAL_GAP * 2,
+          top: finalY + CARD_H + 26, zIndex: 4,
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+        }}>
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: "8px solid transparent",
+            borderRight: "8px solid transparent",
+            borderBottom: `8px solid ${C.goldBright}`,
+            transform: "rotate(180deg)",
+          }} />
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "7px 14px", borderRadius: 99,
+            background: `linear-gradient(135deg, ${C.goldBright}28, ${C.gold}18)`,
+            border: `1.5px solid ${C.goldBright}`,
+            boxShadow: `0 8px 22px ${C.goldBright}40`,
+          }}>
+            {flagImgSrc(champion) && (
+              <span style={{
+                width: 30, height: 22, borderRadius: 3, overflow: "hidden",
+                border: `1px solid ${C.goldBright}`, flexShrink: 0,
+              }}>
+                <img
+                  src={flagImgSrc(champion).replace("/w40/", "/w80/")}
+                  alt=""
+                  crossOrigin="anonymous"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </span>
+            )}
+            <span style={{
+              fontSize: 20, fontWeight: 900, color: C.goldBright,
+              letterSpacing: "0.1em",
+            }}>{teamCode3(champion)}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Match cards */}
       {[...positions.entries()].map(([id, pos]) => {
         const m = matches.find((x) => x.id === id);
         if (!m) return null;
@@ -320,27 +369,27 @@ export default function BracketShareCard({
             matchNum={m.fifa_match_number}
             onPath={champPath.has(m.id)}
             isFinal={pos.side === "C"}
+            mirror={pos.side === "R"}
           />
         );
       })}
 
       {/* Champion footer */}
       <div style={{
-        position: "absolute", bottom: 56, left: 60, right: 60,
+        position: "absolute", bottom: 52, left: 60, right: 60,
         zIndex: 10,
         background: `linear-gradient(135deg, ${C.navyMid} 0%, ${C.navy} 60%, ${C.ink} 100%)`,
         border: `2px solid ${C.goldBright}`,
-        borderRadius: 24, padding: "30px 36px",
+        borderRadius: 24, padding: "26px 34px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         boxShadow: `0 30px 60px rgba(0,0,0,0.55), 0 0 0 1px ${C.goldBright}30, inset 0 1px 0 rgba(255,255,255,0.06)`,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          {/* Big trophy */}
           <div style={{
-            width: 92, height: 92, borderRadius: 18,
+            width: 88, height: 88, borderRadius: 18,
             background: `linear-gradient(135deg, ${C.goldBright}, ${C.gold} 70%, ${C.red})`,
             display: "grid", placeItems: "center",
-            fontSize: 56,
+            fontSize: 52,
             boxShadow: `0 12px 28px ${C.gold}60`,
             flexShrink: 0,
           }}>🏆</div>
@@ -356,7 +405,7 @@ export default function BracketShareCard({
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               {champion && flagImgSrc(champion) && (
                 <span style={{
-                  width: 68, height: 50, borderRadius: 6, overflow: "hidden",
+                  width: 64, height: 47, borderRadius: 6, overflow: "hidden",
                   border: `3px solid ${C.goldBright}`, flexShrink: 0,
                   boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                 }}>
@@ -369,15 +418,15 @@ export default function BracketShareCard({
                 </span>
               )}
               <div style={{
-                fontSize: 56, fontWeight: 900, color: C.white,
+                fontSize: 52, fontWeight: 900, color: C.white,
                 fontFamily: isHe ? fHe : fDisp,
                 letterSpacing: "-0.02em", lineHeight: 1,
               }}>
-                {champion ? teamName(champion, isHe) : (isHe ? "TBD" : "TBD")}
+                {champion ? teamName(champion, isHe) : "TBD"}
               </div>
               {champion && (
                 <div style={{
-                  fontSize: 28, fontWeight: 900, color: C.goldBright,
+                  fontSize: 26, fontWeight: 900, color: C.goldBright,
                   letterSpacing: "0.14em",
                   paddingLeft: 14,
                   borderLeft: `2px solid ${C.goldBright}40`,
@@ -408,8 +457,7 @@ export default function BracketShareCard({
             {isHe ? "צור את שלך" : "BUILD YOURS"}
           </div>
           <div style={{
-            fontSize: 28, fontWeight: 900, color: C.white,
-            letterSpacing: "-0.005em",
+            fontSize: 26, fontWeight: 900, color: C.white,
           }}>
             stayin.co.il/predict
           </div>
@@ -422,7 +470,7 @@ export default function BracketShareCard({
 // ── Match card ───────────────────────────────────────────────────────────────
 
 function Card({
-  x, y, home, away, winnerSide, matchNum, onPath, isFinal,
+  x, y, home, away, winnerSide, matchNum, onPath, isFinal, mirror,
 }: {
   x: number; y: number;
   home: string | null; away: string | null;
@@ -430,11 +478,12 @@ function Card({
   matchNum: number;
   onPath: boolean;
   isFinal?: boolean;
+  mirror?: boolean;
 }) {
-  const w = isFinal ? CARD_W + 10 : CARD_W;
-  const h = isFinal ? CARD_H + 12 : CARD_H;
-  const xOffset = isFinal ? -5 : 0;
-  const yOffset = isFinal ? -6 : 0;
+  const w = isFinal ? CARD_W + 12 : CARD_W;
+  const h = isFinal ? CARD_H + 14 : CARD_H;
+  const xOffset = isFinal ? -6 : 0;
+  const yOffset = isFinal ? -7 : 0;
 
   return (
     <div style={{
@@ -444,7 +493,7 @@ function Card({
       {/* Match number badge */}
       <div style={{
         position: "absolute",
-        top: -14, left: "50%", transform: "translateX(-50%)",
+        top: -15, left: "50%", transform: "translateX(-50%)",
         fontSize: 10, fontWeight: 900, letterSpacing: "0.18em",
         color: onPath || isFinal ? C.goldBright : "rgba(255,255,255,0.45)",
         background: onPath || isFinal ? "rgba(212,160,23,0.16)" : "rgba(0,0,0,0.35)",
@@ -476,38 +525,40 @@ function Card({
         overflow: "hidden",
         display: "flex", flexDirection: "column",
       }}>
-        <Side team={home} won={winnerSide === "home"} isFinal={!!isFinal} />
+        <Side team={home} won={winnerSide === "home"} isFinal={!!isFinal} mirror={!!mirror} />
         <div style={{
           height: 1,
-          background: isFinal
-            ? `${C.goldBright}55`
-            : "rgba(255,255,255,0.10)",
+          background: isFinal ? `${C.goldBright}55` : "rgba(255,255,255,0.10)",
         }} />
-        <Side team={away} won={winnerSide === "away"} isFinal={!!isFinal} />
+        <Side team={away} won={winnerSide === "away"} isFinal={!!isFinal} mirror={!!mirror} />
       </div>
     </div>
   );
 }
 
-function Side({ team, won, isFinal }: { team: string | null; won: boolean; isFinal: boolean }) {
+function Side({ team, won, isFinal, mirror }: {
+  team: string | null; won: boolean; isFinal: boolean; mirror: boolean;
+}) {
   const code = teamCode3(team);
   return (
     <div style={{
       flex: 1, display: "flex", alignItems: "center", gap: 8,
       padding: "0 9px",
+      flexDirection: mirror ? "row-reverse" : "row",
       background: won
-        ? `linear-gradient(90deg, ${C.goldBright}38 0%, ${C.gold}22 100%)`
+        ? `linear-gradient(${mirror ? "270deg" : "90deg"}, ${C.goldBright}38 0%, ${C.gold}22 100%)`
         : "transparent",
       color: won ? C.white : team ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)",
       fontWeight: 900,
       position: "relative",
     }}>
-      {/* Winner tick on the leading edge */}
+      {/* Winner tick on the outer (leading) edge — mirrored on right half */}
       {won && (
         <div style={{
-          position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
+          position: "absolute", top: 0, bottom: 0, width: 3,
+          [mirror ? "right" : "left"]: 0,
           background: C.goldBright,
-        }} />
+        } as React.CSSProperties} />
       )}
 
       {team && flagImgSrc(team) && (
@@ -527,13 +578,14 @@ function Side({ team, won, isFinal }: { team: string | null; won: boolean; isFin
 
       <span style={{
         flex: 1,
-        fontSize: isFinal ? 22 : 18,
+        fontSize: isFinal ? 22 : 19,
         fontWeight: 900,
         letterSpacing: "0.04em",
+        textAlign: mirror ? "right" : "left",
         color: won ? C.white : team ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.35)",
         textShadow: won ? "0 1px 2px rgba(0,0,0,0.3)" : "none",
       }}>
-        {code || (team ? team.slice(0, 3).toUpperCase() : "—")}
+        {code || "—"}
       </span>
     </div>
   );

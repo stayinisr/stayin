@@ -112,13 +112,15 @@ export default function PredictPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Restore prior state.
+  // Restore prior state. `?step=summary` deep-links straight to the summary
+  // when a prediction already exists — lets returning users (and shared
+  // links) skip the whole wizard.
   useEffect(() => {
     const s = loadState();
     setState(s);
     if (s.mode) {
-      // Resume at the first group whose data isn't complete, else summary.
-      // Keep simple: land on mode picker; user clicks "continue" to resume.
+      const want = new URLSearchParams(window.location.search).get("step");
+      if (want === "summary") setStep({ kind: "summary" });
     }
   }, []);
 
@@ -835,7 +837,9 @@ function GroupScreen({
   const letter = GROUP_LETTERS[index]!;
   const grp = useMemo(() => groupMatches(matches, letter), [matches, letter]);
   const teams = useMemo(() => groupTeams(matches, letter), [matches, letter]);
-  const table = tables.find((t) => t.group === letter)!;
+  // Fallback for the brief window where matches haven't arrived yet (or the
+  // fetch failed) — renders an empty table instead of crashing the page.
+  const table = tables.find((t) => t.group === letter) ?? { group: letter, rows: [] };
 
   return (
     <div>
@@ -2323,7 +2327,10 @@ function ShareModal({
   }, []);
 
   const isMobile = viewportW < 640;
-  const slideW = isMobile ? viewportW : Math.min(viewportW - 36, 540);
+  // Slides must exactly match the modal's inner width so scroll-snap offsets
+  // (idx * slideW) line up with the real slide positions. Clamped to 320 so a
+  // transient bogus innerWidth reading can't collapse the layout.
+  const slideW = Math.max(320, isMobile ? viewportW : Math.min(580, viewportW - 36));
 
   // Each preview is rendered at its native aspect ratio inside the slide.
   const summaryPreviewW = Math.min(slideW - 32, isMobile ? 320 : 420);
@@ -2434,14 +2441,20 @@ function ShareModal({
   };
   const current = titles[shareType];
 
-  // Slide renderer — same chrome for both, just swap the preview content.
-  function Slide({ idx, label, scale, previewW, previewH, children }: {
-    idx: number; label: { he: string; en: string; emoji: string; tag: string };
-    scale: number; previewW: number; previewH: number; children: React.ReactNode;
-  }) {
+  // Slide renderer — plain function (NOT a nested component) so React keeps
+  // the same DOM nodes across re-renders. A nested component type would be
+  // recreated on every state change, remounting the slides mid-scroll and
+  // resetting both scroll position and the capture refs.
+  function renderSlide(
+    idx: number,
+    label: { he: string; en: string; emoji: string; tag: string },
+    previewW: number,
+    previewH: number,
+    children: React.ReactNode,
+  ) {
     return (
       <div style={{
-        flex: `0 0 ${slideW}px`, width: slideW,
+        flex: `0 0 ${slideW}px`, width: slideW, boxSizing: "border-box",
         scrollSnapAlign: "start",
         display: "flex", flexDirection: "column", alignItems: "center",
         padding: "8px 16px 0",
@@ -2466,10 +2479,8 @@ function ShareModal({
           boxShadow: idx === activeIdx
             ? "0 14px 36px rgba(13,27,62,0.22), 0 0 0 1px rgba(13,27,62,0.08)"
             : "0 4px 14px rgba(13,27,62,0.10), 0 0 0 1px rgba(13,27,62,0.06)",
-          background: shareType === "bracket" && idx === 1 ? "#0d1b3e" : "#fdfbf6",
+          background: idx === 1 ? "#0d1b3e" : "#fdfbf6",
           transition: "box-shadow 200ms",
-          transform: idx === activeIdx ? "scale(1)" : "scale(0.96)",
-          transformOrigin: "center top",
         }}>
           <div style={{
             width: previewW, height: Math.ceil(previewH),
@@ -2551,6 +2562,7 @@ function ShareModal({
           <div
             ref={scrollRef}
             onScroll={onScroll}
+            className="stayin-share-scroll"
             style={{
               display: "flex",
               overflowX: "auto", overflowY: "hidden",
@@ -2566,16 +2578,14 @@ function ShareModal({
               .stayin-share-scroll::-webkit-scrollbar { display: none; }
             `}</style>
 
-            <Slide
-              idx={0}
-              label={titles.summary}
-              scale={summaryScale}
-              previewW={summaryPreviewW}
-              previewH={summaryPreviewH}
-            >
+            {renderSlide(0, titles.summary, summaryPreviewW, summaryPreviewH, (
               <div style={{
                 width: SHARE_W, height: SHARE_H,
-                transform: `scale(${summaryScale})`, transformOrigin: "top left",
+                // "top center" is load-bearing: the unscaled 1080px box is
+                // centred by the flex parent, so scaling toward its top-centre
+                // keeps the shrunken card visible. With "top left" the content
+                // collapses into the box's off-screen left corner.
+                transform: `scale(${summaryScale})`, transformOrigin: "top center",
                 flexShrink: 0,
               }}>
                 <div ref={summaryRef} style={{ width: SHARE_W, height: SHARE_H }}>
@@ -2589,18 +2599,12 @@ function ShareModal({
                   />
                 </div>
               </div>
-            </Slide>
+            ))}
 
-            <Slide
-              idx={1}
-              label={titles.bracket}
-              scale={bracketScale}
-              previewW={bracketPreviewW}
-              previewH={bracketPreviewH}
-            >
+            {renderSlide(1, titles.bracket, bracketPreviewW, bracketPreviewH, (
               <div style={{
                 width: BRACKET_SHARE_W, height: BRACKET_SHARE_H,
-                transform: `scale(${bracketScale})`, transformOrigin: "top left",
+                transform: `scale(${bracketScale})`, transformOrigin: "top center",
                 flexShrink: 0,
               }}>
                 <div ref={bracketRef} style={{ width: BRACKET_SHARE_W, height: BRACKET_SHARE_H }}>
@@ -2614,7 +2618,7 @@ function ShareModal({
                   />
                 </div>
               </div>
-            </Slide>
+            ))}
           </div>
 
           {/* Desktop arrows */}
