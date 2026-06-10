@@ -1887,7 +1887,9 @@ function BracketTree({
   // Card geometry — compact cards so the whole bracket fits with room
   // to breathe. Deeper rounds use space-around so they sit centred between
   // their two feeders.
-  const BOX_H = 46;
+  // 51px: two 25px rows + 1px divider. Anything tighter and overflow:hidden
+  // clips the BOTTOM row's flag, making it look smaller than the top one.
+  const BOX_H = 51;
   const R32_GAP = 6;
   const R32_COUNT = Math.max(bracket.r32L.length, bracket.r32R.length);
   const totalH = Math.max(1, R32_COUNT) * (BOX_H + R32_GAP) + 20;
@@ -2210,10 +2212,14 @@ function BracketCard({
             : "0 1px 3px rgba(13,27,62,0.10), 0 1px 1px rgba(13,27,62,0.06)",
           borderRadius: 5, overflow: "hidden", position: "relative",
           height: boxHeight,
+          // Flex column so the two team rows split the card height EQUALLY.
+          // As blocks they hugged their content, leaving the bottom row
+          // shorter and its flag cramped against the name.
+          display: "flex", flexDirection: "column",
         }}
       >
         <BracketSide isHe={isHe} won={winnerSide === "home"} team={homeTeam} label={homeLabel} />
-        <div style={{ height: 1, background: "#d4dbe8" }} />
+        <div style={{ height: 1, background: "#d4dbe8", flexShrink: 0 }} />
         <BracketSide isHe={isHe} won={winnerSide === "away"} team={awayTeam} label={awayLabel} />
       </div>
     </div>
@@ -2223,7 +2229,9 @@ function BracketCard({
 function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; team: string | null; label: string }) {
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 6, padding: "4px 9px",
+      // No vertical padding — the row's fixed flex share does the spacing, so
+      // the bottom row can't get clipped by the card's overflow:hidden.
+      display: "flex", alignItems: "center", gap: 6, padding: "0 9px",
       background: won ? "rgba(212,160,23,0.20)" : "transparent",
       color: won ? "#5a3d00" : team ? C.text : C.muted,
       fontWeight: won ? 800 : 700,
@@ -2235,7 +2243,7 @@ function BracketSide({ isHe, won, team, label }: { isHe: boolean; won: boolean; 
         </span>
       )}
       <span style={{
-        fontFamily: isHe ? fHe : fEn, fontSize: 11.5,
+        fontFamily: isHe ? fHe : fEn, fontSize: 11.5, lineHeight: 1.2,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1,
         letterSpacing: isHe ? 0 : "-0.1px",
       }}>{team ? teamName(team, isHe) : label}</span>
