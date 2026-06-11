@@ -443,14 +443,16 @@ function ModeScreen({
   onPick: (m: Mode) => void;
   onContinue: () => void;
 }) {
+  // Ordered fastest-first — the ~3 min option is the least intimidating
+  // entry point, so it leads.
   const modes: { id: Mode; emoji: string; iconBg: string; titleHe: string; titleEn: string; descHe: string; descEn: string; accent: string; gradient: string; durationHe: string; durationEn: string; }[] = [
     {
-      id: "full", emoji: "🎯", iconBg: `linear-gradient(135deg, ${C.usa}, #2a5298)`, accent: C.usa,
-      titleHe: "חיזוי מלא", titleEn: "Full prediction",
-      descHe: "תוצאה מספרית לכל משחק. נקודות, שערים, הפרשים וטבלה — הכל מחושב אוטומטית.",
-      descEn: "Numeric score for every match. Auto-compute points, goals, GD and the table.",
-      gradient: `linear-gradient(135deg, ${C.usa}, #2a5298 60%, ${C.gold})`,
-      durationHe: "~15 דק׳", durationEn: "~15 min",
+      id: "quick", emoji: "⚡", iconBg: `linear-gradient(135deg, ${C.mexico}, #1abfb0)`, accent: C.mexico,
+      titleHe: "חיזוי מהיר", titleEn: "Quick prediction",
+      descHe: "בלי לעבור על משחקים — דרג ידנית את 4 הקבוצות בכל בית.",
+      descEn: "Skip matches — just rank the 4 teams in each group.",
+      gradient: `linear-gradient(135deg, ${C.mexico}, #1abfb0 70%, ${C.gold})`,
+      durationHe: "~3 דק׳", durationEn: "~3 min",
     },
     {
       id: "partial", emoji: "⚖️", iconBg: `linear-gradient(135deg, ${C.canada}, #ff7676)`, accent: C.canada,
@@ -461,12 +463,12 @@ function ModeScreen({
       durationHe: "~7 דק׳", durationEn: "~7 min",
     },
     {
-      id: "quick", emoji: "⚡", iconBg: `linear-gradient(135deg, ${C.mexico}, #1abfb0)`, accent: C.mexico,
-      titleHe: "חיזוי מהיר", titleEn: "Quick prediction",
-      descHe: "בלי לעבור על משחקים — דרג ידנית את 4 הקבוצות בכל בית.",
-      descEn: "Skip matches — just rank the 4 teams in each group.",
-      gradient: `linear-gradient(135deg, ${C.mexico}, #1abfb0 70%, ${C.gold})`,
-      durationHe: "~3 דק׳", durationEn: "~3 min",
+      id: "full", emoji: "🎯", iconBg: `linear-gradient(135deg, ${C.usa}, #2a5298)`, accent: C.usa,
+      titleHe: "חיזוי מלא", titleEn: "Full prediction",
+      descHe: "תוצאה מספרית לכל משחק. נקודות, שערים, הפרשים וטבלה — הכל מחושב אוטומטית.",
+      descEn: "Numeric score for every match. Auto-compute points, goals, GD and the table.",
+      gradient: `linear-gradient(135deg, ${C.usa}, #2a5298 60%, ${C.gold})`,
+      durationHe: "~15 דק׳", durationEn: "~15 min",
     },
   ];
 
