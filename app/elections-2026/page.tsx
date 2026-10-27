@@ -119,7 +119,13 @@ export default function Elections2026Page() {
     });
     setSaving(false);
     if (error) {
-      toast.error(closed ? "הקלפיות נסגרו, אי אפשר לשמור יותר" : "השמירה נכשלה, נסה שוב");
+      console.error("election save failed", error);
+      const missingTable = error.code === "PGRST205" || error.code === "42P01" || /does not exist|schema cache/i.test(error.message);
+      toast.error(
+        closed ? "הקלפיות נסגרו, אי אפשר לשמור יותר"
+        : missingTable ? "הטבלה עוד לא קיימת ב-Supabase (צריך להריץ את קובץ ה-SQL)"
+        : `השמירה נכשלה: ${error.message}`
+      );
       return;
     }
     setHasSaved(true);
