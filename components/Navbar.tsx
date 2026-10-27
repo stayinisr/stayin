@@ -159,6 +159,7 @@ export default function Navbar() {
 
         @media(max-width:639px) {
           .bnav { display:block; }
+          .bnav.bnav-hidden { display:none; }
           .hide-on-mobile { display:none!important; }
           .nav-post-btn-text { display:none; }
         }
@@ -254,7 +255,7 @@ export default function Navbar() {
       </header>
 
       {/* ── BOTTOM NAV (mobile only) ── */}
-      <nav className="bnav">
+      <nav className={`bnav${pathname?.startsWith("/elections-2026") ? " bnav-hidden" : ""}`}>
         <svg style={{ position:"absolute", top:0, left:0, width:"100%", height:76 }} viewBox="0 0 375 76" preserveAspectRatio="none">
           <filter id="nav-shadow"><feDropShadow dx="0" dy="-3" stdDeviation="6" floodOpacity="0.06"/></filter>
           <path d="M0 22 Q0 0 22 0 L155 0 Q173 0 178 16 Q187.5 46 197 16 Q202 0 220 0 L353 0 Q375 0 375 22 L375 76 L0 76 Z" fill="#ffffff" filter="url(#nav-shadow)"/>
