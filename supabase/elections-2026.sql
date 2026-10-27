@@ -76,3 +76,16 @@ $$;
 
 revoke all on function public.election_summary_2026() from public;
 grant execute on function public.election_summary_2026() to anon, authenticated;
+
+-- Owner-only full list (applied 27 Oct 2026). Returns rows only to the site owner's account.
+create or replace function public.election_all_2026()
+returns table (display_name text, email text, seats jsonb, updated_at timestamptz)
+language sql stable security definer set search_path = ''
+as $$
+  select p.display_name, u.email::text, p.seats, p.updated_at
+  from public.election_predictions_2026 p
+  join auth.users u on u.id = p.user_id
+  where (select auth.uid()) = '17bbfebc-ff9e-4ff8-b25a-dce6017245b7'::uuid
+  order by p.updated_at desc;
+$$;
+grant execute on function public.election_all_2026() to authenticated;

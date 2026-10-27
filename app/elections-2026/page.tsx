@@ -12,11 +12,12 @@ import {
 const C = {
   band: "#0d1b3e", bandInk: "#f2f5fb", bandMuted: "#a9b5cc", gold: "#f1c14b",
   text: "#0d1b3e", muted: "#64748b", border: "#e3e8f0", bg: "#f5f7fb",
-  accent: "#e63946", ok: "#15803d", warn: "#b4500f",
+  accent: "#e63946", ok: "#15803d", warn: "#b4500f", faintText: "#c3cad6",
 };
 const OTP_LENGTH = 6;
 const SEATS = hemicycle();
 type Summary = { count: number; avg: Record<string, number> };
+type AllRow = { display_name: string; email: string; seats: Record<string, number>; updated_at: string };
 
 function Letters({ p, size }: { p: Party; size: "sm" | "lg" }) {
   return (
@@ -95,6 +96,19 @@ export default function Elections2026Page() {
     })();
   }, [userId]);
 
+  // owner-only list: the database returns rows only to the site owner's account
+  const [allRows, setAllRows] = useState<AllRow[]>([]);
+  const loadAll = useCallback(async () => {
+    const { data, error } = await supabase.rpc("election_all_2026");
+    if (!error && Array.isArray(data)) setAllRows(data as AllRow[]);
+  }, []);
+  useEffect(() => {
+    if (!userId) { setAllRows([]); return; }
+    loadAll();
+    const t = setInterval(loadAll, 30000);
+    return () => clearInterval(t);
+  }, [userId, loadAll]);
+
   const total = useMemo(() => PARTIES.reduce((s, p) => s + (seats[p.id] || 0), 0), [seats]);
   const problem =
     total !== TOTAL_SEATS
@@ -131,6 +145,7 @@ export default function Elections2026Page() {
     setHasSaved(true);
     toast.success(hasSaved ? "התחזית עודכנה" : "התחזית נשמרה");
     loadSummary();
+    loadAll();
   }
 
   async function sendCode() {
@@ -344,6 +359,45 @@ export default function Elections2026Page() {
             })}
           </div>
         </section>
+
+        {allRows.length > 0 && (
+          <section className="el-sec">
+            <h2>כל התחזיות</h2>
+            <p className="el-sub">החלק הזה מוצג רק לך. שאר המשתתפים רואים רק את הממוצע.</p>
+            <div className="el-table-wrap">
+              <table className="el-table">
+                <thead>
+                  <tr>
+                    <th>משתתף</th>
+                    {PARTIES.map((p) => (
+                      <th key={p.id} title={p.name}>
+                        <span className="el-th-l" style={{ ["--pc" as string]: p.color }}>{p.letters}</span>
+                      </th>
+                    ))}
+                    <th>עודכן</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allRows.map((r, i) => (
+                    <tr key={i}>
+                      <td className="el-td-who">
+                        <b>{r.display_name}</b>
+                        <span dir="ltr">{r.email}</span>
+                      </td>
+                      {PARTIES.map((p) => {
+                        const v = Number(r.seats?.[p.id]) || 0;
+                        return <td key={p.id} className={v ? "" : "el-zero"}>{v}</td>;
+                      })}
+                      <td className="el-td-time">
+                        {new Date(r.updated_at).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jerusalem" })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </div>
 
       <div className="el-bar">
@@ -424,6 +478,15 @@ const css = `
 .el-step button{width:36px;height:36px;border-radius:50%;border:1px solid ${C.border};background:${C.bg};color:${C.text};font:inherit;font-size:1.2rem;font-weight:800;cursor:pointer;line-height:1}
 .el-step button:disabled{opacity:.35;cursor:not-allowed}
 .el-step input{width:2.8rem;text-align:center;font:inherit;font-size:1.3rem;font-weight:800;font-variant-numeric:tabular-nums;color:${C.text};background:transparent;border:0;border-bottom:2px solid ${C.border};padding:2px 0}
+.el-table-wrap{overflow-x:auto;background:#fff;border:1px solid ${C.border};border-radius:10px}
+.el-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.9rem}
+.el-table th,.el-table td{padding:8px 6px;text-align:center;border-bottom:1px solid ${C.border};white-space:nowrap}
+.el-table tbody tr:last-child td{border-bottom:0}
+.el-th-l{font-family:var(--font-ballot),"David",Georgia,serif;font-weight:900;display:inline-block;min-width:2em;padding:2px 4px;border:1.5px solid #111;border-radius:3px;background:#fff;color:#111;box-shadow:inset 0 -3px 0 var(--pc)}
+.el-td-who{text-align:right!important;display:grid;gap:1px;position:sticky;right:0;background:#fff;min-width:9rem}
+.el-td-who span{color:${C.muted};font-size:.8rem}
+.el-td-time{color:${C.muted}}
+.el-zero{color:${C.faintText}}
 .el-bar{position:sticky;bottom:0;z-index:20;background:#fff;border-top:1px solid ${C.border};padding-bottom:env(safe-area-inset-bottom,0px)}
 .el-bar-in{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:12px}
 .el-meter{flex:1;min-width:10rem;display:grid;gap:4px}
