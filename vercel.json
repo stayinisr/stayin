@@ -1,0 +1,6 @@
+{
+  "headers": [
+    { "source": "/homework", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
+    { "source": "/homework/:path*", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] }
+  ]
+}
