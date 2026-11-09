@@ -107,7 +107,7 @@
   /* code boxes */
   .codebox{display:flex;gap:8px;justify-content:center;direction:ltr}
   .codebox input{width:48px;height:58px;padding:0;text-align:center;font-size:24px;font-weight:900;text-transform:uppercase;border:1.5px solid var(--line-2);background:#fff;caret-color:var(--acc)}
-  #p1 input,#p2 input,.pin input{-webkit-text-security:disc;text-security:disc}
+  #p1 input,#p2 input,#c0 input,#c1 input,#c2 input,.pin input{-webkit-text-security:disc;text-security:disc}
   .codebox input.on{border-color:var(--pri);color:var(--pri)}
   .codebox input:focus{border-color:var(--acc);box-shadow:inset 0 -3px 0 var(--acc)}
   /* chips */
@@ -195,6 +195,12 @@
   .sol{margin-top:10px;padding:10px 14px;background:var(--soft);border:1px solid var(--line);font-size:15px}
   .sol .label{display:block;margin-bottom:4px}
   /* dock */
+  body.has-tnav .dock{bottom:calc(60px + env(safe-area-inset-bottom))}
+  body.has-tnav .tabs.home{display:none}
+  @media (min-width:1000px){ body.has-tnav .dock{bottom:0} body.has-tnav .tabs.home{display:flex} }
+  .me-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid var(--line)}
+  .me-row:first-child{border-top:none}
+  .me-row .k{color:var(--muted);font-size:13px;font-weight:700;min-width:84px}
   .dock{position:fixed;inset-inline:0;bottom:0;z-index:25;background:#fff;border-top:1px solid var(--line-2);padding:10px 18px calc(10px + env(safe-area-inset-bottom))}
   .dock .in{max-width:880px;margin:auto;display:flex;align-items:center;gap:16px}
   .segbar{display:flex;gap:3px;margin-top:6px}
@@ -203,7 +209,7 @@
   .timer{font-weight:900;font-size:20px;font-variant-numeric:tabular-nums;padding:4px 10px;border:2px solid var(--pri);color:var(--pri)}
   .timer.low{border-color:var(--bad);color:var(--bad)}
   /* student bottom nav */
-  .bnav{position:fixed;inset-inline:0;bottom:0;z-index:24;background:#fff;border-top:1px solid var(--line-2);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom)}
+  .bnav{position:fixed;inset-inline:0;bottom:0;z-index:24;background:#fff;border-top:1px solid var(--line-2);display:grid;grid-template-columns:repeat(var(--n,3),1fr);padding-bottom:env(safe-area-inset-bottom)}
   .bnav button{border:none;flex-direction:column;gap:2px;padding:10px 4px 9px;font-size:12.5px;color:var(--muted);font-weight:700;position:relative}
   .bnav button:hover{background:var(--soft);color:var(--ink)}
   .bnav button svg{width:22px;height:22px}
@@ -288,12 +294,13 @@
     .cols > aside{position:sticky;top:130px}
     .cols > aside .card:first-child{margin-top:0}
     .cols > div > .card:first-child{margin-top:0}
-    .bnav{top:60px;bottom:auto;grid-template-columns:repeat(3,auto);justify-content:center;gap:8px;border-top:none;border-bottom:1px solid var(--line-2);padding:0;background:rgba(255,255,255,.96)}
+    .bnav{top:60px;bottom:auto;grid-template-columns:repeat(var(--n,3),auto);justify-content:center;gap:8px;border-top:none;border-bottom:1px solid var(--line-2);padding:0;background:rgba(255,255,255,.96)}
     .bnav button{flex-direction:row;gap:8px;padding:12px 22px;font-size:14.5px}
     .bnav button svg{width:18px;height:18px}
     .bnav button.on::before{top:auto;bottom:0;inset-inline:0}
     .bnav .dot{position:static;margin-inline-start:4px}
     body.has-bnav main{padding-top:80px}
+    .bnav.tnav{display:none} body.has-tnav main{padding-top:32px}
     .dock .in{max-width:780px}
     .tiles{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
     .hero{padding:32px 32px}
@@ -374,6 +381,10 @@ const IC = {
   tasks:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
   chart:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
   redo:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  me:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  grid:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  users:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1M16 4.2a3.5 3.5 0 0 1 0 6.6M19 14a5 5 0 0 1 3 4.6V20" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  stack:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
 };
 const backBtn = (label, href) => `<button class="back noprint" onclick="go('${href}')">${IC.back}${esc(label)}</button>`;
 function cells(p, draw){ const n = Math.round((p||0)/10); return `<div class="cells ${draw?"draw":""}">${Array.from({length:10},(_,i)=>`<i class="${i<n?"f":""}" style="animation-delay:${i*60}ms"></i>`).join("")}</div>`; }
@@ -506,13 +517,14 @@ async function route(){
   navSeq++;
   const h = location.hash || "#/";
   window.scrollTo(0,0);
-  renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav");
+  renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav", "has-tnav");
   document.body.dataset.area = h.startsWith("#/teacher") ? "teacher" : "student";
   let m;
   if((m = h.match(/^#\/join\/([A-Za-z0-9]+)/))) return studentAuth("register", m[1].toUpperCase());
   if((m = h.match(/^#\/s\/([0-9a-f-]+)/))) return studentAssignment(m[1]);
   if(h.startsWith("#/progress")) return studentProgress();
   if(h.startsWith("#/mistakes")) return studentMistakes();
+  if(h.startsWith("#/me")) return studentMe();
   if(h.startsWith("#/teacher/a/")) return teacherAssignment(h.split("/")[3]);
   if(h.startsWith("#/teacher/c/")) return teacherClass(h.split("/")[3]);
   if(h.startsWith("#/teacher/st/")) return teacherStudent(h.split("/")[3]);
@@ -537,11 +549,59 @@ async function rpcS(fn, args){
 async function studentLogout(){ try{ await sb.rpc("hw_student_logout",{ p_token: store("hw-token") }); }catch(e){} store("hw-token", null); HOME=null; go("#/"); }
 function studentNav(active, mistakes){
   document.body.classList.add("has-bnav");
-  $("#bnav").innerHTML = `<nav class="bnav" aria-label="ניווט">
+  $("#bnav").innerHTML = `<nav class="bnav" style="--n:4" aria-label="ניווט">
     <button class="${active==="tasks"?"on":""}" onclick="go('#/')">${IC.tasks}משימות</button>
     <button class="${active==="progress"?"on":""}" onclick="go('#/progress')">${IC.chart}התקדמות</button>
-    <button class="${active==="mistakes"?"on":""}" onclick="go('#/mistakes')">${IC.redo}טעויות${mistakes?`<span class="dot">${mistakes}</span>`:""}</button></nav>`;
+    <button class="${active==="mistakes"?"on":""}" onclick="go('#/mistakes')">${IC.redo}טעויות${mistakes?`<span class="dot">${mistakes}</span>`:""}</button>
+    <button class="${active==="me"?"on":""}" onclick="go('#/me')">${IC.me}אני</button></nav>`;
 }
+function teacherNav(active, pick){
+  document.body.classList.add("has-bnav", "has-tnav");
+  const items = [["o","סקירה",IC.grid],["a","משימות",IC.tasks],["c","כיתות",IC.users],["b","מאגר",IC.stack]];
+  $("#bnav").innerHTML = `<nav class="bnav tnav" style="--n:4" aria-label="ניווט מורה">${items.map(([k,l,i])=>`<button data-t="${k}" class="${active===k?"on":""}">${i}${l}</button>`).join("")}</nav>`;
+  $$("#bnav button").forEach(b => b.onclick = () => pick ? pick(b.dataset.t) : go("#/teacher?tab="+b.dataset.t));
+}
+async function studentMe(){
+  if(!store("hw-token")) return studentAuth("login");
+  app().innerHTML = `<p class="muted">טוען…</p>`;
+  const seq = navSeq;
+  let me, d; try{ [me, d] = await Promise.all([rpcS("hw_student_me", {}), loadHome()]); }catch(e){ if(seq===navSeq && store("hw-token")) app().innerHTML = `<div class="card"><div class="empty"><b>${esc(errMsg(e))}</b></div></div>`; return; }
+  if(seq!==navSeq) return;
+  studentNav("me", d.mistakes);
+  app().innerHTML = `<div class="narrow">
+    <h1>האזור האישי</h1>
+    <div class="card"><div>
+      <div class="me-row"><span class="k">שם</span><b class="grow">${esc(me.name)}</b></div>
+      <div class="me-row"><span class="k">כיתה</span><span class="grow">${esc(me.class)}</span></div>
+      <div class="me-row"><span class="k">מייל</span><bdi class="grow" dir="ltr" style="text-align:right">${esc(me.email||"לא הוגדר")}</bdi></div>
+      ${me.claimed_at?`<div class="me-row"><span class="k">נרשמת</span><span class="grow">${fmtDate(me.claimed_at)}</span></div>`:""}
+    </div></div>
+    <div class="card"><div class="hd"><h2>החלפת קוד סודי</h2></div><div class="bd">
+      <label class="f" style="margin-top:0">הקוד הנוכחי</label><div id="c0">${codeBoxes(4, "", true)}</div>
+      <label class="f">קוד חדש</label><div id="c1">${codeBoxes(4, "", true)}</div>
+      <label class="f">הקוד החדש שוב</label><div id="c2">${codeBoxes(4, "", true)}</div>
+      <button class="primary wide" id="chp" style="margin-top:18px">שמירת קוד חדש</button>
+      <p class="err" id="ae" role="alert"></p>
+      <p class="muted small" style="margin:10px 0 0">שכחת את הקוד הנוכחי? צא מהחשבון ולחץ "שכחתי את הקוד" במסך הכניסה.</p>
+    </div></div>
+    <div class="card"><div class="bd">
+      <button class="light wide" id="out1">יציאה</button>
+      ${me.sessions>1?`<button class="ghost wide" id="outall" style="margin-top:8px">יציאה מכל המכשירים (${me.sessions})</button>`:""}
+    </div></div></div>`;
+  const g0 = bindCode($("#c0 .codebox"), () => $("#c1 input").focus(), true), g1 = bindCode($("#c1 .codebox"), () => $("#c2 input").focus(), true), g2 = bindCode($("#c2 .codebox"), () => $("#chp").focus(), true);
+  const err = m => $("#ae").textContent = m || "";
+  $("#chp").onclick = async () => {
+    err(); const a = g0(), b = g1(), c = g2();
+    if(a.length!==4 || b.length!==4) return err("מלאו את כל הספרות");
+    if(b !== c) return err("הקוד החדש לא תואם באימות");
+    $("#chp").disabled = true; let r; try{ r = await rpcS("hw_student_change_pin", { p_old:a, p_new:b }); }catch(e){ r = { error: errMsg(e) }; } $("#chp").disabled = false;
+    if(r.error) return err(r.error);
+    toast("הקוד הסודי הוחלף"); studentMe();
+  };
+  $("#out1").onclick = studentLogout;
+  const oa = $("#outall"); if(oa) oa.onclick = async () => { if(!(await ask(`<h2>לצאת מכל המכשירים?</h2><p class="muted">תצטרכו להיכנס שוב עם הקוד הסודי בכל מכשיר.</p>`, "יציאה"))) return; try{ await rpcS("hw_student_logout_all", {}); }catch(e){} store("hw-token", null); HOME=null; go("#/"); };
+}
+
 function studentAuth(mode, code=""){
   code = (code || store("hw-class") || "").toUpperCase();
   let R = null, pick = null, typed = "";
@@ -1060,15 +1120,17 @@ async function teacherHome(){
   if(seq!==navSeq) return;
   app().innerHTML = `
     <div class="row"><h1 class="grow">לוח ניהול</h1><button class="primary" id="new">משימה חדשה</button></div>
-    <div class="tabs" role="tablist"><button data-t="o">סקירה</button><button data-t="a">משימות</button><button data-t="c">כיתות</button><button data-t="b">מאגר שאלות</button></div>
+    <div class="tabs home" role="tablist"><button data-t="o">סקירה</button><button data-t="a">משימות</button><button data-t="c">כיתות</button><button data-t="b">מאגר שאלות</button></div>
     <div id="tab"></div>`;
   $("#new").onclick = () => newAssignment(D);
   const show = t => {
     $$(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
-    history.replaceState(null,"","#/teacher?tab="+t);
+    $$("#bnav button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+    history.replaceState(null,"","#/teacher?tab="+t); window.scrollTo(0,0);
     ({o:tabOverview, a:tabAssignments, c:tabClasses, b:tabBank})[t](D);
   };
   $$(".tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
+  teacherNav(tab, show);
   show(tab);
 }
 async function newAssignment(D, preset){
@@ -1191,6 +1253,7 @@ async function tabBank(D){
 /* ---- class page ---- */
 async function teacherClass(id){
   if(!(await requireTeacher())) return;
+  teacherNav("c");
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
   let D; try{ D = await loadAll(); }catch(e){ return; }
@@ -1250,6 +1313,7 @@ async function teacherClass(id){
 /* ---- student card ---- */
 async function teacherStudent(id){
   if(!(await requireTeacher())) return;
+  teacherNav("c");
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
   let D; try{ D = await loadAll(); }catch(e){ return; }
@@ -1316,6 +1380,7 @@ async function openSubmission(subId, after){
 let A = null, Q = [], removed = [], dirty = false, CL = [], ACL = [];
 async function teacherAssignment(idq){
   if(!(await requireTeacher())) return;
+  teacherNav("a");
   const [id, qs] = idq.split("?");
   const tab = new URLSearchParams(qs||"").get("tab") || "results";
   app().innerHTML = `<p class="muted">טוען…</p>`;
