@@ -125,7 +125,9 @@ const siteBase = () => location.origin + location.pathname;
 const isPast = d => d && new Date(d) < new Date();
 
 /* ---------- router ---------- */
+let navSeq = 0;
 async function route(){
+  navSeq++;
   const h = location.hash || "#/";
   window.scrollTo(0,0);
   renderHeader();
@@ -194,7 +196,9 @@ function studentAuth(mode, code=""){
 async function studentHome(){
   if(!store("hw-token")) return studentAuth("login");
   app().innerHTML = `<p class="muted">טוען…</p>`;
-  let d; try{ d = await rpcS("hw_student_home", {}); }catch(e){ if(store("hw-token")) app().innerHTML = `<p class="err">${esc(errMsg(e))}</p>`; return; }
+  const seq = navSeq;
+  let d; try{ d = await rpcS("hw_student_home", {}); }catch(e){ if(seq===navSeq && store("hw-token")) app().innerHTML = `<p class="err">${esc(errMsg(e))}</p>`; return; }
+  if(seq!==navSeq) return;
   const graded = d.assignments.filter(a => a.last && a.last.score != null);
   const avg = graded.length ? Math.round(graded.reduce((s,a)=>s+pct(a.last.score,a.last.max),0)/graded.length) : null;
   const todo = d.assignments.filter(a => !a.attempts && a.is_open && !isPast(a.due_at));
@@ -228,7 +232,9 @@ async function studentHome(){
 async function studentAssignment(id){
   if(!store("hw-token")) return studentAuth("login");
   app().innerHTML = `<p class="muted">טוען…</p>`;
-  let a; try{ a = await rpcS("hw_student_assignment", { p_id:id }); }catch(e){ if(store("hw-token")) app().innerHTML = `<div class="card"><h2>${esc(errMsg(e))}</h2><button onclick="go('#/')">חזרה</button></div>`; return; }
+  const seq = navSeq;
+  let a; try{ a = await rpcS("hw_student_assignment", { p_id:id }); }catch(e){ if(seq===navSeq && store("hw-token")) app().innerHTML = `<div class="card"><h2>${esc(errMsg(e))}</h2><button onclick="go('#/')">חזרה</button></div>`; return; }
+  if(seq!==navSeq) return;
   const canSubmit = a.is_open && !isPast(a.due_at) && (a.max_attempts==null || a.attempts < a.max_attempts);
   const left = a.max_attempts==null ? "" : ` · נותרו ${Math.max(0,a.max_attempts-a.attempts)} ניסיונות`;
   app().innerHTML = `
@@ -326,17 +332,30 @@ function loginPage(){
     <div class="card" style="max-width:420px;margin:40px auto">
       <h2>כניסת מורה</h2>
       <form id="lf">
-        <label>אימייל</label><input id="em" type="email" class="ltr" autocomplete="username" required>
-        <label>סיסמה</label><input id="pw" type="password" class="ltr" autocomplete="current-password" required>
-        <div style="margin-top:16px"><button class="primary">כניסה</button></div>
-        <p class="err" id="le"></p>
+        <label>אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" required>
+        <div style="margin-top:16px"><button class="primary" id="lsend">שליחת קוד למייל</button></div>
       </form>
-      <p class="muted small">אותו מייל וסיסמה כמו ב-Stayin.</p>
+      <form id="vf" style="display:none">
+        <p class="muted small">שלחנו קוד למייל. הקלידו אותו כאן:</p>
+        <input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="ltr" style="font-size:24px;letter-spacing:6px;text-align:center">
+        <div class="row" style="margin-top:16px"><button class="primary">כניסה</button><button type="button" class="link" id="back">שינוי מייל / שליחה מחדש</button></div>
+      </form>
+      <p class="err" id="le"></p>
+      <p class="muted small">אותו מייל כמו ב-Stayin.</p>
     </div>`;
   $("#lf").onsubmit = async e => {
-    e.preventDefault();
-    const { data, error } = await sb.auth.signInWithPassword({ email:$("#em").value.trim(), password:$("#pw").value });
-    if(error){ $("#le").textContent = "האימייל או הסיסמה שגויים"; return; }
+    e.preventDefault(); $("#le").textContent = "";
+    $("#lsend").disabled = true;
+    const { error } = await sb.auth.signInWithOtp({ email:$("#em").value.trim(), options:{ shouldCreateUser:false } });
+    $("#lsend").disabled = false;
+    if(error){ $("#le").textContent = /rate|seconds/i.test(error.message) ? "נשלח קוד לפני רגע. חכו דקה ונסו שוב" : "השליחה נכשלה. בדקו את כתובת המייל"; return; }
+    $("#lf").style.display = "none"; $("#vf").style.display = "block"; $("#otp").focus();
+  };
+  $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; $("#le").textContent = ""; };
+  $("#vf").onsubmit = async e => {
+    e.preventDefault(); $("#le").textContent = "";
+    const { data, error } = await sb.auth.verifyOtp({ email:$("#em").value.trim(), token:$("#otp").value.replace(/\D/g,""), type:"email" });
+    if(error){ $("#le").textContent = "קוד שגוי או שפג תוקפו"; return; }
     session = data.session; route();
   };
 }
@@ -352,10 +371,12 @@ async function teacherHome(){
   if(!(await requireTeacher())) return;
   const tab = new URLSearchParams((location.hash.split("?")[1])||"").get("tab") || "a";
   app().innerHTML = `<p class="muted">טוען…</p>`;
+  const seq = navSeq;
   const [{data:list, error}, {data:classes}] = await Promise.all([
     sb.from("hw_assignments").select("id,title,is_open,due_at,created_at,hw_submissions(count),hw_questions(count),hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
     sb.from("hw_classes").select("id,name,join_code,join_open,created_at,hw_students(count)").order("created_at")
   ]);
+  if(seq!==navSeq) return;
   if(error){ app().innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
   const cname = Object.fromEntries((classes||[]).map(c=>[c.id,c.name]));
   app().innerHTML = `
@@ -407,6 +428,7 @@ async function teacherHome(){
 async function teacherClass(id){
   if(!(await requireTeacher())) return;
   app().innerHTML = `<p class="muted">טוען…</p>`;
+  const seq = navSeq;
   const { data:c, error } = await sb.from("hw_classes").select("*").eq("id",id).single();
   if(error || !c){ app().innerHTML = `<p class="err">הכיתה לא נמצאה</p>`; return; }
   const [{data:students}, {data:links}] = await Promise.all([
@@ -419,6 +441,7 @@ async function teacherClass(id){
     const r = await sb.from("hw_submissions").select("assignment_id,student_id,score,max_score,created_at").in("assignment_id", asg.map(a=>a.id)).order("created_at");
     subs = r.data || [];
   }
+  if(seq!==navSeq) return;
   const last = {}; subs.forEach(s => { if(s.student_id) last[s.student_id+"|"+s.assignment_id] = s; });
   const joinLink = siteBase()+"#/join/"+c.join_code;
   const stAvg = st => { const g = asg.map(a=>last[st.id+"|"+a.id]).filter(Boolean); return g.length ? Math.round(g.reduce((s,x)=>s+pct(x.score,x.max_score),0)/g.length) : null; };
@@ -479,12 +502,14 @@ async function teacherAssignment(idq){
   const [id, qs] = idq.split("?");
   const tab = new URLSearchParams(qs||"").get("tab") || "results";
   app().innerHTML = `<p class="muted">טוען…</p>`;
+  const seq = navSeq;
   const [{data:a, error}, {data:qq}, {data:cl}, {data:acl}] = await Promise.all([
     sb.from("hw_assignments").select("*").eq("id",id).single(),
     sb.from("hw_questions").select("*").eq("assignment_id",id).order("position"),
     sb.from("hw_classes").select("id,name").order("created_at"),
     sb.from("hw_assignment_classes").select("class_id").eq("assignment_id",id)
   ]);
+  if(seq!==navSeq) return;
   if(error || !a){ app().innerHTML = `<p class="err">המשימה לא נמצאה</p>`; return; }
   A = a; Q = qq || []; removed = []; dirty = false; CL = cl || []; ACL = (acl||[]).map(x=>x.class_id);
   app().innerHTML = `
@@ -516,11 +541,12 @@ function drawAssignHeader(){
 
 /* results */
 async function tabResults(){
-  const el = $("#tab"); el.innerHTML = `<p class="muted">טוען…</p>`;
+  const el = $("#tab"); el.innerHTML = `<p class="muted">טוען…</p>`; const seq = navSeq;
   const [{ data:subs, error }, { data:students }] = await Promise.all([
     sb.from("hw_submissions").select("*").eq("assignment_id",A.id).order("created_at"),
     ACL.length ? sb.from("hw_students").select("id,display_name,class_id").in("class_id",ACL).order("display_name") : Promise.resolve({data:[]})
   ]);
+  if(seq!==navSeq || !el.isConnected) return;
   if(error){ el.innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
   const by = {}; subs.forEach(s => { const k = s.student_id || ("n:"+s.student_name.trim().toLowerCase()); (by[k] ||= []).push(s); });
   const cname = Object.fromEntries(CL.map(c=>[c.id,c.name]));
