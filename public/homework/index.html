@@ -90,6 +90,8 @@
   .seg{display:flex;gap:4px;background:#eceae4;border-radius:12px;padding:4px;margin-bottom:14px}
   .seg button{flex:1;border:none;background:none;border-radius:9px;padding:8px}
   .seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .fig{margin:10px 0;text-align:center}
+  .fig img{max-width:100%;height:auto;max-height:260px}
   .chk{display:flex;gap:8px;align-items:center;color:var(--ink);margin:6px 0;font-size:16px}
 </style>
 </head>
@@ -123,6 +125,7 @@ const fmtDate = d => d ? new Date(d).toLocaleString("he-IL",{day:"numeric",month
 const pct = (s,m) => m ? Math.round(100*s/m) : 0;
 const siteBase = () => location.origin + location.pathname;
 const isPast = d => d && new Date(d) < new Date();
+const figHtml = f => (f && /^\s*<svg[\s>]/i.test(f)) ? `<div class="fig"><img alt="שרטוט" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(f.trim())}"></div>` : "";
 
 /* ---------- router ---------- */
 let navSeq = 0;
@@ -263,7 +266,7 @@ function showForm(body, a){
       ${a.questions.map((q,i)=>`
         <div class="q" data-id="${q.id}">
           <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
-          ${answerInput(q, draft[q.id] ?? "")}
+          ${figHtml(q.figure)}${answerInput(q, draft[q.id] ?? "")}
         </div>`).join("")}
     </div>
     <div class="row"><button class="primary big" id="sub">הגשה</button></div>
@@ -298,7 +301,7 @@ function showReview(body, a, last, fresh){
         let fb = "";
         if(x.correct === true) fb = `<div class="res ok">✓ נכון</div>`;
         else if(x.correct === false) fb = `<div class="res bad">✗ לא נכון${x.answer!=null?`. התשובה הנכונה: <bdi class="ltr">${esc(x.answer)}</bdi>`:""}</div>`;
-        return `<div class="q"><div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span></div>
+        return `<div class="q"><div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span></div>${figHtml(q.figure)}
           <div class="muted small" style="margin-top:6px">התשובה שלך: <bdi class="ltr" style="color:var(--ink)">${given===""?"—":esc(shown)}</bdi> ${q.unit&&given!==""&&q.kind==="number"?`<bdi class="unit">${esc(q.unit)}</bdi>`:""}</div>${fb}</div>`; }).join("")}
     </div>
     ${fresh ? `<button onclick="go('#/')">חזרה למשימות</button>` : ""}`;
@@ -605,7 +608,8 @@ const AI_PROMPT = `הפוך את דף התרגילים המצורף (או: כת�
  {"prompt":"...", "kind":"text", "answer":{"accepted":["2x+3","3+2x"]}}
 ]
 kind: number לתשובה מספרית (value מספר בלבד, unit יחידות), choice לאמריקאית (index מתחיל מ-0), text לביטוי קצר (כל הצורות המקובלות ב-accepted).
-שאלה מסוג "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית או השמט.`;
+שאלה מסוג "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית או השמט.
+אם לשאלה צריך שרטוט, הוסף לה שדה "figure" עם קוד SVG פשוט (xmlns, viewBox ברוחב 320, קווים כהים, תוויות מספריות, "?" על הגודל המבוקש). אל תסגיר בשרטוט את התשובה.`;
 function tabQuestions(){
   const el = $("#tab");
   el.innerHTML = `
@@ -649,6 +653,7 @@ function tabQuestions(){
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
     if(!f) return;
     if(f==="prompt"){ q.prompt = e.target.value; }
+    else if(f==="figure"){ q.figure = e.target.value.trim() || null; }
     else if(f==="points") q.points = parseFloat(e.target.value)||0;
     else if(f==="value") q.answer.value = e.target.value;
     else if(f==="tol_pct") q.answer.tol_pct = parseFloat(e.target.value)||0;
@@ -685,19 +690,19 @@ function tabQuestions(){
     try{
       if(removed.length){ const { error } = await sb.from("hw_questions").delete().in("id", removed); if(error) throw error; }
       const rows = Q.map((q,i)=>({ id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"?q.choices:null,
-        answer: q.kind==="number" ? { value:Number(q.answer.value), tol_pct:Number(q.answer.tol_pct??1), unit:q.answer.unit||"" } : q.answer, points:q.points }));
+        answer: q.kind==="number" ? { value:Number(q.answer.value), tol_pct:Number(q.answer.tol_pct??1), unit:q.answer.unit||"" } : q.answer, points:q.points, figure:q.figure||null }));
       if(rows.length){ const { error } = await sb.from("hw_questions").upsert(rows); if(error) throw error; }
       Q.forEach(q=>delete q._new); removed = []; dirty = false; toast("נשמר ✓");
       $("#save").textContent = "שמירה";
     }catch(e){ toast("שגיאה: "+e.message); $("#save").disabled=false; $("#save").textContent="שמירה"; }
   };
 }
-function toStudentQ(q){ return { id:q.id, prompt:q.prompt, kind:q.kind, choices:q.choices, points:q.points, unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
+function toStudentQ(q){ return { id:q.id, prompt:q.prompt, kind:q.kind, choices:q.choices, points:q.points, figure:q.figure, unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
 function correctIndexOf(q){ return q.kind==="choice" ? +q.answer.index : null; }
 function renderPv(i){
   const q = Q[i], pv = $(`#pv${i}`); if(!q || !pv) return;
   pv.style.whiteSpace = "normal";
-  pv.innerHTML = `<div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt||"(נוסח השאלה)")}</span></div>${answerInput(toStudentQ(q),"")}`;
+  pv.innerHTML = `<div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt||"(נוסח השאלה)")}</span></div>${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}`;
   if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[correctIndexOf(q)]; if(c) c.style.borderColor = "var(--ok)", c.insertAdjacentHTML("beforeend", `<span class="small" style="color:var(--ok);margin-inline-start:auto">✓ נכונה</span>`); }
   pv.querySelectorAll("input").forEach(x=>x.disabled=true);
   math(pv);
@@ -737,7 +742,7 @@ function tabPreview(){
     <div class="card" id="qs">
       ${Q.length ? Q.map((q,i)=>`<div class="q" data-id="${q.id}">
         <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
-        ${answerInput(toStudentQ(q),"")}<div class="slot"></div></div>`).join("") : `<p class="muted">אין שאלות עדיין.</p>`}
+        ${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}<div class="slot"></div></div>`).join("") : `<p class="muted">אין שאלות עדיין.</p>`}
     </div>
     <div class="row"><button class="primary" id="pvcheck">בדיקה לדוגמה</button><button id="pvshow">הצגת התשובות הנכונות</button><button class="link" id="pvreset">ניקוי</button></div>
     <div id="pvout"></div>`;
@@ -769,7 +774,7 @@ function normalizeQ(x){
     if(typeof answer === "string") answer = { accepted:[answer] };
     answer = { accepted: (answer.accepted||[]).map(String) };
   }
-  return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1), _new:true };
+  return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1), figure: (typeof x.figure==="string" && /^\s*<svg/i.test(x.figure)) ? x.figure : null, _new:true };
 }
 function qEditor(q,i){
   const k = q.kind;
@@ -788,6 +793,8 @@ function qEditor(q,i){
       <div class="grow"></div><button class="link" data-act="up" title="למעלה">▲</button><button class="link" data-act="down" title="למטה">▼</button><button class="link danger" data-act="del">מחיקה</button></div>
     <label>השאלה (נוסחאות בין סימני $, למשל $v=\\frac{d}{t}$)</label>
     <textarea data-f="prompt">${esc(q.prompt)}</textarea>
+    <details ${q.figure?"open":""} style="margin-top:8px"><summary class="muted small" style="cursor:pointer">שרטוט (לא חובה)</summary>
+      <textarea data-f="figure" class="ltr" style="min-height:60px;font-size:12px" placeholder="קוד SVG – אפשר לבקש מ-Claude לשרטט">${esc(q.figure||"")}</textarea></details>
     <div class="muted small" style="margin-top:8px">כך התלמיד יראה את השאלה:</div>
     <div class="preview" id="pv${i}"></div>
     ${ans}
