@@ -2,132 +2,284 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>שיעורי בית</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F8FB">
+<title>מחברת · שיעורי בית</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='4' fill='%23fff' stroke='%2316213E' stroke-width='2'/%3E%3Cpath d='M9 3v26M3 11h26M3 19h26' stroke='%23C9D5E3' stroke-width='1.2'/%3E%3Cpath d='M12 17l4 4 8-10' fill='none' stroke='%23D3262F' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
+  /* teacher's red-pen handwriting: Playpen Sans Hebrew (OFL), self-hosted, no emoji subset */
+  @font-face{font-family:"Hand";font-weight:700;font-display:swap;src:url(fonts/playpen-hebrew-700.woff2) format("woff2");unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+FB1D-FB4F}
+  @font-face{font-family:"Hand";font-weight:700;font-display:swap;src:url(fonts/playpen-latin-700.woff2) format("woff2");unicode-range:U+0000-00FF}
   :root{
-    --bg:#f6f5f1; --card:#fff; --ink:#1d2433; --muted:#667085; --line:#e4e2db;
-    --accent:#2f5bd3; --accent-ink:#fff; --ok:#1f8a4c; --ok-bg:#e7f5ec; --bad:#c2410c; --bad-bg:#fdeee6;
-    --radius:14px;
+    --paper:#F5F8FB; --grid:#E2E9F1; --sheet:#fff; --line:#D8E0EA; --line-2:#E9EEF4;
+    --ink:#16213E; --muted:#5B6880; --faint:#8A95A8;
+    --pen:#2741B5; --pen-2:#1E3492; --pen-wash:#EEF1FC;
+    --red:#D3262F; --red-wash:#FDF0F0; --margin:#F3A6AE; --marker:#FFE15A;
+    --ok:#17794A; --ok-wash:#EAF6EF;
+    --hand:"Hand","IBM Plex Sans Hebrew",sans-serif;
+    --r-sheet:6px; --r-ctl:10px;
+    --shadow:0 1px 0 var(--line), 0 10px 28px -18px rgba(22,33,62,.35);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Assistant","Rubik",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
-  header .in{max-width:860px;margin:auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
-  header .logo{font-weight:800;font-size:19px;letter-spacing:-.2px;cursor:pointer}
-  header .logo span{color:var(--accent)}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; color:var(--ink);
+    font:400 16px/1.6 "IBM Plex Sans Hebrew",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+    background-color:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px; background-position:-1px -1px;
+    min-height:100vh;
+  }
+  /* ---------- header ---------- */
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+  header .in{max-width:760px;margin:auto;padding:10px 18px;display:flex;align-items:center;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.01em;color:var(--ink);text-decoration:none;cursor:pointer;background:none;border:none;padding:0}
+  .brand svg{width:28px;height:28px;flex:none}
+  .brand small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0;line-height:1.1}
   header .sp{flex:1}
-  main{max-width:860px;margin:auto;padding:22px 18px 80px}
-  h1{font-size:26px;margin:4px 0 6px;letter-spacing:-.3px}
-  h2{font-size:19px;margin:0 0 10px}
-  .muted{color:var(--muted)} .small{font-size:14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:14px 0}
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .grow{flex:1;min-width:140px}
-  label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
-  input[type=text],input[type=email],input[type=password],input[type=number],input[type=datetime-local],select,textarea{
-    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
-  textarea{min-height:90px;resize:vertical}
-  input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
-  .ltr{direction:ltr;text-align:left}
-  .katex{direction:ltr;unicode-bidi:isolate;display:inline-block}
+  #hdr{display:flex;align-items:center;gap:6px}
+  main{max-width:760px;margin:auto;padding:22px 18px 120px}
+  /* ---------- type ---------- */
+  h1{font-size:28px;line-height:1.2;font-weight:700;letter-spacing:-.015em;margin:6px 0 4px}
+  h2{font-size:18px;line-height:1.3;font-weight:700;margin:0 0 12px}
+  p{margin:0 0 10px}
+  .muted{color:var(--muted)} .small{font-size:14px} .tiny{font-size:13px}
+  .hand{font-family:var(--hand);color:var(--red);font-weight:700}
+  .ltr{direction:ltr;text-align:left;unicode-bidi:isolate}
+  .num{font-variant-numeric:tabular-nums}
+  .katex{direction:ltr;unicode-bidi:isolate;display:inline-block;font-size:1.06em}
   .katex-display{direction:ltr}
-  button{font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:10px;cursor:pointer}
-  button:hover{border-color:#c9c6bc}
-  button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
-  button.danger{color:var(--bad)}
-  button.link{border:none;background:none;color:var(--accent);padding:4px 6px}
-  button:disabled{opacity:.55;cursor:default}
-  .big{font-size:18px;padding:12px 22px}
-  .q{border-top:1px solid var(--line);padding:16px 0}
-  .q:first-child{border-top:none;padding-top:4px}
-  .qn{font-weight:800;color:var(--accent);margin-left:6px}
   .prompt{white-space:pre-wrap}
-  .ansrow{display:flex;gap:8px;align-items:center;margin-top:10px;max-width:420px}
-  .unit{direction:ltr;color:var(--muted);font-weight:600;white-space:nowrap}
-  .choice{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin:7px 0;cursor:pointer}
-  .choice input{margin-top:5px}
-  .choice.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,#fff)}
-  .res{margin-top:10px;padding:8px 12px;border-radius:10px;font-size:15px}
-  .res.ok{background:var(--ok-bg);color:var(--ok)} .res.bad{background:var(--bad-bg);color:var(--bad)}
-  .score{font-size:42px;font-weight:800;letter-spacing:-1px}
-  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;background:#eef1f8;color:#3b4a6b}
-  .pill.open{background:var(--ok-bg);color:var(--ok)} .pill.closed{background:#f1f0ec;color:var(--muted)}
-  .code{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:2px;direction:ltr;display:inline-block}
-  .list .item{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer}
-  .list .item:first-child{border-top:none}
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 0}
-  .tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 14px;color:var(--muted)}
-  .tabs button.on{border-bottom-color:var(--accent);color:var(--ink);font-weight:700}
-  .qedit{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;background:#fcfcfa}
-  .preview{background:#fff;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px;white-space:pre-wrap;min-height:20px}
-  table{border-collapse:collapse;width:100%;font-size:14px}
-  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:right;white-space:nowrap}
-  th{color:var(--muted);font-weight:600}
-  td.c{text-align:center}
-  .tw{overflow-x:auto}
-  .yes{color:var(--ok);font-weight:700} .no{color:var(--bad);font-weight:700}
-  .err{color:var(--bad);margin-top:8px}
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:20;font-size:15px}
-  .bar{height:8px;background:#eceae4;border-radius:99px;overflow:hidden;min-width:80px}
-  .bar i{display:block;height:100%;background:var(--accent)}
-  .hero{text-align:center;padding:40px 10px}
-  .hero input{max-width:260px;text-align:center;font-size:24px;letter-spacing:4px;text-transform:uppercase;direction:ltr}
-  @media (max-width:560px){ h1{font-size:22px} .card{padding:14px} }
-  .stat{flex:1;min-width:120px;margin:0}
-  .stat .score{font-size:30px}
-  .acard{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer}
-  .acard:first-child{border-top:none}
-  .acard.off{cursor:default;opacity:.65}
-  .grade{font-weight:800;font-size:20px;min-width:44px;text-align:center}
-  .pill.todo{background:#fff4d6;color:#8a5a00}
-  .pill.late{background:var(--bad-bg);color:var(--bad)}
-  .warn{background:#fff4d6;color:#8a5a00;border-radius:10px;padding:10px 14px;margin:12px 0}
-  .seg{display:flex;gap:4px;background:#eceae4;border-radius:12px;padding:4px;margin-bottom:14px}
-  .seg button{flex:1;border:none;background:none;border-radius:9px;padding:8px}
-  .seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  .fig{margin:10px 0;text-align:center}
+  /* ---------- sheet (notebook page) ---------- */
+  .sheet{position:relative;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r-sheet);box-shadow:var(--shadow);padding:18px 20px 18px 20px;padding-inline-start:60px;margin:14px 0}
+  .sheet::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:48px;width:2px;background:var(--margin);opacity:.85}
+  .sheet.plain{padding-inline-start:20px} .sheet.plain::before{display:none}
+  .sheet > h2:first-child{margin-top:2px}
+  /* ---------- controls ---------- */
+  button,.btn{font:inherit;font-weight:600;font-size:15px;border:1.5px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:var(--r-ctl);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.3;transition:background .15s,border-color .15s,box-shadow .15s}
+  button:hover,.btn:hover{border-color:#BCC8D8;background:#FBFCFE}
+  button:active{transform:translateY(1px)}
+  .primary{background:var(--pen);border-color:var(--pen);color:#fff}
+  .primary:hover{background:var(--pen-2);border-color:var(--pen-2)}
+  .big{font-size:17px;padding:13px 22px}
+  .wide{width:100%}
+  .ghost{border-color:transparent;background:transparent;color:var(--pen);padding:6px 8px}
+  .ghost:hover{background:var(--pen-wash);border-color:transparent}
+  .danger{color:var(--red)} .danger.ghost:hover{background:var(--red-wash)}
+  .wa{background:#fff;border-color:#BFE3CC;color:#11753F}
+  .wa:hover{background:#F1FAF4;border-color:#9AD3AE}
+  button:disabled{opacity:.5;cursor:default;transform:none}
+  :focus-visible{outline:3px solid color-mix(in srgb,var(--pen) 40%,transparent);outline-offset:2px}
+  label.f{display:block;font-size:14px;font-weight:500;color:var(--muted);margin:14px 0 6px}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=datetime-local],select,textarea{
+    width:100%;padding:11px 13px;border:1.5px solid #C9D3E0;border-radius:8px;font:inherit;background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+  textarea{min-height:92px;resize:vertical;line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pen);box-shadow:0 0 0 3px var(--pen-wash)}
+  input::placeholder,textarea::placeholder{color:#A3AEBF}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1;min-width:0}
+  .chk{display:flex;gap:10px;align-items:flex-start;margin:10px 0;font-size:15px;cursor:pointer}
+  .chk input{width:18px;height:18px;margin-top:3px;accent-color:var(--pen);flex:none}
+  .err{color:var(--red);font-weight:500;margin:10px 0 0}
+  /* ---------- chips ---------- */
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;border:1.5px solid var(--line);color:var(--muted);background:#fff;white-space:nowrap}
+  .chip.pen{border-color:#C7D0F2;color:var(--pen);background:var(--pen-wash)}
+  .chip.ok{border-color:#BFE3CC;color:var(--ok);background:var(--ok-wash)}
+  .chip.late{border-color:#F4C6C9;color:var(--red);background:var(--red-wash)}
+  .marker{background:linear-gradient(transparent 52%,var(--marker) 52%,var(--marker) 92%,transparent 92%);padding:0 2px;font-weight:600;color:var(--ink)}
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:2px;border-bottom:1.5px solid var(--line);margin:18px 0 0;overflow-x:auto;scrollbar-width:none}
+  .tabs button{border:none;border-radius:8px 8px 0 0;background:none;padding:10px 14px;color:var(--muted);font-weight:600;position:relative;white-space:nowrap}
+  .tabs button.on{color:var(--ink)}
+  .tabs button.on::after{content:"";position:absolute;inset-inline:10px;bottom:-1.5px;height:3px;border-radius:3px;background:var(--pen)}
+  .seg{display:flex;background:#EEF2F7;border-radius:12px;padding:4px;margin:4px 0 6px}
+  .seg button{flex:1;border:none;background:none;border-radius:9px;padding:9px;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(22,33,62,.12)}
+  /* ---------- ruled list (lines on one sheet) ---------- */
+  .ruled > .li{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line-2);cursor:pointer;position:relative}
+  .ruled > .li:first-child{border-top:none}
+  .ruled > .li.off{cursor:default}
+  .ruled > .li:not(.off):hover .t{color:var(--pen)}
+  .li .when{position:absolute;inset-inline-start:-60px;width:48px;text-align:center;font-size:12px;line-height:1.15;color:var(--muted);font-weight:600}
+  .li .t{font-weight:600;transition:color .15s}
+  .li .sub{font-size:13.5px;color:var(--muted);margin-top:1px}
+  .li .end{display:flex;align-items:center;gap:8px;flex:none}
+  .chev{width:16px;height:16px;color:#A3AEBF;flex:none}
+  /* ---------- grade (the one bold thing) ---------- */
+  .grade{position:relative;display:inline-grid;place-items:center;min-width:54px;height:40px;font-family:var(--hand);font-weight:700;color:var(--red);font-size:21px;line-height:1}
+  .grade svg{position:absolute;inset:-6px -10px;width:calc(100% + 20px);height:calc(100% + 12px);overflow:visible}
+  .grade.big{min-width:150px;height:104px;font-size:60px}
+  .grade.big svg{inset:-10px -22px;width:calc(100% + 44px);height:calc(100% + 20px)}
+  .grade path{fill:none;stroke:var(--red);stroke-width:2.6;stroke-linecap:round}
+  .grade.big path{stroke-width:3.2}
+  .grade.draw path{stroke-dasharray:420;stroke-dashoffset:420;animation:draw .9s .25s cubic-bezier(.6,.1,.3,1) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @media (prefers-reduced-motion:reduce){.grade.draw path{animation:none;stroke-dashoffset:0}}
+  .result{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  /* ---------- questions ---------- */
+  .q{position:relative;padding:18px 0;border-top:1px solid var(--line-2)}
+  .q:first-child{border-top:none;padding-top:4px}
+  .qn{position:absolute;inset-inline-start:-60px;top:18px;width:48px;text-align:center;font-weight:700;color:var(--pen);font-size:15px}
+  .q:first-child .qn{top:4px}
+  .q .pts{font-size:13px;color:var(--muted);font-weight:500;white-space:nowrap}
+  .fig{margin:12px 0 4px;text-align:center}
   .fig img{max-width:100%;height:auto;max-height:260px}
-  .chk{display:flex;gap:8px;align-items:center;color:var(--ink);margin:6px 0;font-size:16px}
+  .ans{display:flex;align-items:center;gap:10px;margin-top:12px;max-width:440px}
+  .ans input{font-size:18px;font-weight:500;padding:12px 14px;direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+  .ans .unit{direction:ltr;color:var(--muted);font-weight:600;white-space:nowrap}
+  .choices{display:grid;gap:8px;margin-top:12px}
+  .choice{display:flex;gap:12px;align-items:center;padding:11px 14px;border:1.5px solid var(--line);border-radius:var(--r-ctl);cursor:pointer;background:#fff;transition:border-color .12s,background .12s}
+  .choice:hover{border-color:#BCC8D8}
+  .choice input{width:18px;height:18px;accent-color:var(--pen);margin:0;flex:none}
+  .choice.sel{border-color:var(--pen);background:var(--pen-wash)}
+  .choice.right{border-color:#9AD3AE;background:var(--ok-wash)}
+  .q.answered .qn::after{content:"";position:absolute;inset-inline-end:2px;top:-2px;width:6px;height:6px;border-radius:50%;background:var(--pen)}
+  /* teacher marks on a checked answer */
+  .mark{display:flex;align-items:baseline;gap:10px;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:15px}
+  .mark .sym{font-family:var(--hand);font-weight:700;font-size:24px;line-height:1;color:var(--red);flex:none}
+  .mark.ok{background:var(--ok-wash);color:var(--ok)}
+  .mark.ok .sym{color:var(--ok)}
+  .mark.bad{background:var(--red-wash);color:#8C1D23}
+  .mark .fix{font-family:var(--hand);color:var(--red);font-weight:700;font-size:17px}
+  .yours{margin-top:8px;font-size:15px;color:var(--muted)}
+  .yours b{color:var(--ink);font-weight:600}
+  /* ---------- sticky submit bar ---------- */
+  .dock{position:fixed;inset-inline:0;bottom:0;z-index:15;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 18px calc(10px + env(safe-area-inset-bottom))}
+  .dock .in{max-width:760px;margin:auto;display:flex;align-items:center;gap:14px}
+  .progress{flex:1;min-width:0}
+  .progress .bar{height:6px;border-radius:6px;background:#E6EBF2;overflow:hidden;margin-top:5px}
+  .progress .bar i{display:block;height:100%;background:var(--pen);border-radius:6px;transition:width .25s}
+  /* ---------- stats, tables ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:2px 0}
+  .stats > div{padding:4px 14px;border-inline-start:1px solid var(--line-2)}
+  .stats > div:first-child{border-inline-start:none;padding-inline-start:0}
+  .stats .v{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+  .stats .k{font-size:13px;color:var(--muted);font-weight:500}
+  .tw{overflow-x:auto;margin:0 -4px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border-bottom:1px solid var(--line-2);padding:9px 6px;text-align:start;white-space:nowrap}
+  th{color:var(--muted);font-weight:600;font-size:13px}
+  th.s{cursor:pointer;user-select:none} th.s:hover{color:var(--pen)}
+  td.c,th.c{text-align:center}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--red);font-weight:700}
+  .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45}
+  .meter{height:8px;background:#E6EBF2;border-radius:99px;overflow:hidden;min-width:70px}
+  .meter i{display:block;height:100%;background:var(--pen);border-radius:99px}
+  .meter.low i{background:var(--red)}
+  /* ---------- misc ---------- */
+  .back{display:inline-flex;align-items:center;gap:4px;color:var(--pen);font-weight:600;font-size:15px;background:none;border:none;padding:4px 0;cursor:pointer}
+  .back svg{width:16px;height:16px}
+  .note{background:#FFF9DB;border:1.5px solid #F3E39A;border-radius:var(--r-ctl);padding:10px 14px;margin:14px 0;font-size:15px}
+  .code{font-family:"IBM Plex Sans Hebrew",ui-monospace,monospace;font-weight:700;letter-spacing:.18em;direction:ltr;display:inline-block;font-variant-numeric:tabular-nums}
+  .bigcode{font-size:34px;color:var(--ink);line-height:1.1}
+  .empty{text-align:center;padding:26px 10px;color:var(--muted)}
+  .empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+  .toast{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;z-index:50;font-size:15px;font-weight:500;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:calc(100vw - 32px)}
+  .qedit{border:1.5px solid var(--line);border-radius:var(--r-ctl);padding:14px;margin:14px 0;background:#FBFCFE}
+  .qedit .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .qedit .badge{width:30px;height:30px;border-radius:8px;background:var(--pen);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+  .preview{background:#fff;border:1.5px dashed var(--line);border-radius:8px;padding:12px 14px;margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;margin-top:10px}
+  dialog{border:none;border-radius:14px;padding:22px;max-width:min(420px,calc(100vw - 32px));box-shadow:0 30px 80px -20px rgba(22,33,62,.45);color:var(--ink)}
+  dialog::backdrop{background:rgba(22,33,62,.35)}
+  .auth{max-width:420px;margin:28px auto}
+  .hero-mark{display:flex;justify-content:center;margin:6px 0 2px}
+  .hero-mark svg{width:64px;height:64px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  @media (max-width:560px){
+    h1{font-size:24px}
+    main{padding:16px 12px 120px}
+    .sheet{padding:16px 14px;padding-inline-start:52px}
+    .sheet::before{inset-inline-start:42px}
+    .li .when,.qn{inset-inline-start:-52px;width:42px}
+    .stats .v{font-size:24px}
+    .grade.big{min-width:120px;height:88px;font-size:50px}
+  }
 </style>
 </head>
 <body>
 <header><div class="in">
-  <div class="logo" onclick="go('#/')">שיעורי<span>.בית</span></div>
+  <button class="brand" onclick="go(location.hash.startsWith('#/teacher')?'#/teacher':'#/')" aria-label="מחברת – דף הבית">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="4" fill="#fff" stroke="#16213E" stroke-width="2"/><path d="M9 3v26M3 11h26M3 19h26" stroke="#C9D5E3" stroke-width="1.2"/><path d="M12 17l4 4 8-10" fill="none" stroke="#D3262F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>מחברת<small>שיעורי בית במתמטיקה ופיזיקה</small></span>
+  </button>
   <div class="sp"></div>
   <div id="hdr"></div>
 </div></header>
 <main id="app"><p class="muted">טוען…</p></main>
+<dialog id="dlg"></dialog>
 
 <script>
 const SUPABASE_URL = "https://cihpuwinkgaumngsftin.supabase.co";
 const SUPABASE_KEY = "sb_publishable_uFMJVz_1cBnHK_DEhBNlHg_5_SdFhOK";
 let sb = null, session = null;
+const OTP_LEN = 6;
 
-/* ---------- helpers ---------- */
+/* ================= helpers ================= */
 const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const app = () => $("#app");
 function go(h){ if(location.hash===h) route(); else location.hash=h; }
-function toast(msg){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2400); }
+function toast(msg){ $$(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
 function math(el){
   if(!el || !window.renderMathInElement) return;
   try{ renderMathInElement(el,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false}); }catch(e){}
 }
 function store(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||"null"); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
-function errMsg(e){ return (e?.message || String(e)); }
+const errMsg = e => (e?.message || String(e));
 const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c=="x"?r:(r&3|8)).toString(16);}));
+const pad = n => String(n).padStart(2,"0");
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const fmtDate = d => d ? new Date(d).toLocaleString("he-IL",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+const dayMonth = d => { const x = new Date(d); return `${x.getDate()}.${x.getMonth()+1}`; };
 const pct = (s,m) => m ? Math.round(100*s/m) : 0;
 const siteBase = () => location.origin + location.pathname;
 const isPast = d => d && new Date(d) < new Date();
-const figHtml = f => (f && /^\s*<svg[\s>]/i.test(f)) ? `<div class="fig"><img alt="שרטוט" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(f.trim())}"></div>` : "";
+function relDue(d){
+  if(!d) return "";
+  const t = new Date(d), now = new Date();
+  if(t < now) return "המועד עבר";
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const days = Math.round((day(t) - day(now)) / 864e5);
+  if(days === 0) return `היום עד ${hm(t)}`;
+  if(days === 1) return `מחר עד ${hm(t)}`;
+  if(days < 7) return `בעוד ${days} ימים`;
+  return `עד ${dayMonth(t)}`;
+}
+const figHtml = f => (f && /^\s*<svg[\s>]/i.test(f)) ? `<div class="fig"><img alt="שרטוט לשאלה" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(f.trim())}"></div>` : "";
+const ICON_BACK = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CHEV = `<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const WA = `<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg>`;
+const backBtn = (label, href) => `<button class="back" onclick="go('${href}')">${ICON_BACK}${esc(label)}</button>`;
+/* the circled grade, hand-drawn once */
+function gradeHtml(v, big=false, draw=false){
+  const path = big ? "M86,8 C40,4 8,22 9,52 C10,82 46,99 88,97 C134,95 168,78 167,48 C166,18 132,5 80,11"
+                   : "M40,4 C18,3 3,11 4,21 C5,32 20,38 41,37 C63,36 76,29 75,19 C74,9 60,3 37,6";
+  const vb = big ? "0 0 176 104" : "0 0 80 41";
+  return `<span class="grade ${big?"big":""} ${draw?"draw":""}"><svg viewBox="${vb}" preserveAspectRatio="none" aria-hidden="true"><path d="${path}"/></svg><span class="num">${v}</span></span>`;
+}
+function waShare(text){ return `https://wa.me/?text=${encodeURIComponent(text)}`; }
+async function copy(text, okMsg){ try{ await navigator.clipboard.writeText(text); toast(okMsg); }catch(e){ prompt("העתיקו:", text); } }
+function ask(html, okLabel="אישור", cancelLabel="ביטול", danger=false){
+  return new Promise(res => {
+    const d = $("#dlg");
+    d.innerHTML = `${html}<div class="row" style="margin-top:18px;justify-content:flex-end"><button data-v="0">${cancelLabel}</button><button class="${danger?"primary danger":"primary"}" data-v="1" ${danger?'style="background:var(--red);border-color:var(--red);color:#fff"':""}>${okLabel}</button></div>`;
+    math(d);
+    d.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { d.close(); res(b.dataset.v==="1"); });
+    d.oncancel = () => res(false);
+    d.showModal();
+  });
+}
 
-/* ---------- router ---------- */
+/* ================= router ================= */
 let navSeq = 0;
 async function route(){
   navSeq++;
@@ -144,15 +296,15 @@ async function route(){
 }
 function renderHeader(){
   const h = location.hash || "";
-  if(h.startsWith("#/teacher")) $("#hdr").innerHTML = session ? `<button class="link" onclick="logout()">התנתקות</button>` : `<button class="link" onclick="go('#/')">כניסת תלמיד</button>`;
-  else $("#hdr").innerHTML = store("hw-token") ? `<button class="link" onclick="studentLogout()">התנתקות</button>` : `<button class="link" onclick="go('#/teacher')">כניסת מורה</button>`;
+  if(h.startsWith("#/teacher")) $("#hdr").innerHTML = session ? `<button class="ghost" onclick="logout()">יציאה</button>` : `<button class="ghost" onclick="go('#/')">כניסת תלמידים</button>`;
+  else $("#hdr").innerHTML = store("hw-token") ? `<button class="ghost" onclick="studentLogout()">יציאה</button>` : `<button class="ghost" onclick="go('#/teacher')">כניסת מורה</button>`;
 }
 
 /* ================= STUDENT ================= */
 async function rpcS(fn, args){
   const { data, error } = await sb.rpc(fn, { p_token: store("hw-token"), ...args });
   if(error){
-    if(/להתחבר מחדש/.test(error.message)){ store("hw-token", null); toast("יש להתחבר מחדש"); go("#/"); }
+    if(/להתחבר מחדש/.test(error.message)){ store("hw-token", null); toast("צריך להתחבר שוב"); go("#/"); }
     throw error;
   }
   return data;
@@ -163,25 +315,32 @@ async function studentLogout(){
 }
 function studentAuth(mode, code=""){
   app().innerHTML = `
-    <div class="card" style="max-width:440px;margin:30px auto">
-      <h1 style="text-align:center">שיעורי בית</h1>
-      <div class="seg"><button data-m="login">כניסה</button><button data-m="register">הרשמה לכיתה</button></div>
-      <form id="af"></form>
-      <p class="err" id="ae"></p>
+    <div class="auth">
+      <div class="hero-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="4" fill="#fff" stroke="#16213E" stroke-width="1.6"/><path d="M9 3v26M3 11h26M3 19h26" stroke="#C9D5E3" stroke-width="1"/><path d="M12 17l4 4 8-10" fill="none" stroke="#D3262F" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h1 style="text-align:center">שיעורי הבית שלך</h1>
+      <p class="muted" style="text-align:center">עונים מהטלפון, מקבלים ציון מיד.</p>
+      <div class="sheet plain" style="margin-top:18px">
+        <div class="seg" role="tablist"><button data-m="login" role="tab">כניסה</button><button data-m="register" role="tab">הרשמה לכיתה</button></div>
+        <form id="af" novalidate></form>
+        <p class="err" id="ae" role="alert"></p>
+      </div>
     </div>`;
   const draw = m => {
-    document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on", b.dataset.m===m));
+    $$(".seg button").forEach(b=>{ b.classList.toggle("on", b.dataset.m===m); b.setAttribute("aria-selected", b.dataset.m===m); });
     $("#ae").textContent = "";
     $("#af").innerHTML = m==="login" ? `
-      <label>שם משתמש</label><input id="u" type="text" class="ltr" autocomplete="username" autocapitalize="none">
-      <label>סיסמה</label><input id="p" type="password" class="ltr" autocomplete="current-password">
-      <div style="margin-top:16px"><button class="primary big" style="width:100%">כניסה</button></div>
-      <p class="muted small" style="text-align:center">שכחת סיסמה? פנה למורה.</p>` : `
-      <label>קוד כיתה (מהמורה)</label><input id="c" type="text" class="ltr" value="${esc(code)}" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:3px">
-      <label>שם מלא</label><input id="n" type="text" maxlength="60" placeholder="שם פרטי ושם משפחה">
-      <label>שם משתמש (באנגלית)</label><input id="u" type="text" class="ltr" autocomplete="username" autocapitalize="none" placeholder="dana.cohen">
-      <label>סיסמה (4 תווים לפחות)</label><input id="p" type="password" class="ltr" autocomplete="new-password">
-      <div style="margin-top:16px"><button class="primary big" style="width:100%">הרשמה</button></div>`;
+      <label class="f" for="u">שם משתמש</label><input id="u" type="text" class="ltr" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="f" for="p">סיסמה</label>
+      <div style="position:relative"><input id="p" type="password" class="ltr" autocomplete="current-password" style="padding-left:76px"><button type="button" class="ghost tiny" id="eye" style="position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%)">הצגה</button></div>
+      <button class="primary big wide" style="margin-top:20px">כניסה</button>
+      <p class="muted small" style="text-align:center;margin-top:12px">שכחת סיסמה? המורה יכול לאפס אותה.</p>` : `
+      <label class="f" for="c">קוד כיתה</label><input id="c" type="text" class="ltr code" value="${esc(code)}" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase;font-size:20px" placeholder="ABC123">
+      <label class="f" for="n">שם מלא</label><input id="n" type="text" maxlength="60" autocomplete="name" placeholder="שם פרטי ושם משפחה">
+      <label class="f" for="u">שם משתמש באנגלית</label><input id="u" type="text" class="ltr" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="dana.cohen">
+      <label class="f" for="p">סיסמה, 4 תווים לפחות</label>
+      <div style="position:relative"><input id="p" type="password" class="ltr" autocomplete="new-password" style="padding-left:76px"><button type="button" class="ghost tiny" id="eye" style="position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%)">הצגה</button></div>
+      <button class="primary big wide" style="margin-top:20px">הרשמה</button>`;
+    $("#eye").onclick = () => { const p=$("#p"); p.type = p.type==="password"?"text":"password"; $("#eye").textContent = p.type==="password"?"הצגה":"הסתרה"; };
     $("#af").onsubmit = async e => {
       e.preventDefault(); $("#ae").textContent = "";
       const btn = $("#af button.primary"); btn.disabled = true;
@@ -192,8 +351,9 @@ function studentAuth(mode, code=""){
       if(r.error){ $("#ae").textContent = errMsg(r.error); return; }
       store("hw-token", r.data.token); go("#/");
     };
+    setTimeout(()=>{ const f = m==="register" && !code ? $("#c") : m==="register" ? $("#n") : $("#u"); f && f.focus(); }, 30);
   };
-  document.querySelectorAll(".seg button").forEach(b => b.onclick = () => draw(b.dataset.m));
+  $$(".seg button").forEach(b => b.onclick = () => draw(b.dataset.m));
   draw(mode);
 }
 async function studentHome(){
@@ -204,124 +364,154 @@ async function studentHome(){
   if(seq!==navSeq) return;
   const graded = d.assignments.filter(a => a.last && a.last.score != null);
   const avg = graded.length ? Math.round(graded.reduce((s,a)=>s+pct(a.last.score,a.last.max),0)/graded.length) : null;
-  const todo = d.assignments.filter(a => !a.attempts && a.is_open && !isPast(a.due_at));
-  const row = a => {
-    let badge, grade = "", off = false;
+  const canDo = a => a.is_open && !isPast(a.due_at) && (a.max_attempts==null || a.attempts < a.max_attempts);
+  const todo = d.assignments.filter(a => !a.attempts && canDo(a)).sort((x,y)=>new Date(x.due_at||"2100")-new Date(y.due_at||"2100"));
+  const rest = d.assignments.filter(a => !todo.includes(a));
+  const when = a => a.due_at ? `<span class="when num">${dayMonth(a.due_at)}</span>` : "";
+  const todoRow = a => `<div class="li" data-id="${a.id}">${when(a)}
+      <div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${a.questions} שאלות${a.due_at?` <span class="marker">${relDue(a.due_at)}</span>`:""}</div></div>
+      <div class="end">${CHEV}</div></div>`;
+  const doneRow = a => {
+    let end, off = false, sub;
     if(a.attempts){
-      if(a.last && a.last.score != null) grade = `<div class="grade">${pct(a.last.score,a.last.max)}</div>`;
-      else badge = `<span class="pill open">הוגש</span>`;
-      if(a.is_open && !isPast(a.due_at) && (a.max_attempts==null || a.attempts < a.max_attempts)) badge = (badge||"") + ` <span class="pill">אפשר לשפר</span>`;
-    } else if(isPast(a.due_at) || !a.is_open){ badge = `<span class="pill late">לא הוגש</span>`; off = true; }
-    else badge = `<span class="pill todo">לביצוע</span>`;
-    return `<div class="acard ${off?"off":""}" data-id="${a.id}" data-off="${off}">
-      <div class="grow"><div style="font-weight:700">${esc(a.title)}</div>
-      <div class="muted small">${a.questions} שאלות${a.due_at?` · עד ${fmtDate(a.due_at)}`:""}${a.attempts?` · הוגש ${fmtDate(a.last?.at)}`:""}</div></div>
-      ${badge||""}${grade}</div>`;
+      end = a.last && a.last.score != null ? gradeHtml(pct(a.last.score,a.last.max)) : `<span class="chip pen">הוגש</span>`;
+      sub = `הוגש ב-${dayMonth(a.last.at)}`;
+      if(canDo(a)) sub += `, אפשר לשפר`;
+    } else { end = `<span class="chip late">לא הוגש</span>`; off = true; sub = a.due_at ? `המועד היה ${dayMonth(a.due_at)}` : "המשימה נסגרה"; }
+    return `<div class="li ${off?"off":""}" data-id="${a.id}" data-off="${off}">${when(a)}
+      <div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${sub}</div></div><div class="end">${end}${off?"":CHEV}</div></div>`;
   };
   app().innerHTML = `
-    <h1>שלום ${esc(d.name)}</h1>
-    <p class="muted" style="margin-top:0">כיתה ${esc(d.class)}</p>
-    <div class="row">
-      <div class="card stat"><div class="muted small">לביצוע</div><div class="score">${todo.length}</div></div>
-      <div class="card stat"><div class="muted small">הוגשו</div><div class="score">${d.assignments.filter(a=>a.attempts).length}</div></div>
-      <div class="card stat"><div class="muted small">ממוצע</div><div class="score">${avg ?? "–"}</div></div>
+    <h1>שלום ${esc(d.name.split(" ")[0])}</h1>
+    <p class="muted">${esc(d.class)}</p>
+    <div class="sheet">
+      <div class="stats">
+        <div><div class="v">${todo.length}</div><div class="k">לביצוע</div></div>
+        <div><div class="v">${d.assignments.filter(a=>a.attempts).length}</div><div class="k">הוגשו</div></div>
+        <div><div class="v">${avg ?? "–"}</div><div class="k">ממוצע</div></div>
+      </div>
     </div>
-    <div class="card">
-      <h2>המשימות שלי</h2>
-      ${d.assignments.length ? d.assignments.map(row).join("") : `<p class="muted">עדיין אין משימות לכיתה שלך.</p>`}
-    </div>`;
-  document.querySelectorAll(".acard").forEach(el => { if(el.dataset.off!=="true") el.onclick = () => go("#/s/"+el.dataset.id); });
+    <div class="sheet">
+      <h2>לביצוע</h2>
+      ${todo.length ? `<div class="ruled">${todo.map(todoRow).join("")}</div>` : `<div class="empty"><b>אין מה להגיש כרגע</b>משימה חדשה תופיע כאן ברגע שהמורה יפרסם אותה.</div>`}
+    </div>
+    ${rest.length ? `<div class="sheet"><h2>הוגשו וציונים</h2><div class="ruled">${rest.map(doneRow).join("")}</div></div>` : ""}`;
+  $$(".li").forEach(el => { if(el.dataset.off!=="true") el.onclick = () => go("#/s/"+el.dataset.id); });
 }
 async function studentAssignment(id){
   if(!store("hw-token")) return studentAuth("login");
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
-  let a; try{ a = await rpcS("hw_student_assignment", { p_id:id }); }catch(e){ if(seq===navSeq && store("hw-token")) app().innerHTML = `<div class="card"><h2>${esc(errMsg(e))}</h2><button onclick="go('#/')">חזרה</button></div>`; return; }
+  let a; try{ a = await rpcS("hw_student_assignment", { p_id:id }); }catch(e){ if(seq===navSeq && store("hw-token")) app().innerHTML = `${backBtn("המשימות שלי","#/")}<div class="sheet"><div class="empty"><b>${esc(errMsg(e))}</b></div></div>`; return; }
   if(seq!==navSeq) return;
   const canSubmit = a.is_open && !isPast(a.due_at) && (a.max_attempts==null || a.attempts < a.max_attempts);
-  const left = a.max_attempts==null ? "" : ` · נותרו ${Math.max(0,a.max_attempts-a.attempts)} ניסיונות`;
   app().innerHTML = `
-    <button class="link" onclick="go('#/')">→ המשימות שלי</button>
+    ${backBtn("המשימות שלי","#/")}
     <h1>${esc(a.title)}</h1>
-    <div class="row">${a.due_at?`<span class="pill ${isPast(a.due_at)?"late":""}">להגשה עד ${fmtDate(a.due_at)}</span>`:""}<span class="pill">${a.questions.length} שאלות</span></div>
-    ${a.description ? `<p class="prompt">${esc(a.description)}</p>` : ""}
+    <div class="row" style="margin:6px 0 4px">${a.due_at?`<span class="chip ${isPast(a.due_at)?"late":""}">${isPast(a.due_at)?"המועד עבר":`<span class="marker" style="background:none;padding:0">${relDue(a.due_at)}</span>`}</span>`:""}<span class="chip">${a.questions.length} שאלות</span>${a.max_attempts!=null?`<span class="chip">${a.max_attempts===1?"הגשה אחת":`${a.max_attempts} ניסיונות`}</span>`:""}</div>
+    ${a.description ? `<p class="prompt" style="margin-top:12px">${esc(a.description)}</p>` : ""}
     <div id="body"></div>`;
+  math(app());
   const body = $("#body");
   if(a.last){
     showReview(body, a, a.last);
     if(canSubmit){
-      const b = document.createElement("div");
-      b.innerHTML = `<p class="muted small">אפשר להגיש שוב${left}. הציון האחרון הוא הקובע.</p><button class="primary">ניסיון נוסף</button>`;
+      const left = a.max_attempts==null ? "" : `נשארו ${Math.max(0,a.max_attempts-a.attempts)} ניסיונות. `;
+      const b = document.createElement("div"); b.className = "note";
+      b.innerHTML = `<div class="row"><div class="grow">${left}הציון האחרון הוא שנחשב.</div><button class="primary">לנסות שוב</button></div>`;
       b.querySelector("button").onclick = () => showForm(body, a);
       body.prepend(b);
     }
   } else if(canSubmit) showForm(body, a);
-  else body.innerHTML = `<div class="card"><p class="muted">המשימה סגורה להגשה.</p></div>`;
+  else body.innerHTML = `<div class="sheet"><div class="empty"><b>המשימה סגורה להגשה</b>אם זו טעות, פנו למורה.</div></div>`;
 }
 function showForm(body, a){
   const dkey = "hw-draft-"+a.id;
   const draft = store(dkey) || {};
   body.innerHTML = `
-    <div class="card" id="qs">
+    <div class="sheet" id="qs">
       ${a.questions.map((q,i)=>`
         <div class="q" data-id="${q.id}">
-          <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
+          <span class="qn">${i+1}</span>
+          <div><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?` <span class="pts">(${q.points} נק׳)</span>`:""}</div>
           ${figHtml(q.figure)}${answerInput(q, draft[q.id] ?? "")}
         </div>`).join("")}
     </div>
-    <div class="row"><button class="primary big" id="sub">הגשה</button></div>
-    <div id="out"></div>`;
+    <div id="out"></div>
+    <div class="dock"><div class="in">
+      <div class="progress"><div class="small"><b id="pc">0</b> מתוך ${a.questions.length} נענו <span class="muted tiny" id="saved"></span></div><div class="bar"><i id="pb" style="width:0"></i></div></div>
+      <button class="primary big" id="sub">הגשה</button>
+    </div></div>`;
   math(body);
-  const save = () => store(dkey, collect());
+  const refresh = () => {
+    const ans = collect(); const n = a.questions.filter(q => ans[q.id]).length;
+    $("#pc").textContent = n; $("#pb").style.width = (100*n/Math.max(1,a.questions.length))+"%";
+    $$("#qs .q").forEach(el => el.classList.toggle("answered", !!ans[el.dataset.id]));
+    return { ans, n };
+  };
+  refresh();
+  let saveT;
+  const save = () => { store(dkey, collect()); refresh(); clearTimeout(saveT); $("#saved").textContent = "· טיוטה נשמרה"; saveT = setTimeout(()=>{ const s=$("#saved"); if(s) s.textContent=""; }, 1500); };
   body.oninput = save;
   body.onchange = e => { save(); if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target))); };
-  let warned = false;
   $("#sub").onclick = async () => {
-    const answers = collect();
-    const empty = a.questions.filter(q => !answers[q.id]).length;
-    if(empty && !warned){ warned = true; $("#out").innerHTML = `<p class="err">יש ${empty} שאלות בלי תשובה. לחצו שוב על "הגשה" כדי להגיש בכל זאת.</p>`; return; }
+    const { ans, n } = refresh();
+    const missing = a.questions.length - n;
+    const final = a.max_attempts!=null && a.attempts + 1 >= a.max_attempts;
+    if(missing){
+      const firstEmpty = a.questions.findIndex(q => !ans[q.id]);
+      const ok = await ask(`<h2>חסרות ${missing} תשובות</h2><p class="muted">שאלה ${firstEmpty+1} עוד ריקה. שאלה בלי תשובה נחשבת שגויה.</p>`, "להגיש בכל זאת", "לחזור לשאלות");
+      if(!ok){ const el = $$("#qs .q")[firstEmpty]; el.scrollIntoView({behavior:"smooth",block:"center"}); const inp = el.querySelector("input"); inp && setTimeout(()=>inp.focus({preventScroll:true}),350); return; }
+    } else if(final){
+      if(!(await ask(`<h2>להגיש?</h2><p class="muted">ענית על כל השאלות. אחרי ההגשה אי אפשר לשנות תשובות.</p>`, "הגשה", "עוד רגע"))) return;
+    }
     $("#sub").disabled = true; $("#sub").textContent = "שולח…";
-    let r; try{ r = await rpcS("hw_student_submit", { p_id:a.id, p_answers:answers }); }
+    let r; try{ r = await rpcS("hw_student_submit", { p_id:a.id, p_answers:ans }); }
     catch(e){ $("#sub").disabled=false; $("#sub").textContent="הגשה"; $("#out").innerHTML=`<p class="err">${esc(errMsg(e))}</p>`; return; }
     store(dkey, null);
     a.attempts = r.attempt;
-    showReview(body, a, { score:r.score, max:r.max, results:r.results, answers, at:new Date().toISOString() }, true);
+    showReview(body, a, { score:r.score, max:r.max, results:r.results, answers:ans, at:new Date().toISOString() }, true);
   };
 }
 function showReview(body, a, last, fresh){
   const res = {}; (last.results||[]).forEach(x => res[x.question_id] = x);
   const graded = last.score != null;
+  const right = (last.results||[]).filter(x=>x.correct).length;
   body.innerHTML = `
-    ${fresh ? `<div class="card" style="text-align:center;border-color:var(--ok)"><b style="color:var(--ok)">ההגשה התקבלה ✓</b></div>` : ""}
-    ${graded ? `<div class="card" style="text-align:center"><div class="muted">הציון שלך</div><div class="score">${pct(last.score,last.max)}</div><div class="muted">${last.score} מתוך ${last.max} נקודות · הוגש ${fmtDate(last.at)}</div></div>`
-             : `<div class="card"><p class="muted" style="margin:0">הוגש ${fmtDate(last.at)}. הציון יוצג כשהמורה יפרסם אותו.</p></div>`}
-    <div class="card">
+    <div class="sheet">
+      ${graded ? `<div class="result">${gradeHtml(pct(last.score,last.max), true, fresh)}
+          <div><h2 style="margin:0">${fresh?"הוגש. הנה הציון שלך":"הציון שלך"}</h2>
+          <div class="muted">${right} מתוך ${a.questions.length} תשובות נכונות, ${last.score} מתוך ${last.max} נקודות</div>
+          <div class="muted tiny">הוגש ${fmtDate(last.at)}</div></div></div>`
+        : `<h2 style="margin:0">${fresh?"ההגשה התקבלה":"הוגש"}</h2><p class="muted" style="margin:4px 0 0">הוגש ${fmtDate(last.at)}. הציון יופיע כאן כשהמורה יפרסם אותו.</p>`}
+    </div>
+    <div class="sheet">
       ${a.questions.map((q,i)=>{ const x = res[q.id] || {}; const given = (last.answers||{})[q.id] ?? x.given ?? "";
         const shown = q.kind==="choice" && given!=="" ? (q.choices||[])[+given] ?? given : given;
         let fb = "";
-        if(x.correct === true) fb = `<div class="res ok">✓ נכון</div>`;
-        else if(x.correct === false) fb = `<div class="res bad">✗ לא נכון${x.answer!=null?`. התשובה הנכונה: <bdi class="ltr">${esc(x.answer)}</bdi>`:""}</div>`;
-        return `<div class="q"><div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span></div>${figHtml(q.figure)}
-          <div class="muted small" style="margin-top:6px">התשובה שלך: <bdi class="ltr" style="color:var(--ink)">${given===""?"—":esc(shown)}</bdi> ${q.unit&&given!==""&&q.kind==="number"?`<bdi class="unit">${esc(q.unit)}</bdi>`:""}</div>${fb}</div>`; }).join("")}
+        if(x.correct === true) fb = `<div class="mark ok"><span class="sym">✓</span><span>נכון</span></div>`;
+        else if(x.correct === false) fb = `<div class="mark bad"><span class="sym">✗</span><span>לא נכון${x.answer!=null?`. התשובה: <bdi class="fix ltr">${esc(x.answer)}</bdi>`:""}</span></div>`;
+        return `<div class="q"><span class="qn">${i+1}</span><div><span class="prompt">${esc(q.prompt)}</span></div>${figHtml(q.figure)}
+          <div class="yours">התשובה שלך: <b><bdi class="${q.kind==="choice"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}</div>`; }).join("")}
     </div>
-    ${fresh ? `<button onclick="go('#/')">חזרה למשימות</button>` : ""}`;
+    ${fresh ? `<button class="wide big" onclick="go('#/')">חזרה למשימות</button>` : ""}`;
   math(body);
   if(fresh) window.scrollTo({top:0,behavior:"smooth"});
 }
 function answerInput(q, val){
   if(q.kind === "choice"){
-    return `<div style="margin-top:8px">${(q.choices||[]).map((c,j)=>`
+    return `<div class="choices" role="radiogroup">${(q.choices||[]).map((c,j)=>`
       <label class="choice ${String(val)===String(j)?"sel":""}"><input type="radio" name="q_${q.id}" value="${j}" ${String(val)===String(j)?"checked":""}>
-      <span class="prompt" style="color:var(--ink)">${esc(c)}</span></label>`).join("")}</div>`;
+      <span class="prompt">${esc(c)}</span></label>`).join("")}</div>`;
   }
   const im = q.kind === "number" ? `inputmode="decimal"` : "";
-  return `<div class="ansrow"><input type="text" class="ltr ans" ${im} autocomplete="off" value="${esc(val)}" placeholder="${q.kind==="number"?"מספר, למשל 2.5 או 3/4 או 1.2e-3":"תשובה"}">
+  return `<div class="ans"><input type="text" class="ansin" ${im} autocomplete="off" autocorrect="off" spellcheck="false" aria-label="תשובה" value="${esc(val)}" placeholder="${q.kind==="number"?"מספר, למשל 2.5 או 3/4":"התשובה שלך"}">
     ${q.unit?`<span class="unit">${esc(q.unit)}</span>`:""}</div>`;
 }
 function collect(){
   const out = {};
-  document.querySelectorAll("#qs .q").forEach(el => {
-    const id = el.dataset.id, t = el.querySelector("input.ans"), r = el.querySelector("input[type=radio]:checked");
+  $$("#qs .q").forEach(el => {
+    const id = el.dataset.id, t = el.querySelector("input.ansin"), r = el.querySelector("input[type=radio]:checked");
     const v = t ? t.value.trim() : (r ? r.value : "");
     if(v !== "") out[id] = v;
   });
@@ -332,89 +522,99 @@ function collect(){
 async function logout(){ await sb.auth.signOut(); session=null; go("#/teacher"); }
 function loginPage(){
   app().innerHTML = `
-    <div class="card" style="max-width:420px;margin:40px auto">
-      <h2>כניסת מורה</h2>
-      <form id="lf">
-        <label>אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" required>
-        <div style="margin-top:16px"><button class="primary" id="lsend">שליחת קוד למייל</button></div>
-      </form>
-      <form id="vf" style="display:none">
-        <p class="muted small">שלחנו קוד למייל. הקלידו אותו כאן:</p>
-        <input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="ltr" style="font-size:24px;letter-spacing:6px;text-align:center">
-        <div class="row" style="margin-top:16px"><button class="primary">כניסה</button><button type="button" class="link" id="back">שינוי מייל / שליחה מחדש</button></div>
-      </form>
-      <p class="err" id="le"></p>
-      <p class="muted small">אותו מייל כמו ב-Stayin.</p>
+    <div class="auth">
+      <h1 style="text-align:center">כניסת מורה</h1>
+      <p class="muted" style="text-align:center">נשלח קוד חד-פעמי למייל. אותו מייל כמו ב-Stayin.</p>
+      <div class="sheet plain" style="margin-top:18px">
+        <form id="lf">
+          <label class="f" for="em">אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" required value="${esc(store("hw-teacher-email")||"")}">
+          <button class="primary big wide" id="lsend" style="margin-top:18px">שליחת קוד</button>
+        </form>
+        <form id="vf" style="display:none">
+          <p class="muted small" id="sentto"></p>
+          <label class="f" for="otp">הקוד מהמייל</label>
+          <input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" class="ltr code" style="font-size:26px;text-align:center">
+          <button class="primary big wide" style="margin-top:18px">כניסה</button>
+          <button type="button" class="ghost wide" id="back" style="margin-top:6px">שליחה מחדש או מייל אחר</button>
+        </form>
+        <p class="err" id="le" role="alert"></p>
+      </div>
     </div>`;
   $("#lf").onsubmit = async e => {
     e.preventDefault(); $("#le").textContent = "";
     $("#lsend").disabled = true;
-    const { error } = await sb.auth.signInWithOtp({ email:$("#em").value.trim(), options:{ shouldCreateUser:false } });
+    const email = $("#em").value.trim();
+    const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:false } });
     $("#lsend").disabled = false;
-    if(error){ $("#le").textContent = /rate|seconds/i.test(error.message) ? "נשלח קוד לפני רגע. חכו דקה ונסו שוב" : "השליחה נכשלה. בדקו את כתובת המייל"; return; }
+    if(error){ $("#le").textContent = /rate|seconds/i.test(error.message) ? "כבר נשלח קוד לפני רגע. חכו דקה ונסו שוב." : "לא הצלחנו לשלוח קוד לכתובת הזו. בדקו שהיא נכונה."; return; }
+    store("hw-teacher-email", email);
+    $("#sentto").textContent = `שלחנו קוד ל-${email}`;
     $("#lf").style.display = "none"; $("#vf").style.display = "block"; $("#otp").focus();
   };
   $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; $("#le").textContent = ""; };
+  $("#otp").oninput = e => { const v = e.target.value.replace(/\D/g,""); if(v.length === OTP_LEN) $("#vf").requestSubmit(); };
   $("#vf").onsubmit = async e => {
     e.preventDefault(); $("#le").textContent = "";
     const { data, error } = await sb.auth.verifyOtp({ email:$("#em").value.trim(), token:$("#otp").value.replace(/\D/g,""), type:"email" });
-    if(error){ $("#le").textContent = "קוד שגוי או שפג תוקפו"; return; }
-    session = data.session; route();
+    if(error){ $("#le").textContent = "הקוד שגוי או שפג תוקפו. אפשר לבקש קוד חדש."; return; }
+    session = data.session; store("hw-teacher-last", true); route();
   };
 }
 async function requireTeacher(){
   if(!session){ loginPage(); return false; }
   const { data } = await sb.rpc("hw_is_teacher");
-  if(!data){ app().innerHTML = `<div class="card"><h2>אין הרשאת מורה</h2><p class="muted">החשבון הזה לא מוגדר כמורה.</p></div>`; return false; }
+  if(!data){ app().innerHTML = `<div class="sheet"><div class="empty"><b>לחשבון הזה אין הרשאת מורה</b>התחברו עם המייל של המורה.</div></div>`; return false; }
   return true;
 }
 
-/* teacher home: assignments + classes */
+/* ---- teacher home ---- */
 async function teacherHome(){
   if(!(await requireTeacher())) return;
   const tab = new URLSearchParams((location.hash.split("?")[1])||"").get("tab") || "a";
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
   const [{data:list, error:e1}, {data:classes, error:e2}] = await Promise.all([
-    sb.from("hw_assignments").select("id,title,is_open,due_at,created_at,hw_submissions(count),hw_questions(count),hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
+    sb.from("hw_assignments").select("id,title,is_open,due_at,created_at,hw_questions(count),hw_assignment_classes(class_id),hw_submissions(student_id)").order("created_at",{ascending:false}),
     sb.from("hw_classes").select("id,name,join_code,join_open,created_at,hw_students(count)").order("created_at")
   ]);
   if(seq!==navSeq) return;
   const error = e1 || e2;
-  if(error){ app().innerHTML = `<div class="card"><p class="err">שגיאה בטעינה: ${esc(error.message)}</p></div>`; return; }
-  const cname = Object.fromEntries((classes||[]).map(c=>[c.id,c.name]));
+  if(error){ app().innerHTML = `<div class="sheet"><p class="err">הטעינה נכשלה: ${esc(error.message)}</p></div>`; return; }
+  const cmap = Object.fromEntries((classes||[]).map(c=>[c.id,c]));
   app().innerHTML = `
-    <div class="tabs" style="margin-top:0"><button data-t="a">משימות</button><button data-t="c">כיתות</button></div>
+    <h1>שלום חן</h1>
+    <div class="tabs" role="tablist"><button data-t="a" role="tab">משימות</button><button data-t="c" role="tab">כיתות</button></div>
     <div id="tab"></div>`;
   const show = t => {
-    document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+    $$(".tabs button").forEach(b=>{ b.classList.toggle("on", b.dataset.t===t); b.setAttribute("aria-selected", b.dataset.t===t); });
     history.replaceState(null,"","#/teacher?tab="+t);
     if(t==="a"){
+      const row = a => {
+        const cls = a.hw_assignment_classes.map(x=>cmap[x.class_id]).filter(Boolean);
+        const total = cls.reduce((s,c)=>s+(c.hw_students[0]?.count||0),0);
+        const sub = new Set(a.hw_submissions.map(s=>s.student_id).filter(Boolean)).size;
+        const p = total ? Math.round(100*sub/total) : 0;
+        return `<div class="li" data-href="#/teacher/a/${a.id}">${a.due_at?`<span class="when num">${dayMonth(a.due_at)}</span>`:""}
+          <div class="grow"><div class="t">${esc(a.title)}</div>
+            <div class="sub">${cls.length?esc(cls.map(c=>c.name).join(", ")):'<span style="color:var(--red)">לא משויכת לכיתה</span>'}, ${a.hw_questions[0]?.count||0} שאלות</div></div>
+          <div class="end">${a.is_open?`<div style="text-align:center"><div class="tiny muted"><span class="num">${sub}</span> מתוך <span class="num">${total}</span></div><div class="meter" style="width:64px"><i style="width:${p}%"></i></div></div>`:`<span class="chip">טיוטה או סגורה</span>`}${CHEV}</div></div>`;
+      };
       $("#tab").innerHTML = `
-        <div class="row" style="margin-top:14px"><h1 class="grow">משימות</h1><button class="primary" id="new">+ משימה חדשה</button></div>
-        ${!classes?.length ? `<div class="warn">עדיין אין כיתות. צרו כיתה בלשונית "כיתות" כדי שתלמידים יוכלו להירשם.</div>` : ""}
-        <div class="card list">
-          ${list.length ? list.map(a=>{ const cls = a.hw_assignment_classes.map(x=>cname[x.class_id]).filter(Boolean);
-            return `<div class="item" data-href="#/teacher/a/${a.id}">
-              <div class="grow"><div style="font-weight:700">${esc(a.title)}</div>
-                <div class="muted small">${cls.length?esc(cls.join(", ")):'<span style="color:var(--bad)">לא משויכת לכיתה</span>'} · ${a.hw_questions[0]?.count||0} שאלות · ${a.hw_submissions[0]?.count||0} הגשות${a.due_at?" · עד "+fmtDate(a.due_at):""}</div></div>
-              <span class="pill ${a.is_open?"open":"closed"}">${a.is_open?"פתוחה":"סגורה"}</span></div>`; }).join("") : `<p class="muted">עדיין אין משימות.</p>`}
-        </div>`;
+        ${!classes?.length ? `<div class="note">כדי שתלמידים יוכלו להצטרף, צרו קודם כיתה בלשונית "כיתות".</div>` : ""}
+        <div class="row" style="margin:16px 0 0"><div class="grow muted small">${list.length} משימות</div><button class="primary" id="new">משימה חדשה</button></div>
+        <div class="sheet">${list.length ? `<div class="ruled">${list.map(row).join("")}</div>` : `<div class="empty"><b>עוד אין משימות</b>צרו משימה, או שלחו ל-Claude דף עבודה והוא יכניס אותו לכאן.</div>`}</div>`;
       $("#new").onclick = async () => {
-        const { data, error } = await sb.from("hw_assignments").insert({ title:"משימה חדשה" }).select("id").single();
+        const { data, error } = await sb.from("hw_assignments").insert({ title:"משימה חדשה", is_open:false }).select("id").single();
         if(error) return toast(error.message);
         if(classes?.length === 1) await sb.from("hw_assignment_classes").insert({ assignment_id:data.id, class_id:classes[0].id });
         go("#/teacher/a/"+data.id+"?tab=questions");
       };
     } else {
       $("#tab").innerHTML = `
-        <div class="row" style="margin-top:14px"><h1 class="grow">כיתות</h1></div>
-        <form class="card row" id="ncf"><input id="ncn" type="text" class="grow" placeholder="שם כיתה חדשה, למשל י׳3 פיזיקה" required><button class="primary">+ יצירת כיתה</button></form>
-        <div class="card list">
-          ${classes?.length ? classes.map(c=>`<div class="item" data-href="#/teacher/c/${c.id}">
-              <div class="grow"><div style="font-weight:700">${esc(c.name)}</div><div class="muted small">${c.hw_students[0]?.count||0} תלמידים</div></div>
-              <span class="muted small">קוד:</span><span class="code">${c.join_code}</span></div>`).join("") : `<p class="muted">עדיין אין כיתות.</p>`}
-        </div>`;
+        <form class="sheet plain row" id="ncf" style="margin-top:16px"><input id="ncn" type="text" class="grow" placeholder="שם הכיתה, למשל ט׳2 מתמטיקה" required aria-label="שם כיתה חדשה"><button class="primary">יצירת כיתה</button></form>
+        <div class="sheet">${classes?.length ? `<div class="ruled">${classes.map(c=>`<div class="li" data-href="#/teacher/c/${c.id}">
+              <div class="grow"><div class="t">${esc(c.name)}</div><div class="sub">${c.hw_students[0]?.count||0} תלמידים, ${c.join_open?"ההרשמה פתוחה":"ההרשמה סגורה"}</div></div>
+              <div class="end"><span class="code muted">${c.join_code}</span>${CHEV}</div></div>`).join("")}</div>` : `<div class="empty"><b>עוד אין כיתות</b>צרו כיתה, ושלחו לתלמידים את קישור ההרשמה שלה.</div>`}</div>`;
       $("#ncf").onsubmit = async e => {
         e.preventDefault();
         const { data, error } = await sb.from("hw_classes").insert({ name:$("#ncn").value.trim() }).select("id").single();
@@ -422,19 +622,19 @@ async function teacherHome(){
         go("#/teacher/c/"+data.id);
       };
     }
-    document.querySelectorAll(".item[data-href]").forEach(el => el.onclick = () => go(el.dataset.href));
+    $$(".li[data-href]").forEach(el => el.onclick = () => go(el.dataset.href));
   };
-  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
+  $$(".tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
   show(tab);
 }
 
-/* teacher: class page */
+/* ---- class page ---- */
 async function teacherClass(id){
   if(!(await requireTeacher())) return;
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
   const { data:c, error } = await sb.from("hw_classes").select("*").eq("id",id).single();
-  if(error || !c){ app().innerHTML = `<p class="err">הכיתה לא נמצאה</p>`; return; }
+  if(error || !c){ if(seq===navSeq) app().innerHTML = `${backBtn("כל הכיתות","#/teacher?tab=c")}<div class="sheet"><div class="empty"><b>הכיתה לא נמצאה</b></div></div>`; return; }
   const [{data:students}, {data:links}] = await Promise.all([
     sb.from("hw_students").select("id,display_name,username,created_at").eq("class_id",id).order("display_name"),
     sb.from("hw_assignment_classes").select("assignment_id,hw_assignments(id,title,due_at,created_at)").eq("class_id",id)
@@ -448,44 +648,49 @@ async function teacherClass(id){
   if(seq!==navSeq) return;
   const last = {}; subs.forEach(s => { if(s.student_id) last[s.student_id+"|"+s.assignment_id] = s; });
   const joinLink = siteBase()+"#/join/"+c.join_code;
+  const joinMsg = `הצטרפו לכיתה "${c.name}" באתר שיעורי הבית:\n${joinLink}\nקוד הכיתה: ${c.join_code}`;
   const stAvg = st => { const g = asg.map(a=>last[st.id+"|"+a.id]).filter(Boolean); return g.length ? Math.round(g.reduce((s,x)=>s+pct(x.score,x.max_score),0)/g.length) : null; };
   app().innerHTML = `
-    <button class="link" onclick="go('#/teacher?tab=c')">→ כל הכיתות</button>
+    ${backBtn("כל הכיתות","#/teacher?tab=c")}
     <h1 id="ttl">${esc(c.name)}</h1>
-    <div class="card">
-      <div class="row"><span class="muted">קוד הצטרפות:</span><span class="code" style="font-size:22px">${c.join_code}</span><div class="grow"></div><button id="cp">העתקת קישור הרשמה</button></div>
-      <p class="muted small">התלמידים נכנסים לקישור (או לאתר ← "הרשמה לכיתה" עם הקוד), ממלאים שם, שם משתמש וסיסמה.</p>
-      <label class="chk"><input type="checkbox" id="jo" ${c.join_open?"checked":""}> ההרשמה לכיתה פתוחה</label>
-      <p class="muted small">כשכל התלמידים נרשמו, מומלץ לסגור את ההרשמה כדי שאף אחד מבחוץ לא יצטרף.</p>
+    <div class="sheet">
+      <h2>הצטרפות לכיתה</h2>
+      <div class="muted small">קוד הכיתה</div><div class="code bigcode" style="margin-bottom:12px">${c.join_code}</div>
+      <div class="row">
+        <a class="btn wa" href="${waShare(joinMsg)}" target="_blank" rel="noopener">${WA}שליחה בוואטסאפ</a>
+        <button id="cp">העתקת קישור</button>
+      </div>
+      <label class="chk" style="margin-top:16px"><input type="checkbox" id="jo" ${c.join_open?"checked":""}><span>ההרשמה פתוחה<br><span class="muted small">כשכל התלמידים נרשמו, כבו את זה כדי שאף אחד מבחוץ לא יצטרף.</span></span></label>
     </div>
-    <div class="card">
-      <div class="row"><h2 class="grow" style="margin:0">תלמידים (${students?.length||0})</h2>${students?.length&&asg.length?`<button id="csv">הורדה לאקסל</button>`:""}</div>
+    <div class="sheet">
+      <div class="row" style="margin-bottom:6px"><h2 class="grow" style="margin:0">תלמידים <span class="muted num">(${students?.length||0})</span></h2>${students?.length&&asg.length?`<button class="ghost" id="csv">הורדה לאקסל</button>`:""}</div>
       ${students?.length ? `<div class="tw"><table>
-        <thead><tr><th>שם</th><th>משתמש</th><th>ממוצע</th>${asg.map((a,i)=>`<th class="c" title="${esc(a.title)}">${i+1}</th>`).join("")}<th></th></tr></thead>
-        <tbody>${students.map(st=>{ const av = stAvg(st); return `<tr><td>${esc(st.display_name)}</td><td class="ltr muted">${esc(st.username)}</td><td><b>${av ?? "–"}</b></td>
-          ${asg.map(a=>{ const s=last[st.id+"|"+a.id]; return `<td class="c">${s?pct(s.score,s.max_score):'<span class="muted">–</span>'}</td>`; }).join("")}
-          <td><button class="link" data-pw="${st.id}" data-nm="${esc(st.display_name)}">סיסמה</button><button class="link danger" data-rm="${st.id}" data-nm="${esc(st.display_name)}">הסרה</button></td></tr>`; }).join("")}</tbody>
+        <thead><tr><th>שם</th><th class="c">ממוצע</th>${asg.map((a,i)=>`<th class="c" title="${esc(a.title)}">${i+1}</th>`).join("")}<th></th></tr></thead>
+        <tbody>${students.map(st=>{ const av = stAvg(st); return `<tr><td><div style="font-weight:600">${esc(st.display_name)}</div><div class="tiny muted ltr" style="text-align:right">${esc(st.username)}</div></td><td class="c">${av==null?'<span class="muted">–</span>':`<b class="num">${av}</b>`}</td>
+          ${asg.map(a=>{ const s=last[st.id+"|"+a.id]; return `<td class="c num">${s?pct(s.score,s.max_score):'<span class="muted">–</span>'}</td>`; }).join("")}
+          <td><button class="ghost tiny" data-pw="${st.id}" data-nm="${esc(st.display_name)}">איפוס סיסמה</button><button class="ghost danger tiny" data-rm="${st.id}" data-nm="${esc(st.display_name)}">הסרה</button></td></tr>`; }).join("")}</tbody>
       </table></div>
-      ${asg.length?`<p class="muted small">${asg.map((a,i)=>`${i+1} = ${esc(a.title)}`).join(" · ")}</p>`:""}` : `<p class="muted">עדיין אף תלמיד לא נרשם. שלחו לתלמידים את הקישור או את הקוד.</p>`}
+      ${asg.length?`<p class="muted tiny" style="margin-top:10px">${asg.map((a,i)=>`<b class="num">${i+1}</b> ${esc(a.title)}`).join("<br>")}</p>`:""}` : `<div class="empty"><b>עוד אף תלמיד לא נרשם</b>שלחו לקבוצת הכיתה את קישור ההרשמה.</div>`}
     </div>
-    <div class="card">
-      <h2>הגדרות כיתה</h2>
-      <div class="row"><input id="cn" type="text" class="grow" value="${esc(c.name)}"><button id="cns">שינוי שם</button></div>
-      <div style="margin-top:16px"><button class="danger" id="cdel">מחיקת הכיתה</button> <span class="muted small">מוחק גם את חשבונות התלמידים וההגשות שלהם.</span></div>
+    <div class="sheet">
+      <h2>הגדרות הכיתה</h2>
+      <label class="f" for="cn">שם הכיתה</label>
+      <div class="row"><input id="cn" type="text" class="grow" value="${esc(c.name)}"><button id="cns">שמירה</button></div>
+      <div style="margin-top:18px"><button class="ghost danger" id="cdel">מחיקת הכיתה</button></div>
     </div>`;
-  $("#cp").onclick = async () => { try{ await navigator.clipboard.writeText(joinLink); toast("הקישור הועתק"); }catch(e){ prompt("קישור הרשמה:", joinLink); } };
+  $("#cp").onclick = () => copy(joinLink, "קישור ההרשמה הועתק");
   $("#jo").onchange = async e => { const { error } = await sb.from("hw_classes").update({ join_open:e.target.checked }).eq("id",id); toast(error? error.message : (e.target.checked?"ההרשמה נפתחה":"ההרשמה נסגרה")); };
-  $("#cns").onclick = async () => { const n=$("#cn").value.trim(); if(!n) return; const { error } = await sb.from("hw_classes").update({ name:n }).eq("id",id); if(error) return toast(error.message); $("#ttl").textContent=n; toast("נשמר ✓"); };
-  $("#cdel").onclick = async () => { if(!confirm(`למחוק את הכיתה "${c.name}" עם כל התלמידים וההגשות? אי אפשר לבטל.`)) return; const { error } = await sb.from("hw_classes").delete().eq("id",id); if(error) return toast(error.message); go("#/teacher?tab=c"); };
-  document.querySelectorAll("[data-pw]").forEach(b => b.onclick = async () => {
-    const p = prompt(`סיסמה חדשה ל${b.dataset.nm} (4 תווים לפחות):`); if(!p) return;
+  $("#cns").onclick = async () => { const n=$("#cn").value.trim(); if(!n) return; const { error } = await sb.from("hw_classes").update({ name:n }).eq("id",id); if(error) return toast(error.message); $("#ttl").textContent=n; toast("השם נשמר"); };
+  $("#cdel").onclick = async () => { if(!(await ask(`<h2>למחוק את "${esc(c.name)}"?</h2><p class="muted">יימחקו גם חשבונות התלמידים וכל ההגשות שלהם. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return; const { error } = await sb.from("hw_classes").delete().eq("id",id); if(error) return toast(error.message); go("#/teacher?tab=c"); };
+  $$("[data-pw]").forEach(b => b.onclick = async () => {
+    const p = prompt(`סיסמה חדשה ל${b.dataset.nm}, 4 תווים לפחות:`); if(!p) return;
     const { error } = await sb.rpc("hw_teacher_reset_password",{ p_student:b.dataset.pw, p_password:p });
     toast(error ? error.message : "הסיסמה עודכנה. מסרו אותה לתלמיד");
   });
-  document.querySelectorAll("[data-rm]").forEach(b => b.onclick = async () => {
-    if(!confirm(`להסיר את ${b.dataset.nm} מהכיתה? כל ההגשות שלו יימחקו.`)) return;
+  $$("[data-rm]").forEach(b => b.onclick = async () => {
+    if(!(await ask(`<h2>להסיר את ${esc(b.dataset.nm)}?</h2><p class="muted">כל ההגשות שלו יימחקו.</p>`, "הסרה", "ביטול", true))) return;
     const { error } = await sb.from("hw_students").delete().eq("id",b.dataset.rm);
-    if(error) return toast(error.message); toast("הוסר"); teacherClass(id);
+    if(error) return toast(error.message); toast("התלמיד הוסר"); teacherClass(id);
   });
   const csvBtn = $("#csv");
   if(csvBtn) csvBtn.onclick = () => {
@@ -499,7 +704,7 @@ function downloadCsv(name, rows){
   const aEl = document.createElement("a"); aEl.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"})); aEl.download = name+".csv"; aEl.click();
 }
 
-/* teacher: assignment */
+/* ---- assignment page ---- */
 let A = null, Q = [], removed = [], dirty = false, CL = [], ACL = [];
 async function teacherAssignment(idq){
   if(!(await requireTeacher())) return;
@@ -514,38 +719,56 @@ async function teacherAssignment(idq){
     sb.from("hw_assignment_classes").select("class_id").eq("assignment_id",id)
   ]);
   if(seq!==navSeq) return;
-  if(error || !a){ app().innerHTML = `<p class="err">המשימה לא נמצאה</p>`; return; }
+  if(error || !a){ app().innerHTML = `${backBtn("כל המשימות","#/teacher")}<div class="sheet"><div class="empty"><b>המשימה לא נמצאה</b></div></div>`; return; }
   A = a; Q = qq || []; removed = []; dirty = false; CL = cl || []; ACL = (acl||[]).map(x=>x.class_id);
   app().innerHTML = `
-    <button class="link" onclick="go('#/teacher')">→ כל המשימות</button>
+    ${backBtn("כל המשימות","#/teacher")}
     <h1 id="ttl">${esc(a.title)}</h1>
-    <div class="row" id="hdrrow"></div>
+    <div class="row" id="hdrrow" style="margin-top:6px"></div>
     <div id="nocls"></div>
-    <div class="tabs">
-      <button data-t="results">תוצאות</button><button data-t="questions">שאלות</button><button data-t="preview">תצוגה</button><button data-t="settings">הגדרות</button>
+    <div class="tabs" role="tablist">
+      <button data-t="results" role="tab">תוצאות</button><button data-t="questions" role="tab">שאלות</button><button data-t="preview" role="tab">תצוגה</button><button data-t="settings" role="tab">הגדרות</button>
     </div>
     <div id="tab"></div>`;
   drawAssignHeader();
-  const tabs = document.querySelectorAll(".tabs button");
-  const show = t => {
-    if(dirty && t!=="questions" && t!=="preview" && !confirm("יש שינויים בשאלות שלא נשמרו. לעזוב בלי לשמור?")) return;
-    if(t!=="questions" && t!=="preview"){ dirty=false; }
-    tabs.forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+  const show = async t => {
+    if(dirty && !["questions","preview"].includes(t) && !(await ask(`<h2>יש שינויים שלא נשמרו</h2><p class="muted">השינויים בשאלות יאבדו אם תעברו לשונית.</p>`, "לעבור בלי לשמור", "להישאר"))) return;
+    if(!["questions","preview"].includes(t)){ dirty=false; }
+    $$(".tabs button").forEach(b=>{ b.classList.toggle("on", b.dataset.t===t); b.setAttribute("aria-selected", b.dataset.t===t); });
     ({results:tabResults, questions:tabQuestions, preview:tabPreview, settings:tabSettings})[t]();
   };
-  tabs.forEach(b => b.onclick = () => show(b.dataset.t));
+  $$(".tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
   show(tab);
+}
+function assignShareMsg(){
+  const due = A.due_at ? ` עד ${fmtDate(A.due_at)}` : "";
+  return `משימה חדשה באתר שיעורי הבית: "${A.title}"${due}.\nנכנסים כאן: ${siteBase()}`;
 }
 function drawAssignHeader(){
   const names = CL.filter(c=>ACL.includes(c.id)).map(c=>c.name);
-  $("#hdrrow").innerHTML = `<span class="pill ${A.is_open?"open":"closed"}">${A.is_open?"פתוחה להגשה":"סגורה"}</span>
-    ${names.map(n=>`<span class="pill">${esc(n)}</span>`).join("")}${A.due_at?`<span class="muted small">עד ${fmtDate(A.due_at)}</span>`:""}`;
-  $("#nocls").innerHTML = names.length ? "" : `<div class="warn">המשימה לא משויכת לאף כיתה, ולכן התלמידים לא רואים אותה. בחרו כיתה בלשונית "הגדרות".</div>`;
+  $("#hdrrow").innerHTML = `
+    <span class="chip ${A.is_open?"ok":""}">${A.is_open?"פתוחה לתלמידים":"סגורה, התלמידים לא רואים"}</span>
+    ${names.map(n=>`<span class="chip pen">${esc(n)}</span>`).join("")}
+    ${A.due_at?`<span class="chip">${relDue(A.due_at)}</span>`:""}
+    <span class="grow"></span>
+    <button class="${A.is_open?"":"primary"}" id="tog">${A.is_open?"סגירה":"פרסום לתלמידים"}</button>
+    ${A.is_open?`<a class="btn wa" href="${waShare(assignShareMsg())}" target="_blank" rel="noopener">${WA}הודעה לכיתה</a>`:""}`;
+  $("#nocls").innerHTML = names.length ? "" : `<div class="note">המשימה לא משויכת לאף כיתה, ולכן אף תלמיד לא רואה אותה. בחרו כיתה בלשונית "הגדרות".</div>`;
+  $("#tog").onclick = async () => {
+    const to = !A.is_open;
+    if(to && !Q.length) return toast("אי אפשר לפרסם משימה בלי שאלות");
+    if(to && !ACL.length) return toast("קודם בחרו כיתה בלשונית הגדרות");
+    if(to && dirty) return toast("קודם שמרו את השינויים בשאלות");
+    const { error } = await sb.from("hw_assignments").update({ is_open:to }).eq("id",A.id);
+    if(error) return toast(error.message);
+    A.is_open = to; drawAssignHeader(); toast(to ? "פורסם. התלמידים רואים את המשימה" : "המשימה נסגרה");
+  };
 }
 
 /* results */
+let sortBy = "name";
 async function tabResults(){
-  const el = $("#tab"); el.innerHTML = `<p class="muted">טוען…</p>`; const seq = navSeq;
+  const el = $("#tab"); el.innerHTML = `<p class="muted" style="margin-top:16px">טוען…</p>`; const seq = navSeq;
   const [{ data:subs, error }, { data:students }] = await Promise.all([
     sb.from("hw_submissions").select("*").eq("assignment_id",A.id).order("created_at"),
     ACL.length ? sb.from("hw_students").select("id,display_name,class_id").in("class_id",ACL).order("display_name") : Promise.resolve({data:[]})
@@ -556,38 +779,49 @@ async function tabResults(){
   const cname = Object.fromEntries(CL.map(c=>[c.id,c.name]));
   const rows = (students||[]).map(st => ({ name:st.display_name, cls:cname[st.class_id], key:st.id, subs: by[st.id]||[] }));
   Object.keys(by).forEach(k => { if(!rows.find(r=>r.key===k)) rows.push({ name:by[k][0].student_name, cls:"", key:k, subs:by[k] }); });
-  const done = rows.filter(r=>r.subs.length);
-  if(!rows.length){ el.innerHTML = `<div class="card"><p class="muted">${ACL.length?"עדיין אין תלמידים רשומים בכיתות של המשימה.":"המשימה לא משויכת לכיתה."}</p></div>`; return; }
+  const done = rows.filter(r=>r.subs.length), missing = rows.filter(r=>!r.subs.length);
+  if(!rows.length){ el.innerHTML = `<div class="sheet"><div class="empty"><b>${ACL.length?"עוד אין תלמידים בכיתה":"המשימה לא משויכת לכיתה"}</b>${ACL.length?"כשתלמידים יירשמו ויגישו, התוצאות יופיעו כאן.":"בחרו כיתה בלשונית הגדרות."}</div></div>`; return; }
   const lastOf = r => r.subs[r.subs.length-1];
-  const avg = done.length ? Math.round(done.reduce((s,r)=>s+pct(lastOf(r).score,lastOf(r).max_score),0)/done.length) : "–";
+  const sc = r => r.subs.length ? pct(lastOf(r).score,lastOf(r).max_score) : -1;
+  const avg = done.length ? Math.round(done.reduce((s,r)=>s+sc(r),0)/done.length) : null;
   const qstat = Q.map(q => { let ok=0,t=0; done.forEach(r=>{ const x=(lastOf(r).results||[]).find(z=>z.question_id===q.id); if(x){t++; if(x.correct) ok++;} }); return { q, pct: t? Math.round(100*ok/t):0, t }; });
-  const hard = qstat.filter(s=>s.t).sort((a,b)=>a.pct-b.pct).slice(0,3);
   const multi = ACL.length > 1;
+  const sorted = [...rows].sort((x,y) => sortBy==="score" ? sc(y)-sc(x) : sortBy==="low" ? (sc(x)<0?999:sc(x))-(sc(y)<0?999:sc(y)) : x.name.localeCompare(y.name,"he"));
   el.innerHTML = `
-    <div class="row" style="margin-top:14px">
-      <div class="card stat"><div class="muted small">הגישו</div><div class="score">${done.length}<span class="muted" style="font-size:16px"> מתוך ${rows.length}</span></div></div>
-      <div class="card stat"><div class="muted small">ממוצע</div><div class="score">${avg}</div></div>
+    <div class="sheet">
+      <div class="stats">
+        <div><div class="v">${done.length}<span class="muted" style="font-size:16px;font-weight:500"> מתוך ${rows.length}</span></div><div class="k">הגישו</div></div>
+        <div><div class="v">${avg ?? "–"}</div><div class="k">ממוצע</div></div>
+        <div><div class="v">${missing.length}</div><div class="k">עוד לא הגישו</div></div>
+      </div>
+      ${missing.length && A.is_open ? `<div class="row" style="margin-top:14px"><button class="ghost" id="cpmiss">העתקת שמות מי שלא הגיש</button><a class="btn wa" href="${waShare(`תזכורת: "${A.title}"${A.due_at?` להגשה ${relDue(A.due_at)}`:""}.\n${siteBase()}`)}" target="_blank" rel="noopener">${WA}תזכורת לכיתה</a></div>` : ""}
     </div>
-    ${hard.length?`<div class="card"><h2>השאלות שהכי קשות לכיתה</h2>${hard.map(s=>`
-      <div class="row" style="margin:8px 0"><span class="qn">${Q.indexOf(s.q)+1}.</span><span class="grow prompt small">${esc(s.q.prompt)}</span>
-      <div class="bar" style="width:90px"><i style="width:${s.pct}%"></i></div><span class="small">${s.pct}%</span></div>`).join("")}</div>`:""}
-    <div class="card">
-      <div class="row"><h2 class="grow" style="margin:0">ציונים</h2>${done.length?`<button id="csv">הורדה לאקסל</button>`:""}</div>
+    ${done.length && Q.length ? `<div class="sheet"><h2>הצלחה בכל שאלה</h2>
+      ${qstat.map((s,i)=>`<div class="row" style="margin:9px 0;flex-wrap:nowrap"><b class="num" style="width:22px;color:var(--pen)">${i+1}</b><span class="grow small clamp">${esc(s.q.prompt)}</span>
+        <div class="meter ${s.pct<50?"low":""}" style="width:90px;flex:none"><i style="width:${s.pct}%"></i></div><span class="small num" style="width:40px;text-align:end">${s.t?s.pct+"%":"–"}</span></div>`).join("")}
+      <p class="muted tiny" style="margin:8px 0 0">שאלה באדום: פחות ממחצית הכיתה צדקו בה. אולי כדאי לחזור עליה בשיעור.</p></div>`:""}
+    <div class="sheet">
+      <div class="row" style="margin-bottom:6px"><h2 class="grow" style="margin:0">ציונים</h2>
+        <select id="sort" style="width:auto;padding:7px 10px" aria-label="מיון"><option value="name">לפי שם</option><option value="score">ציון מהגבוה</option><option value="low">ציון מהנמוך</option></select>
+        ${done.length?`<button class="ghost" id="csv">אקסל</button>`:""}</div>
       <div class="tw"><table>
-        <thead><tr><th>שם</th>${multi?"<th>כיתה</th>":""}<th>ציון</th>${Q.map((q,i)=>`<th class="c">${i+1}</th>`).join("")}<th>הוגש</th><th></th></tr></thead>
-        <tbody>${rows.map(r=>{ if(!r.subs.length) return `<tr><td>${esc(r.name)}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="muted">לא הגיש</td>${Q.map(()=>`<td></td>`).join("")}<td></td><td></td></tr>`;
+        <thead><tr><th>שם</th>${multi?"<th>כיתה</th>":""}<th class="c">ציון</th>${Q.map((q,i)=>`<th class="c">${i+1}</th>`).join("")}<th>הוגש</th><th></th></tr></thead>
+        <tbody>${sorted.map(r=>{ if(!r.subs.length) return `<tr><td>${esc(r.name)}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c"><span class="chip late">לא הגיש</span></td>${Q.map(()=>`<td></td>`).join("")}<td></td><td></td></tr>`;
           const s=lastOf(r);
-          return `<tr><td>${esc(r.name)}${r.subs.length>1?` <span class="muted small">(${r.subs.length} ניסיונות)</span>`:""}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td><b>${pct(s.score,s.max_score)}</b></td>
+          return `<tr><td><span style="font-weight:600">${esc(r.name)}</span>${r.subs.length>1?` <span class="muted tiny">(${r.subs.length} ניסיונות)</span>`:""}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c"><b class="num">${pct(s.score,s.max_score)}</b></td>
           ${Q.map(q=>{ const x=(s.results||[]).find(z=>z.question_id===q.id); return `<td class="c" title="${esc(x?.given??"")}">${!x?"–":x.correct?'<span class="yes">✓</span>':'<span class="no">✗</span>'}</td>`; }).join("")}
-          <td class="muted">${fmtDate(s.created_at)}</td><td><button class="link danger" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
+          <td class="muted tiny">${fmtDate(s.created_at)}</td><td><button class="ghost danger tiny" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
       </table></div>
-      <p class="muted small">"איפוס" מוחק את ההגשות של התלמיד במשימה הזו כדי שיוכל להגיש מחדש. ריחוף על ✓/✗ מציג מה התלמיד כתב.</p>
+      <p class="muted tiny" style="margin:10px 0 0">"איפוס" מוחק את ההגשה של התלמיד במשימה הזו, כדי שיוכל להגיש מחדש. ריחוף על ✓ או ✗ מראה מה התלמיד כתב.</p>
     </div>`;
   math(el);
-  el.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
-    const r = rows.find(x=>x.key===b.dataset.del); if(!confirm(`למחוק את ההגשות של ${r.name} במשימה הזו?`)) return;
+  $("#sort").value = sortBy; $("#sort").onchange = e => { sortBy = e.target.value; tabResults(); };
+  const cm = $("#cpmiss"); if(cm) cm.onclick = () => copy(missing.map(r=>r.name).join("\n"), `הועתקו ${missing.length} שמות`);
+  $$("[data-del]", el).forEach(b => b.onclick = async () => {
+    const r = rows.find(x=>x.key===b.dataset.del);
+    if(!(await ask(`<h2>לאפס את ההגשה של ${esc(r.name)}?</h2><p class="muted">התשובות והציון שלו במשימה הזו יימחקו, והוא יוכל להגיש מחדש.</p>`, "איפוס", "ביטול", true))) return;
     const { error } = await sb.from("hw_submissions").delete().in("id", r.subs.map(s=>s.id));
-    if(error) return toast(error.message); toast("נמחק"); tabResults();
+    if(error) return toast(error.message); toast("ההגשה אופסה"); tabResults();
   });
   const csvBtn = $("#csv");
   if(csvBtn) csvBtn.onclick = () => {
@@ -613,29 +847,34 @@ kind: number לתשובה מספרית (value מספר בלבד, unit יחידו
 function tabQuestions(){
   const el = $("#tab");
   el.innerHTML = `
-    <div class="row" style="margin-top:14px">
-      <button id="add">+ שאלה</button><button id="imp">ייבוא עם AI</button>
-      <div class="grow"></div><button class="primary" id="save" disabled>שמירה</button>
+    <div class="row" style="margin-top:16px">
+      <button id="add">שאלה חדשה</button><button id="imp">ייבוא מ-AI</button>
+      <div class="grow"></div><span class="muted tiny" id="dirtyl"></span><button class="primary" id="save" disabled>שמירה</button>
     </div>
-    <div id="impbox" class="card" style="display:none">
-      <h2>ייבוא שאלות</h2>
-      <p class="muted small">1. העתיקו את ההנחיה והדביקו אותה ב-Gemini או ב-Claude, יחד עם צילום הדף או הנושא.<br>2. העתיקו את מה שהוא מחזיר והדביקו בתיבה למטה.<br>3. בדקו את התשובות הנכונות בעורך ולחצו "שמירה".</p>
-      <button id="cpp" style="margin-bottom:10px">📋 העתקת ההנחיה ל-AI</button>
-      <textarea id="impt" class="ltr" style="min-height:160px" placeholder='[{"prompt":"...","kind":"number","answer":{"value":9.8,"tol_pct":1,"unit":"m/s^2"}}]'></textarea>
-      <div class="row" style="margin-top:10px"><button class="primary" id="impgo">הוספה לשאלות</button><label class="chk small"><input type="checkbox" id="imprep"> להחליף את השאלות הקיימות</label></div>
+    <div id="impbox" class="sheet plain" style="display:none">
+      <h2>ייבוא שאלות מ-AI</h2>
+      <ol class="small" style="padding-inline-start:20px;margin:0 0 12px;line-height:1.7">
+        <li>מעתיקים את ההנחיה ומדביקים אותה ב-Gemini או ב-Claude, יחד עם צילום הדף או הנושא.</li>
+        <li>מעתיקים את כל מה שהוא מחזיר ומדביקים כאן.</li>
+        <li>בודקים את התשובות הנכונות בעורך ושומרים.</li>
+      </ol>
+      <button id="cpp">העתקת ההנחיה</button>
+      <textarea id="impt" class="ltr" style="min-height:150px;margin-top:12px;font-size:13px" placeholder="הדביקו כאן את התשובה של ה-AI"></textarea>
+      <div class="row" style="margin-top:10px"><button class="primary" id="impgo">הוספת השאלות</button><label class="chk small" style="margin:0"><input type="checkbox" id="imprep"><span>להחליף את השאלות הקיימות</span></label></div>
       <p class="err" id="impe"></p>
     </div>
     <div id="qlist"></div>`;
-  const markDirty = () => { dirty = true; $("#save").disabled = false; };
-  if(dirty) $("#save").disabled = false;
+  const setDirty = v => { dirty = v; $("#save").disabled = !v; $("#dirtyl").textContent = v ? "יש שינויים שלא נשמרו" : ""; };
+  const markDirty = () => setDirty(true);
+  if(dirty) setDirty(true);
   const draw = () => {
-    $("#qlist").innerHTML = Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><p class="muted">אין עדיין שאלות. הוסיפו שאלה או ייבאו.</p></div>`;
+    $("#qlist").innerHTML = Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="sheet"><div class="empty"><b>אין עדיין שאלות</b>הוסיפו שאלה, ייבאו מ-AI, או שלחו ל-Claude דף עבודה.</div></div>`;
     Q.forEach((q,i)=>renderPv(i));
   };
   draw();
-  $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:0,tol_pct:1,unit:""}, points:1, _new:true }); draw(); markDirty(); };
+  $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:0,tol_pct:1,unit:""}, points:1, figure:null, _new:true }); draw(); markDirty(); $$(".qedit").pop().scrollIntoView({behavior:"smooth",block:"start"}); };
   $("#imp").onclick = () => { const b=$("#impbox"); b.style.display = b.style.display==="none"?"block":"none"; };
-  $("#cpp").onclick = async () => { try{ await navigator.clipboard.writeText(AI_PROMPT); toast("ההנחיה הועתקה"); }catch(e){ $("#impt").value = AI_PROMPT; toast("ההנחיה בתיבה – העתיקו אותה ידנית"); } };
+  $("#cpp").onclick = () => copy(AI_PROMPT, "ההנחיה הועתקה");
   $("#impgo").onclick = () => {
     try{
       let txt = $("#impt").value.trim();
@@ -645,23 +884,22 @@ function tabQuestions(){
       if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
       const norm = arr.map(x => normalizeQ(x));
       if($("#imprep").checked){ Q.forEach(q=>{ if(!q._new) removed.push(q.id); }); Q = []; }
-      Q.push(...norm); $("#impt").value=""; $("#impbox").style.display="none"; draw(); markDirty(); toast(`נוספו ${norm.length} שאלות. לא לשכוח לשמור`);
-    }catch(e){ $("#impe").textContent = "הקוד לא תקין: " + e.message; }
+      Q.push(...norm); $("#impt").value=""; $("#impbox").style.display="none"; draw(); markDirty(); toast(`נוספו ${norm.length} שאלות. בדקו אותן ושמרו`);
+    }catch(e){ $("#impe").textContent = "לא הצלחנו לקרוא את הטקסט: " + e.message + ". ודאו שהעתקתם את כל התשובה."; }
   };
   $("#qlist").addEventListener("input", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
     if(!f) return;
-    if(f==="prompt"){ q.prompt = e.target.value; }
-    else if(f==="figure"){ q.figure = e.target.value.trim() || null; }
+    if(f==="prompt") q.prompt = e.target.value;
+    else if(f==="figure") q.figure = e.target.value.trim() || null;
     else if(f==="points") q.points = parseFloat(e.target.value)||0;
     else if(f==="value") q.answer.value = e.target.value;
     else if(f==="tol_pct") q.answer.tol_pct = parseFloat(e.target.value)||0;
     else if(f==="unit") q.answer.unit = e.target.value;
     else if(f==="accepted") q.answer.accepted = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
     else if(f==="choices") q.choices = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
-    renderPv(i);
-    markDirty();
+    renderPv(i); markDirty();
   });
   $("#qlist").addEventListener("change", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
@@ -672,38 +910,37 @@ function tabQuestions(){
       q.choices = q.kind==="choice" ? (q.choices||["",""]) : null;
       draw(); markDirty();
     }
-    if(f==="correct"){ q.answer.index = +e.target.value; markDirty(); }
+    if(f==="correct"){ q.answer.index = +e.target.value; renderPv(i); markDirty(); }
     if(f==="choices"){ if(q.answer.index >= (q.choices||[]).length) q.answer.index = 0; draw(); }
   });
-  $("#qlist").addEventListener("click", e => {
+  $("#qlist").addEventListener("click", async e => {
     const b = e.target.closest("[data-act]"); if(!b) return;
     const i = +b.closest(".qedit").dataset.i, act = b.dataset.act;
-    if(act==="del"){ const [q]=Q.splice(i,1); if(!q._new) removed.push(q.id); }
+    if(act==="del"){ if(!(await ask(`<h2>למחוק את שאלה ${i+1}?</h2>`, "מחיקה", "ביטול", true))) return; const [q]=Q.splice(i,1); if(!q._new) removed.push(q.id); }
+    if(act==="dup"){ const c = JSON.parse(JSON.stringify(Q[i])); c.id = uuid(); c._new = true; Q.splice(i+1,0,c); }
     if(act==="up" && i>0) [Q[i-1],Q[i]]=[Q[i],Q[i-1]];
     if(act==="down" && i<Q.length-1) [Q[i+1],Q[i]]=[Q[i],Q[i+1]];
     draw(); markDirty();
   });
   $("#save").onclick = async () => {
     const bad = Q.findIndex(q => !q.prompt.trim() || (q.kind==="number" && (q.answer.value===""||isNaN(Number(q.answer.value)))) || (q.kind==="choice" && (q.choices||[]).length<2) || (q.kind==="text" && !(q.answer.accepted||[]).length));
-    if(bad>=0){ toast(`שאלה ${bad+1} לא שלמה`); return; }
+    if(bad>=0){ toast(`בשאלה ${bad+1} חסר משהו: נוסח, תשובה נכונה או אפשרויות`); $$(".qedit")[bad]?.scrollIntoView({behavior:"smooth",block:"center"}); return; }
     $("#save").disabled = true; $("#save").textContent = "שומר…";
     try{
       if(removed.length){ const { error } = await sb.from("hw_questions").delete().in("id", removed); if(error) throw error; }
       const rows = Q.map((q,i)=>({ id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"?q.choices:null,
         answer: q.kind==="number" ? { value:Number(q.answer.value), tol_pct:Number(q.answer.tol_pct??1), unit:q.answer.unit||"" } : q.answer, points:q.points, figure:q.figure||null }));
       if(rows.length){ const { error } = await sb.from("hw_questions").upsert(rows); if(error) throw error; }
-      Q.forEach(q=>delete q._new); removed = []; dirty = false; toast("נשמר ✓");
-      $("#save").textContent = "שמירה";
-    }catch(e){ toast("שגיאה: "+e.message); $("#save").disabled=false; $("#save").textContent="שמירה"; }
+      Q.forEach(q=>delete q._new); removed = []; setDirty(false); toast("השאלות נשמרו");
+    }catch(e){ toast("השמירה נכשלה: "+e.message); $("#save").disabled=false; }
+    $("#save").textContent = "שמירה";
   };
 }
 function toStudentQ(q){ return { id:q.id, prompt:q.prompt, kind:q.kind, choices:q.choices, points:q.points, figure:q.figure, unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
-function correctIndexOf(q){ return q.kind==="choice" ? +q.answer.index : null; }
 function renderPv(i){
   const q = Q[i], pv = $(`#pv${i}`); if(!q || !pv) return;
-  pv.style.whiteSpace = "normal";
-  pv.innerHTML = `<div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt||"(נוסח השאלה)")}</span></div>${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}`;
-  if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[correctIndexOf(q)]; if(c) c.style.borderColor = "var(--ok)", c.insertAdjacentHTML("beforeend", `<span class="small" style="color:var(--ok);margin-inline-start:auto">✓ נכונה</span>`); }
+  pv.innerHTML = `<div><span class="prompt">${esc(q.prompt||"נוסח השאלה יופיע כאן")}</span></div>${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}`;
+  if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[+q.answer.index]; if(c){ c.classList.add("right"); c.insertAdjacentHTML("beforeend", `<span class="tiny" style="color:var(--ok);font-weight:700;margin-inline-start:auto">הנכונה</span>`); } }
   pv.querySelectorAll("input").forEach(x=>x.disabled=true);
   math(pv);
 }
@@ -733,27 +970,24 @@ function answerText(q){
 }
 function tabPreview(){
   const el = $("#tab");
-  if(dirty) toast("שימו לב: יש שינויים שלא נשמרו. התצוגה כוללת אותם");
   el.innerHTML = `
-    <div class="warn" style="margin-top:14px">זו תצוגה בלבד, בדיוק כמו שהתלמיד רואה. אפשר לענות ולבדוק, ושום דבר לא נשמר.</div>
-    <h1>${esc(A.title)}</h1>
-    <div class="row">${A.due_at?`<span class="pill">להגשה עד ${fmtDate(A.due_at)}</span>`:""}<span class="pill">${Q.length} שאלות</span></div>
+    <div class="note">כך התלמידים רואים את המשימה. אפשר לענות ולבדוק, ושום דבר לא נשמר.${dirty?" כולל שינויים שעוד לא שמרתם.":""}</div>
     ${A.description ? `<p class="prompt">${esc(A.description)}</p>` : ""}
-    <div class="card" id="qs">
-      ${Q.length ? Q.map((q,i)=>`<div class="q" data-id="${q.id}">
-        <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
-        ${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}<div class="slot"></div></div>`).join("") : `<p class="muted">אין שאלות עדיין.</p>`}
+    <div class="sheet" id="qs">
+      ${Q.length ? Q.map((q,i)=>`<div class="q" data-id="${q.id}"><span class="qn">${i+1}</span>
+        <div><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?` <span class="pts">(${q.points} נק׳)</span>`:""}</div>
+        ${figHtml(q.figure)}${answerInput(toStudentQ(q),"")}<div class="slot"></div></div>`).join("") : `<div class="empty"><b>אין שאלות עדיין</b></div>`}
     </div>
-    <div class="row"><button class="primary" id="pvcheck">בדיקה לדוגמה</button><button id="pvshow">הצגת התשובות הנכונות</button><button class="link" id="pvreset">ניקוי</button></div>
+    <div class="row"><button class="primary" id="pvcheck">בדיקת התשובות</button><button id="pvshow">הצגת התשובות הנכונות</button><button class="ghost" id="pvreset">ניקוי</button></div>
     <div id="pvout"></div>`;
   math(el);
   el.onchange = e => { if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target))); };
-  const mark = (showAll) => {
+  const mark = showAll => {
     const ans = collect(); let sc=0, mx=0;
     Q.forEach(q => { const slot = el.querySelector(`.q[data-id="${q.id}"] .slot`); const ok = checkLocal(q, ans[q.id]); mx += q.points; if(ok) sc += q.points;
-      slot.innerHTML = showAll ? `<div class="res ok">התשובה הנכונה: <bdi class="ltr">${esc(answerText(q))}</bdi></div>`
-        : ok ? `<div class="res ok">✓ נכון</div>` : `<div class="res bad">✗ לא נכון. התשובה הנכונה: <bdi class="ltr">${esc(answerText(q))}</bdi></div>`; });
-    $("#pvout").innerHTML = showAll ? "" : `<div class="card" style="text-align:center"><div class="muted">ציון לדוגמה</div><div class="score">${pct(sc,mx)}</div></div>`;
+      slot.innerHTML = showAll ? `<div class="mark ok"><span class="sym">✓</span><span>התשובה: <bdi class="ltr">${esc(answerText(q))}</bdi></span></div>`
+        : ok ? `<div class="mark ok"><span class="sym">✓</span><span>נכון</span></div>` : `<div class="mark bad"><span class="sym">✗</span><span>לא נכון. התשובה: <bdi class="fix ltr">${esc(answerText(q))}</bdi></span></div>`; });
+    $("#pvout").innerHTML = showAll ? "" : `<div class="sheet"><div class="result">${gradeHtml(pct(sc,mx), true, true)}<div><h2 style="margin:0">ציון לדוגמה</h2><div class="muted">${sc} מתוך ${mx} נקודות</div></div></div></div>`;
     math(el);
   };
   $("#pvcheck").onclick = () => mark(false);
@@ -766,7 +1000,7 @@ function normalizeQ(x){
   if(kind==="number"){
     if(typeof answer !== "object") answer = { value: answer };
     answer = { value: Number(answer.value), tol_pct: answer.tol_pct ?? 1, unit: answer.unit ?? x.unit ?? "" };
-    if(isNaN(answer.value)) throw new Error("ערך מספרי חסר בשאלה: "+(x.prompt||"").slice(0,30));
+    if(isNaN(answer.value)) throw new Error("חסר ערך מספרי בשאלה: "+(x.prompt||"").slice(0,30));
   } else if(kind==="choice"){
     if(typeof answer !== "object") answer = { index: answer };
     answer = { index: Number(answer.index ?? 0) };
@@ -779,25 +1013,27 @@ function normalizeQ(x){
 function qEditor(q,i){
   const k = q.kind;
   let ans = "";
-  if(k==="number") ans = `<div class="row">
-      <div class="grow"><label>תשובה נכונה</label><input type="text" class="ltr" data-f="value" value="${esc(q.answer.value)}"></div>
-      <div style="width:110px"><label>סטייה מותרת %</label><input type="number" min="0" step="0.1" class="ltr" data-f="tol_pct" value="${esc(q.answer.tol_pct ?? 1)}"></div>
-      <div style="width:110px"><label>יחידות</label><input type="text" class="ltr" data-f="unit" value="${esc(q.answer.unit||"")}"></div></div>`;
-  else if(k==="choice") ans = `<label>אפשרויות (שורה לכל אפשרות)</label><textarea data-f="choices" style="min-height:70px">${esc((q.choices||[]).join("\n"))}</textarea>
-      <label>התשובה הנכונה</label><select data-f="correct">${(q.choices||[]).map((c,j)=>`<option value="${j}" ${q.answer.index===j?"selected":""}>${j+1}. ${esc(c.slice(0,50))}</option>`).join("")}</select>`;
-  else ans = `<label>תשובות מתקבלות (שורה לכל תשובה; לא רגיש לרווחים ולאותיות גדולות)</label><textarea data-f="accepted" class="ltr" style="min-height:60px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
+  if(k==="number") ans = `<div class="row" style="align-items:flex-end">
+      <div class="grow" style="min-width:120px"><label class="f">תשובה נכונה</label><input type="text" class="ltr" data-f="value" value="${esc(q.answer.value)}" inputmode="decimal"></div>
+      <div style="width:110px"><label class="f">סטייה מותרת %</label><input type="number" min="0" step="0.1" class="ltr" data-f="tol_pct" value="${esc(q.answer.tol_pct ?? 1)}"></div>
+      <div style="width:110px"><label class="f">יחידות</label><input type="text" class="ltr" data-f="unit" value="${esc(q.answer.unit||"")}"></div></div>`;
+  else if(k==="choice") ans = `<label class="f">אפשרויות, כל אחת בשורה</label><textarea data-f="choices" style="min-height:96px">${esc((q.choices||[]).join("\n"))}</textarea>
+      <label class="f">התשובה הנכונה</label><select data-f="correct">${(q.choices||[]).map((c,j)=>`<option value="${j}" ${+q.answer.index===j?"selected":""}>${j+1}. ${esc(c.slice(0,60))}</option>`).join("")}</select>`;
+  else ans = `<label class="f">תשובות שמתקבלות, כל אחת בשורה (רווחים ואותיות גדולות לא משנים)</label><textarea data-f="accepted" class="ltr" style="min-height:64px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
   return `<div class="qedit" data-i="${i}">
-    <div class="row"><span class="qn">${i+1}.</span>
-      <select data-f="kind" style="width:auto"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>בחירה מרובה</option><option value="text" ${k==="text"?"selected":""}>ביטוי / מילה</option></select>
-      <span class="muted small">נק׳</span><input type="number" min="0" step="0.5" data-f="points" value="${esc(q.points)}" style="width:70px">
-      <div class="grow"></div><button class="link" data-act="up" title="למעלה">▲</button><button class="link" data-act="down" title="למטה">▼</button><button class="link danger" data-act="del">מחיקה</button></div>
-    <label>השאלה (נוסחאות בין סימני $, למשל $v=\\frac{d}{t}$)</label>
+    <div class="head"><span class="badge num">${i+1}</span>
+      <select data-f="kind" style="width:auto" aria-label="סוג תשובה"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>אמריקאית</option><option value="text" ${k==="text"?"selected":""}>ביטוי או מילה</option></select>
+      <input type="number" min="0" step="0.5" data-f="points" value="${esc(q.points)}" style="width:68px" aria-label="נקודות"><span class="muted small">נק׳</span>
+      <span class="grow"></span>
+      <button class="ghost" data-act="up" aria-label="הזזה למעלה" title="למעלה">▲</button><button class="ghost" data-act="down" aria-label="הזזה למטה" title="למטה">▼</button>
+      <button class="ghost" data-act="dup">שכפול</button><button class="ghost danger" data-act="del">מחיקה</button></div>
+    <label class="f">השאלה. נוסחאות בין סימני $, למשל $v=\\frac{d}{t}$</label>
     <textarea data-f="prompt">${esc(q.prompt)}</textarea>
-    <details ${q.figure?"open":""} style="margin-top:8px"><summary class="muted small" style="cursor:pointer">שרטוט (לא חובה)</summary>
-      <textarea data-f="figure" class="ltr" style="min-height:60px;font-size:12px" placeholder="קוד SVG – אפשר לבקש מ-Claude לשרטט">${esc(q.figure||"")}</textarea></details>
-    <div class="muted small" style="margin-top:8px">כך התלמיד יראה את השאלה:</div>
-    <div class="preview" id="pv${i}"></div>
     ${ans}
+    <details><summary>${q.figure?"שרטוט: יש. לחצו לעריכת הקוד":"הוספת שרטוט (לא חובה)"}</summary>
+      <textarea data-f="figure" class="ltr" style="min-height:60px;font-size:12px;margin-top:6px" placeholder="קוד SVG. אפשר לבקש מ-Claude לשרטט">${esc(q.figure||"")}</textarea></details>
+    <div class="muted small" style="margin-top:12px">כך התלמיד יראה את השאלה</div>
+    <div class="preview" id="pv${i}"></div>
   </div>`;
 }
 
@@ -805,45 +1041,54 @@ function qEditor(q,i){
 function tabSettings(){
   const el = $("#tab");
   const local = A.due_at ? new Date(new Date(A.due_at).getTime() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16) : "";
-  el.innerHTML = `<div class="card">
-    <label>שם המשימה</label><input id="s_title" type="text" value="${esc(A.title)}">
-    <label>כיתות</label>
-    ${CL.length ? CL.map(c=>`<label class="chk"><input type="checkbox" class="s_cls" value="${c.id}" ${ACL.includes(c.id)?"checked":""}> ${esc(c.name)}</label>`).join("") : `<p class="muted small">אין עדיין כיתות. צרו כיתה במסך הראשי ← "כיתות".</p>`}
-    <label>הוראות לתלמידים (לא חובה)</label><textarea id="s_desc">${esc(A.description||"")}</textarea>
+  el.innerHTML = `<div class="sheet">
+    <label class="f" for="s_title">שם המשימה</label><input id="s_title" type="text" value="${esc(A.title)}">
+    <label class="f">כיתות</label>
+    ${CL.length ? CL.map(c=>`<label class="chk"><input type="checkbox" class="s_cls" value="${c.id}" ${ACL.includes(c.id)?"checked":""}><span>${esc(c.name)}</span></label>`).join("") : `<p class="muted small">אין עדיין כיתות. צרו כיתה במסך הראשי, בלשונית "כיתות".</p>`}
+    <label class="f" for="s_desc">הוראות לתלמידים (לא חובה)</label><textarea id="s_desc">${esc(A.description||"")}</textarea>
     <div class="row">
-      <div class="grow"><label>מועד אחרון להגשה (לא חובה)</label><input id="s_due" type="datetime-local" value="${local}"></div>
-      <div class="grow"><label>מספר ניסיונות לכל תלמיד</label><select id="s_att">
-        ${[1,2,3,5].map(n=>`<option value="${n}" ${A.max_attempts===n?"selected":""}>${n}</option>`).join("")}<option value="" ${A.max_attempts==null?"selected":""}>ללא הגבלה</option></select></div>
+      <div class="grow" style="min-width:200px"><label class="f" for="s_due">מועד אחרון (לא חובה)</label><input id="s_due" type="datetime-local" value="${local}"></div>
+      <div class="grow" style="min-width:160px"><label class="f" for="s_att">ניסיונות לכל תלמיד</label><select id="s_att">
+        ${[1,2,3,5].map(n=>`<option value="${n}" ${A.max_attempts===n?"selected":""}>${n===1?"הגשה אחת":n}</option>`).join("")}<option value="" ${A.max_attempts==null?"selected":""}>ללא הגבלה</option></select></div>
     </div>
-    <label class="chk"><input type="checkbox" id="s_open" ${A.is_open?"checked":""}> המשימה פתוחה (התלמידים רואים אותה)</label>
-    <label class="chk"><input type="checkbox" id="s_show" ${A.show_results?"checked":""}> להראות לתלמיד ציון ותשובות נכונות אחרי ההגשה</label>
-    <p class="muted small">אם תכבו את האפשרות האחרונה, התלמידים יראו רק "הוגש". אפשר להדליק אותה מאוחר יותר, למשל אחרי המועד האחרון, והציונים יופיעו להם.</p>
-    <div class="row" style="margin-top:16px"><button class="primary" id="s_save">שמירה</button><div class="grow"></div><button class="danger" id="s_del">מחיקת המשימה</button></div>
+    <label class="chk" style="margin-top:16px"><input type="checkbox" id="s_show" ${A.show_results?"checked":""}><span>להראות לתלמיד ציון ותשובות נכונות מיד אחרי ההגשה<br><span class="muted small">אם תכבו, התלמידים יראו רק "הוגש". אפשר להדליק מאוחר יותר, למשל אחרי המועד האחרון.</span></span></label>
+    <div class="row" style="margin-top:18px"><button class="primary" id="s_save">שמירת ההגדרות</button></div>
+  </div>
+  <div class="sheet">
+    <h2>עוד פעולות</h2>
+    <div class="row"><button id="s_dup">שכפול המשימה</button><span class="muted small grow">עותק סגור עם אותן שאלות, למשל לכיתה אחרת.</span></div>
+    <div class="row" style="margin-top:12px"><button class="ghost danger" id="s_del">מחיקת המשימה</button></div>
   </div>`;
   $("#s_save").onclick = async () => {
     const due = $("#s_due").value;
-    const upd = { title:$("#s_title").value.trim()||"ללא שם", description:$("#s_desc").value, due_at: due? new Date(due).toISOString(): null,
-      max_attempts: $("#s_att").value? +$("#s_att").value : null, is_open:$("#s_open").checked, show_results:$("#s_show").checked };
+    const upd = { title:$("#s_title").value.trim()||"משימה ללא שם", description:$("#s_desc").value, due_at: due? new Date(due).toISOString(): null,
+      max_attempts: $("#s_att").value? +$("#s_att").value : null, show_results:$("#s_show").checked };
     const { error } = await sb.from("hw_assignments").update(upd).eq("id",A.id);
     if(error) return toast(error.message);
-    const want = [...document.querySelectorAll(".s_cls:checked")].map(x=>x.value);
+    const want = $$(".s_cls:checked").map(x=>x.value);
     const add = want.filter(x=>!ACL.includes(x)), del = ACL.filter(x=>!want.includes(x));
     if(add.length){ const r = await sb.from("hw_assignment_classes").insert(add.map(c=>({ assignment_id:A.id, class_id:c }))); if(r.error) return toast(r.error.message); }
     if(del.length){ const r = await sb.from("hw_assignment_classes").delete().eq("assignment_id",A.id).in("class_id",del); if(r.error) return toast(r.error.message); }
-    ACL = want; Object.assign(A, upd); $("#ttl").textContent = A.title; drawAssignHeader(); toast("נשמר ✓");
+    ACL = want; Object.assign(A, upd); $("#ttl").textContent = A.title; drawAssignHeader(); toast("ההגדרות נשמרו");
+  };
+  $("#s_dup").onclick = async () => {
+    const { data:n, error } = await sb.from("hw_assignments").insert({ title:A.title+" (עותק)", description:A.description, is_open:false, show_results:A.show_results, max_attempts:A.max_attempts }).select("id").single();
+    if(error) return toast(error.message);
+    if(Q.length){ const r = await sb.from("hw_questions").insert(Q.map((q,i)=>({ assignment_id:n.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.choices, answer:q.answer, points:q.points, figure:q.figure||null }))); if(r.error) return toast(r.error.message); }
+    toast("נוצר עותק. בחרו לו כיתה"); go("#/teacher/a/"+n.id+"?tab=settings");
   };
   $("#s_del").onclick = async () => {
-    if(!confirm("למחוק את המשימה, כל השאלות וכל ההגשות? אי אפשר לבטל.")) return;
+    if(!(await ask(`<h2>למחוק את "${esc(A.title)}"?</h2><p class="muted">כל השאלות וכל ההגשות של התלמידים יימחקו. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return;
     const { error } = await sb.from("hw_assignments").delete().eq("id",A.id);
     if(error) return toast(error.message); go("#/teacher");
   };
 }
 
-/* ---------- boot ---------- */
+/* ================= boot ================= */
 window.addEventListener("hashchange", route);
 window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue=""; } });
 window.addEventListener("load", async () => {
-  if(!window.supabase){ app().innerHTML = `<p class="err">שגיאה בטעינה. נסו לרענן.</p>`; return; }
+  if(!window.supabase){ app().innerHTML = `<div class="sheet"><p class="err">האתר לא נטען עד הסוף. בדקו את החיבור לאינטרנט ורעננו.</p></div>`; return; }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const { data } = await sb.auth.getSession(); session = data.session;
   sb.auth.onAuthStateChange((_e, s) => { session = s; });
