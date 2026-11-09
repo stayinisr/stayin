@@ -107,6 +107,7 @@
   /* code boxes */
   .codebox{display:flex;gap:8px;justify-content:center;direction:ltr}
   .codebox input{width:48px;height:58px;padding:0;text-align:center;font-size:24px;font-weight:900;text-transform:uppercase;border:1.5px solid var(--line-2);background:#fff;caret-color:var(--acc)}
+  .nocopy .q .prompt,.nocopy .q .fig,.nocopy .q .choice,.nocopy .q .katex{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   #p1 input,#p2 input,#c0 input,#c1 input,#c2 input,.pin input{-webkit-text-security:disc;text-security:disc}
   .codebox input.on{border-color:var(--pri);color:var(--pri)}
   .codebox input:focus{border-color:var(--acc);box-shadow:inset 0 -3px 0 var(--acc)}
@@ -517,7 +518,7 @@ async function route(){
   navSeq++;
   const h = location.hash || "#/";
   window.scrollTo(0,0);
-  renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav", "has-tnav");
+  renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav", "has-tnav", "nocopy");
   document.body.dataset.area = h.startsWith("#/teacher") ? "teacher" : "student";
   let m;
   if((m = h.match(/^#\/join\/([A-Za-z0-9]+)/))) return studentAuth("register", m[1].toUpperCase());
@@ -610,7 +611,6 @@ function studentAuth(mode, code=""){
       <h1 style="text-align:center">כניסה לשיעורי הבית</h1>
       <p class="muted" style="text-align:center">קוד כיתה, השם שלך וקוד סודי.</p>
       <div class="card"><div class="bd" id="af"></div></div>
-      <p style="text-align:center"><button class="ghost sm" id="legacy">כניסה עם שם משתמש וסיסמה</button></p>
     </div>`;
   const box = () => $("#af");
   const err = m => { const e = $("#ae"); if(e) e.textContent = m || ""; };
@@ -756,16 +756,6 @@ function studentAuth(mode, code=""){
       if(error || data?.error) return err(error ? errMsg(error) : data.error);
       box().innerHTML = `<h2 style="text-align:center">הדיווח נשלח</h2><p class="muted" style="text-align:center;margin:10px 0 16px">אחרי שהמורה יאפס, חוזרים לכאן ונרשמים עם המייל שלך.</p><button class="light wide" id="bk">חזרה</button>`;
       $("#bk").onclick = () => stepName(); };
-  };
-  $("#legacy").onclick = () => {
-    box().innerHTML = `<form id="lf">
-      <label class="f" for="u">שם משתמש</label><input id="u" type="text" class="ltr" autocomplete="username" autocapitalize="none" spellcheck="false">
-      <label class="f" for="p">סיסמה</label><input id="p" type="password" class="ltr" autocomplete="current-password">
-      <button class="primary big wide" style="margin-top:22px">כניסה</button>
-      <p class="err" id="ae" role="alert" style="text-align:center"></p></form>`;
-    $("#legacy").textContent = "כניסה עם קוד כיתה"; $("#legacy").onclick = () => studentAuth("code", code);
-    $("#lf").onsubmit = async e => { e.preventDefault(); err(); const r = await sb.rpc("hw_student_login",{ p_username:$("#u").value, p_password:$("#p").value });
-      if(r.error) return err(errMsg(r.error)); store("hw-token", r.data.token); go("#/"); };
   };
   if(code.length === 6) loadClass(code).then(()=>{ if(!R) stepCode(); }); else stepCode();
 }
@@ -967,6 +957,9 @@ function showForm(body, a){
       <button class="primary big" id="sub">הגשה</button>
     </div></div>`;
   math(body); bindKeys(body); bindChoices(body);
+  document.body.classList.add("nocopy");
+  $("#qs").addEventListener("copy", e => { if(!e.target.closest?.("input,textarea")){ e.preventDefault(); toast("העתקה של השאלות חסומה"); } });
+  $("#qs").addEventListener("contextmenu", e => { if(!e.target.closest("input,textarea")) e.preventDefault(); });
   const refresh = () => {
     const ans = collect(body); let n = 0;
     a.questions.forEach((q,i)=>{ const f = !!ans[q.id]; if(f) n++; body.querySelectorAll(".segbar i")[i].classList.toggle("f", f); });
@@ -1338,7 +1331,7 @@ async function teacherStudent(id){
       <div class="card" style="margin:0"><div class="hd"><h2>נושאים</h2></div><div class="bd">${topics.length?`<div class="bars">${topics.map(t=>`<div class="b"><span class="name">${esc(t.t)}</span><div class="meter ${band(t.p)}"><i style="width:${t.p}%"></i></div><span class="v">${t.p}%</span></div>`).join("")}</div>`:`<p class="muted" style="margin:0">אין עדיין נתונים לפי נושא. תייגו שאלות בנושא בעורך.</p>`}</div></div>
       <div class="card" style="margin:0"><div class="hd"><h2>הערות פרטיות</h2><span class="muted tiny">רק אתה רואה</span></div><div class="bd"><textarea id="tn" placeholder="למשל: מתקשה בשברים, דיברתי עם ההורים ב-10.11">${esc(st.teacher_note||"")}</textarea><button class="primary sm" id="tns" style="margin-top:8px">שמירה</button></div></div>
     </div>
-    <div class="card"><div class="hd"><h2>משימות</h2></div><div class="rows">
+    <div class="card"><div class="hd"><h2>משימות</h2>${asg.length?`<button class="light sm" id="scsv">גיליון תלמיד</button>`:""}</div><div class="rows">
       ${asg.map(a=>{ const s = D.last[st.id+"|"+a.id]; const late = a.due_at && isPast(a.due_at) && !s;
         return `<div class="r ${s?"":"off"}" data-a="${a.id}" data-sub="${s?.id||""}">${dateTile(a.due_at, late)}<div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${s?`הוגש ${fmtDate(s.created_at)}${s.manual_score!=null?", ציון תוקן ידנית":""}`:late?"לא הוגש":"עוד לא הוגש"}</div></div><div class="end">${s?gbadge(D.eff(s)):""}${s?IC.chev:""}</div></div>`; }).join("") || `<div class="empty"><b>אין משימות לכיתה</b></div>`}
     </div></div>
@@ -1348,6 +1341,11 @@ async function teacherStudent(id){
       <div class="row">
       <select id="mv" style="width:auto">${D.classes.map(x=>`<option value="${x.id}" ${x.id===st.class_id?"selected":""}>${esc(x.name)}</option>`).join("")}</select><button class="light sm" id="mvb">העברה לכיתה</button>
       <button class="light sm" id="pw">איפוס החשבון</button><button class="btn-danger sm" id="rm">הסרת התלמיד</button></div></div></div>`;
+  const sc = $("#scsv"); if(sc) sc.onclick = () => downloadCsv(st.display_name, [
+    ["תלמיד", st.display_name], ["כיתה", c?.name||""], ["ממוצע משוקלל", avg ?? ""], [],
+    ["משימה","סוג","משקל","תאריך הגשה אחרון","הוגש","ציון"],
+    ...asg.map(a => { const s = D.last[st.id+"|"+a.id]; return [a.title, ({homework:"שיעורי בית",exam:"מבחן",practice:"תרגול"})[a.mode]||"", a.weight ?? 1, a.due_at ? new Date(a.due_at).toLocaleDateString("he-IL") : "", s ? new Date(s.created_at).toLocaleString("he-IL") : "לא הוגש", s ? D.eff(s) : ""]; }),
+    [], ["נושא","הצלחה","מספר שאלות"], ...topics.map(t => [t.t, t.p+"%", t.n])]);
   $("#tns").onclick = async () => { const { error } = await sb.from("hw_students").update({ teacher_note: $("#tn").value.trim() || null }).eq("id", id); toast(error ? error.message : "ההערה נשמרה"); };
   $("#mvb").onclick = async () => { const to = $("#mv").value; if(to===st.class_id) return; if(!(await ask(`<h2>להעביר את ${esc(st.display_name)}?</h2><p class="muted">ההגשות הקודמות נשמרות. התלמיד יראה מעכשיו את המשימות של הכיתה החדשה.</p>`, "העברה"))) return; const { error } = await sb.from("hw_students").update({ class_id:to }).eq("id", id); if(error) return toast(error.message); toast("התלמיד הועבר"); teacherStudent(id); };
   $("#pw").onclick = async () => { if(!(await ask(`<h2>לאפס את הקוד של ${esc(st.display_name)}?</h2><p class="muted">הקוד הסודי והמייל יימחקו. בכניסה הבאה התלמיד יירשם מחדש עם המייל שלו. ההגשות והציונים נשמרים.</p>`, "איפוס"))) return; const { error } = await sb.rpc("hw_teacher_reset_pin",{ p_student:id }); if(error) return toast(error.message); toast("החשבון אופס"); teacherStudent(id); };
