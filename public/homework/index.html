@@ -372,12 +372,13 @@ async function teacherHome(){
   const tab = new URLSearchParams((location.hash.split("?")[1])||"").get("tab") || "a";
   app().innerHTML = `<p class="muted">טוען…</p>`;
   const seq = navSeq;
-  const [{data:list, error}, {data:classes}] = await Promise.all([
+  const [{data:list, error:e1}, {data:classes, error:e2}] = await Promise.all([
     sb.from("hw_assignments").select("id,title,is_open,due_at,created_at,hw_submissions(count),hw_questions(count),hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
     sb.from("hw_classes").select("id,name,join_code,join_open,created_at,hw_students(count)").order("created_at")
   ]);
   if(seq!==navSeq) return;
-  if(error){ app().innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
+  const error = e1 || e2;
+  if(error){ app().innerHTML = `<div class="card"><p class="err">שגיאה בטעינה: ${esc(error.message)}</p></div>`; return; }
   const cname = Object.fromEntries((classes||[]).map(c=>[c.id,c.name]));
   app().innerHTML = `
     <div class="tabs" style="margin-top:0"><button data-t="a">משימות</button><button data-t="c">כיתות</button></div>
