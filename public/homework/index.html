@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שיעורי בית</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#f6f5f1; --card:#fff; --ink:#1d2433; --muted:#667085; --line:#e4e2db;
+    --accent:#2f5bd3; --accent-ink:#fff; --ok:#1f8a4c; --ok-bg:#e7f5ec; --bad:#c2410c; --bad-bg:#fdeee6;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Assistant","Rubik",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+  header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  header .in{max-width:860px;margin:auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
+  header .logo{font-weight:800;font-size:19px;letter-spacing:-.2px;cursor:pointer}
+  header .logo span{color:var(--accent)}
+  header .sp{flex:1}
+  main{max-width:860px;margin:auto;padding:22px 18px 80px}
+  h1{font-size:26px;margin:4px 0 6px;letter-spacing:-.3px}
+  h2{font-size:19px;margin:0 0 10px}
+  .muted{color:var(--muted)} .small{font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin:14px 0}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1;min-width:140px}
+  label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=datetime-local],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:90px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+  .ltr{direction:ltr;text-align:left}
+  .katex{direction:ltr;unicode-bidi:isolate;display:inline-block}
+  .katex-display{direction:ltr}
+  button{font:inherit;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 16px;border-radius:10px;cursor:pointer}
+  button:hover{border-color:#c9c6bc}
+  button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+  button.danger{color:var(--bad)}
+  button.link{border:none;background:none;color:var(--accent);padding:4px 6px}
+  button:disabled{opacity:.55;cursor:default}
+  .big{font-size:18px;padding:12px 22px}
+  .q{border-top:1px solid var(--line);padding:16px 0}
+  .q:first-child{border-top:none;padding-top:4px}
+  .qn{font-weight:800;color:var(--accent);margin-left:6px}
+  .prompt{white-space:pre-wrap}
+  .ansrow{display:flex;gap:8px;align-items:center;margin-top:10px;max-width:420px}
+  .unit{direction:ltr;color:var(--muted);font-weight:600;white-space:nowrap}
+  .choice{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin:7px 0;cursor:pointer}
+  .choice input{margin-top:5px}
+  .choice.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,#fff)}
+  .res{margin-top:10px;padding:8px 12px;border-radius:10px;font-size:15px}
+  .res.ok{background:var(--ok-bg);color:var(--ok)} .res.bad{background:var(--bad-bg);color:var(--bad)}
+  .score{font-size:42px;font-weight:800;letter-spacing:-1px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;background:#eef1f8;color:#3b4a6b}
+  .pill.open{background:var(--ok-bg);color:var(--ok)} .pill.closed{background:#f1f0ec;color:var(--muted)}
+  .code{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:2px;direction:ltr;display:inline-block}
+  .list .item{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer}
+  .list .item:first-child{border-top:none}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 0}
+  .tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 14px;color:var(--muted)}
+  .tabs button.on{border-bottom-color:var(--accent);color:var(--ink);font-weight:700}
+  .qedit{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;background:#fcfcfa}
+  .preview{background:#fff;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px;white-space:pre-wrap;min-height:20px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:right;white-space:nowrap}
+  th{color:var(--muted);font-weight:600}
+  td.c{text-align:center}
+  .tw{overflow-x:auto}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--bad);font-weight:700}
+  .err{color:var(--bad);margin-top:8px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;z-index:20;font-size:15px}
+  .bar{height:8px;background:#eceae4;border-radius:99px;overflow:hidden;min-width:80px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .hero{text-align:center;padding:40px 10px}
+  .hero input{max-width:260px;text-align:center;font-size:24px;letter-spacing:4px;text-transform:uppercase;direction:ltr}
+  @media (max-width:560px){ h1{font-size:22px} .card{padding:14px} }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <div class="logo" onclick="go('#/')">שיעורי<span>.בית</span></div>
+  <div class="sp"></div>
+  <div id="hdr"></div>
+</div></header>
+<main id="app"><p class="muted">טוען…</p></main>
+
+<script>
+const SUPABASE_URL = "https://cihpuwinkgaumngsftin.supabase.co";
+const SUPABASE_KEY = "sb_publishable_uFMJVz_1cBnHK_DEhBNlHg_5_SdFhOK";
+let sb = null, session = null;
+
+/* ---------- helpers ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const app = () => $("#app");
+function go(h){ if(location.hash===h) route(); else location.hash=h; }
+function toast(msg){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2200); }
+function math(el){
+  if(!el || !window.renderMathInElement) return;
+  try{ renderMathInElement(el,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false}); }catch(e){}
+}
+function store(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||"null"); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
+function errMsg(e){ const m = e?.message || String(e); return m.replace(/^.*?:\s*(?=[\u0590-\u05FF])/,""); }
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c=="x"?r:(r&3|8)).toString(16);}));
+const fmtDate = d => d ? new Date(d).toLocaleString("he-IL",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+const siteBase = () => location.origin + location.pathname;
+
+/* ---------- router ---------- */
+async function route(){
+  const h = location.hash || "#/";
+  window.scrollTo(0,0);
+  renderHeader();
+  let m;
+  if((m = h.match(/^#\/a\/([A-Za-z0-9]+)/))) return studentPage(m[1].toUpperCase());
+  if(h.startsWith("#/teacher/a/")) return teacherAssignment(h.split("/")[3]);
+  if(h.startsWith("#/teacher")) return teacherHome();
+  return homePage();
+}
+function renderHeader(){
+  const h = location.hash || "";
+  $("#hdr").innerHTML = h.startsWith("#/teacher")
+    ? (session ? `<button class="link" onclick="logout()">התנתקות</button>` : "")
+    : `<button class="link" onclick="go('#/teacher')">כניסת מורה</button>`;
+}
+
+/* ---------- home ---------- */
+function homePage(){
+  app().innerHTML = `
+    <div class="hero">
+      <h1>הגשת שיעורי בית</h1>
+      <p class="muted">הקלידו את הקוד שקיבלתם מהמורה</p>
+      <form id="cf" class="row" style="justify-content:center;margin-top:18px">
+        <input id="code" type="text" maxlength="8" autocomplete="off" placeholder="ABC123">
+        <button class="primary big">כניסה</button>
+      </form>
+    </div>`;
+  $("#cf").onsubmit = e => { e.preventDefault(); const c=$("#code").value.trim(); if(c) go("#/a/"+c.toUpperCase()); };
+  $("#code").focus();
+}
+
+/* ---------- student ---------- */
+async function studentPage(code){
+  app().innerHTML = `<p class="muted">טוען את המשימה…</p>`;
+  const { data, error } = await sb.rpc("hw_get_assignment", { p_code: code });
+  if(error || !data){
+    app().innerHTML = `<div class="card"><h2>המשימה לא נמצאה</h2><p class="muted">ייתכן שהקוד שגוי או שהמורה סגר את המשימה.</p><button onclick="go('#/')">חזרה</button></div>`;
+    return;
+  }
+  const a = data, dkey = "hw-draft-"+code;
+  const draft = store(dkey) || { name:"", answers:{} };
+  const due = a.due_at ? `<span class="pill">להגשה עד ${fmtDate(a.due_at)}</span>` : "";
+  app().innerHTML = `
+    <h1>${esc(a.title)}</h1>
+    <div class="row">${due}<span class="pill">${a.questions.length} שאלות</span></div>
+    ${a.description ? `<p class="prompt" id="desc">${esc(a.description)}</p>` : ""}
+    <div class="card">
+      <label for="sname">שם מלא</label>
+      <input id="sname" type="text" maxlength="60" value="${esc(draft.name)}" placeholder="שם פרטי ושם משפחה">
+    </div>
+    <div class="card" id="qs">
+      ${a.questions.map((q,i)=>`
+        <div class="q" data-id="${q.id}">
+          <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>
+            ${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
+          ${answerInput(q, draft.answers[q.id] ?? "")}
+          <div class="slot"></div>
+        </div>`).join("")}
+    </div>
+    <div class="row"><button class="primary big" id="sub">הגשה</button><span class="muted small" id="saved"></span></div>
+    <div id="out"></div>`;
+  math(app());
+  const save = () => { draft.name=$("#sname").value; draft.answers=collect(); store(dkey,draft); };
+  app().addEventListener("input", save);
+  app().addEventListener("change", e => {
+    save();
+    if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target) ));
+  });
+  $("#sub").onclick = async () => {
+    const name = $("#sname").value.trim();
+    if(name.length < 2){ toast("נא למלא שם מלא"); $("#sname").focus(); return; }
+    const answers = collect();
+    const empty = a.questions.filter(q => !answers[q.id]).length;
+    if(empty && !confirmInline(`יש ${empty} שאלות בלי תשובה. ללחוץ שוב על "הגשה" כדי להגיש בכל זאת.`)) return;
+    $("#sub").disabled = true; $("#sub").textContent = "שולח…";
+    const { data:r, error:e } = await sb.rpc("hw_submit", { p_code: code, p_name: name, p_answers: answers });
+    if(e){ $("#sub").disabled=false; $("#sub").textContent="הגשה"; $("#out").innerHTML=`<p class="err">${esc(errMsg(e))}</p>`; return; }
+    try{ localStorage.removeItem(dkey); }catch(_){}
+    showResults(a, r);
+  };
+}
+let pendingConfirm = null;
+function confirmInline(msg){
+  if(pendingConfirm === msg){ pendingConfirm=null; return true; }
+  pendingConfirm = msg; $("#out").innerHTML = `<p class="err">${esc(msg)}</p>`; return false;
+}
+function answerInput(q, val){
+  if(q.kind === "choice"){
+    return `<div style="margin-top:8px">${(q.choices||[]).map((c,j)=>`
+      <label class="choice ${String(val)===String(j)?"sel":""}"><input type="radio" name="q_${q.id}" value="${j}" ${String(val)===String(j)?"checked":""}>
+      <span class="prompt" style="color:var(--ink)">${esc(c)}</span></label>`).join("")}</div>`;
+  }
+  const im = q.kind === "number" ? `inputmode="decimal"` : "";
+  return `<div class="ansrow"><input type="text" class="ltr ans" ${im} autocomplete="off" value="${esc(val)}" placeholder="${q.kind==="number"?"מספר, למשל 2.5 או 3/4 או 1.2e-3":"תשובה"}">
+    ${q.unit?`<span class="unit">${esc(q.unit)}</span>`:""}</div>`;
+}
+function collect(){
+  const out = {};
+  document.querySelectorAll("#qs .q").forEach(el => {
+    const id = el.dataset.id, t = el.querySelector("input.ans"), r = el.querySelector("input[type=radio]:checked");
+    const v = t ? t.value.trim() : (r ? r.value : "");
+    if(v !== "") out[id] = v;
+  });
+  return out;
+}
+function showResults(a, r){
+  $("#sub").remove(); $("#sname").disabled = true;
+  document.querySelectorAll("#qs input").forEach(i=>i.disabled=true);
+  if(!r.results){
+    $("#out").innerHTML = `<div class="card"><h2>ההגשה התקבלה ✓</h2><p class="muted">המורה יראה את התוצאות.</p></div>`;
+    return;
+  }
+  const pct = r.max ? Math.round(100*r.score/r.max) : 0;
+  r.results.forEach(x => {
+    const el = document.querySelector(`.q[data-id="${x.question_id}"] .slot`);
+    if(!el) return;
+    el.innerHTML = x.correct ? `<div class="res ok">✓ נכון</div>`
+      : `<div class="res bad">✗ לא נכון. התשובה הנכונה: <bdi class="ltr">${esc(x.answer ?? "")}</bdi></div>`;
+    math(el);
+  });
+  $("#out").innerHTML = `<div class="card" style="text-align:center"><div class="muted">הציון שלך</div><div class="score">${pct}</div>
+    <div class="muted">${r.score} מתוך ${r.max} נקודות</div></div>`;
+  $("#out").scrollIntoView({behavior:"smooth"});
+}
+
+/* ---------- teacher: auth ---------- */
+async function logout(){ await sb.auth.signOut(); session=null; go("#/teacher"); }
+function loginPage(){
+  app().innerHTML = `
+    <div class="card" style="max-width:420px;margin:40px auto">
+      <h2>כניסת מורה</h2>
+      <form id="lf">
+        <label>אימייל</label><input id="em" type="email" class="ltr" autocomplete="username" required>
+        <label>סיסמה</label><input id="pw" type="password" class="ltr" autocomplete="current-password" required>
+        <div style="margin-top:16px"><button class="primary">כניסה</button></div>
+        <p class="err" id="le"></p>
+      </form>
+      <p class="muted small">אותו חשבון כמו ב-Stayin.</p>
+    </div>`;
+  $("#lf").onsubmit = async e => {
+    e.preventDefault();
+    const { data, error } = await sb.auth.signInWithPassword({ email:$("#em").value.trim(), password:$("#pw").value });
+    if(error){ $("#le").textContent = "האימייל או הסיסמה שגויים"; return; }
+    session = data.session; route();
+  };
+}
+async function requireTeacher(){
+  if(!session){ loginPage(); return false; }
+  const { data } = await sb.rpc("hw_is_teacher");
+  if(!data){ app().innerHTML = `<div class="card"><h2>אין הרשאת מורה</h2><p class="muted">החשבון הזה לא מוגדר כמורה.</p></div>`; return false; }
+  return true;
+}
+
+/* ---------- teacher: list ---------- */
+async function teacherHome(){
+  if(!(await requireTeacher())) return;
+  app().innerHTML = `<p class="muted">טוען…</p>`;
+  const { data:list, error } = await sb.from("hw_assignments").select("id,title,code,is_open,due_at,created_at,hw_submissions(count),hw_questions(count)").order("created_at",{ascending:false});
+  if(error){ app().innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
+  app().innerHTML = `
+    <div class="row"><h1 class="grow">המשימות שלי</h1><button class="primary" id="new">+ משימה חדשה</button></div>
+    <div class="card list">
+      ${list.length ? list.map(a=>`
+        <div class="item" data-id="${a.id}">
+          <div class="grow"><div style="font-weight:700">${esc(a.title)}</div>
+            <div class="muted small">${a.hw_questions[0]?.count||0} שאלות · ${a.hw_submissions[0]?.count||0} הגשות${a.due_at?" · עד "+fmtDate(a.due_at):""}</div></div>
+          <span class="code">${a.code}</span>
+          <span class="pill ${a.is_open?"open":"closed"}">${a.is_open?"פתוחה":"סגורה"}</span>
+        </div>`).join("") : `<p class="muted">עדיין אין משימות. צרו את הראשונה.</p>`}
+    </div>`;
+  document.querySelectorAll(".item").forEach(el => el.onclick = () => go("#/teacher/a/"+el.dataset.id));
+  $("#new").onclick = async () => {
+    const { data, error } = await sb.from("hw_assignments").insert({ title:"משימה חדשה" }).select("id").single();
+    if(error) return toast(error.message);
+    go("#/teacher/a/"+data.id+"?tab=questions");
+  };
+}
+
+/* ---------- teacher: assignment ---------- */
+let A = null, Q = [], removed = [], dirty = false;
+async function teacherAssignment(idq){
+  if(!(await requireTeacher())) return;
+  const [id, qs] = idq.split("?");
+  const tab = new URLSearchParams(qs||"").get("tab") || "results";
+  app().innerHTML = `<p class="muted">טוען…</p>`;
+  const [{data:a, error}, {data:qq}] = await Promise.all([
+    sb.from("hw_assignments").select("*").eq("id",id).single(),
+    sb.from("hw_questions").select("*").eq("assignment_id",id).order("position")
+  ]);
+  if(error || !a){ app().innerHTML = `<p class="err">המשימה לא נמצאה</p>`; return; }
+  A = a; Q = qq || []; removed = []; dirty = false;
+  const link = siteBase()+"#/a/"+a.code;
+  app().innerHTML = `
+    <button class="link" onclick="go('#/teacher')">→ כל המשימות</button>
+    <h1 id="ttl">${esc(a.title)}</h1>
+    <div class="row">
+      <span class="pill ${a.is_open?"open":"closed"}">${a.is_open?"פתוחה להגשה":"סגורה"}</span>
+      <span class="muted small">קוד:</span><span class="code">${a.code}</span>
+      <button class="link" id="cp">העתקת קישור לתלמידים</button>
+    </div>
+    <div class="tabs">
+      <button data-t="results">תוצאות</button><button data-t="questions">שאלות</button><button data-t="settings">הגדרות</button>
+    </div>
+    <div id="tab"></div>`;
+  $("#cp").onclick = async () => { try{ await navigator.clipboard.writeText(link); toast("הקישור הועתק"); }catch(e){ prompt("הקישור:", link); } };
+  const tabs = document.querySelectorAll(".tabs button");
+  const show = t => {
+    if(dirty && t!=="questions" && !confirm("יש שינויים בשאלות שלא נשמרו. לעזוב בלי לשמור?")) return;
+    if(t!=="questions"){ dirty=false; }
+    tabs.forEach(b=>b.classList.toggle("on", b.dataset.t===t));
+    ({results:tabResults, questions:tabQuestions, settings:tabSettings})[t]();
+  };
+  tabs.forEach(b => b.onclick = () => show(b.dataset.t));
+  show(tab);
+}
+
+/* results */
+async function tabResults(){
+  const el = $("#tab"); el.innerHTML = `<p class="muted">טוען…</p>`;
+  const { data:subs, error } = await sb.from("hw_submissions").select("*").eq("assignment_id",A.id).order("created_at");
+  if(error){ el.innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
+  if(!subs.length){ el.innerHTML = `<div class="card"><p class="muted">עדיין אין הגשות. שלחו לתלמידים את הקישור או את הקוד <span class="code">${A.code}</span>.</p></div>`; return; }
+  // latest submission per student
+  const by = {}; subs.forEach(s => { const k=s.student_name.trim().toLowerCase(); (by[k] ||= []).push(s); });
+  const rows = Object.values(by).map(arr => ({ last: arr[arr.length-1], n: arr.length })).sort((x,y)=>x.last.student_name.localeCompare(y.last.student_name,"he"));
+  const avg = Math.round(rows.reduce((s,r)=>s + (r.last.max_score? 100*r.last.score/r.last.max_score : 0),0)/rows.length);
+  const qstat = Q.map(q => { let ok=0,t=0; rows.forEach(r=>{ const x=(r.last.results||[]).find(z=>z.question_id===q.id); if(x){t++; if(x.correct) ok++;} }); return { q, pct: t? Math.round(100*ok/t):0, t }; });
+  const hard = qstat.filter(s=>s.t).sort((a,b)=>a.pct-b.pct).slice(0,3);
+  el.innerHTML = `
+    <div class="row" style="margin-top:14px">
+      <div class="card grow" style="margin:0"><div class="muted small">הגישו</div><div class="score" style="font-size:30px">${rows.length}</div></div>
+      <div class="card grow" style="margin:0"><div class="muted small">ממוצע כיתתי</div><div class="score" style="font-size:30px">${avg}</div></div>
+    </div>
+    ${hard.length?`<div class="card"><h2>השאלות שהכי קשות לכיתה</h2>${hard.map(s=>`
+      <div class="row" style="margin:8px 0"><span class="qn">${Q.indexOf(s.q)+1}.</span><span class="grow prompt small">${esc(s.q.prompt)}</span>
+      <div class="bar" style="width:90px"><i style="width:${s.pct}%"></i></div><span class="small">${s.pct}%</span></div>`).join("")}</div>`:""}
+    <div class="card">
+      <div class="row"><h2 class="grow" style="margin:0">ציונים</h2><button id="csv">הורדה לאקסל (CSV)</button></div>
+      <div class="tw"><table>
+        <thead><tr><th>שם</th><th>ציון</th>${Q.map((q,i)=>`<th class="c">${i+1}</th>`).join("")}<th>הוגש</th><th></th></tr></thead>
+        <tbody>${rows.map(r=>{ const s=r.last; const pct=s.max_score?Math.round(100*s.score/s.max_score):0;
+          return `<tr><td>${esc(s.student_name)}${r.n>1?` <span class="muted small">(${r.n} ניסיונות)</span>`:""}</td><td><b>${pct}</b></td>
+          ${Q.map(q=>{ const x=(s.results||[]).find(z=>z.question_id===q.id); return `<td class="c" title="${esc(x?.given??"")}">${!x?"–":x.correct?'<span class="yes">✓</span>':'<span class="no">✗</span>'}</td>`; }).join("")}
+          <td class="muted">${fmtDate(s.created_at)}</td><td><button class="link danger" data-del="${esc(s.student_name)}">איפוס</button></td></tr>`; }).join("")}</tbody>
+      </table></div>
+      <p class="muted small">"איפוס" מוחק את ההגשות של התלמיד במשימה הזו, כדי שיוכל להגיש מחדש. ריחוף על ✓/✗ מציג את התשובה שהתלמיד כתב.</p>
+    </div>`;
+  math(el);
+  el.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    const nm = b.dataset.del; if(!confirm(`למחוק את ההגשות של ${nm}?`)) return;
+    const ids = subs.filter(s=>s.student_name.trim().toLowerCase()===nm.trim().toLowerCase()).map(s=>s.id);
+    const { error } = await sb.from("hw_submissions").delete().in("id", ids);
+    if(error) return toast(error.message); toast("נמחק"); tabResults();
+  });
+  $("#csv").onclick = () => {
+    const head = ["שם","ציון","נקודות","מקסימום", ...Q.map((q,i)=>"שאלה "+(i+1)), "הוגש"];
+    const lines = rows.map(r => { const s=r.last; return [s.student_name, s.max_score?Math.round(100*s.score/s.max_score):0, s.score, s.max_score,
+      ...Q.map(q=>{ const x=(s.results||[]).find(z=>z.question_id===q.id); return x? (x.correct?"נכון":"שגוי")+" ("+(x.given??"")+")" : ""; }), new Date(s.created_at).toLocaleString("he-IL")]; });
+    const csv = "\ufeff" + [head, ...lines].map(l=>l.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+    const aEl = document.createElement("a"); aEl.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"})); aEl.download = A.title+".csv"; aEl.click();
+  };
+}
+
+/* questions editor */
+function tabQuestions(){
+  const el = $("#tab");
+  el.innerHTML = `
+    <div class="row" style="margin-top:14px">
+      <button id="add">+ שאלה</button><button id="imp">ייבוא עם AI</button>
+      <div class="grow"></div><button class="primary" id="save" disabled>שמירה</button>
+    </div>
+    <div id="impbox" class="card" style="display:none">
+      <h2>ייבוא שאלות</h2>
+      <p class="muted small">1. העתיקו את ההנחיה, הדביקו אותה ב-Gemini (או ב-Claude) יחד עם צילום הדף או הנושא.<br>2. העתיקו את מה שהוא מחזיר והדביקו בתיבה למטה.<br>3. בדקו את התשובות הנכונות בעורך ולחצו "שמירה".</p>
+      <button id="cpp" style="margin-bottom:10px">📋 העתקת ההנחיה ל-AI</button>
+      <textarea id="impt" class="ltr" style="min-height:160px" placeholder='[{"prompt":"...","kind":"number","answer":{"value":9.8,"tol_pct":1,"unit":"m/s^2"}}]'></textarea>
+      <div class="row" style="margin-top:10px"><button class="primary" id="impgo">הוספה לשאלות</button><label class="row small" style="margin:0"><input type="checkbox" id="imprep"> להחליף את השאלות הקיימות</label></div>
+      <p class="err" id="impe"></p>
+    </div>
+    <div id="qlist"></div>`;
+  const markDirty = () => { dirty = true; $("#save").disabled = false; };
+  const draw = () => {
+    $("#qlist").innerHTML = Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><p class="muted">אין עדיין שאלות. הוסיפו שאלה או ייבאו.</p></div>`;
+    Q.forEach((q,i)=>{ math($(`#pv${i}`)); });
+  };
+  draw();
+  $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:0,tol_pct:1,unit:""}, points:1, _new:true }); draw(); markDirty(); };
+  $("#cpp").onclick = async () => { try{ await navigator.clipboard.writeText(AI_PROMPT); toast("ההנחיה הועתקה"); }catch(e){ $("#impt").value = AI_PROMPT; toast("ההנחיה בתיבה – העתיקו אותה ידנית"); } };
+  $("#imp").onclick = () => { const b=$("#impbox"); b.style.display = b.style.display==="none"?"block":"none"; };
+  $("#impgo").onclick = () => {
+    try{
+      let txt = $("#impt").value.trim();
+      const s = txt.indexOf("["), e2 = txt.lastIndexOf("]");
+      if(s >= 0 && e2 > s) txt = txt.slice(s, e2+1);
+      let arr = JSON.parse(txt); if(!Array.isArray(arr)) arr = arr.questions;
+      if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
+      const norm = arr.map(x => normalizeQ(x));
+      if($("#imprep").checked){ Q.forEach(q=>{ if(!q._new) removed.push(q.id); }); Q = []; }
+      Q.push(...norm); $("#impt").value=""; $("#impbox").style.display="none"; draw(); markDirty(); toast(`נוספו ${norm.length} שאלות. לא לשכוח לשמור`);
+    }catch(e){ $("#impe").textContent = "הקוד לא תקין: " + e.message; }
+  };
+  $("#qlist").addEventListener("input", e => {
+    const box = e.target.closest(".qedit"); if(!box) return;
+    const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
+    if(!f) return;
+    if(f==="prompt"){ q.prompt = e.target.value; const pv=$(`#pv${i}`); pv.textContent=q.prompt; math(pv); }
+    else if(f==="points") q.points = parseFloat(e.target.value)||0;
+    else if(f==="value") q.answer.value = e.target.value;
+    else if(f==="tol_pct") q.answer.tol_pct = parseFloat(e.target.value)||0;
+    else if(f==="unit") q.answer.unit = e.target.value;
+    else if(f==="accepted") q.answer.accepted = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    else if(f==="choices") q.choices = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    markDirty();
+  });
+  $("#qlist").addEventListener("change", e => {
+    const box = e.target.closest(".qedit"); if(!box) return;
+    const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
+    if(f==="kind"){
+      q.kind = e.target.value;
+      q.answer = q.kind==="number" ? {value:0,tol_pct:1,unit:""} : q.kind==="choice" ? {index:0} : {accepted:[]};
+      q.choices = q.kind==="choice" ? (q.choices||["",""]) : null;
+      draw(); markDirty();
+    }
+    if(f==="correct"){ q.answer.index = +e.target.value; markDirty(); }
+    if(f==="choices"){ if(q.answer.index >= (q.choices||[]).length) q.answer.index = 0; draw(); }
+  });
+  $("#qlist").addEventListener("click", e => {
+    const b = e.target.closest("[data-act]"); if(!b) return;
+    const i = +b.closest(".qedit").dataset.i, act = b.dataset.act;
+    if(act==="del"){ const [q]=Q.splice(i,1); if(!q._new) removed.push(q.id); }
+    if(act==="up" && i>0) [Q[i-1],Q[i]]=[Q[i],Q[i-1]];
+    if(act==="down" && i<Q.length-1) [Q[i+1],Q[i]]=[Q[i],Q[i+1]];
+    draw(); markDirty();
+  });
+  $("#save").onclick = async () => {
+    const bad = Q.findIndex(q => !q.prompt.trim() || (q.kind==="number" && (q.answer.value===""||isNaN(Number(q.answer.value)))) || (q.kind==="choice" && (q.choices||[]).length<2) || (q.kind==="text" && !(q.answer.accepted||[]).length));
+    if(bad>=0){ toast(`שאלה ${bad+1} לא שלמה`); return; }
+    $("#save").disabled = true; $("#save").textContent = "שומר…";
+    try{
+      if(removed.length){ const { error } = await sb.from("hw_questions").delete().in("id", removed); if(error) throw error; }
+      const rows = Q.map((q,i)=>({ id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"?q.choices:null,
+        answer: q.kind==="number" ? { value:Number(q.answer.value), tol_pct:Number(q.answer.tol_pct??1), unit:q.answer.unit||"" } : q.answer, points:q.points }));
+      if(rows.length){ const { error } = await sb.from("hw_questions").upsert(rows); if(error) throw error; }
+      Q.forEach(q=>delete q._new); removed = []; dirty = false; toast("נשמר ✓");
+      $("#save").textContent = "שמירה";
+    }catch(e){ toast("שגיאה: "+e.message); $("#save").disabled=false; $("#save").textContent="שמירה"; }
+  };
+}
+const AI_PROMPT = `הפוך את דף התרגילים המצורף (או: כתוב __ שאלות בנושא ___ לכיתה ___) לשאלות עם תשובה סופית בלבד.
+פתור כל שאלה בעצמך ובדוק את התשובה פעמיים.
+החזר רק JSON תקין, בלי שום טקסט לפני או אחרי, בפורמט:
+[
+ {"prompt":"נוסח השאלה, נוסחאות בין סימני $ למשל $v=\\\\frac{d}{t}$", "kind":"number", "answer":{"value":12, "tol_pct":2, "unit":"m/s"}, "points":1},
+ {"prompt":"...", "kind":"choice", "choices":["...","...","...","..."], "answer":{"index":1}},
+ {"prompt":"...", "kind":"text", "answer":{"accepted":["2x+3","3+2x"]}}
+]
+kind: number לתשובה מספרית (value מספר בלבד, unit יחידות), choice לאמריקאית (index מתחיל מ-0), text לביטוי קצר (כל הצורות המקובלות ב-accepted).
+שאלה מסוג "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית או השמט.`;
+function normalizeQ(x){
+  const kind = ["number","choice","text"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
+  let answer = x.answer ?? {};
+  if(kind==="number"){
+    if(typeof answer !== "object") answer = { value: answer };
+    answer = { value: Number(answer.value), tol_pct: answer.tol_pct ?? 1, unit: answer.unit ?? x.unit ?? "" };
+    if(isNaN(answer.value)) throw new Error("ערך מספרי חסר בשאלה: "+(x.prompt||"").slice(0,30));
+  } else if(kind==="choice"){
+    if(typeof answer !== "object") answer = { index: answer };
+    answer = { index: Number(answer.index ?? 0) };
+  } else {
+    if(typeof answer === "string") answer = { accepted:[answer] };
+    answer = { accepted: (answer.accepted||[]).map(String) };
+  }
+  return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1), _new:true };
+}
+function qEditor(q,i){
+  const k = q.kind;
+  let ans = "";
+  if(k==="number") ans = `<div class="row">
+      <div class="grow"><label>תשובה נכונה</label><input type="text" class="ltr" data-f="value" value="${esc(q.answer.value)}"></div>
+      <div style="width:110px"><label>סטייה מותרת %</label><input type="number" min="0" step="0.1" class="ltr" data-f="tol_pct" value="${esc(q.answer.tol_pct ?? 1)}"></div>
+      <div style="width:110px"><label>יחידות</label><input type="text" class="ltr" data-f="unit" value="${esc(q.answer.unit||"")}"></div></div>`;
+  else if(k==="choice") ans = `<label>אפשרויות (שורה לכל אפשרות)</label><textarea data-f="choices" style="min-height:70px">${esc((q.choices||[]).join("\n"))}</textarea>
+      <label>התשובה הנכונה</label><select data-f="correct">${(q.choices||[]).map((c,j)=>`<option value="${j}" ${q.answer.index===j?"selected":""}>${j+1}. ${esc(c.slice(0,50))}</option>`).join("")}</select>`;
+  else ans = `<label>תשובות מתקבלות (שורה לכל תשובה; לא רגיש לרווחים ולאותיות גדולות)</label><textarea data-f="accepted" class="ltr" style="min-height:60px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
+  return `<div class="qedit" data-i="${i}">
+    <div class="row"><span class="qn">${i+1}.</span>
+      <select data-f="kind" style="width:auto"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>בחירה מרובה</option><option value="text" ${k==="text"?"selected":""}>ביטוי / מילה</option></select>
+      <span class="muted small">נק׳</span><input type="number" min="0" step="0.5" data-f="points" value="${esc(q.points)}" style="width:70px">
+      <div class="grow"></div><button class="link" data-act="up" title="למעלה">▲</button><button class="link" data-act="down" title="למטה">▼</button><button class="link danger" data-act="del">מחיקה</button></div>
+    <label>השאלה (נוסחאות בין סימני $, למשל $v=\\frac{d}{t}$)</label>
+    <textarea data-f="prompt">${esc(q.prompt)}</textarea>
+    <div class="preview" id="pv${i}">${esc(q.prompt)}</div>
+    ${ans}
+  </div>`;
+}
+
+/* settings */
+function tabSettings(){
+  const el = $("#tab");
+  const local = A.due_at ? new Date(new Date(A.due_at).getTime() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16) : "";
+  el.innerHTML = `<div class="card">
+    <label>שם המשימה</label><input id="s_title" type="text" value="${esc(A.title)}">
+    <label>הוראות לתלמידים (לא חובה)</label><textarea id="s_desc">${esc(A.description||"")}</textarea>
+    <div class="row">
+      <div class="grow"><label>מועד אחרון להגשה (לא חובה)</label><input id="s_due" type="datetime-local" value="${local}"></div>
+      <div class="grow"><label>מספר ניסיונות לכל תלמיד</label><select id="s_att">
+        ${[1,2,3,5].map(n=>`<option value="${n}" ${A.max_attempts===n?"selected":""}>${n}</option>`).join("")}<option value="" ${A.max_attempts==null?"selected":""}>ללא הגבלה</option></select></div>
+    </div>
+    <label class="row" style="color:var(--ink)"><input type="checkbox" id="s_open" ${A.is_open?"checked":""}> המשימה פתוחה להגשה</label>
+    <label class="row" style="color:var(--ink)"><input type="checkbox" id="s_show" ${A.show_results?"checked":""}> להראות לתלמיד ציון ותשובות נכונות מיד אחרי ההגשה</label>
+    <div class="row" style="margin-top:16px"><button class="primary" id="s_save">שמירה</button><div class="grow"></div><button class="danger" id="s_del">מחיקת המשימה</button></div>
+  </div>`;
+  $("#s_save").onclick = async () => {
+    const due = $("#s_due").value;
+    const upd = { title:$("#s_title").value.trim()||"ללא שם", description:$("#s_desc").value, due_at: due? new Date(due).toISOString(): null,
+      max_attempts: $("#s_att").value? +$("#s_att").value : null, is_open:$("#s_open").checked, show_results:$("#s_show").checked };
+    const { error } = await sb.from("hw_assignments").update(upd).eq("id",A.id);
+    if(error) return toast(error.message);
+    Object.assign(A, upd); $("#ttl").textContent = A.title; toast("נשמר ✓");
+    const p = document.querySelector(".row .pill"); p.className = "pill "+(A.is_open?"open":"closed"); p.textContent = A.is_open?"פתוחה להגשה":"סגורה";
+  };
+  $("#s_del").onclick = async () => {
+    if(!confirm("למחוק את המשימה, כל השאלות וכל ההגשות? אי אפשר לבטל.")) return;
+    const { error } = await sb.from("hw_assignments").delete().eq("id",A.id);
+    if(error) return toast(error.message); go("#/teacher");
+  };
+}
+
+/* ---------- boot ---------- */
+window.addEventListener("hashchange", route);
+window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue=""; } });
+window.addEventListener("load", async () => {
+  if(!window.supabase){ app().innerHTML = `<p class="err">שגיאה בטעינה. נסו לרענן.</p>`; return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await sb.auth.getSession(); session = data.session;
+  sb.auth.onAuthStateChange((_e, s) => { session = s; });
+  route();
+});
+</script>
+</body>
+</html>
