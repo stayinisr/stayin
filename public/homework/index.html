@@ -519,16 +519,16 @@ async function teacherAssignment(idq){
     <div class="row" id="hdrrow"></div>
     <div id="nocls"></div>
     <div class="tabs">
-      <button data-t="results">תוצאות</button><button data-t="questions">שאלות</button><button data-t="settings">הגדרות</button>
+      <button data-t="results">תוצאות</button><button data-t="questions">שאלות</button><button data-t="preview">תצוגה</button><button data-t="settings">הגדרות</button>
     </div>
     <div id="tab"></div>`;
   drawAssignHeader();
   const tabs = document.querySelectorAll(".tabs button");
   const show = t => {
-    if(dirty && t!=="questions" && !confirm("יש שינויים בשאלות שלא נשמרו. לעזוב בלי לשמור?")) return;
-    if(t!=="questions"){ dirty=false; }
+    if(dirty && t!=="questions" && t!=="preview" && !confirm("יש שינויים בשאלות שלא נשמרו. לעזוב בלי לשמור?")) return;
+    if(t!=="questions" && t!=="preview"){ dirty=false; }
     tabs.forEach(b=>b.classList.toggle("on", b.dataset.t===t));
-    ({results:tabResults, questions:tabQuestions, settings:tabSettings})[t]();
+    ({results:tabResults, questions:tabQuestions, preview:tabPreview, settings:tabSettings})[t]();
   };
   tabs.forEach(b => b.onclick = () => show(b.dataset.t));
   show(tab);
@@ -623,9 +623,10 @@ function tabQuestions(){
     </div>
     <div id="qlist"></div>`;
   const markDirty = () => { dirty = true; $("#save").disabled = false; };
+  if(dirty) $("#save").disabled = false;
   const draw = () => {
     $("#qlist").innerHTML = Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><p class="muted">אין עדיין שאלות. הוסיפו שאלה או ייבאו.</p></div>`;
-    Q.forEach((q,i)=>{ math($(`#pv${i}`)); });
+    Q.forEach((q,i)=>renderPv(i));
   };
   draw();
   $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:0,tol_pct:1,unit:""}, points:1, _new:true }); draw(); markDirty(); };
@@ -647,13 +648,14 @@ function tabQuestions(){
     const box = e.target.closest(".qedit"); if(!box) return;
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
     if(!f) return;
-    if(f==="prompt"){ q.prompt = e.target.value; const pv=$(`#pv${i}`); pv.textContent=q.prompt; math(pv); }
+    if(f==="prompt"){ q.prompt = e.target.value; }
     else if(f==="points") q.points = parseFloat(e.target.value)||0;
     else if(f==="value") q.answer.value = e.target.value;
     else if(f==="tol_pct") q.answer.tol_pct = parseFloat(e.target.value)||0;
     else if(f==="unit") q.answer.unit = e.target.value;
     else if(f==="accepted") q.answer.accepted = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
     else if(f==="choices") q.choices = e.target.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    renderPv(i);
     markDirty();
   });
   $("#qlist").addEventListener("change", e => {
@@ -690,6 +692,69 @@ function tabQuestions(){
     }catch(e){ toast("שגיאה: "+e.message); $("#save").disabled=false; $("#save").textContent="שמירה"; }
   };
 }
+function toStudentQ(q){ return { id:q.id, prompt:q.prompt, kind:q.kind, choices:q.choices, points:q.points, unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
+function correctIndexOf(q){ return q.kind==="choice" ? +q.answer.index : null; }
+function renderPv(i){
+  const q = Q[i], pv = $(`#pv${i}`); if(!q || !pv) return;
+  pv.style.whiteSpace = "normal";
+  pv.innerHTML = `<div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt||"(נוסח השאלה)")}</span></div>${answerInput(toStudentQ(q),"")}`;
+  if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[correctIndexOf(q)]; if(c) c.style.borderColor = "var(--ok)", c.insertAdjacentHTML("beforeend", `<span class="small" style="color:var(--ok);margin-inline-start:auto">✓ נכונה</span>`); }
+  pv.querySelectorAll("input").forEach(x=>x.disabled=true);
+  math(pv);
+}
+/* local grading (same rules as the server) for the teacher preview */
+function parseNum(s){
+  let t = String(s||"").replace(/[−–]/g,"-").replace(/\s/g,"").replace(/[×·⋅]/g,"*").replace(/(\d)[xX](?=10)/,"$1*");
+  if(/^-?\d+,\d+$/.test(t)) t = t.replace(",","."); t = t.replace(/,/g,"").replace(/[(){}]/g,"");
+  let m;
+  if((m = t.match(/^(-?\d*\.?\d+)\*10\^([-+]?\d+)$/))) return +m[1] * Math.pow(10, +m[2]);
+  if((m = t.match(/^10\^([-+]?\d+)$/))) return Math.pow(10, +m[1]);
+  if((m = t.match(/^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/))) return +m[2] ? +m[1] / +m[2] : null;
+  if(/^[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)?$/.test(t)) return +t;
+  return null;
+}
+function checkLocal(q, given){
+  if(given==null || String(given).trim()==="") return false;
+  if(q.kind==="number"){ const g=parseNum(given), v=Number(q.answer.value); if(g==null) return false;
+    const tol = Math.max(Number(q.answer.tol_abs||0), Math.abs(v)*Number(q.answer.tol_pct ?? 1)/100); return Math.abs(g-v) <= tol + 1e-12; }
+  if(q.kind==="choice") return String(given).trim() === String(q.answer.index);
+  const n = x => String(x).replace(/−/g,"-").replace(/·/g,"*").replace(/\s/g,"").toLowerCase();
+  return (q.answer.accepted||[]).some(a => n(a) === n(given));
+}
+function answerText(q){
+  if(q.kind==="number") return q.answer.value + (q.answer.unit ? " "+q.answer.unit : "");
+  if(q.kind==="choice") return (q.choices||[])[q.answer.index] ?? "";
+  return (q.answer.accepted||[])[0] ?? "";
+}
+function tabPreview(){
+  const el = $("#tab");
+  if(dirty) toast("שימו לב: יש שינויים שלא נשמרו. התצוגה כוללת אותם");
+  el.innerHTML = `
+    <div class="warn" style="margin-top:14px">זו תצוגה בלבד, בדיוק כמו שהתלמיד רואה. אפשר לענות ולבדוק, ושום דבר לא נשמר.</div>
+    <h1>${esc(A.title)}</h1>
+    <div class="row">${A.due_at?`<span class="pill">להגשה עד ${fmtDate(A.due_at)}</span>`:""}<span class="pill">${Q.length} שאלות</span></div>
+    ${A.description ? `<p class="prompt">${esc(A.description)}</p>` : ""}
+    <div class="card" id="qs">
+      ${Q.length ? Q.map((q,i)=>`<div class="q" data-id="${q.id}">
+        <div><span class="qn">${i+1}.</span><span class="prompt">${esc(q.prompt)}</span>${q.points!=1?`<span class="muted small"> (${q.points} נק׳)</span>`:""}</div>
+        ${answerInput(toStudentQ(q),"")}<div class="slot"></div></div>`).join("") : `<p class="muted">אין שאלות עדיין.</p>`}
+    </div>
+    <div class="row"><button class="primary" id="pvcheck">בדיקה לדוגמה</button><button id="pvshow">הצגת התשובות הנכונות</button><button class="link" id="pvreset">ניקוי</button></div>
+    <div id="pvout"></div>`;
+  math(el);
+  el.onchange = e => { if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target))); };
+  const mark = (showAll) => {
+    const ans = collect(); let sc=0, mx=0;
+    Q.forEach(q => { const slot = el.querySelector(`.q[data-id="${q.id}"] .slot`); const ok = checkLocal(q, ans[q.id]); mx += q.points; if(ok) sc += q.points;
+      slot.innerHTML = showAll ? `<div class="res ok">התשובה הנכונה: <bdi class="ltr">${esc(answerText(q))}</bdi></div>`
+        : ok ? `<div class="res ok">✓ נכון</div>` : `<div class="res bad">✗ לא נכון. התשובה הנכונה: <bdi class="ltr">${esc(answerText(q))}</bdi></div>`; });
+    $("#pvout").innerHTML = showAll ? "" : `<div class="card" style="text-align:center"><div class="muted">ציון לדוגמה</div><div class="score">${pct(sc,mx)}</div></div>`;
+    math(el);
+  };
+  $("#pvcheck").onclick = () => mark(false);
+  $("#pvshow").onclick = () => mark(true);
+  $("#pvreset").onclick = () => tabPreview();
+}
 function normalizeQ(x){
   const kind = ["number","choice","text"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
   let answer = x.answer ?? {};
@@ -723,7 +788,8 @@ function qEditor(q,i){
       <div class="grow"></div><button class="link" data-act="up" title="למעלה">▲</button><button class="link" data-act="down" title="למטה">▼</button><button class="link danger" data-act="del">מחיקה</button></div>
     <label>השאלה (נוסחאות בין סימני $, למשל $v=\\frac{d}{t}$)</label>
     <textarea data-f="prompt">${esc(q.prompt)}</textarea>
-    <div class="preview" id="pv${i}">${esc(q.prompt)}</div>
+    <div class="muted small" style="margin-top:8px">כך התלמיד יראה את השאלה:</div>
+    <div class="preview" id="pv${i}"></div>
     ${ans}
   </div>`;
 }
