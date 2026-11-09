@@ -544,89 +544,158 @@ function studentNav(active, mistakes){
 }
 function studentAuth(mode, code=""){
   code = (code || store("hw-class") || "").toUpperCase();
-  let R = null, pick = null;
+  let R = null, pick = null, typed = "";
   app().innerHTML = `
     <div class="auth">
       <h1 style="text-align:center">כניסה לשיעורי הבית</h1>
-      <p class="muted" style="text-align:center">קוד הכיתה, השם שלך וקוד סודי. זהו.</p>
+      <p class="muted" style="text-align:center">קוד כיתה, השם שלך וקוד סודי.</p>
       <div class="card"><div class="bd" id="af"></div></div>
       <p style="text-align:center"><button class="ghost sm" id="legacy">כניסה עם שם משתמש וסיסמה</button></p>
     </div>`;
   const box = () => $("#af");
   const err = m => { const e = $("#ae"); if(e) e.textContent = m || ""; };
+  const busy = (el, on) => { if(el){ el.disabled = on; el.classList.toggle("busy", on); } };
+  const top = (label, back, backTxt) => `<div class="row" style="margin-bottom:12px"><span class="label grow">${label}</span>${back?`<button class="ghost sm" id="bk">${backTxt||"חזרה"}</button>`:""}</div>`;
+  const clear = el => { $$("input", el).forEach(i=>{ i.value=""; i.classList.remove("on"); }); const f = $("input", el); if(f) f.focus(); };
+  const mail = async (purpose, email) => {
+    try{
+      const { data, error } = await sb.functions.invoke("alfamath-mail", { body: { class_code:code, student_id:pick.id, email, purpose } });
+      if(error) return { error: "לא הצלחנו לשלוח מייל. נסו שוב בעוד רגע" };
+      return data || { error: "משהו השתבש" };
+    }catch(e){ return { error: "אין חיבור. נסו שוב" }; }
+  };
   const stepCode = () => {
     box().innerHTML = `
-      <div class="label" style="text-align:center;margin-bottom:12px">שלב 1 מתוך 3</div>
+      ${top("שלב 1 מתוך 3")}
       <h2 style="text-align:center;margin-bottom:16px">מה קוד הכיתה?</h2>
       ${codeBoxes(6, code.length===6?code:"")}
       <p class="muted small" style="text-align:center;margin:14px 0 0">את הקוד מקבלים מהמורה.</p>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
-    bindCode($(".codebox"), loadRoster);
+    bindCode($(".codebox"), loadClass);
     setTimeout(()=>$(".codebox input").focus(),30);
   };
-  const loadRoster = async v => {
-    err(); const { data } = await sb.rpc("hw_class_roster", { p_code: v });
+  const loadClass = async v => {
+    err(); const { data } = await sb.rpc("hw_class_lookup", { p_code: v });
     if(!data){ err("לא מצאנו כיתה עם הקוד הזה. בדקו שוב."); return; }
     R = data; code = v; store("hw-class", v); stepName();
   };
-  const stepName = () => {
-    const list = R.students;
+  const stepName = (msg) => {
     box().innerHTML = `
-      <div class="row" style="margin-bottom:12px"><span class="label grow">שלב 2 מתוך 3</span><button class="ghost sm" id="chg">כיתה אחרת</button></div>
+      ${top("שלב 2 מתוך 3", true, "כיתה אחרת")}
       <div style="text-align:center"><span class="chip ink" style="font-size:14px;padding:6px 12px">${esc(R.name)}</span></div>
-      <h2 style="text-align:center;margin:16px 0 12px">מי את/ה?</h2>
-      ${list.length>10?`<input type="text" id="nf" placeholder="חיפוש שם" style="margin-bottom:10px">`:""}
-      <div id="names" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${list.map(x=>`<button class="light" data-id="${x.id}" style="justify-content:flex-start;padding:12px;white-space:normal;text-align:start">${esc(x.name)}</button>`).join("")}</div>
-      ${list.length?"":`<p class="muted" style="text-align:center">המורה עוד לא הוסיף שמות לכיתה.</p>`}
-      <p style="text-align:center;margin:16px 0 0"><button class="ghost sm" id="notme">השם שלי לא ברשימה</button></p>`;
-    $("#chg").onclick = () => { code = ""; store("hw-class", null); stepCode(); };
-    const nf = $("#nf"); if(nf) nf.oninput = () => $$("#names button").forEach(b => b.style.display = b.textContent.includes(nf.value.trim()) ? "" : "none");
-    $$("#names button").forEach(b => b.onclick = () => { pick = R.students.find(x=>x.id===b.dataset.id); stepPin(); });
-    $("#notme").onclick = stepJoin;
-  };
-  const stepPin = () => {
-    const first = !pick.claimed;
-    box().innerHTML = `
-      <div class="row" style="margin-bottom:12px"><span class="label grow">שלב 3 מתוך 3</span><button class="ghost sm" id="bk">זה לא אני</button></div>
-      <h2 style="text-align:center">${esc(pick.name)}</h2>
-      <p class="muted" style="text-align:center;margin:6px 0 16px">${first?"פעם ראשונה כאן. בחרו קוד סודי של 4 ספרות ותזכרו אותו, הוא ישמש אתכם בכל כניסה.":"הקלידו את הקוד הסודי שלכם."}</p>
-      <div id="p1">${codeBoxes(4, "", true)}</div>
-      ${first?`<div id="p2w" style="display:none"><p class="muted small" style="text-align:center;margin:16px 0 8px">עוד פעם, לאישור</p><div id="p2">${codeBoxes(4, "", true)}</div></div>`:""}
+      <form id="nfm">
+        <label class="f" for="n">שם פרטי ושם משפחה</label>
+        <input id="n" type="text" maxlength="60" autocomplete="name" placeholder="למשל: נועה כהן" value="${esc(typed)}">
+        <button class="primary big wide" id="go" style="margin-top:16px">המשך</button>
+      </form>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
-      ${first?"":`<p class="muted small" style="text-align:center;margin:14px 0 0">שכחתם? המורה יכול לאפס, ואז בוחרים קוד חדש.</p>`}`;
-    $("#bk").onclick = stepName;
-    const clear = el => { $$("input", el).forEach(i=>{ i.value=""; i.classList.remove("on"); }); $("input", el).focus(); };
-    let firstPin = "";
-    const send = async pin => {
-      err(); const { data, error } = await sb.rpc("hw_student_pin", { p_code:code, p_student:pick.id, p_pin:pin });
-      if(error){ err(errMsg(error)); clear($("#p1")); return; }
-      if(data.error){ err(data.error); clear($("#p1")); return; }
-      store("hw-token", data.token); toast(data.first ? "הקוד נשמר. ברוכים הבאים!" : "שלום "+pick.name.split(" ")[0]); go("#/");
-    };
-    bindCode($("#p1 .codebox"), v => { if(!first) return send(v); firstPin = v; $("#p2w").style.display = "block"; $("#p2 input").focus(); }, true);
-    if(first) bindCode($("#p2 .codebox"), v => { if(v !== firstPin){ err("הקודים לא תואמים. נסו שוב."); clear($("#p2")); return; } send(v); }, true);
-    setTimeout(()=>$("#p1 input").focus(),30);
-  };
-  const stepJoin = () => {
-    if(!R.open){ box().innerHTML = `<h2 style="text-align:center">השם לא ברשימה?</h2><p class="muted" style="text-align:center;margin:10px 0 16px">ההצטרפות לכיתה "${esc(R.name)}" סגורה. בקשו מהמורה להוסיף אתכם.</p><button class="light wide" id="bk">חזרה לרשימה</button>`; $("#bk").onclick = stepName; return; }
-    box().innerHTML = `
-      <div class="row" style="margin-bottom:12px"><span class="label grow">הצטרפות לכיתה</span><button class="ghost sm" id="bk">חזרה לרשימה</button></div>
-      <div style="text-align:center"><span class="chip ink" style="font-size:14px;padding:6px 12px">${esc(R.name)}</span></div>
-      <label class="f" for="n">שם מלא</label><input id="n" type="text" maxlength="60" autocomplete="name" placeholder="שם פרטי ושם משפחה">
-      <label class="f" style="text-align:center">בחרו קוד סודי של 4 ספרות</label><div class="pin">${codeBoxes(4, "", true)}</div>
-      <button class="primary big wide" id="jn" style="margin-top:20px">הצטרפות</button>
-      <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
-    $("#bk").onclick = stepName;
-    const get = bindCode($(".codebox"), () => $("#jn").focus(), true);
-    $("#jn").onclick = async () => {
-      err(); const pin = get(); if(pin.length !== 4) return err("בחרו קוד של 4 ספרות");
-      $("#jn").disabled = true;
-      const { data, error } = await sb.rpc("hw_student_join", { p_code:code, p_name:$("#n").value, p_pin:pin });
-      $("#jn").disabled = false;
+      <div id="newbox"></div>`;
+    $("#bk").onclick = () => { code = ""; store("hw-class", null); stepCode(); };
+    if(msg) err(msg);
+    $("#nfm").onsubmit = async e => {
+      e.preventDefault(); err(); $("#newbox").innerHTML = ""; typed = $("#n").value.trim();
+      busy($("#go"), true); const { data, error } = await sb.rpc("hw_student_find", { p_code:code, p_name:typed }); busy($("#go"), false);
       if(error) return err(errMsg(error));
-      store("hw-token", data.token); toast("הצטרפת לכיתה"); go("#/");
+      if(data.error){
+        err(data.error);
+        if(data.open) { $("#newbox").innerHTML = `<p class="muted small" style="text-align:center;margin:14px 0 6px">חדשים בכיתה ולא ברשימה?</p><button class="light wide" id="jn">להצטרף לכיתה בשם "${esc(typed)}"</button>`;
+          $("#jn").onclick = async () => { busy($("#jn"), true); const r = await sb.rpc("hw_student_join", { p_code:code, p_name:typed }); busy($("#jn"), false);
+            if(r.error) return err(errMsg(r.error)); if(r.data.error) return err(r.data.error); pick = r.data; stepEmail(); }; }
+        return;
+      }
+      pick = data; pick.claimed ? stepPin() : stepEmail();
     };
     setTimeout(()=>$("#n").focus(),30);
+  };
+  const stepPin = () => {
+    box().innerHTML = `
+      ${top("שלב 3 מתוך 3", true, "זה לא אני")}
+      <h2 style="text-align:center">${esc(pick.name)}</h2>
+      <p class="muted" style="text-align:center;margin:6px 0 16px">הקלידו את הקוד הסודי שלכם.</p>
+      <div id="p1">${codeBoxes(4, "", true)}</div>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>
+      <p style="text-align:center;margin:16px 0 0"><button class="ghost sm" id="forgot">שכחתי את הקוד</button></p>
+      <p style="text-align:center;margin:4px 0 0"><button class="ghost sm" id="rep">לא נכנסתי אף פעם, מישהו תפס לי את השם</button></p>`;
+    $("#bk").onclick = () => stepName();
+    $("#forgot").onclick = () => pick.has_email ? stepReset() : err("לחשבון הזה אין מייל. בקשו מהמורה לאפס את הקוד.");
+    $("#rep").onclick = stepReport;
+    bindCode($("#p1 .codebox"), async pin => {
+      err(); const { data, error } = await sb.rpc("hw_student_pin", { p_code:code, p_student:pick.id, p_pin:pin });
+      if(error){ err(errMsg(error)); clear($("#p1")); return; }
+      if(data.need_setup) return stepEmail();
+      if(data.error){ err(data.error); clear($("#p1")); return; }
+      store("hw-token", data.token); toast("שלום "+pick.name.split(" ")[0]); go("#/");
+    }, true);
+    setTimeout(()=>$("#p1 input").focus(),30);
+  };
+  const stepEmail = () => {
+    box().innerHTML = `
+      ${top("פעם ראשונה · אימות מייל", true, "זה לא אני")}
+      <h2 style="text-align:center">${esc(pick.name)}</h2>
+      <p class="muted" style="text-align:center;margin:6px 0 4px">נשלח לך קוד למייל, רק בפעם הראשונה. אחר כך נכנסים עם קוד סודי.</p>
+      <form id="ef">
+        <label class="f" for="em">המייל שלך</label>
+        <input id="em" type="email" class="ltr" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@gmail.com">
+        <button class="primary big wide" id="snd" style="margin-top:16px">שליחת קוד למייל</button>
+      </form>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>
+      <p class="muted small" style="text-align:center;margin:12px 0 0">המייל משמש רק לכניסה ולשחזור הקוד, והמורה רואה אותו.</p>`;
+    $("#bk").onclick = () => stepName();
+    $("#ef").onsubmit = async e => {
+      e.preventDefault(); err(); const em = $("#em").value.trim();
+      if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) return err("כתובת המייל לא תקינה");
+      busy($("#snd"), true); const r = await mail("claim", em); busy($("#snd"), false);
+      if(r.error) return err(r.error);
+      stepVerify("claim", r.sent_to);
+    };
+    setTimeout(()=>$("#em").focus(),30);
+  };
+  const stepReset = async () => {
+    box().innerHTML = `${top("שחזור קוד", true)}<p class="muted" style="text-align:center">שולחים קוד למייל <bdi class="ltr" style="font-weight:800">${esc(pick.email_hint||"")}</bdi>…</p><p class="err" id="ae" role="alert" style="text-align:center"></p>`;
+    $("#bk").onclick = stepPin;
+    const r = await mail("reset");
+    if(r.error) return err(r.error);
+    stepVerify("reset", r.sent_to);
+  };
+  const stepVerify = (purpose, sentTo) => {
+    box().innerHTML = `
+      ${top(purpose==="claim"?"פעם ראשונה · כמעט סיימנו":"שחזור קוד", true)}
+      <p class="muted" style="text-align:center">שלחנו קוד של 6 ספרות למייל <bdi class="ltr" style="font-weight:800">${esc(sentTo||"")}</bdi></p>
+      <div id="ec" style="margin-top:12px">${codeBoxes(6, "", true)}</div>
+      <div id="pw" style="display:none">
+        <label class="f" style="text-align:center">בחרו קוד סודי של 4 ספרות לכניסות הבאות</label>
+        <div id="p1">${codeBoxes(4, "", true)}</div>
+        <div id="p2w" style="display:none"><p class="muted small" style="text-align:center;margin:16px 0 8px">עוד פעם, לאישור</p><div id="p2">${codeBoxes(4, "", true)}</div></div>
+      </div>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>
+      <p class="muted small" style="text-align:center;margin:14px 0 0">לא הגיע? בדקו בתיקיית הספאם. <button class="ghost sm" id="again">שליחה מחדש</button></p>`;
+    $("#bk").onclick = purpose==="claim" ? stepEmail : stepPin;
+    $("#again").onclick = purpose==="claim" ? stepEmail : stepReset;
+    let ecode = "", firstPin = "";
+    bindCode($("#ec .codebox"), v => { ecode = v; err(); $("#pw").style.display = "block"; $("#p1 input").focus(); }, true);
+    bindCode($("#p1 .codebox"), v => { firstPin = v; $("#p2w").style.display = "block"; $("#p2 input").focus(); }, true);
+    bindCode($("#p2 .codebox"), async v => {
+      if(v !== firstPin){ err("הקודים לא תואמים. נסו שוב."); clear($("#p2")); return; }
+      err(); const { data, error } = await sb.rpc("hw_student_email_verify", { p_code:code, p_student:pick.id, p_email_code:ecode, p_pin:v });
+      if(error) return err(errMsg(error));
+      if(data.error){ err(data.error); if(!data.expired){ clear($("#p2")); clear($("#p1")); $("#p2w").style.display="none"; clear($("#ec")); } return; }
+      store("hw-token", data.token); toast(purpose==="claim" ? "ברוכים הבאים! מעכשיו נכנסים עם הקוד הסודי" : "הקוד החדש נשמר"); go("#/");
+    }, true);
+    setTimeout(()=>$("#ec input").focus(),30);
+  };
+  const stepReport = () => {
+    box().innerHTML = `
+      ${top("דיווח למורה", true)}
+      <h2 style="text-align:center">${esc(pick.name)}</h2>
+      <p class="muted" style="text-align:center;margin:6px 0 12px">אם מעולם לא נכנסת והחשבון כבר פעיל, כנראה מישהו אחר נכנס בשמך. המורה יקבל הודעה, יראה מי נרשם, ויאפס לך את החשבון.</p>
+      <label class="f" for="nt">הערה למורה <span class="muted">(לא חובה)</span></label><input id="nt" type="text" maxlength="200">
+      <button class="primary big wide" id="sr" style="margin-top:16px">שליחת דיווח</button>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
+    $("#bk").onclick = stepPin;
+    $("#sr").onclick = async () => { busy($("#sr"), true); const { data, error } = await sb.rpc("hw_student_report", { p_code:code, p_student:pick.id, p_note:$("#nt").value }); busy($("#sr"), false);
+      if(error || data?.error) return err(error ? errMsg(error) : data.error);
+      box().innerHTML = `<h2 style="text-align:center">הדיווח נשלח</h2><p class="muted" style="text-align:center;margin:10px 0 16px">אחרי שהמורה יאפס, חוזרים לכאן ונרשמים עם המייל שלך.</p><button class="light wide" id="bk">חזרה</button>`;
+      $("#bk").onclick = () => stepName(); };
   };
   $("#legacy").onclick = () => {
     box().innerHTML = `<form id="lf">
@@ -638,7 +707,7 @@ function studentAuth(mode, code=""){
     $("#lf").onsubmit = async e => { e.preventDefault(); err(); const r = await sb.rpc("hw_student_login",{ p_username:$("#u").value, p_password:$("#p").value });
       if(r.error) return err(errMsg(r.error)); store("hw-token", r.data.token); go("#/"); };
   };
-  if(code.length === 6) loadRoster(code).then(()=>{ if(!R) stepCode(); }); else stepCode();
+  if(code.length === 6) loadClass(code).then(()=>{ if(!R) stepCode(); }); else stepCode();
 }
 async function loadHome(force){
   if(HOME && !force) return HOME;
@@ -960,15 +1029,16 @@ async function requireTeacher(){
 }
 /* shared teacher data */
 async function loadAll(){
-  const [c, s, a, sub, q] = await Promise.all([
+  const [c, s, a, sub, q, rp] = await Promise.all([
     sb.from("hw_classes").select("id,name,join_code,join_open,created_at").order("created_at"),
-    sb.from("hw_students").select("id,class_id,display_name,username,created_at,teacher_note").order("display_name"),
+    sb.from("hw_students").select("id,class_id,display_name,username,created_at,teacher_note,email,claimed_at").order("display_name"),
     sb.from("hw_assignments").select("id,title,is_open,opens_at,due_at,created_at,mode,weight,time_limit_min,show_results,hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
     sb.from("hw_submissions").select("id,assignment_id,student_id,score,max_score,manual_score,created_at").order("created_at"),
-    sb.from("hw_questions").select("id,assignment_id,topic")
+    sb.from("hw_questions").select("id,assignment_id,topic"),
+    sb.from("hw_claim_reports").select("id,student_id,note,created_at").eq("resolved", false).order("created_at")
   ]);
   const err = c.error || s.error || a.error || sub.error || q.error; if(err) throw err;
-  const D = { classes:c.data, students:s.data, assignments:a.data, subs:sub.data, questions:q.data };
+  const D = { classes:c.data, students:s.data, assignments:a.data, subs:sub.data, questions:q.data, reports:rp.data||[] };
   D.last = {}; D.subs.forEach(x => { if(x.student_id) D.last[x.student_id+"|"+x.assignment_id] = x; });
   D.eff = x => pct(x.manual_score ?? x.score, x.max_score);
   D.asgFor = cid => D.assignments.filter(a => a.hw_assignment_classes.some(x=>x.class_id===cid));
@@ -1035,6 +1105,8 @@ function tabOverview(D){
       <div><div class="v">${D.students.length}</div><div class="k">תלמידים</div></div>
       <div><div class="v">${openA.length}</div><div class="k">משימות פתוחות</div></div>
       <div><div class="v">${allAvg ?? "–"}</div><div class="k">ממוצע כללי</div></div></div></div></div>
+    ${D.reports.length ? `<div class="card" style="border-color:var(--bad)"><div class="hd"><h2>דיווחים על חשבון תפוס</h2><span class="chip bad">${D.reports.length}</span></div>
+      ${D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(st.display_name)}</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div></div>${IC.chev}</div>`; }).join("")}</div>` : ""}
     <div class="grid2">
       <div class="card" style="margin:0"><div class="hd"><h2>דורשים תשומת לב</h2><span class="chip ${risk.length?"bad":""}">${risk.length}</span></div>
         ${risk.length ? risk.slice(0,8).map(x=>`<div class="alert-row" data-href="#/teacher/st/${x.st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(x.st.display_name)}</div><div class="tiny muted">${esc(cname[x.st.class_id]||"")}: ${x.why.join(", ")}</div></div>${IC.chev}</div>`).join("") : `<div class="empty"><b>אין התראות</b>תלמיד שלא מגיש או שהציון שלו יורד יופיע כאן.</div>`}
@@ -1130,7 +1202,7 @@ async function teacherClass(id){
   const claimed = Object.fromEntries((ros?.students||[]).map(x=>[x.id, x.claimed]));
   if(seq!==navSeq) return;
   const joinLink = siteBase()+"#/join/"+c.join_code;
-  const joinMsg = `שיעורי הבית של "${c.name}" עוברים ל-AlfaMath:\n${joinLink}\nנכנסים, בוחרים את השם שלכם וקובעים קוד סודי של 4 ספרות.\nקוד הכיתה: ${c.join_code}`;
+  const joinMsg = `שיעורי הבית של "${c.name}" עוברים ל-AlfaMath:\n${joinLink}\nנכנסים, כותבים שם פרטי ושם משפחה, מאמתים את המייל פעם אחת וקובעים קוד סודי של 4 ספרות.\nקוד הכיתה: ${c.join_code}`;
   app().innerHTML = `
     ${backBtn("לוח ניהול","#/teacher?tab=c")}
     <div class="row"><h1 class="grow" id="ttl">${esc(c.name)}</h1><button class="light sm" id="ren">שינוי שם</button></div>
@@ -1138,7 +1210,7 @@ async function teacherClass(id){
       <div class="card" style="margin:0"><div class="hd"><h2>כניסת תלמידים</h2><label class="chk" style="margin:0;font-size:14px"><input type="checkbox" id="jo" ${c.join_open?"checked":""}><span>הצטרפות עצמית</span></label></div><div class="bd">
         <div class="label">קוד הכיתה</div><div class="bigcode" style="margin:8px 0 16px">${c.join_code}</div>
         <div class="row"><a class="btn wa sm" href="${waShare(joinMsg)}" target="_blank" rel="noopener">${IC.wa}וואטסאפ</a><button class="light sm" id="cp">העתקת קישור</button><button class="light sm" id="roster">הוספת שמות תלמידים</button></div>
-        <p class="muted tiny" style="margin:12px 0 0">התלמידים נכנסים עם הקוד, בוחרים את השם שלהם וקובעים קוד סודי. "הצטרפות עצמית" מאפשרת גם למי שלא ברשימה להוסיף את עצמו. אחרי שהוספתם את כל השמות, כדאי לכבות אותה.</p></div></div>
+        <p class="muted tiny" style="margin:12px 0 0">התלמידים נכנסים עם הקוד, כותבים את השם שלהם, מאמתים מייל פעם אחת וקובעים קוד סודי. "הצטרפות עצמית" מאפשרת גם למי שלא ברשימה להוסיף את עצמו. אחרי שהוספתם את כל השמות, כדאי לכבות אותה.</p></div></div>
       <div class="card" style="margin:0"><div class="hd"><h2>הודעות לכיתה</h2></div><div class="bd">
         <form id="annf"><textarea id="annt" style="min-height:64px" placeholder="למשל: מחר בוחן על טרפזים, להביא מחשבון" maxlength="2000"></textarea><button class="primary sm" style="margin-top:8px">פרסום הודעה</button></form>
         ${(anns||[]).length?`<div style="margin-top:12px;border-top:1px solid var(--line)">${anns.map(n=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start"><div class="grow"><div class="prompt small">${esc(n.body)}</div><div class="tiny muted">${fmtDate(n.created_at)}</div></div><button class="ghost danger sm" data-ann="${n.id}">מחיקה</button></div>`).join("")}</div>`:""}
@@ -1162,7 +1234,7 @@ async function teacherClass(id){
   $$("[data-ann]").forEach(b => b.onclick = async () => { await sb.from("hw_announcements").delete().eq("id", b.dataset.ann); teacherClass(id); });
   $$("tr[data-st]").forEach(tr => tr.onclick = () => go("#/teacher/st/"+tr.dataset.st));
   $("#roster").onclick = () => {
-    const d = sheet(`<h2>הוספת רשימת תלמידים</h2><p class="muted small">הדביקו שמות, שם מלא בכל שורה. כל תלמיד ייכנס עם קוד הכיתה, יבחר את השם שלו מהרשימה ויקבע לעצמו קוד סודי של 4 ספרות. שמות שכבר ברשימה לא יתווספו שוב.</p>
+    const d = sheet(`<h2>הוספת רשימת תלמידים</h2><p class="muted small">הדביקו שמות, שם מלא בכל שורה. כל תלמיד ייכנס עם קוד הכיתה, יכתוב את השם שלו (גם עם טעות קטנה), יאמת את המייל שלו ויקבע לעצמו קוד סודי של 4 ספרות. שמות שכבר ברשימה לא יתווספו שוב.</p>
       <textarea id="rn" style="min-height:180px" placeholder="נועה לוי&#10;איתי כהן&#10;..."></textarea>
       <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="light" onclick="this.closest('dialog').close()">ביטול</button><button class="primary" id="rgo">יצירת חשבונות</button></div>`);
     $("#rgo", d).onclick = async () => {
@@ -1206,12 +1278,15 @@ async function teacherStudent(id){
       ${asg.map(a=>{ const s = D.last[st.id+"|"+a.id]; const late = a.due_at && isPast(a.due_at) && !s;
         return `<div class="r ${s?"":"off"}" data-a="${a.id}" data-sub="${s?.id||""}">${dateTile(a.due_at, late)}<div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${s?`הוגש ${fmtDate(s.created_at)}${s.manual_score!=null?", ציון תוקן ידנית":""}`:late?"לא הוגש":"עוד לא הוגש"}</div></div><div class="end">${s?gbadge(D.eff(s)):""}${s?IC.chev:""}</div></div>`; }).join("") || `<div class="empty"><b>אין משימות לכיתה</b></div>`}
     </div></div>
-    <div class="card"><div class="hd"><h2>ניהול חשבון</h2></div><div class="bd"><div class="row">
+    <div class="card"><div class="hd"><h2>ניהול חשבון</h2></div><div class="bd">
+      ${D.reports.some(r=>r.student_id===id)?`<p class="info" style="margin:0 0 12px">התלמיד דיווח שמישהו אחר נכנס בשמו. בדקו את המייל למטה, ואם הוא לא שלו, לחצו "איפוס החשבון".</p>`:""}
+      <p style="margin:0 0 12px">${st.claimed_at?`נרשם ב-${fmtDate(st.claimed_at)} עם המייל <b class="ltr">${esc(st.email||"")}</b>`:st.email?`מייל: <b class="ltr">${esc(st.email)}</b>`:`<span class="chip warn">עוד לא נרשם</span>`}</p>
+      <div class="row">
       <select id="mv" style="width:auto">${D.classes.map(x=>`<option value="${x.id}" ${x.id===st.class_id?"selected":""}>${esc(x.name)}</option>`).join("")}</select><button class="light sm" id="mvb">העברה לכיתה</button>
-      <button class="light sm" id="pw">איפוס קוד סודי</button><button class="btn-danger sm" id="rm">הסרת התלמיד</button></div></div></div>`;
+      <button class="light sm" id="pw">איפוס החשבון</button><button class="btn-danger sm" id="rm">הסרת התלמיד</button></div></div></div>`;
   $("#tns").onclick = async () => { const { error } = await sb.from("hw_students").update({ teacher_note: $("#tn").value.trim() || null }).eq("id", id); toast(error ? error.message : "ההערה נשמרה"); };
   $("#mvb").onclick = async () => { const to = $("#mv").value; if(to===st.class_id) return; if(!(await ask(`<h2>להעביר את ${esc(st.display_name)}?</h2><p class="muted">ההגשות הקודמות נשמרות. התלמיד יראה מעכשיו את המשימות של הכיתה החדשה.</p>`, "העברה"))) return; const { error } = await sb.from("hw_students").update({ class_id:to }).eq("id", id); if(error) return toast(error.message); toast("התלמיד הועבר"); teacherStudent(id); };
-  $("#pw").onclick = async () => { if(!(await ask(`<h2>לאפס את הקוד של ${esc(st.display_name)}?</h2><p class="muted">בכניסה הבאה התלמיד יבחר את השם שלו ויקבע קוד סודי חדש. ההגשות והציונים נשמרים.</p>`, "איפוס"))) return; const { error } = await sb.rpc("hw_teacher_reset_pin",{ p_student:id }); toast(error ? error.message : "הקוד אופס. התלמיד יקבע קוד חדש בכניסה הבאה"); };
+  $("#pw").onclick = async () => { if(!(await ask(`<h2>לאפס את הקוד של ${esc(st.display_name)}?</h2><p class="muted">הקוד הסודי והמייל יימחקו. בכניסה הבאה התלמיד יירשם מחדש עם המייל שלו. ההגשות והציונים נשמרים.</p>`, "איפוס"))) return; const { error } = await sb.rpc("hw_teacher_reset_pin",{ p_student:id }); if(error) return toast(error.message); toast("החשבון אופס"); teacherStudent(id); };
   $("#rm").onclick = async () => { if(!(await ask(`<h2>להסיר את ${esc(st.display_name)}?</h2><p class="muted">החשבון וכל ההגשות שלו יימחקו.</p>`, "הסרה", "ביטול", true))) return; const { error } = await sb.from("hw_students").delete().eq("id", id); if(error) return toast(error.message); go("#/teacher/c/"+st.class_id); };
   $$(".r[data-sub]").forEach(el => { if(el.dataset.sub) el.onclick = () => openSubmission(el.dataset.sub, () => teacherStudent(id)); });
 }
