@@ -1133,8 +1133,15 @@ async function tabTeachers(){
           <div class="t">${esc(t.name||t.email)} <span class="chip ${st[t.status][1]}">${st[t.status][0]}</span>${t.is_admin?` <span class="chip ink">מנהל</span>`:""}</div>
           <div class="sub"><bdi class="ltr">${esc(t.email)}</bdi>${t.school?` · ${esc(t.school)}`:""}${t.subjects?` · ${esc(t.subjects)}`:""}${t.phone?` · <bdi class="ltr">${esc(t.phone)}</bdi>`:""}</div>
           <div class="sub">${t.classes} כיתות · ${t.students} תלמידים · ${t.assignments} משימות · ${t.submissions} הגשות · נרשם ${fmtDate(t.created_at)}</div></div>
-        <div class="end">${t.is_admin?"":t.status!=="approved"?`<button class="primary sm" data-e="${esc(t.email)}" data-s="approved">אישור</button>`:""}${t.is_admin?"":t.status!=="blocked"?`<button class="ghost sm" data-e="${esc(t.email)}" data-s="blocked">חסימה</button>`:""}</div></div>`).join("") || `<div class="empty"><b>אין עדיין מורים</b></div>`}
+        <div class="end" style="flex-wrap:wrap;justify-content:flex-end">${t.status==="approved"?`<button class="${t.ai_enabled?"light":"ghost"} sm" data-ai="${esc(t.email)}" data-on="${t.ai_enabled?0:1}" data-lim="${t.ai_limit}" title="יצירת שאלות באתר">AI ${t.ai_enabled?`פעיל · ${t.ai_used}/${t.ai_limit}`:"כבוי"}</button>`:""}${t.is_admin?"":t.status!=="approved"?`<button class="primary sm" data-e="${esc(t.email)}" data-s="approved">אישור</button>`:""}${t.is_admin?"":t.status!=="blocked"?`<button class="ghost sm" data-e="${esc(t.email)}" data-s="blocked">חסימה</button>`:""}</div></div>`).join("") || `<div class="empty"><b>אין עדיין מורים</b></div>`}
     </div></div>`;
+  $$("#tab button[data-ai]").forEach(b => b.onclick = async () => {
+    const on = b.dataset.on === "1"; let lim = +b.dataset.lim;
+    if(on){ const v = prompt("כמה יצירות בחודש למורה הזה?", lim || 60); if(v === null) return; lim = Math.max(0, parseInt(v) || 0); }
+    const { error } = await sb.rpc("hw_admin_set_ai", { p_email:b.dataset.ai, p_enabled:on, p_limit:lim });
+    if(error) return toast(errMsg(error));
+    toast(on ? "יצירה באתר הופעלה" : "יצירה באתר כובתה"); tabTeachers();
+  });
   $$("#tab button[data-e]").forEach(b => b.onclick = async () => {
     if(b.dataset.s==="blocked" && !(await ask(`<h2>לחסום את ${esc(b.dataset.e)}?</h2><p class="muted">המורה לא יוכל להיכנס. הכיתות והנתונים שלו נשמרים.</p>`, "חסימה", "ביטול", true))) return;
     const { error } = await sb.rpc("hw_admin_set_teacher", { p_email:b.dataset.e, p_status:b.dataset.s });
@@ -1562,55 +1569,155 @@ function downloadCsv(name, rows){
 }
 
 /* questions editor */
-const AI_PROMPT = `הפוך את דף התרגילים המצורף (או: כתוב __ שאלות בנושא ___ לכיתה ___) לשאלות עם תשובה סופית בלבד.
-פתור כל שאלה בעצמך ובדוק את התשובה פעמיים.
-כללים: רוב השאלות עם תשובה מספרית. אמריקאית רק לפעמים, לשאלות של הבנה. תשובה במילים כשהתשובה היא מושג.
-החזר רק JSON תקין, בלי שום טקסט לפני או אחרי, בפורמט:
-[
- {"prompt":"נוסח השאלה, נוסחאות בין סימני $ למשל $v=\\\\frac{d}{t}$", "kind":"number", "answer":{"value":12, "unit":"m/s"}, "topic":"קינמטיקה", "points":1, "hint":"רמז קצר (לא חובה)", "solution":"פתרון קצר (לא חובה)"},
- {"prompt":"...", "kind":"choice", "choices":["...","...","...","..."], "answer":{"index":1}, "topic":"..."},
- {"prompt":"...", "kind":"text", "answer":{"accepted":["שווה שוקיים","טרפז שווה שוקיים"]}, "topic":"..."}
-]
-kind: number לתשובה מספרית (value מספר בלבד, unit יחידות; לתשובה לא שלמה אפשר tol_pct), choice לאמריקאית (index מתחיל מ-0), text למילה או ביטוי (כל הצורות המקובלות ב-accepted).
-שאלה מסוג "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית או השמט.
-אם לשאלה צריך שרטוט, הוסף "figure" עם קוד SVG פשוט (xmlns, viewBox ברוחב 320, קווים כהים, תוויות מספריות, "?" על הגודל המבוקש). אל תסגיר בשרטוט את התשובה.`;
+/* questions from AI: a shared "AlfaMath format" any AI can produce */
+function aiPrompt(o){
+  const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי" }[o.mix];
+  const task = o.source==="sheet"
+    ? `הפוך את דף העבודה שאצרף (צילום, PDF או טקסט) לשאלות לאתר. שמור על סדר השאלות ועל המספרים שבדף.`
+    : `כתוב ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}.`;
+  return `אתה עוזר למורה ליצור שאלות לאתר שיעורי הבית AlfaMath. האתר בודק רק תשובה סופית, בלי דרך פתרון.
+
+המשימה: ${task}
+${o.notes ? "דגשים מהמורה: " + o.notes + "\n" : ""}סוגי שאלות: ${mix}.
+${o.figures ? "הוסף שרטוט לכל שאלה שצריך בה שרטוט (גיאומטריה, גרפים, מעגלים חשמליים, כוחות)." : "בלי שרטוטים."}
+${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מספרים אחרים: כתוב משתנים בסוגריים מסולסלים בתוך השאלה, הגדר להם טווח ב-params, וכתוב את התשובה כנוסחה ב-formula." : ""}
+
+לפני שאתה כותב: פתור כל שאלה בעצמך פעמיים ובדוק שהתשובה נכונה. שאלה של "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית, או השמט אותה.
+
+החזר רק בלוק קוד אחד של JSON, בלי טקסט לפני או אחרי, בפורמט AlfaMath:
+\`\`\`json
+{"alfamath": 1, "questions": [
+ {"kind": "number", "prompt": "רכב נוסע $120$ ק\\"מ ב-$1.5$ שעות. מה מהירותו הממוצעת?", "answer": {"value": 80, "unit": "קמ\\"ש"}, "topic": "מהירות", "hint": "מהירות = דרך חלקי זמן", "solution": "$v=\\\\frac{120}{1.5}=80$"},
+ {"kind": "number", "prompt": "מלבן שאורכו {a} ס\\"מ ורוחבו {b} ס\\"מ. מה שטחו?", "params": {"a": [4, 12, 1], "b": [2, 9, 1]}, "answer": {"formula": "a*b", "unit": "סמ\\"ר"}, "topic": "שטחים"},
+ {"kind": "choice", "prompt": "איזה מהבאים הוא מספר ראשוני?", "choices": ["9", "15", "17", "21"], "answer": {"index": 2}, "topic": "מספרים"},
+ {"kind": "text", "prompt": "איך נקרא טרפז ששוקיו שוות?", "answer": {"accepted": ["טרפז שווה שוקיים", "שווה שוקיים"]}, "topic": "טרפז"}
+]}
+\`\`\`
+
+כללי הפורמט:
+- kind: "number" לתשובה מספרית, "choice" לאמריקאית, "text" למילה או מושג.
+- number: ב-value מספר בלבד (לא ביטוי, לא שבר כתוב, לא יחידות), יחידות ב-unit. מספר לא שלם עד 3 ספרות אחרי הנקודה. אפשר "tol_pct" לטווח מותר באחוזים (ברירת מחדל: מספר שלם מדויק, לא שלם 1%).
+- params (לא חובה): לכל משתנה [מינימום, מקסימום, קפיצה]. formula משתמשת בשמות המשתנים, ב-+ - * / ^ ובפונקציות sqrt, sin, cos, tan, radians, abs, round, pi. בחר טווחים שלא יוצאת בהם תשובה שלילית, אפס או לא הגיונית.
+- choice: 4 אפשרויות, index של התשובה הנכונה מתחיל מ-0, מסיחים הגיוניים.
+- text: ב-accepted כל הצורות המקובלות של התשובה.
+- נוסחאות בתוך $...$ בכתיב LaTeX. בתוך JSON כל \\ נכתב פעמיים.
+- figure (לא חובה): קוד SVG אחד, עם xmlns ו-viewBox ברוחב 320, קווים כהים בעובי 2, תוויות ברורות, "?" על הגודל המבוקש. השרטוט לא חושף את התשובה.
+- hint ו-solution לא חובה, קצרים.`;
+}
+function parseAIQuestions(raw){
+  let t = String(raw||"").trim();
+  if(!t) throw new Error("לא הודבק טקסט");
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(fence) t = fence[1].trim();
+  t = t.replace(/[“”״]/g, m => m === "״" ? m : '"').replace(/[‘’]/g, "'");
+  const fo = t.indexOf("{"), fa = t.indexOf("[");
+  const start = fa >= 0 && (fo < 0 || fa < fo) ? fa : fo;
+  if(start < 0) throw new Error("לא נמצא JSON בטקסט");
+  const end = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+  t = t.slice(start, end + 1).replace(/,\s*([}\]])/g, "$1");
+  let data;
+  try{ data = JSON.parse(t); }catch(e){ throw new Error("ה-JSON לא תקין. בקשו מה-AI: \"תחזיר שוב רק JSON תקין בפורמט AlfaMath\""); }
+  const arr = Array.isArray(data) ? data : (data.questions || data.items);
+  if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
+  return arr.map((x, i) => { try{ const q = normalizeQ(x); return { q, err:null }; }catch(e){ return { q:null, err:`שאלה ${i+1}: ${e.message}` }; } });
+}
+function aiAnswerText(q){
+  if(q.kind==="number") return q.answer.formula ? `נוסחה: ${q.answer.formula}${q.answer.unit?" "+q.answer.unit:""}` : `${q.answer.value}${q.answer.unit?" "+q.answer.unit:""}`;
+  if(q.kind==="choice") return (q.choices||[])[q.answer.index] ?? "";
+  return (q.answer.accepted||[]).join(" / ");
+}
+function openAIGenerator(onAdd){
+  const d = sheet(`
+    <h2>שאלות מ-AI</h2>
+    <p class="muted small" style="margin:6px 0 0">כל AI עובד: ChatGPT, Gemini או Claude. ממלאים מה צריך, שולחים ל-AI, ומדביקים כאן את מה שהוא מחזיר.</p>
+    <div class="seg" id="g_src" style="margin-top:16px"><button data-v="topic" class="on">שאלות חדשות בנושא</button><button data-v="sheet">המרת דף עבודה</button></div>
+    <div id="g_topic">
+      <div class="row" style="margin-top:4px">
+        <div class="grow" style="min-width:140px"><label class="f" for="g_t">נושא</label><input id="g_t" type="text" placeholder="למשל: טרפז, חוק שני של ניוטון"></div>
+        <div style="width:110px"><label class="f" for="g_g">כיתה</label><input id="g_g" type="text" placeholder="ט׳"></div>
+      </div>
+      <div class="row">
+        <div style="width:110px"><label class="f" for="g_n">כמה שאלות</label><input id="g_n" type="number" min="1" max="30" value="8" class="ltr"></div>
+        <div style="width:130px"><label class="f" for="g_s">מקצוע</label><select id="g_s"><option>מתמטיקה</option><option>פיזיקה</option></select></div>
+        <div style="width:130px"><label class="f" for="g_l">רמה</label><select id="g_l"><option>בינונית</option><option>קלה</option><option>קשה</option><option>מדורגת, מקל לקשה</option></select></div>
+      </div>
+    </div>
+    <div id="g_sheetbox" style="display:none"><p class="info small" style="margin:12px 0 0">ב-ChatGPT, ב-Claude או ב-Gemini מצרפים צילום או PDF של הדף יחד עם ההנחיה. אפשר גם להדביק כאן את הטקסט של הדף.</p>
+      <textarea id="g_sheet" style="min-height:90px;margin-top:8px" placeholder="טקסט הדף (לא חובה)"></textarea></div>
+    <label class="f" for="g_m">סוגי שאלות</label>
+    <select id="g_m"><option value="number">בעיקר מספריות</option><option value="mixed">שילוב</option><option value="choice">בעיקר אמריקאיות</option><option value="text">בעיקר מילים ומושגים</option></select>
+    <label class="chk" style="margin:12px 0 0"><input type="checkbox" id="g_f" checked><span>עם שרטוטים כשצריך</span></label>
+    <label class="chk" style="margin:8px 0 0"><input type="checkbox" id="g_p" checked><span>מספרים שונים לכל תלמיד, כשאפשר</span></label>
+    <label class="f" for="g_x">דגשים <span class="muted">(לא חובה)</span></label>
+    <input id="g_x" type="text" placeholder="למשל: בלי מחשבון, רק זוויות, מוכן למבחן">
+    ${TEACHER?.ai_enabled ? `<div class="info" style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="grow small"><b>יצירה כאן באתר</b>, בלי לצאת. נשארו החודש: <b id="g_left">${TEACHER.ai_left ?? ""}</b></div><button class="primary" id="g_site">יצירת שאלות</button></div><p class="muted tiny" style="margin:10px 0 0">או עם ה-AI שלכם:</p>` : ""}
+    <div class="row" style="margin-top:${TEACHER?.ai_enabled?8:16}px;flex-wrap:wrap;gap:8px">
+      <button class="${TEACHER?.ai_enabled?"light":"primary"} sm" id="g_cgpt">פתיחה ב-ChatGPT</button>
+      <button class="light sm" id="g_claude">פתיחה ב-Claude</button>
+      <button class="light sm" id="g_gem">העתקה ל-Gemini</button>
+      <button class="ghost sm" id="g_copy">העתקת ההנחיה</button>
+    </div>
+    <label class="f" for="g_in" style="margin-top:20px">מה שה-AI החזיר</label>
+    <textarea id="g_in" class="ltr" style="min-height:120px;font-size:13px" placeholder="מדביקים כאן את כל התשובה, גם אם יש בה טקסט מסביב"></textarea>
+    <div class="row" style="margin-top:10px"><button class="light" id="g_read">קריאת השאלות</button></div>
+    <p class="err" id="g_err" role="alert"></p>
+    <div id="g_prev"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="ghost" id="g_x2">סגירה</button><button class="primary" id="g_add" disabled>הוספה למשימה</button></div>`);
+  const $d = s => d.querySelector(s);
+  let src = "topic", parsed = [];
+  d.querySelectorAll("#g_src button").forEach(b => b.onclick = () => { src = b.dataset.v; d.querySelectorAll("#g_src button").forEach(x=>x.classList.toggle("on", x===b)); $d("#g_topic").style.display = src==="topic"?"block":"none"; $d("#g_sheetbox").style.display = src==="sheet"?"block":"none"; });
+  const P = () => { const sh = src==="sheet" ? $d("#g_sheet").value.trim() : ""; return aiPrompt0() + (sh ? "\n\nטקסט הדף:\n" + sh.slice(0, 6000) : ""); };
+  const aiPrompt0 = () => aiPrompt({ source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, notes:$d("#g_x").value.trim() });
+  const openAI = (base) => { const t = P(); try{ navigator.clipboard.writeText(t); }catch(e){} window.open(base + encodeURIComponent(t), "_blank", "noopener"); toast("ההנחיה גם הועתקה. אם היא לא מופיעה שם, הדביקו אותה"); };
+  $d("#g_cgpt").onclick = () => openAI("https://chatgpt.com/?q=");
+  $d("#g_claude").onclick = () => openAI("https://claude.ai/new?q=");
+  $d("#g_gem").onclick = async () => { await copy(P(), "ההנחיה הועתקה. הדביקו אותה ב-Gemini"); window.open("https://gemini.google.com/app", "_blank", "noopener"); };
+  $d("#g_copy").onclick = () => copy(P(), "ההנחיה הועתקה");
+  const site = $d("#g_site");
+  if(site) site.onclick = async () => {
+    site.disabled = true; site.textContent = "יוצר שאלות… (עד דקה)"; $d("#g_err").textContent = "";
+    let r; try{ const { data, error } = await sb.functions.invoke("alfamath-ai", { body: { prompt: P() } }); r = error ? { error:"השירות לא זמין כרגע. נסו שוב" } : data; }catch(e){ r = { error:"אין חיבור. נסו שוב" }; }
+    site.disabled = false; site.textContent = "יצירת שאלות";
+    if(r?.error) return $d("#g_err").textContent = r.error;
+    if(r.left != null){ TEACHER.ai_left = r.left; $d("#g_left").textContent = r.left; }
+    $d("#g_in").value = r.text || ""; $d("#g_read").click();
+  };
+  $d("#g_x2").onclick = () => d.close();
+  const drawPrev = () => {
+    const ok = parsed.filter(p=>p.q), bad = parsed.filter(p=>p.err);
+    $d("#g_prev").innerHTML = (bad.length?`<p class="err">${bad.map(b=>esc(b.err)).join("<br>")}</p>`:"") + (ok.length ? `<p class="small" style="margin:12px 0 6px"><b>${ok.length}</b> שאלות מוכנות. בדקו את התשובות והורידו סימון ממה שלא מתאים.</p>` + parsed.map((p,i)=>!p.q?"":`
+      <label class="q" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);cursor:pointer">
+        <input type="checkbox" data-i="${i}" ${p.on!==false?"checked":""} style="margin-top:4px">
+        <div class="grow" style="min-width:0"><div class="prompt">${esc(p.q.prompt)}</div>${figHtml(p.q.figure)}
+          ${p.q.kind==="choice"?`<div class="tiny muted" style="margin-top:4px">${(p.q.choices||[]).map((c,j)=>j===p.q.answer.index?`<b style="color:var(--ok)">${esc(c)}</b>`:esc(c)).join(" · ")}</div>`:""}
+          <div class="small" style="margin-top:6px"><span class="chip ok">תשובה</span> <span class="ltr" style="unicode-bidi:isolate">${esc(aiAnswerText(p.q))}</span>${p.q.params?` <span class="chip acc">מספרים שונים לכל תלמיד</span>`:""}${p.q.topic?` <span class="chip">${esc(p.q.topic)}</span>`:""}</div></div>
+      </label>`).join("") : "");
+    math($d("#g_prev"));
+    $d("#g_prev").querySelectorAll("input[data-i]").forEach(c => c.onchange = () => { parsed[+c.dataset.i].on = c.checked; upd(); });
+    upd();
+  };
+  const upd = () => { const n = parsed.filter(p=>p.q && p.on!==false).length; $d("#g_add").disabled = !n; $d("#g_add").textContent = n ? `הוספת ${n} שאלות` : "הוספה למשימה"; };
+  $d("#g_read").onclick = () => { $d("#g_err").textContent = ""; try{ parsed = parseAIQuestions($d("#g_in").value); drawPrev(); }catch(e){ parsed = []; drawPrev(); $d("#g_err").textContent = e.message; } };
+  $d("#g_add").onclick = () => { const qs = parsed.filter(p=>p.q && p.on!==false).map(p=>p.q); d.close(); onAdd(qs); };
+}
 function tabQuestions(){
   const el = $("#tab");
   el.innerHTML = `
     <div class="row" style="margin-top:16px">
-      <button class="light" id="add">שאלה חדשה</button><button class="light" id="imp">ייבוא מ-AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button>
+      <button class="light" id="add">שאלה חדשה</button><button class="light" id="imp">שאלות מ-AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button>
       <div class="grow"></div><span class="muted tiny" id="dirtyl"></span><button class="primary" id="save" disabled>שמירה</button>
     </div>
-    <div id="impbox" class="card" style="display:none"><div class="bd">
-      <h2>ייבוא שאלות מ-AI</h2>
-      <ol class="small" style="padding-inline-start:20px;margin:10px 0 12px;line-height:1.8"><li>מעתיקים את ההנחיה ומדביקים ב-Gemini או ב-Claude יחד עם צילום הדף או הנושא.</li><li>מעתיקים את כל מה שהוא מחזיר ומדביקים כאן.</li><li>בודקים את התשובות בעורך ושומרים.</li></ol>
-      <button class="light sm" id="cpp">העתקת ההנחיה</button>
-      <textarea id="impt" class="ltr" style="min-height:150px;margin-top:12px;font-size:13px" placeholder="הדביקו כאן את התשובה של ה-AI"></textarea>
-      <div class="row" style="margin-top:10px"><button class="primary" id="impgo">הוספת השאלות</button><label class="chk small" style="margin:0"><input type="checkbox" id="imprep"><span>להחליף את הקיימות</span></label></div>
-      <p class="err" id="impe"></p>
-    </div></div>
     <div id="qlist"></div>`;
   const setDirty = v => { dirty = v; $("#save").disabled = !v; $("#dirtyl").textContent = v ? "יש שינויים שלא נשמרו" : ""; };
   const markDirty = () => setDirty(true);
   if(dirty) setDirty(true);
   const topics = () => [...new Set(Q.map(q=>q.topic).filter(Boolean))];
   const draw = () => {
-    $("#qlist").innerHTML = (Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><div class="empty"><b>אין עדיין שאלות</b>הוסיפו שאלה, ייבאו מ-AI או מהמאגר, או שלחו ל-Claude דף עבודה.</div></div>`) + `<datalist id="topics">${topics().map(t=>`<option value="${esc(t)}">`).join("")}</datalist>`;
+    $("#qlist").innerHTML = (Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><div class="empty"><b>אין עדיין שאלות</b>הוסיפו שאלה בעצמכם, צרו שאלות עם AI, או העתיקו מהמאגר.</div></div>`) + `<datalist id="topics">${topics().map(t=>`<option value="${esc(t)}">`).join("")}</datalist>`;
     Q.forEach((q,i)=>renderPv(i));
   };
   draw();
   $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:""}, points:1, figure:null, topic:Q.length?Q[Q.length-1].topic:null, hint:null, hint_penalty:0, solution:null, params:null, _new:true }); draw(); markDirty(); $$(".qedit").pop().scrollIntoView({behavior:"smooth",block:"start"}); };
-  $("#imp").onclick = () => { const b=$("#impbox"); b.style.display = b.style.display==="none"?"block":"none"; };
-  $("#cpp").onclick = () => copy(AI_PROMPT, "ההנחיה הועתקה");
-  $("#impgo").onclick = () => {
-    try{
-      let txt = $("#impt").value.trim(); const s = txt.indexOf("["), e2 = txt.lastIndexOf("]"); if(s >= 0 && e2 > s) txt = txt.slice(s, e2+1);
-      let arr = JSON.parse(txt); if(!Array.isArray(arr)) arr = arr.questions; if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
-      const norm = arr.map(normalizeQ);
-      if($("#imprep").checked){ Q.forEach(q=>{ if(!q._new) removed.push(q.id); }); Q = []; }
-      Q.push(...norm); $("#impt").value=""; $("#impbox").style.display="none"; draw(); markDirty(); toast(`נוספו ${norm.length} שאלות. בדקו ושמרו`);
-    }catch(e){ $("#impe").textContent = "לא הצלחנו לקרוא את הטקסט: " + e.message; }
-  };
+  $("#imp").onclick = () => openAIGenerator(qs => { qs.forEach(q => { q.assignment_id = A.id; if(!q.topic && Q.length) q.topic = Q[Q.length-1].topic; }); Q.push(...qs); draw(); markDirty(); toast(`נוספו ${qs.length} שאלות. בדקו ולחצו שמירה`); });
   $("#qlist").addEventListener("input", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f, v = e.target.value; if(!f) return;
@@ -1671,6 +1778,17 @@ function renderPv(i){
   pv.querySelectorAll("input").forEach(x=>x.disabled=true);
   math(pv);
 }
+function normParams(p){
+  if(!p || typeof p !== "object" || Array.isArray(p)) return null;
+  const out = {};
+  for(const [k, v] of Object.entries(p)){
+    if(!/^[a-zA-Z]\w{0,11}$/.test(k)) continue;
+    const a = Array.isArray(v) ? v : (v && typeof v === "object") ? [v.min, v.max, v.step] : [v, v, 1];
+    const mn = Number(a[0]), mx = Number(a[1] ?? a[0]), st = Number(a[2] ?? 1) || 1;
+    if(isFinite(mn) && isFinite(mx) && mx >= mn) out[k] = [mn, mx, st];
+  }
+  return Object.keys(out).length ? out : null;
+}
 function normalizeQ(x){
   const kind = ["number","choice","text"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
   let answer = x.answer ?? {};
@@ -1683,7 +1801,7 @@ function normalizeQ(x){
   } else if(kind==="choice"){ if(typeof answer !== "object") answer = { index: answer }; answer = { index: Number(answer.index ?? 0) }; }
   else { if(typeof answer === "string") answer = { accepted:[answer] }; answer = { accepted: (answer.accepted||[]).map(String) }; }
   return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1),
-    figure: (typeof x.figure==="string" && /^\s*<svg/i.test(x.figure)) ? x.figure : null, topic:x.topic||null, hint:x.hint||null, hint_penalty:Number(x.hint_penalty||0), solution:x.solution||null, params:x.params||null, _new:true };
+    figure: (typeof x.figure==="string" && /^\s*<svg/i.test(x.figure)) ? x.figure : null, topic:x.topic||null, hint:x.hint||null, hint_penalty:Number(x.hint_penalty||0), solution:x.solution||null, params:normParams(x.params), _new:true };
 }
 function qEditor(q,i){
   const k = q.kind;
