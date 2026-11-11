@@ -453,7 +453,7 @@ const sampleVals = p => p ? Object.fromEntries(Object.entries(p).map(([k,[a]])=>
 function fillVals(t, vals){ let s = t || ""; for(const [k,v] of Object.entries(vals||{})) s = s.split("{"+k+"}").join(String(v)); return s; }
 function evalFormula(f, vals){
   let e = String(f||"").toLowerCase();
-  for(const k of Object.keys(vals||{}).sort((a,b)=>b.length-a.length)) e = e.replace(new RegExp("\\b"+k+"\\b","g"), "("+vals[k]+")");
+  for(const k of Object.keys(vals||{}).sort((a,b)=>b.length-a.length)) e = e.replace(new RegExp("\\b"+k.toLowerCase()+"\\b","g"), "("+vals[k]+")");
   e = e.replace(/π/g,"pi");
   const chk = e.replace(/\b(sqrt|abs|sin|cos|tan|radians|degrees|ln|log|exp|power|round|pi)\b/g,"");
   if(!/^[0-9.+\-*/()^, ]*$/.test(chk)) return null;
@@ -1646,6 +1646,7 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 - truefalse: טענה אחת ב-prompt, ו-"answer": {"value": true} או {"value": false}. למשל: {"kind": "truefalse", "prompt": "נכון או לא נכון: בכל טרפז האלכסונים שווים.", "answer": {"value": false}, "topic": "טרפז"}
 - text: ב-accepted כל הצורות המקובלות של התשובה.
 - ניסוח: עברית תקנית, פשוטה וברורה לתלמיד, משפטים קצרים. כל הנתונים הדרושים כתובים בשאלה.
+- שילוב עברית עם אנגלית ומספרים (כדי שהטקסט לא יתהפך): כל ביטוי באנגלית או נוסחה עטופים ב-$...$, גם סימון של נקודה או צלע בודדת ($AB$). אל תצמיד אות עברית לנוסחה ("ו-$BO$", "ב-$5$") – כתוב "וגם $BO$", "במשך $5$ שניות". אל תתחיל משפט או תסיים משפט בנוסחה – תמיד מילה בעברית לפני ואחרי. ערך ויחידה כך: $5$ ס"מ.
 - נוסחאות בתוך $...$ בכתיב LaTeX. בתוך JSON כל \\ נכתב פעמיים. בתוך $...$ רק מתמטיקה: בלי מילים בעברית, בלי \\text בעברית. יחידות בעברית נכתבות מחוץ ל-$, למשל: $5$ מ'. אל תשים סימני $ סביב מילים.
 - figure (לא חובה): קוד SVG אחד עם xmlns ו-viewBox="0 0 320 H". כללי שרטוט מחייבים:
   • רקע לבן: <rect width="100%" height="100%" fill="#fff"/> ראשון בקוד.
@@ -1830,7 +1831,7 @@ function renderPv(i){
   const q = Q[i], pv = $(`#pv${i}`); if(!q || !pv) return;
   const s = toStudentQ(q);
   pv.innerHTML = `<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="body"><div class="prompt">${esc(s.prompt||"נוסח השאלה יופיע כאן")}</div>${figHtml(s.figure)}${answerInput(s,"")}
-    <div class="tiny" style="margin-top:8px;color:var(--ok);font-weight:700">${q.kind==="number"?`תשובה: <bdi class="ltr">${esc(answerText(q))}</bdi>${q.answer.formula?" (לדוגמה, עם הערכים הנמוכים)":""}`:q.kind==="text"?`מתקבל: ${esc((q.answer.accepted||[]).join(" / "))}`:""}</div></div></div></div>`;
+    <div class="tiny" style="margin-top:8px;color:var(--ok);font-weight:700">${q.kind==="number"?`תשובה: <bdi>${esc(answerText(q))}</bdi>${q.answer.formula?" (לדוגמה, עם הערכים הנמוכים)":""}`:q.kind==="text"?`מתקבל: ${esc((q.answer.accepted||[]).join(" / "))}`:""}</div>${q.hint?`<div class="hintbox"><b>רמז:</b> ${esc(fillVals(q.hint, sampleVals(q.params)))}</div>`:""}${q.solution?`<div class="hintbox"><b>פתרון:</b> ${esc(fillVals(q.solution, sampleVals(q.params)))}</div>`:""}</div></div></div>`;
   if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[+q.answer.index]; if(c) c.classList.add("right"); }
   if(q.kind==="multi"){ const cs = pv.querySelectorAll(".choice"); (q.answer.indices||[]).forEach(j => cs[j]?.classList.add("right")); }
   pv.querySelectorAll("input").forEach(x=>x.disabled=true);
