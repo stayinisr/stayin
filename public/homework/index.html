@@ -463,24 +463,40 @@ function evalFormula(f, vals){
   try{ const r = Function(`"use strict";return (${e})`)(); return Number.isFinite(r) ? Math.round(r*1e10)/1e10 : null; }catch(_){ return null; }
 }
 function qValue(q){ return q.answer?.formula ? evalFormula(q.answer.formula, sampleVals(q.params)) : Number(q.answer?.value); }
+const multiNorm = g => [...new Set(String(g||"").split(/\s*,\s*/).filter(x=>/^\d{1,2}$/.test(x)).map(Number))].sort((a,b)=>a-b).join(",");
+function givenText(q, g){
+  if(g==null || g==="") return g;
+  if(q.kind==="choice") return (q.choices||[])[+g] ?? g;
+  if(q.kind==="multi") return multiNorm(g).split(",").filter(Boolean).map(i=>(q.choices||[])[+i] ?? i).join(" + ");
+  return g;
+}
 function checkLocal(q, given){
   if(given==null || String(given).trim()==="") return false;
   if(q.kind==="number"){ const g=parseNum(given), v=qValue(q); if(g==null || v==null) return false;
     const p = q.answer.tol_pct==null || q.answer.tol_pct==="" ? (Number.isInteger(v) ? 0 : 1) : Number(q.answer.tol_pct);
     return Math.abs(g-v) <= Math.max(Number(q.answer.tol_abs||0), Math.abs(v)*p/100) + 1e-12; }
   if(q.kind==="choice") return String(given).trim() === String(q.answer.index);
+  if(q.kind==="multi"){ const g = multiNorm(given); return g !== "" && g === multiNorm((q.answer.indices||[]).join(",")); }
   const n = x => { let t = String(x).replace(/−/g,"-").replace(/·/g,"*").replace(/[\s"'״׳`־]/g,"").toLowerCase(); return /[א-ת]/.test(t) ? t.replace(/[-–]/g,"") : t; };
   return (q.answer.accepted||[]).some(a => n(a) === n(given));
 }
 function answerText(q){
   if(q.kind==="number"){ const v = qValue(q); return (v==null?"?":+v.toFixed(6)) + (q.answer.unit ? " "+q.answer.unit : ""); }
   if(q.kind==="choice") return (q.choices||[])[q.answer.index] ?? "";
+  if(q.kind==="multi") return [...(q.answer.indices||[])].sort((a,b)=>a-b).map(i=>(q.choices||[])[i]).join(" + ");
   return (q.answer.accepted||[])[0] ?? "";
 }
 /* answer inputs */
 const KEYS_NUM = ["/", "-", ".", "^", "×10^", "(", ")"];
 const KEYS_TXT = ["√", "π", "^", "²", "³", "/", "·", "(", ")"];
 function answerInput(q, val, order){
+  if(q.kind === "multi"){
+    const idx = order && order.length ? order : (q.choices||[]).map((_,j)=>j);
+    const sel = new Set(multiNorm(val).split(",").filter(Boolean).map(Number));
+    return `<p class="small" style="margin:10px 0 0;font-weight:700">${q.pick ? `סמנו ${q.pick} תשובות נכונות` : "סמנו את כל התשובות הנכונות"}</p><div class="choices multi">${idx.map((j,pos)=>`
+      <label class="choice ${sel.has(j)?"sel":""}"><input type="checkbox" name="q_${q.id}" value="${j}" ${sel.has(j)?"checked":""}>
+      <span class="let">${HEB[pos]||pos+1}</span><span class="prompt grow">${esc(q.choices[j])}</span></label>`).join("")}</div>`;
+  }
   if(q.kind === "choice"){
     const idx = order && order.length ? order : (q.choices||[]).map((_,j)=>j);
     return `<div class="choices" role="radiogroup">${idx.map((j,pos)=>`
@@ -505,13 +521,16 @@ function bindKeys(root){
 function collect(root){
   const out = {};
   $$(".q[data-id]", root).forEach(el => {
-    const id = el.dataset.id, t = el.querySelector("input.ansin"), r = el.querySelector("input[type=radio]:checked");
-    const v = t ? t.value.trim() : (r ? r.value : "");
+    const id = el.dataset.id, t = el.querySelector("input.ansin"), r = el.querySelector("input[type=radio]:checked"), m = el.querySelectorAll("input[type=checkbox][name^=q_]:checked");
+    const v = t ? t.value.trim() : r ? r.value : el.querySelector(".choices.multi") ? multiNorm([...m].map(x=>x.value).join(",")) : "";
     if(v !== "") out[id] = v;
   });
   return out;
 }
-function bindChoices(root){ root.addEventListener("change", e => { if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target))); }); }
+function bindChoices(root){ root.addEventListener("change", e => {
+  if(e.target.type==="radio") e.target.closest(".q").querySelectorAll(".choice").forEach(c=>c.classList.toggle("sel", c.contains(e.target)));
+  if(e.target.type==="checkbox" && e.target.name?.startsWith("q_")) e.target.closest(".choice")?.classList.toggle("sel", e.target.checked);
+}); }
 
 /* ================= router ================= */
 let navSeq = 0;
@@ -868,7 +887,7 @@ async function studentMistakes(){
       ${list.length ? list.map((q,i)=>`<div class="q" data-id="${q.id}"><div class="qh"><span class="qn">${i+1}</span><div class="body">
         <div class="tiny muted" style="margin-bottom:4px">${esc(q.assignment)}${q.topic?` · ${esc(q.topic)}`:""}</div>
         <div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}${answerInput(q,"")}
-        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button><span class="muted tiny">בפעם הקודמת ענית: <bdi>${esc(q.kind==="choice"&&q.given!=null?(q.choices||[])[+q.given]??q.given:q.given??"—")}</bdi></span></div>
+        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button><span class="muted tiny">בפעם הקודמת ענית: <bdi>${esc(q.given!=null?givenText(q,q.given):"—")}</bdi></span></div>
         <div class="slot"></div></div></div></div>`).join("") : `<div class="empty"><b>אין טעויות פתוחות</b>כל הכבוד. שאלות שתטעה בהן יופיעו כאן לתרגול.</div>`}
     </div></div></div>`;
   math(app()); bindKeys(app()); bindChoices(app());
@@ -1023,13 +1042,13 @@ function showReview(body, a, last, fresh){
     ${last.note?`<div class="info"><b>הערה מהמורה:</b> <span class="prompt">${esc(last.note)}</span></div>`:""}
     <div class="card flat"><div class="bd">
       ${a.questions.map((q,i)=>{ const x = res[q.id] || {}; const given = (last.answers||{})[q.id] ?? x.given ?? "";
-        const shown = q.kind==="choice" && given!=="" ? (q.choices||[])[+given] ?? given : given;
+        const shown = given!=="" ? givenText(q, given) : given;
         let fb = "";
         if(x.correct === true) fb = `<div class="mark ok"><b>נכון</b>${x.hint && +x.points < q.points ? `<span class="tiny">(${x.points} נק׳, נעזרת ברמז)</span>`:""}</div>`;
         else if(x.correct === false) fb = `<div class="mark bad"><b>לא נכון.</b>${x.answer!=null?`<span>התשובה: <bdi class="ltr" style="font-weight:800">${esc(x.answer)}</bdi></span>`:""}</div>`;
         const sol = q.solution && x.correct !== undefined ? `<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(q.solution)}</div></div>` : "";
         return `<div class="q"><div class="qh"><span class="qn" style="${x.correct===true?"background:var(--ok)":x.correct===false?"background:var(--bad)":""}">${i+1}</span><div class="body"><div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}
-          <div class="yours">התשובה שלך: <b><bdi class="${q.kind==="choice"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}${sol}</div></div></div>`; }).join("")}
+          <div class="yours">התשובה שלך: <b><bdi class="${q.kind==="choice"||q.kind==="multi"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}${sol}</div></div></div>`; }).join("")}
     </div></div>
     ${fresh ? `<button class="wide big light" onclick="go('#/')">חזרה למשימות</button>` : ""}`;
   math(body);
@@ -1294,7 +1313,7 @@ async function tabBank(D){
     const q = $("#bq").value.trim(), t = $("#bt").value;
     const list = qs.filter(x => (!q || x.prompt.includes(q)) && (!t || x.topic===t)).slice(0, 150);
     $("#blist").innerHTML = list.length ? list.map(x=>`<label class="q" style="display:flex;gap:12px;cursor:pointer"><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?"checked":""} style="width:18px;height:18px;margin-top:4px;accent-color:var(--ink);flex:none"><div class="grow">
-      <div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="muted">${esc(aname[x.assignment_id]||"")}</span>${x.topic?`<span class="chip acc">${esc(x.topic)}</span>`:""}<span class="chip">${x.kind==="number"?"מספר":x.kind==="choice"?"אמריקאית":"מילים"}</span>${x.params?`<span class="chip">מספרים משתנים</span>`:""}</div>
+      <div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="muted">${esc(aname[x.assignment_id]||"")}</span>${x.topic?`<span class="chip acc">${esc(x.topic)}</span>`:""}<span class="chip">${x.kind==="number"?"מספר":x.kind==="choice"?"אמריקאית":x.kind==="multi"?"כמה תשובות":"מילים"}</span>${x.params?`<span class="chip">מספרים משתנים</span>`:""}</div>
       <div class="prompt">${esc(x.prompt)}</div></div></label>`).join("") : `<div class="empty"><b>לא נמצאו שאלות</b></div>`;
     math($("#blist"));
     $$("#blist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#bsel").textContent = sel.size; });
@@ -1428,7 +1447,7 @@ async function openSubmission(subId, after){
   const { data:qs } = await sb.from("hw_questions").select("id,position,prompt,kind,choices,points").eq("assignment_id", s.assignment_id).order("position");
   const res = Object.fromEntries((s.results||[]).map(r=>[r.question_id, r]));
   const d = sheet(`<h2>${esc(s.student_name)}</h2><p class="muted small">הוגש ${fmtDate(s.created_at)}. ציון אוטומטי: ${pct(s.score,s.max_score)} (${+(+s.score).toFixed(2)} מתוך ${s.max_score} נק׳)</p>
-    <div style="max-height:44vh;overflow:auto;border:1px solid var(--line);margin-top:10px">${(qs||[]).map((q,i)=>{ const r = res[q.id]||{}; const g = q.kind==="choice" && r.given!=null ? (q.choices||[])[+r.given] ?? r.given : r.given;
+    <div style="max-height:44vh;overflow:auto;border:1px solid var(--line);margin-top:10px">${(qs||[]).map((q,i)=>{ const r = res[q.id]||{}; const g = r.given!=null ? givenText(q, r.given) : r.given;
       return `<div style="padding:12px 14px;border-bottom:1px solid var(--line)"><div class="row" style="align-items:flex-start;flex-wrap:nowrap"><b class="${r.correct?"yes":"no"}" style="width:22px">${r.correct?"✓":"✗"}</b><div class="grow"><div class="small prompt">${i+1}. ${esc(q.prompt)}</div>
         <div class="tiny" style="margin-top:4px">ענה: <b><bdi>${esc(g??"—")}</bdi></b>${!r.correct&&r.answer?` · נכון: <bdi>${esc(r.answer)}</bdi>`:""}${r.hint?" · נעזר ברמז":""}</div></div></div></div>`; }).join("")}</div>
     <div class="row" style="margin-top:14px;align-items:flex-end"><div style="width:140px"><label class="f">ציון ידני (0–100)</label><input id="ms" type="number" min="0" max="100" value="${s.manual_score!=null?pct(s.manual_score,s.max_score):""}" placeholder="${pct(s.score,s.max_score)}"></div><span class="muted tiny grow">ריק = הציון האוטומטי</span></div>
@@ -1521,7 +1540,7 @@ async function tabResults(){
   const eff = s => pct(s.manual_score ?? s.score, s.max_score);
   const sc = r => r.subs.length ? eff(lastOf(r)) : -1;
   const avg = done.length ? Math.round(done.reduce((s,r)=>s+sc(r),0)/done.length) : null;
-  const qstat = Q.map(q => { let ok=0,t=0; const wrong = {}; done.forEach(r=>{ const x=(lastOf(r).results||[]).find(z=>z.question_id===q.id); if(x){t++; if(x.correct) ok++; else if(x.given) { const g = q.kind==="choice" ? ((q.choices||[])[+x.given] ?? x.given) : String(x.given).trim(); wrong[g] = (wrong[g]||0)+1; } } });
+  const qstat = Q.map(q => { let ok=0,t=0; const wrong = {}; done.forEach(r=>{ const x=(lastOf(r).results||[]).find(z=>z.question_id===q.id); if(x){t++; if(x.correct) ok++; else if(x.given) { const g = q.kind==="choice"||q.kind==="multi" ? givenText(q, x.given) : String(x.given).trim(); wrong[g] = (wrong[g]||0)+1; } } });
     return { q, p: t? pct(ok,t):0, t, wrong: Object.entries(wrong).sort((a,b)=>b[1]-a[1]).slice(0,3) }; });
   const multi = ACL.length > 1;
   const sorted = [...rows].sort((x,y) => sortBy==="score" ? sc(y)-sc(x) : sortBy==="low" ? (sc(x)<0?999:sc(x))-(sc(y)<0?999:sc(y)) : x.name.localeCompare(y.name,"he"));
@@ -1571,7 +1590,7 @@ function downloadCsv(name, rows){
 /* questions editor */
 /* questions from AI: a shared "AlfaMath format" any AI can produce */
 function aiPrompt(o){
-  const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי", understand:"שאלות הבנה: אמריקאיות שהמסיחים בהן הם טעויות נפוצות, וטענות נכון / לא נכון" }[o.mix];
+  const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי", understand:"שאלות הבנה: אמריקאיות שהמסיחים בהן הם טעויות נפוצות, שאלות של סימון כמה תשובות נכונות, וטענות נכון / לא נכון" }[o.mix];
   const task = o.source==="sheet"
     ? `הפוך את דף העבודה שאצרף (צילום, PDF או טקסט) לשאלות לאתר. שמור על סדר השאלות ועל המספרים שבדף.`
     : `כתוב ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}.`;
@@ -1585,7 +1604,7 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 לפני שאתה כותב: פתור כל שאלה בעצמך פעמיים ובדוק שהתשובה נכונה.
 
 שאלות בלי תשובה מספרית (הסבר, הוכח, נמק, תאר, השווה): ${{
-    convert: `אל תשמיט אותן. הפוך כל אחת לשאלות שבודקות הבנה: אמריקאית שבה המסיחים הם טעויות נפוצות של תלמידים, או סדרה של 2–4 טענות "נכון / לא נכון" (kind: "truefalse") שמכסות את הרעיון המרכזי. בשאלת הוכחה – שאל על השלבים: איזה משפט מצדיק צעד, מה נובע ממה, איזו טענה שגויה.`,
+    convert: `אל תשמיט אותן. הפוך כל אחת לשאלות שבודקות הבנה: אמריקאית שבה המסיחים הם טעויות נפוצות של תלמידים, שאלת "סמנו את כל הנכונות" (multi), או סדרה של 2–4 טענות "נכון / לא נכון" (kind: "truefalse") שמכסות את הרעיון המרכזי. בשאלת הוכחה – שאל על השלבים: איזה משפט מצדיק צעד, מה נובע ממה, איזו טענה שגויה.`,
     split: `פרק כל אחת לשאלות קטנות עם תשובה סופית (מספר, מילה או בחירה), לפי שלבי הפתרון.`,
     skip: `השמט אותן.` }[o.open || "convert"]}
 
@@ -1595,15 +1614,17 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
  {"kind": "number", "prompt": "רכב נוסע $120$ ק\\"מ ב-$1.5$ שעות. מה מהירותו הממוצעת?", "answer": {"value": 80, "unit": "קמ\\"ש"}, "topic": "מהירות", "hint": "מהירות = דרך חלקי זמן", "solution": "$v=\\\\frac{120}{1.5}=80$"},
  {"kind": "number", "prompt": "מלבן שאורכו {a} ס\\"מ ורוחבו {b} ס\\"מ. מה שטחו?", "params": {"a": [4, 12, 1], "b": [2, 9, 1]}, "answer": {"formula": "a*b", "unit": "סמ\\"ר"}, "topic": "שטחים"},
  {"kind": "choice", "prompt": "איזה מהבאים הוא מספר ראשוני?", "choices": ["9", "15", "17", "21"], "answer": {"index": 2}, "topic": "מספרים"},
+ {"kind": "multi", "prompt": "אילו מהמרובעים הבאים הם מקביליות?", "choices": ["מלבן", "טרפז", "מעוין", "דלתון", "ריבוע"], "answer": {"indices": [0, 2, 4], "show_count": true}, "topic": "מרובעים"},
  {"kind": "text", "prompt": "איך נקרא טרפז ששוקיו שוות?", "answer": {"accepted": ["טרפז שווה שוקיים", "שווה שוקיים"]}, "topic": "טרפז"}
 ]}
 \`\`\`
 
 כללי הפורמט:
-- kind: "number" לתשובה מספרית, "choice" לאמריקאית, "truefalse" לנכון / לא נכון, "text" למילה או מושג.
+- kind: "number" לתשובה מספרית, "choice" לאמריקאית (תשובה אחת), "multi" לסימון כמה תשובות נכונות, "truefalse" לנכון / לא נכון, "text" למילה או מושג.
 - number: ב-value מספר בלבד (לא ביטוי, לא שבר כתוב, לא יחידות), יחידות ב-unit. מספר לא שלם עד 3 ספרות אחרי הנקודה. אפשר "tol_pct" לטווח מותר באחוזים (ברירת מחדל: מספר שלם מדויק, לא שלם 1%).
 - params (לא חובה): לכל משתנה [מינימום, מקסימום, קפיצה]. formula משתמשת בשמות המשתנים, ב-+ - * / ^ ובפונקציות sqrt, sin, cos, tan, radians, abs, round, pi. בחר טווחים שלא יוצאת בהם תשובה שלילית, אפס או לא הגיונית.
 - choice: 4 אפשרויות, index של התשובה הנכונה מתחיל מ-0, מסיחים הגיוניים.
+- multi: 4–6 אפשרויות, ב-indices כל התשובות הנכונות (מתחיל מ-0), לפחות 2 נכונות ולפחות 1 שגויה. show_count: true – התלמיד יודע כמה לסמן (קל יותר), false – לא אומרים לו (קשה יותר). בחר לפי רמת הקושי. אל תכתוב בנוסח השאלה כמה תשובות לסמן, האתר מוסיף את זה לבד.
 - truefalse: טענה אחת ב-prompt, ו-"answer": {"value": true} או {"value": false}. למשל: {"kind": "truefalse", "prompt": "נכון או לא נכון: בכל טרפז האלכסונים שווים.", "answer": {"value": false}, "topic": "טרפז"}
 - text: ב-accepted כל הצורות המקובלות של התשובה.
 - נוסחאות בתוך $...$ בכתיב LaTeX. בתוך JSON כל \\ נכתב פעמיים.
@@ -1629,6 +1650,7 @@ function parseAIQuestions(raw){
 function aiAnswerText(q){
   if(q.kind==="number") return q.answer.formula ? `נוסחה: ${q.answer.formula}${q.answer.unit?" "+q.answer.unit:""}` : `${q.answer.value}${q.answer.unit?" "+q.answer.unit:""}`;
   if(q.kind==="choice") return (q.choices||[])[q.answer.index] ?? "";
+  if(q.kind==="multi") return (q.answer.indices||[]).map(j=>(q.choices||[])[j]).join(" + ");
   return (q.answer.accepted||[]).join(" / ");
 }
 function openAIGenerator(onAdd){
@@ -1650,7 +1672,7 @@ function openAIGenerator(onAdd){
     <div id="g_sheetbox" style="display:none"><p class="info small" style="margin:12px 0 0">ב-ChatGPT, ב-Claude או ב-Gemini מצרפים צילום או PDF של הדף יחד עם ההנחיה. אפשר גם להדביק כאן את הטקסט של הדף.</p>
       <textarea id="g_sheet" style="min-height:90px;margin-top:8px" placeholder="טקסט הדף (לא חובה)"></textarea></div>
     <label class="f" for="g_m">סוגי שאלות</label>
-    <select id="g_m"><option value="number">בעיקר מספריות</option><option value="mixed">שילוב</option><option value="choice">בעיקר אמריקאיות</option><option value="text">בעיקר מילים ומושגים</option><option value="understand">בדיקת הבנה: אמריקאית ונכון / לא נכון</option></select>
+    <select id="g_m"><option value="number">בעיקר מספריות</option><option value="mixed">שילוב</option><option value="choice">בעיקר אמריקאיות</option><option value="text">בעיקר מילים ומושגים</option><option value="understand">בדיקת הבנה: אמריקאית, כמה נכונות, נכון / לא נכון</option></select>
     <label class="f" for="g_o">שאלות בלי תשובה מספרית (הסבר, הוכח)</label>
     <select id="g_o"><option value="convert">להפוך לאמריקאית ולנכון / לא נכון, לבדיקת הבנה</option><option value="split">לפרק לשאלות קטנות עם תשובה סופית</option><option value="skip">להשמיט</option></select>
     <label class="chk" style="margin:12px 0 0"><input type="checkbox" id="g_f" checked><span>עם שרטוטים כשצריך</span></label>
@@ -1697,7 +1719,7 @@ function openAIGenerator(onAdd){
       <label class="q" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);cursor:pointer">
         <input type="checkbox" data-i="${i}" ${p.on!==false?"checked":""} style="margin-top:4px">
         <div class="grow" style="min-width:0"><div class="prompt">${esc(p.q.prompt)}</div>${figHtml(p.q.figure)}
-          ${p.q.kind==="choice"?`<div class="tiny muted" style="margin-top:4px">${(p.q.choices||[]).map((c,j)=>j===p.q.answer.index?`<b style="color:var(--ok)">${esc(c)}</b>`:esc(c)).join(" · ")}</div>`:""}
+          ${p.q.kind==="choice"||p.q.kind==="multi"?`<div class="tiny muted" style="margin-top:4px">${(p.q.choices||[]).map((c,j)=>(p.q.kind==="multi"?(p.q.answer.indices||[]).includes(j):j===p.q.answer.index)?`<b style="color:var(--ok)">${esc(c)}</b>`:esc(c)).join(" · ")}${p.q.kind==="multi"?` <span class="chip">${p.q.answer.show_count?"עם מספר התשובות":"בלי לגלות כמה"}</span>`:""}</div>`:""}
           <div class="small" style="margin-top:6px"><span class="chip ok">תשובה</span> <span class="ltr" style="unicode-bidi:isolate">${esc(aiAnswerText(p.q))}</span>${p.q.params?` <span class="chip acc">מספרים שונים לכל תלמיד</span>`:""}${p.q.topic?` <span class="chip">${esc(p.q.topic)}</span>`:""}</div></div>
       </label>`).join("") : "");
     math($d("#g_prev"));
@@ -1749,9 +1771,11 @@ function tabQuestions(){
   $("#qlist").addEventListener("change", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f;
-    if(f==="kind"){ q.kind = e.target.value; q.answer = q.kind==="number" ? {value:""} : q.kind==="choice" ? {index:0} : {accepted:[]}; q.choices = q.kind==="choice" ? (q.choices||["",""]) : null; draw(); markDirty(); }
+    if(f==="kind"){ q.kind = e.target.value; q.answer = q.kind==="number" ? {value:""} : q.kind==="choice" ? {index:0} : q.kind==="multi" ? {indices:[], show_count:true} : {accepted:[]}; q.choices = q.kind==="choice"||q.kind==="multi" ? (q.choices||["","",""]) : null; draw(); markDirty(); }
+    if(f==="mcorrect"){ const j = +e.target.value, s = new Set(q.answer.indices||[]); e.target.checked ? s.add(j) : s.delete(j); q.answer.indices = [...s].sort((a,b)=>a-b); renderPv(i); markDirty(); }
+    if(f==="showcount"){ q.answer.show_count = e.target.checked; renderPv(i); markDirty(); }
     if(f==="correct"){ q.answer.index = +e.target.value; renderPv(i); markDirty(); }
-    if(f==="choices"){ if(q.answer.index >= (q.choices||[]).length) q.answer.index = 0; draw(); }
+    if(f==="choices"){ if(q.kind==="multi") q.answer.indices = (q.answer.indices||[]).filter(j=>j<(q.choices||[]).length); else if(q.answer.index >= (q.choices||[]).length) q.answer.index = 0; draw(); }
   });
   $("#qlist").addEventListener("click", async e => {
     const b = e.target.closest("[data-act]"); if(!b) return;
@@ -1763,27 +1787,28 @@ function tabQuestions(){
     draw(); markDirty();
   });
   $("#save").onclick = async () => {
-    const bad = Q.findIndex(q => !q.prompt.trim() || (q.kind==="number" && !q.answer.formula && (q.answer.value===""||isNaN(Number(q.answer.value)))) || (q.kind==="number" && q.answer.formula && qValue(q)==null) || (q.kind==="choice" && (q.choices||[]).length<2) || (q.kind==="text" && !(q.answer.accepted||[]).length));
+    const bad = Q.findIndex(q => !q.prompt.trim() || (q.kind==="number" && !q.answer.formula && (q.answer.value===""||isNaN(Number(q.answer.value)))) || (q.kind==="number" && q.answer.formula && qValue(q)==null) || (q.kind==="choice" && (q.choices||[]).length<2) || (q.kind==="multi" && ((q.choices||[]).length<2 || !(q.answer.indices||[]).length)) || (q.kind==="text" && !(q.answer.accepted||[]).length));
     if(bad>=0){ toast(`בשאלה ${bad+1} חסר משהו: נוסח, תשובה נכונה, נוסחה תקינה או אפשרויות`); $$(".qedit")[bad]?.scrollIntoView({behavior:"smooth",block:"center"}); return; }
     $("#save").disabled = true; $("#save").textContent = "שומר…";
     try{
       if(removed.length){ const { error } = await sb.from("hw_questions").delete().in("id", removed); if(error) throw error; }
       const rows = Q.map((q,i)=>{ let ans = q.answer;
         if(q.kind==="number"){ ans = { unit:q.answer.unit||"" }; if(q.answer.formula) ans.formula = q.answer.formula; else ans.value = Number(q.answer.value); if(q.answer.tol_pct!=null && q.answer.tol_pct!=="") ans.tol_pct = Number(q.answer.tol_pct); }
-        return { id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"?q.choices:null, answer:ans, points:q.points, figure:q.figure||null, topic:q.topic||null, hint:q.hint||null, hint_penalty:q.hint_penalty||0, solution:q.solution||null, params:q.kind==="number"&&q.answer.formula?q.params:null }; });
+        return { id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"||q.kind==="multi"?q.choices:null, answer:ans, points:q.points, figure:q.figure||null, topic:q.topic||null, hint:q.hint||null, hint_penalty:q.hint_penalty||0, solution:q.solution||null, params:q.kind==="number"&&q.answer.formula?q.params:null }; });
       if(rows.length){ const { error } = await sb.from("hw_questions").upsert(rows); if(error) throw error; }
       Q.forEach(q=>delete q._new); removed = []; setDirty(false); toast("השאלות נשמרו");
     }catch(e){ toast("השמירה נכשלה: "+e.message); $("#save").disabled=false; }
     $("#save").textContent = "שמירה";
   };
 }
-function toStudentQ(q){ const v = sampleVals(q.params); return { id:q.id, prompt:fillVals(q.prompt, v), kind:q.kind, choices:q.choices, points:q.points, figure:fillVals(q.figure, v), unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
+function toStudentQ(q){ const v = sampleVals(q.params); return { id:q.id, prompt:fillVals(q.prompt, v), kind:q.kind, choices:q.choices, pick: q.kind==="multi" && q.answer?.show_count!==false ? (q.answer.indices||[]).length : null, points:q.points, figure:fillVals(q.figure, v), unit: q.kind==="number" ? (q.answer?.unit||null) : null }; }
 function renderPv(i){
   const q = Q[i], pv = $(`#pv${i}`); if(!q || !pv) return;
   const s = toStudentQ(q);
   pv.innerHTML = `<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="body"><div class="prompt">${esc(s.prompt||"נוסח השאלה יופיע כאן")}</div>${figHtml(s.figure)}${answerInput(s,"")}
     <div class="tiny" style="margin-top:8px;color:var(--ok);font-weight:700">${q.kind==="number"?`תשובה: <bdi class="ltr">${esc(answerText(q))}</bdi>${q.answer.formula?" (לדוגמה, עם הערכים הנמוכים)":""}`:q.kind==="text"?`מתקבל: ${esc((q.answer.accepted||[]).join(" / "))}`:""}</div></div></div></div>`;
   if(q.kind==="choice"){ const c = pv.querySelectorAll(".choice")[+q.answer.index]; if(c) c.classList.add("right"); }
+  if(q.kind==="multi"){ const cs = pv.querySelectorAll(".choice"); (q.answer.indices||[]).forEach(j => cs[j]?.classList.add("right")); }
   pv.querySelectorAll("input").forEach(x=>x.disabled=true);
   math(pv);
 }
@@ -1804,7 +1829,8 @@ function normalizeQ(x){
     if(typeof v === "string") v = /^(true|נכון|כן|yes)$/i.test(v.trim());
     x = { ...x, kind:"choice", choices:["נכון","לא נכון"], answer:{ index: v ? 0 : 1 } };
   }
-  const kind = ["number","choice","text"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
+  if(["multiple","multi_select","checkbox","checkboxes","multichoice"].includes(x.kind)) x = { ...x, kind:"multi" };
+  const kind = ["number","choice","text","multi"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
   let answer = x.answer ?? {};
   if(kind==="number"){
     if(typeof answer !== "object") answer = { value: answer };
@@ -1813,8 +1839,15 @@ function normalizeQ(x){
     if(answer.tol_pct!=null) a.tol_pct = Number(answer.tol_pct);
     answer = a;
   } else if(kind==="choice"){ if(typeof answer !== "object") answer = { index: answer }; answer = { index: Number(answer.index ?? 0) }; }
+  else if(kind==="multi"){
+    const raw = Array.isArray(answer) ? answer : (answer.indices ?? answer.index ?? []);
+    const n = (x.choices||[]).length;
+    const ind = [...new Set((Array.isArray(raw) ? raw : [raw]).map(Number).filter(j=>Number.isInteger(j) && j>=0 && j<n))].sort((a,b)=>a-b);
+    if(!ind.length) throw new Error("לא סומנו תשובות נכונות בשאלה: "+(x.prompt||"").slice(0,30));
+    answer = { indices: ind, show_count: answer.show_count !== false };
+  }
   else { if(typeof answer === "string") answer = { accepted:[answer] }; answer = { accepted: (answer.accepted||[]).map(String) }; }
-  return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1),
+  return { id:uuid(), assignment_id:A.id, prompt:String(x.prompt||""), kind, choices: kind==="choice"||kind==="multi" ? (x.choices||[]).map(String) : null, answer, points: Number(x.points ?? 1),
     figure: (typeof x.figure==="string" && /^\s*<svg/i.test(x.figure)) ? x.figure : null, topic:x.topic||null, hint:x.hint||null, hint_penalty:Number(x.hint_penalty||0), solution:x.solution||null, params:normParams(x.params), _new:true };
 }
 function qEditor(q,i){
@@ -1833,10 +1866,14 @@ function qEditor(q,i){
       <label class="f">נוסחה לתשובה</label><input type="text" class="ltr" data-f="formula" value="${esc(q.answer.formula||"")}" placeholder="(a+b)*h/2   ·   sqrt(a^2+b^2)   ·   2*pi*r"></div></details>`;
   else if(k==="choice") ans = `<label class="f">אפשרויות <span class="muted">כל אחת בשורה</span></label><textarea data-f="choices" style="min-height:96px">${esc((q.choices||[]).join("\n"))}</textarea>
       <label class="f">התשובה הנכונה</label><select data-f="correct">${(q.choices||[]).map((c,j)=>`<option value="${j}" ${+q.answer.index===j?"selected":""}>${HEB[j]||j+1}. ${esc(c.slice(0,60))}</option>`).join("")}</select>`;
+  else if(k==="multi") ans = `<label class="f">אפשרויות <span class="muted">כל אחת בשורה</span></label><textarea data-f="choices" style="min-height:110px">${esc((q.choices||[]).join("\n"))}</textarea>
+      <label class="f">התשובות הנכונות <span class="muted">סמנו את כולן</span></label>
+      <div style="display:grid;gap:4px">${(q.choices||[]).map((c,j)=>`<label class="chk" style="margin:0"><input type="checkbox" data-f="mcorrect" value="${j}" ${(q.answer.indices||[]).includes(j)?"checked":""}><span>${HEB[j]||j+1}. ${esc(c.slice(0,60))}</span></label>`).join("")}</div>
+      <label class="chk" style="margin:12px 0 0"><input type="checkbox" data-f="showcount" ${q.answer.show_count!==false?"checked":""}><span>להגיד לתלמיד כמה תשובות לסמן <span class="muted">(בלי זה השאלה קשה יותר)</span></span></label>`;
   else ans = `<label class="f">תשובות שמתקבלות <span class="muted">כל אחת בשורה. רווחים, מקפים ואותיות גדולות לא משנים</span></label><textarea data-f="accepted" style="min-height:64px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
   return `<div class="qedit" data-i="${i}">
     <div class="head"><span class="qn">${i+1}</span>
-      <select data-f="kind" style="width:auto;padding:7px 10px 7px 32px" aria-label="סוג תשובה"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>אמריקאית</option><option value="text" ${k==="text"?"selected":""}>מילה או ביטוי</option></select>
+      <select data-f="kind" style="width:auto;padding:7px 10px 7px 32px" aria-label="סוג תשובה"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>אמריקאית</option><option value="multi" ${k==="multi"?"selected":""}>כמה תשובות נכונות</option><option value="text" ${k==="text"?"selected":""}>מילה או ביטוי</option></select>
       <input type="number" min="0" step="0.5" data-f="points" value="${esc(q.points)}" style="width:64px;padding:7px 8px" aria-label="נקודות"><span class="muted small">נק׳</span>
       <span class="grow"></span>
       <button class="ghost sm" data-act="up" aria-label="למעלה">▲</button><button class="ghost sm" data-act="down" aria-label="למטה">▼</button><button class="ghost sm" data-act="dup">שכפול</button><button class="ghost danger sm" data-act="del">מחיקה</button></div>
@@ -1938,7 +1975,7 @@ async function teacherPrint(id){
       <div class="card"><div class="bd">
         <div class="row" style="border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:6px"><div class="grow"><h1 style="margin:0">${esc(a.title)}</h1>${a.description?`<div class="prompt small muted">${esc(a.description)}</div>`:""}</div><div class="small" style="text-align:left">שם: ____________<br>כיתה: ________</div></div>
         ${Q.map((q,i)=>{ const s = toStudentQ(q); return `<div class="q"><div class="qh"><span class="qn">${i+1}</span><div class="body"><div class="prompt">${esc(s.prompt)}</div>${figHtml(s.figure)}
-          ${q.kind==="choice" ? `<div style="margin-top:10px">${q.choices.map((c,j)=>`<div style="padding:4px 0">${HEB[j]}. <span class="prompt">${esc(c)}</span></div>`).join("")}</div>` : `<div style="margin-top:14px;border-bottom:1px solid var(--ink);width:240px;height:28px"></div>`}
+          ${q.kind==="choice"||q.kind==="multi" ? `<div style="margin-top:10px">${q.kind==="multi"?`<div class="small" style="font-weight:700">${q.answer?.show_count!==false?`סמנו ${(q.answer?.indices||[]).length} תשובות נכונות`:"סמנו את כל התשובות הנכונות"}</div>`:""}${q.choices.map((c,j)=>`<div style="padding:4px 0">${HEB[j]}. <span class="prompt">${esc(c)}</span></div>`).join("")}</div>` : `<div style="margin-top:14px;border-bottom:1px solid var(--ink);width:240px;height:28px"></div>`}
           ${key?`<div class="tiny" style="margin-top:6px;color:var(--ok);font-weight:800">תשובה: <bdi>${esc(answerText(q))}</bdi></div>`:""}</div></div></div>`; }).join("")}
       </div></div>`;
     math(app()); $("#pk").onchange = e => draw(e.target.checked);
