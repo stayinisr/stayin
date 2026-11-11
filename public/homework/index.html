@@ -1627,7 +1627,7 @@ function aiAnswerText(q){
 }
 function openAIGenerator(onAdd){
   const d = sheet(`
-    <h2>שאלות מ-AI</h2>
+    <h2>בנייה עם AI</h2>
     <p class="muted small" style="margin:6px 0 0">כל AI עובד: ChatGPT, Gemini או Claude. ממלאים מה צריך, שולחים ל-AI, ומדביקים כאן את מה שהוא מחזיר.</p>
     <div class="seg" id="g_src" style="margin-top:16px"><button data-v="topic" class="on">שאלות חדשות בנושא</button><button data-v="sheet">המרת דף עבודה</button></div>
     <div id="g_topic">
@@ -1649,6 +1649,7 @@ function openAIGenerator(onAdd){
     <label class="chk" style="margin:8px 0 0"><input type="checkbox" id="g_p" checked><span>מספרים שונים לכל תלמיד, כשאפשר</span></label>
     <label class="f" for="g_x">דגשים <span class="muted">(לא חובה)</span></label>
     <input id="g_x" type="text" placeholder="למשל: בלי מחשבון, רק זוויות, מוכן למבחן">
+    ${!TEACHER?.ai_enabled ? `<p class="muted tiny" style="margin:14px 0 0"><span class="chip sun">בקרוב</span> יצירה ישירות באתר וצילום דף עבודה, בלי לעבור ל-AI אחר.</p>` : ""}
     ${TEACHER?.ai_enabled ? `<div class="info" style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="grow small"><b>יצירה כאן באתר</b>, בלי לצאת. נשארו החודש: <b id="g_left">${TEACHER.ai_left ?? ""}</b></div><button class="primary" id="g_site">יצירת שאלות</button></div><p class="muted tiny" style="margin:10px 0 0">או עם ה-AI שלכם:</p>` : ""}
     <div class="row" style="margin-top:${TEACHER?.ai_enabled?8:16}px;flex-wrap:wrap;gap:8px">
       <button class="${TEACHER?.ai_enabled?"light":"primary"} sm" id="g_cgpt">פתיחה ב-ChatGPT</button>
@@ -1703,7 +1704,7 @@ function tabQuestions(){
   const el = $("#tab");
   el.innerHTML = `
     <div class="row" style="margin-top:16px">
-      <button class="light" id="add">שאלה חדשה</button><button class="light" id="imp">שאלות מ-AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button>
+      <button class="light" id="add">בנייה ידנית</button><button class="primary" id="imp">בנייה עם AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button>
       <div class="grow"></div><span class="muted tiny" id="dirtyl"></span><button class="primary" id="save" disabled>שמירה</button>
     </div>
     <div id="qlist"></div>`;
@@ -1712,7 +1713,7 @@ function tabQuestions(){
   if(dirty) setDirty(true);
   const topics = () => [...new Set(Q.map(q=>q.topic).filter(Boolean))];
   const draw = () => {
-    $("#qlist").innerHTML = (Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><div class="empty"><b>אין עדיין שאלות</b>הוסיפו שאלה בעצמכם, צרו שאלות עם AI, או העתיקו מהמאגר.</div></div>`) + `<datalist id="topics">${topics().map(t=>`<option value="${esc(t)}">`).join("")}</datalist>`;
+    $("#qlist").innerHTML = (Q.length ? Q.map((q,i)=>qEditor(q,i)).join("") : `<div class="card"><div class="empty"><b>אין עדיין שאלות</b>בנו שאלה בעצמכם ב"בנייה ידנית", צרו כמה שאלות בבת אחת ב"בנייה עם AI", או העתיקו מהמאגר.</div></div>`) + `<datalist id="topics">${topics().map(t=>`<option value="${esc(t)}">`).join("")}</datalist>`;
     Q.forEach((q,i)=>renderPv(i));
   };
   draw();
