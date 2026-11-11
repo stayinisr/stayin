@@ -106,7 +106,7 @@
   .err{color:var(--bad);font-weight:700;margin:12px 0 0;font-size:14.5px}
   /* code boxes */
   .codebox{display:flex;gap:8px;justify-content:center;direction:ltr}
-  .codebox input{width:48px;height:58px;padding:0;text-align:center;font-size:24px;font-weight:900;text-transform:uppercase;border:1.5px solid var(--line-2);background:#fff;caret-color:var(--acc)}
+  .codebox input{width:48px;flex:0 1 48px;min-width:0;height:58px;padding:0;text-align:center;font-size:24px;font-weight:900;text-transform:uppercase;border:1.5px solid var(--line-2);background:#fff;caret-color:var(--acc)}
   .nocopy .q .prompt,.nocopy .q .fig,.nocopy .q .choice,.nocopy .q .katex{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   #p1 input,#p2 input,#c0 input,#c1 input,#c2 input,.pin input{-webkit-text-security:disc;text-security:disc}
   .codebox input.on{border-color:var(--pri);color:var(--pri)}
@@ -316,7 +316,7 @@
     .stats .v{font-size:26px}
     .grade .n{font-size:70px}
     .grid2{grid-template-columns:1fr}
-    .codebox input{width:42px;height:52px;font-size:21px}
+    .codebox input{width:42px;flex:0 1 42px;height:52px;font-size:21px}
     .codebox{gap:6px}
     .hide-m{display:none}
   }
@@ -336,7 +336,7 @@
 const SUPABASE_URL = "https://unddypgjumuwsnsatuxe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BGJ55jTK4C7j0QVbyt0I2Q_1vmjHXQ-";
 let TEACHER = null;
-const OTP_LEN = 6;
+const OTP_LEN = 8;
 let sb = null, session = null;
 
 /* ================= helpers ================= */
