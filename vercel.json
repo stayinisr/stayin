@@ -1,5 +1,10 @@
 {
+  "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "destination": "/homework/index.html" },
+    { "source": "/:file(manifest.json|icon-192.png|icon-512.png)", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "destination": "/homework/:file" }
+  ],
   "headers": [
+    { "source": "/", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
     { "source": "/homework", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
     { "source": "/homework/:path*", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] }
   ]
