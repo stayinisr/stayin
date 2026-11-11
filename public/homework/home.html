@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlfaMath – שיעורי בית במתמטיקה ובפיזיקה שנבדקים מעצמם</title>
+<meta name="description" content="המורה מעלה משימה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. שיעורי בית במתמטיקה ובפיזיקה עם בדיקה אוטומטית, מספרים שונים לכל תלמיד וניתוח כיתתי.">
+<meta property="og:title" content="AlfaMath – שיעורי בית שנבדקים מעצמם">
+<meta property="og:description" content="שיעורי בית במתמטיקה ובפיזיקה עם בדיקה אוטומטית וניתוח כיתתי.">
+<meta name="theme-color" content="#4F3BFF">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F4FF}html{scroll-behavior:smooth}
+*{box-sizing:border-box;border-radius:0}
+a{color:#4F3BFF}a:hover{color:#3A26E0}
+.am-wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.am-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;font:800 16px Heebo,sans-serif;text-decoration:none;border:2px solid #15123B}
+.am-pri{background:#4F3BFF;border-color:#4F3BFF;color:#fff}.am-pri:hover{background:#3A26E0;color:#fff}
+.am-light{background:#fff;color:#15123B}.am-light:hover{background:#EFEDFF;color:#15123B}
+@media (max-width:760px){
+ .am-wrap{padding:0 18px}
+ .am-nav-links{display:none!important}
+ .am-hero{grid-template-columns:minmax(0,1fr)!important;padding-top:28px!important}
+ .am-h1{font-size:40px!important}
+ .am-grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+ .am-grid3,.am-grid2{grid-template-columns:minmax(0,1fr)!important}
+ .am-nav-cta .am-light{display:none!important}
+ .am-band{flex-direction:column;align-items:flex-start!important}
+}
+
+a:focus-visible{outline:3px solid #FF5C39;outline-offset:2px}
+</style>
+</head>
+<body>
+<div style="font-family:Heebo,sans-serif;color:#15123B;background:#F5F4FF;direction:rtl">
+
+<header style="background:#fff;border-bottom:1px solid #E6E3F5;position:sticky;top:0;z-index:5">
+ <div class="am-wrap" style="display:flex;align-items:center;gap:28px;height:72px">
+  <a href="#top" aria-label="AlfaMath, דף הבית" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#15123B">
+   <span style="width:40px;height:40px;background:#4F3BFF;color:#fff;display:grid;place-items:center;font:italic 900 26px Georgia,serif;position:relative">α<span style="position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:#FF5C39"></span></span>
+   <span style="direction:ltr;font-weight:900;font-size:23px;letter-spacing:-0.02em">Alfa<span style="color:#4F3BFF">Math</span></span>
+  </a>
+  <nav class="am-nav-links" aria-label="ניווט" style="display:flex;gap:24px;font-weight:700;font-size:15px">
+   <a href="#how" style="color:#15123B;text-decoration:none">איך זה עובד</a>
+   <a href="#teachers" style="color:#15123B;text-decoration:none">למורים</a>
+   <a href="#students" style="color:#15123B;text-decoration:none">לתלמידים</a>
+  </nav>
+  <div class="am-nav-cta" style="margin-inline-start:auto;display:flex;gap:10px">
+   <a class="am-btn am-light" href="/app#/">כניסת תלמיד</a>
+   <a class="am-btn am-pri" href="/app#/teacher">כניסת מורה</a>
+  </div>
+ </div>
+</header>
+
+<section id="top" class="am-wrap am-hero" style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr);gap:56px;align-items:center;padding-top:72px;padding-bottom:72px">
+ <div>
+  <p style="margin:0 0 18px;font-weight:800;color:#4F3BFF;font-size:16px">מתמטיקה ופיזיקה · חטיבה ותיכון</p>
+  <h1 class="am-h1" style="margin:0;font-size:60px;line-height:1.05;font-weight:900;letter-spacing:-0.03em">שיעורי בית<br>שנבדקים מעצמם.</h1>
+  <p style="margin:22px 0 0;font-size:20px;line-height:1.6;color:#3B3766;max-width:540px">המורה מעלה משימה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. אתם רואים מי הגיש, איפה הכיתה נתקעה ומה כדאי לחזור עליו בשיעור הבא.</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:32px">
+   <a class="am-btn am-pri" href="/app#/teacher" style="min-height:56px;font-size:18px;padding:0 28px">הרשמה למורים</a>
+   <a class="am-btn am-light" href="/app#/" style="min-height:56px;font-size:18px;padding:0 28px">יש לי קוד כיתה</a>
+  </div>
+  <p style="margin:16px 0 0;font-size:14px;color:#6B6890">בשלב הזה ההצטרפות למורים חינם, אחרי אישור.</p>
+ </div>
+
+ <div style="position:relative;min-height:580px" aria-label="דוגמה למסך שאלה בטלפון" role="img">
+  <div style="position:absolute;inset-inline-end:28px;top:0;width:300px;background:#fff;border:2px solid #15123B;box-shadow:12px 12px 0 #4F3BFF">
+   <div style="background:#15123B;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;font-weight:800;font-size:14px"><span>טרפז – תרגול</span><span style="color:#FFC83D">3 / 10</span></div>
+   <div style="padding:18px 16px">
+    <div style="display:flex;gap:10px;align-items:flex-start">
+     <span style="width:28px;height:28px;background:#EFEDFF;color:#4F3BFF;display:grid;place-items:center;font-weight:900;flex:none">3</span>
+     <p style="margin:0;font-size:15px;line-height:1.55">בטרפז ABCD הבסיסים מקבילים. נתון <span style="direction:ltr;unicode-bidi:isolate;font-style:italic">∠A = 65°</span>. מה גודל <span style="direction:ltr;unicode-bidi:isolate;font-style:italic">∠D</span>?</p>
+    </div>
+    <svg viewBox="0 0 260 110" style="display:block;width:100%;margin:14px 0" aria-hidden="true"><polygon points="40,95 220,95 180,18 80,18" fill="#EFEDFF" stroke="#15123B" stroke-width="2.5"/><text x="28" y="108" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">D</text><text x="224" y="108" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">C</text><text x="184" y="14" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">B</text><text x="68" y="14" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">A</text><text x="86" y="36" font-size="12" font-family="Heebo" fill="#FF5C39" font-weight="800">65°</text></svg>
+    <div style="display:flex;gap:8px;align-items:center">
+     <div style="flex:1;height:48px;border:2px solid #0E9F6E;display:flex;align-items:center;padding:0 12px;font-weight:900;font-size:20px;direction:ltr;justify-content:flex-end">115</div>
+     <span style="height:48px;padding:0 12px;background:#0E9F6E;color:#fff;display:flex;align-items:center;font-weight:800;font-size:15px">נכון ✓</span>
+    </div>
+   </div>
+  </div>
+  <div style="position:absolute;inset-inline-start:0;bottom:0;width:280px;background:#fff;border:2px solid #15123B;padding:16px">
+   <div style="font-weight:900;font-size:15px;margin-bottom:12px">ניתוח שאלות · ט׳ מתמטיקה</div>
+   <div style="display:grid;gap:9px;font-size:13px">
+    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 1</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:88%;background:#0E9F6E"></span></span><b>88%</b></div>
+    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 2</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:71%;background:#4F3BFF"></span></span><b>71%</b></div>
+    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 3</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:34%;background:#FF5C39"></span></span><b>34%</b></div>
+   </div>
+   <p style="margin:12px 0 0;font-size:12.5px;color:#6B6890">טעות נפוצה בשאלה 3: <b style="color:#15123B">65</b></p>
+  </div>
+ </div>
+</section>
+
+<section style="background:#fff;border-top:1px solid #E6E3F5;border-bottom:1px solid #E6E3F5">
+ <div class="am-wrap am-grid4" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0">
+  <div style="padding:30px 24px 30px 0;border-inline-start:0">
+   <div style="font-weight:900;font-size:18px">מספרים שונים לכל תלמיד</div>
+   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">כל אחד מקבל גרסה משלו של אותה שאלה, ככה העתקה מחבר לא עוזרת.</p>
+  </div>
+  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
+   <div style="font-weight:900;font-size:18px">בדיקה הוגנת</div>
+   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">תשובה עשרונית מתקבלת בטווח סביר. מספר שלם צריך להיות מדויק.</p>
+  </div>
+  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
+   <div style="font-weight:900;font-size:18px">שרטוטים ונוסחאות</div>
+   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">שאלות מילוליות, אמריקאיות ומספריות, עם שרטוט ונוסחאות כמו בדף עבודה.</p>
+  </div>
+  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
+   <div style="font-weight:900;font-size:18px">בלי התקנה</div>
+   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">עובד מהדפדפן בטלפון ובמחשב. התלמיד נכנס עם קוד כיתה והשם שלו.</p>
+  </div>
+ </div>
+</section>
+
+<section id="how" class="am-wrap" style="padding-top:88px;padding-bottom:88px">
+ <h2 style="margin:0;font-size:40px;font-weight:900;letter-spacing:-0.02em">איך זה עובד</h2>
+ <div class="am-grid3" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px">
+  <div style="background:#fff;border:2px solid #15123B;padding:28px">
+   <div style="width:48px;height:48px;background:#4F3BFF;color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px">1</div>
+   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">יוצרים משימה</h3>
+   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">כותבים שאלות בעורך, או מדביקים שאלות שהכנתם עם בינה מלאכותית. קובעים מועד הגשה, ניסיונות ושעון למבחן.</p>
+  </div>
+  <div style="background:#fff;border:2px solid #15123B;padding:28px">
+   <div style="width:48px;height:48px;background:#FF5C39;color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px">2</div>
+   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">שולחים לכיתה</h3>
+   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">שולחים לתלמידים את קוד הכיתה בוואטסאפ. כל תלמיד נכנס עם השם שלו וקוד סודי, ורואה רק את המשימות של הכיתה שלו.</p>
+  </div>
+  <div style="background:#fff;border:2px solid #15123B;padding:28px">
+   <div style="width:48px;height:48px;background:#FFC83D;color:#15123B;display:grid;place-items:center;font-weight:900;font-size:24px">3</div>
+   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">מקבלים ציונים וניתוח</h3>
+   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">הציון מוכן מיד. גיליון ציונים משוקלל, אחוז הצלחה בכל שאלה והטעויות הנפוצות. מייצאים לאקסל בלחיצה.</p>
+  </div>
+ </div>
+</section>
+
+<section class="am-wrap am-grid2" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-bottom:88px">
+ <div id="teachers" style="background:#15123B;color:#fff;padding:36px">
+  <h2 style="margin:0;font-size:30px;font-weight:900">למורים</h2>
+  <ul style="margin:20px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5">
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>לוח ניהול: מי לא הגיש, מי בירידה, מה נסגר השבוע</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>מאגר שאלות אישי שאפשר להעתיק בין משימות</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>תיקון ציון ידני והערה אישית לכל הגשה</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>הודעות לכיתה ודף עבודה להדפסה</li>
+  </ul>
+  <a class="am-btn am-pri" href="/app#/teacher" style="margin-top:28px;border-color:#fff">הרשמה למורים</a>
+ </div>
+ <div id="students" style="background:#fff;border:2px solid #15123B;padding:36px">
+  <h2 style="margin:0;font-size:30px;font-weight:900">לתלמידים</h2>
+  <ul style="margin:20px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5">
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>כל המשימות במקום אחד, עם תאריך הגשה ותזכורת ליומן</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>ציון ופתרון מיד אחרי ההגשה</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>מחברת טעויות לתרגול חוזר עד שזה יושב</li>
+   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>מעקב התקדמות לפי נושאים</li>
+  </ul>
+  <a class="am-btn am-light" href="/app#/" style="margin-top:28px">כניסת תלמיד</a>
+ </div>
+</section>
+
+<section style="background:#4F3BFF;color:#fff">
+ <div class="am-wrap am-band" style="display:flex;align-items:center;gap:24px;padding-top:48px;padding-bottom:48px">
+  <div>
+   <h2 style="margin:0;font-size:32px;font-weight:900">רוצים לנסות עם הכיתה שלכם?</h2>
+   <p style="margin:8px 0 0;font-size:17px;color:#E4E0FF">נרשמים עם המייל, ממלאים כמה פרטים, ואנחנו מאשרים את החשבון.</p>
+  </div>
+  <a class="am-btn" href="/app#/teacher" style="margin-inline-start:auto;background:#fff;color:#15123B;border-color:#fff;min-height:56px;font-size:18px">הרשמה למורים</a>
+ </div>
+</section>
+
+<footer class="am-wrap" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding-top:28px;padding-bottom:40px;color:#5C5880;font-size:14px">
+ <span style="direction:ltr;font-weight:900;color:#15123B">Alfa<span style="color:#4F3BFF">Math</span></span>
+ <span>Math, Physics &amp; More</span>
+ <a href="/app#/teacher" style="margin-inline-start:auto">כניסת מורה</a>
+ <a href="/app#/">כניסת תלמיד</a>
+</footer>
+</div>
+
+</body>
+</html>

@@ -8,6 +8,16 @@
           "value": "alfamath.co.il"
         }
       ],
+      "destination": "/homework/home.html"
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
       "destination": "/homework/index.html"
     },
     {
@@ -42,6 +52,16 @@
     },
     {
       "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/home.html"
+    },
+    {
+      "source": "/app",
       "has": [
         {
           "type": "host",
@@ -98,7 +118,37 @@
       ]
     },
     {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/app",
       "has": [
         {
           "type": "host",
