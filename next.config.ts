@@ -10,6 +10,8 @@ const alfamathRoutes: [string, string][] = [
   ["/icon-512.png", "/homework/icon-512.png"],
   ["/robots.txt", "/homework/robots.txt"],
   ["/sitemap.xml", "/homework/sitemap.xml"],
+  ["/terms", "/homework/terms.html"],
+  ["/privacy", "/homework/privacy.html"],
 ];
 
 const nextConfig: NextConfig = {

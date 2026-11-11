@@ -720,7 +720,7 @@ function studentAuth(mode, code=""){
         <button class="primary big wide" id="snd" style="margin-top:16px">שליחת קוד למייל</button>
       </form>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
-      <p class="muted small" style="text-align:center;margin:12px 0 0">המייל משמש רק לכניסה ולשחזור הקוד, והמורה רואה אותו.</p>`;
+      <p class="muted small" style="text-align:center;margin:12px 0 0">המייל משמש רק לכניסה ולשחזור הקוד, והמורה רואה אותו. <a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></p>`;
     $("#bk").onclick = () => stepName();
     $("#ef").onsubmit = async e => {
       e.preventDefault(); err(); const em = $("#em").value.trim();
@@ -1124,7 +1124,8 @@ async function requireTeacher(){
         <label class="f" for="a_s">בית ספר</label><input id="a_s" type="text" maxlength="120" autocomplete="organization">
         <label class="f" for="a_m">מה אתם מלמדים?</label><input id="a_m" type="text" maxlength="120" placeholder="למשל: מתמטיקה ז׳–ט׳, פיזיקה">
         <label class="f" for="a_p">טלפון <span class="muted">(לא חובה)</span></label><input id="a_p" type="tel" class="ltr" maxlength="30" autocomplete="tel">
-        <button class="primary big wide" id="a_go" style="margin-top:20px">שליחת בקשה</button>
+        <label class="chk" style="margin:16px 0 0"><input type="checkbox" id="a_ok" required><span>קראתי ואני מסכים/ה ל<a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></span></label>
+        <button class="primary big wide" id="a_go" style="margin-top:16px">שליחת בקשה</button>
         <p class="err" id="ae" role="alert" style="text-align:center"></p>
       </form></div></div>
       <p style="text-align:center"><button class="ghost sm" id="lo">יציאה</button></p>
@@ -1262,8 +1263,25 @@ function tabOverview(D){
       ${D.classes.map(c=>{ const sts = D.studentsOf(c.id); const avgs = sts.map(D.studentAvg).filter(x=>x!=null); const avg = avgs.length ? Math.round(avgs.reduce((s,x)=>s+x,0)/avgs.length) : null;
         return `<div class="tile" data-href="#/teacher/c/${c.id}"><div class="row"><div class="t grow">${esc(c.name)}</div>${avg!=null?gbadge(avg):""}</div>
           <div class="tiny muted" style="margin-top:6px">${sts.length} תלמידים, ${D.asgFor(c.id).filter(a=>a.is_open).length} משימות פתוחות</div></div>`; }).join("") || `<p class="muted">עוד אין כיתות.</p>`}
-    </div></div></div>`;
+    </div></div></div>
+    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>גיבוי</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות שלך. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת גיבוי</button></div></div>`;
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
+  $("#bkp").onclick = backupAll;
+}
+async function backupAll(){
+  const b = $("#bkp"); if(b){ b.disabled = true; b.textContent = "מכין…"; }
+  try{
+    const get = async (t, cols="*") => { const { data, error } = await sb.from(t).select(cols); if(error) throw error; return data; };
+    const [classes, students, assignments, links, questions, submissions, announcements] = await Promise.all([
+      get("hw_classes"), get("hw_students","id,class_id,display_name,username,created_at,teacher_note,email,claimed_at"), get("hw_assignments"),
+      get("hw_assignment_classes"), get("hw_questions"), get("hw_submissions"), get("hw_announcements") ]);
+    const data = { alfamath_backup: 1, created_at: new Date().toISOString(), teacher: session?.user?.email, classes, students, assignments, assignment_classes: links, questions, submissions, announcements };
+    const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `alfamath-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast(`הגיבוי ירד: ${classes.length} כיתות, ${assignments.length} משימות, ${submissions.length} הגשות`);
+  }catch(e){ toast("הגיבוי נכשל: " + errMsg(e)); }
+  if(b){ b.disabled = false; b.textContent = "הורדת גיבוי"; }
 }
 function tabAssignments(D){
   const cname = Object.fromEntries(D.classes.map(c=>[c.id,c.name]));
