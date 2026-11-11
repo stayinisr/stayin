@@ -1,11 +1,134 @@
 {
   "rewrites": [
-    { "source": "/", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "destination": "/homework/index.html" },
-    { "source": "/:file(manifest.json|icon-192.png|icon-512.png)", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "destination": "/homework/:file" }
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/index.html"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/manifest.json"
+    },
+    {
+      "source": "/icon-192.png",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/icon-192.png"
+    },
+    {
+      "source": "/icon-512.png",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/icon-512.png"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/index.html"
+    },
+    {
+      "source": "/manifest.json",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/manifest.json"
+    },
+    {
+      "source": "/icon-192.png",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/icon-192.png"
+    },
+    {
+      "source": "/icon-512.png",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/icon-512.png"
+    }
   ],
   "headers": [
-    { "source": "/", "has": [{ "type": "host", "value": "(www\\.)?alfamath\\.co\\.il" }], "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
-    { "source": "/homework", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] },
-    { "source": "/homework/:path*", "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }] }
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/homework",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/homework/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    }
   ]
 }
