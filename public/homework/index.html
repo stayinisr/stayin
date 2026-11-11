@@ -333,8 +333,9 @@
 <dialog id="dlg"></dialog>
 
 <script>
-const SUPABASE_URL = "https://cihpuwinkgaumngsftin.supabase.co";
-const SUPABASE_KEY = "sb_publishable_uFMJVz_1cBnHK_DEhBNlHg_5_SdFhOK";
+const SUPABASE_URL = "https://unddypgjumuwsnsatuxe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BGJ55jTK4C7j0QVbyt0I2Q_1vmjHXQ-";
+let TEACHER = null;
 const OTP_LEN = 6;
 let sb = null, session = null;
 
@@ -559,7 +560,8 @@ function studentNav(active, mistakes){
 function teacherNav(active, pick){
   document.body.classList.add("has-bnav", "has-tnav");
   const items = [["o","סקירה",IC.grid],["a","משימות",IC.tasks],["c","כיתות",IC.users],["b","מאגר",IC.stack]];
-  $("#bnav").innerHTML = `<nav class="bnav tnav" style="--n:4" aria-label="ניווט מורה">${items.map(([k,l,i])=>`<button data-t="${k}" class="${active===k?"on":""}">${i}${l}</button>`).join("")}</nav>`;
+  if(TEACHER?.is_admin) items.push(["t","מורים",IC.me]);
+  $("#bnav").innerHTML = `<nav class="bnav tnav" style="--n:${items.length}" aria-label="ניווט מורה">${items.map(([k,l,i])=>`<button data-t="${k}" class="${active===k?"on":""}">${i}${l}</button>`).join("")}</nav>`;
   $$("#bnav button").forEach(b => b.onclick = () => pick ? pick(b.dataset.t) : go("#/teacher?tab="+b.dataset.t));
 }
 async function studentMe(){
@@ -1035,50 +1037,110 @@ function showReview(body, a, last, fresh){
 }
 
 /* ================= TEACHER ================= */
-async function logout(){ await sb.auth.signOut(); session=null; go("#/teacher"); }
+async function logout(){ await sb.auth.signOut(); session=null; TEACHER=null; go("#/teacher"); }
 function loginPage(){
   app().innerHTML = `
     <div class="auth">
-      <h1 style="text-align:center">כניסת מורה</h1>
-      <p class="muted" style="text-align:center">נשלח קוד חד-פעמי למייל. אותו מייל כמו ב-Stayin.</p>
+      <h1 style="text-align:center">כניסה והרשמה למורים</h1>
+      <p class="muted" style="text-align:center">נשלח קוד חד-פעמי למייל שלך. מורה חדש? אותה דרך, ואחרי זה ממלאים כמה פרטים.</p>
       <div class="card"><div class="bd">
         <form id="lf">
-          <label class="f" for="em">אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" required value="${esc(store("hw-teacher-email")||"")}">
+          <label class="f" for="em">אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" autocapitalize="none" spellcheck="false" required value="${esc(store("hw-teacher-email")||"")}">
           <button class="primary big wide" id="lsend" style="margin-top:20px">שליחת קוד</button>
         </form>
         <div id="vf" style="display:none">
           <p class="muted small" id="sentto" style="text-align:center"></p>
           <label class="f" style="text-align:center">הקוד מהמייל</label>
           ${codeBoxes(OTP_LEN, "", true)}
-          <button class="ghost wide" id="back" style="margin-top:16px">שליחה מחדש או מייל אחר</button>
+          <p class="muted small" style="text-align:center;margin:12px 0 0">לא הגיע? בדקו בתיקיית הספאם.</p>
+          <button class="ghost wide" id="back" style="margin-top:10px">שליחה מחדש או מייל אחר</button>
         </div>
         <p class="err" id="le" role="alert" style="text-align:center"></p>
       </div></div>
+      <p style="text-align:center"><a href="#/" class="small">תלמידים? לכניסת תלמיד</a></p>
     </div>`;
   const err = m => $("#le").textContent = m || "";
   $("#lf").onsubmit = async e => {
-    e.preventDefault(); err(); $("#lsend").disabled = true;
-    const email = $("#em").value.trim();
-    const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:false } });
-    $("#lsend").disabled = false;
-    if(error) return err(/rate|seconds/i.test(error.message) ? "כבר נשלח קוד לפני רגע. חכו דקה ונסו שוב." : "לא הצלחנו לשלוח קוד לכתובת הזו. בדקו שהיא נכונה.");
+    e.preventDefault(); err(); const b = $("#lsend"); b.disabled = true;
+    const email = $("#em").value.trim().toLowerCase();
+    let r; try{ const { data, error } = await sb.functions.invoke("alfamath-mail", { body: { purpose:"teacher", email } }); r = error ? { error:"לא הצלחנו לשלוח קוד. נסו שוב בעוד רגע" } : data; }catch(x){ r = { error:"אין חיבור. נסו שוב" }; }
+    b.disabled = false;
+    if(r?.error) return err(r.error);
     store("hw-teacher-email", email);
-    $("#sentto").textContent = `שלחנו קוד ל-${email}`;
+    $("#sentto").innerHTML = `שלחנו קוד למייל <bdi class="ltr" style="font-weight:800">${esc(r.sent_to||email)}</bdi>`;
     $("#lf").style.display = "none"; $("#vf").style.display = "block"; $(".codebox input").focus();
   };
   $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; err(); };
   bindCode($(".codebox"), async code => {
     err();
-    const { data, error } = await sb.auth.verifyOtp({ email:$("#em").value.trim(), token:code, type:"email" });
+    const email = $("#em").value.trim().toLowerCase();
+    let { data, error } = await sb.auth.verifyOtp({ email, token:code, type:"email" });
+    if(error){ const r2 = await sb.auth.verifyOtp({ email, token:code, type:"magiclink" }); if(!r2.error){ data = r2.data; error = null; } }
     if(error){ err("הקוד שגוי או שפג תוקפו."); $$(".codebox input").forEach(i=>{i.value="";i.classList.remove("on");}); $(".codebox input").focus(); return; }
-    session = data.session; route();
+    session = data.session; TEACHER = null; route();
   }, true);
 }
 async function requireTeacher(){
   if(!session){ loginPage(); return false; }
-  const { data } = await sb.rpc("hw_is_teacher");
-  if(!data){ app().innerHTML = `<div class="card"><div class="empty"><b>לחשבון הזה אין הרשאת מורה</b>התחברו עם המייל של המורה.</div></div>`; return false; }
-  return true;
+  if(!TEACHER || TEACHER.status !== "approved"){ const { data } = await sb.rpc("hw_teacher_me"); TEACHER = data; }
+  if(TEACHER?.status === "approved") return true;
+  const out = async () => { await sb.auth.signOut(); session = null; TEACHER = null; go("#/teacher"); };
+  if(TEACHER?.status === "pending"){
+    app().innerHTML = `<div class="auth"><div class="card"><div class="empty" style="padding:32px 20px"><b>הבקשה שלך התקבלה</b>
+      נבדוק את הפרטים ונאשר את החשבון בקרוב. כשהחשבון יאושר, פשוט נכנסים שוב.<br><br>
+      <span class="muted small">${esc(TEACHER.name||"")}${TEACHER.school?", "+esc(TEACHER.school):""}</span></div>
+      <div class="bd" style="padding-top:0"><button class="light wide" id="rf">בדיקה מחדש</button><button class="ghost wide" id="lo" style="margin-top:8px">יציאה</button></div></div></div>`;
+    $("#rf").onclick = () => { TEACHER = null; route(); }; $("#lo").onclick = out; return false;
+  }
+  if(TEACHER?.status === "blocked"){
+    app().innerHTML = `<div class="auth"><div class="card"><div class="empty"><b>החשבון הזה לא פעיל</b>לפרטים, פנו אלינו במייל.</div><div class="bd" style="padding-top:0"><button class="ghost wide" id="lo">יציאה</button></div></div></div>`;
+    $("#lo").onclick = out; return false;
+  }
+  app().innerHTML = `
+    <div class="auth">
+      <h1 style="text-align:center">כמעט סיימנו</h1>
+      <p class="muted" style="text-align:center">כמה פרטים כדי שנכיר. אחרי האישור תוכלו לפתוח כיתות ומשימות.</p>
+      <div class="card"><div class="bd"><form id="af">
+        <label class="f" for="a_n">שם מלא</label><input id="a_n" type="text" maxlength="80" autocomplete="name" required>
+        <label class="f" for="a_s">בית ספר</label><input id="a_s" type="text" maxlength="120" autocomplete="organization">
+        <label class="f" for="a_m">מה אתם מלמדים?</label><input id="a_m" type="text" maxlength="120" placeholder="למשל: מתמטיקה ז׳–ט׳, פיזיקה">
+        <label class="f" for="a_p">טלפון <span class="muted">(לא חובה)</span></label><input id="a_p" type="tel" class="ltr" maxlength="30" autocomplete="tel">
+        <button class="primary big wide" id="a_go" style="margin-top:20px">שליחת בקשה</button>
+        <p class="err" id="ae" role="alert" style="text-align:center"></p>
+      </form></div></div>
+      <p style="text-align:center"><button class="ghost sm" id="lo">יציאה</button></p>
+    </div>`;
+  $("#lo").onclick = out;
+  $("#af").onsubmit = async e => {
+    e.preventDefault(); $("#a_go").disabled = true;
+    const { error } = await sb.rpc("hw_teacher_apply", { p_name:$("#a_n").value, p_school:$("#a_s").value, p_subjects:$("#a_m").value, p_phone:$("#a_p").value });
+    $("#a_go").disabled = false;
+    if(error) return $("#ae").textContent = errMsg(error);
+    TEACHER = null; route();
+  };
+  return false;
+}
+async function tabTeachers(){
+  const box = $("#tab"); box.innerHTML = `<p class="muted">טוען…</p>`;
+  const { data, error } = await sb.rpc("hw_admin_teachers");
+  if(error){ box.innerHTML = `<div class="card"><div class="bd"><p class="err">${esc(errMsg(error))}</p></div></div>`; return; }
+  const st = { pending:["ממתין","warn"], approved:["פעיל","ok"], blocked:["חסום","bad"] };
+  const pend = data.filter(t=>t.status==="pending").length;
+  box.innerHTML = `
+    <div class="card"><div class="bd"><div class="stats" style="--n:4"><div><div class="v">${data.filter(t=>t.status==="approved").length}</div><div class="k">מורים פעילים</div></div><div><div class="v">${pend}</div><div class="k">ממתינים</div></div><div><div class="v">${data.reduce((n,t)=>n+t.students,0)}</div><div class="k">תלמידים</div></div><div><div class="v">${data.reduce((n,t)=>n+t.submissions,0)}</div><div class="k">הגשות</div></div></div></div></div>
+    <div class="card"><div class="hd"><h2>מורים</h2>${pend?`<span class="chip warn">${pend} חדשים</span>`:""}</div><div class="rows">
+      ${data.map(t=>`<div class="r" style="cursor:default"><div class="grow">
+          <div class="t">${esc(t.name||t.email)} <span class="chip ${st[t.status][1]}">${st[t.status][0]}</span>${t.is_admin?` <span class="chip ink">מנהל</span>`:""}</div>
+          <div class="sub"><bdi class="ltr">${esc(t.email)}</bdi>${t.school?` · ${esc(t.school)}`:""}${t.subjects?` · ${esc(t.subjects)}`:""}${t.phone?` · <bdi class="ltr">${esc(t.phone)}</bdi>`:""}</div>
+          <div class="sub">${t.classes} כיתות · ${t.students} תלמידים · ${t.assignments} משימות · ${t.submissions} הגשות · נרשם ${fmtDate(t.created_at)}</div></div>
+        <div class="end">${t.is_admin?"":t.status!=="approved"?`<button class="primary sm" data-e="${esc(t.email)}" data-s="approved">אישור</button>`:""}${t.is_admin?"":t.status!=="blocked"?`<button class="ghost sm" data-e="${esc(t.email)}" data-s="blocked">חסימה</button>`:""}</div></div>`).join("") || `<div class="empty"><b>אין עדיין מורים</b></div>`}
+    </div></div>`;
+  $$("#tab button[data-e]").forEach(b => b.onclick = async () => {
+    if(b.dataset.s==="blocked" && !(await ask(`<h2>לחסום את ${esc(b.dataset.e)}?</h2><p class="muted">המורה לא יוכל להיכנס. הכיתות והנתונים שלו נשמרים.</p>`, "חסימה", "ביטול", true))) return;
+    const { error } = await sb.rpc("hw_admin_set_teacher", { p_email:b.dataset.e, p_status:b.dataset.s });
+    if(error) return toast(errMsg(error));
+    toast(b.dataset.s==="approved" ? "המורה אושר" : "המורה נחסם"); tabTeachers();
+  });
 }
 /* shared teacher data */
 async function loadAll(){
@@ -1113,14 +1175,14 @@ async function teacherHome(){
   if(seq!==navSeq) return;
   app().innerHTML = `
     <div class="row"><h1 class="grow">לוח ניהול</h1><button class="primary" id="new">משימה חדשה</button></div>
-    <div class="tabs home" role="tablist"><button data-t="o">סקירה</button><button data-t="a">משימות</button><button data-t="c">כיתות</button><button data-t="b">מאגר שאלות</button></div>
+    <div class="tabs home" role="tablist"><button data-t="o">סקירה</button><button data-t="a">משימות</button><button data-t="c">כיתות</button><button data-t="b">מאגר שאלות</button>${TEACHER?.is_admin?`<button data-t="t">מורים</button>`:""}</div>
     <div id="tab"></div>`;
   $("#new").onclick = () => newAssignment(D);
   const show = t => {
     $$(".tabs button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
     $$("#bnav button").forEach(b=>b.classList.toggle("on", b.dataset.t===t));
     history.replaceState(null,"","#/teacher?tab="+t); window.scrollTo(0,0);
-    ({o:tabOverview, a:tabAssignments, c:tabClasses, b:tabBank})[t](D);
+    ({o:tabOverview, a:tabAssignments, c:tabClasses, b:tabBank, t:tabTeachers})[t](D);
   };
   $$(".tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
   teacherNav(tab, show);
