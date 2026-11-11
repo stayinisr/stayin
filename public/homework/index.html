@@ -634,7 +634,7 @@ function studentAuth(mode, code=""){
       <p class="muted small" style="text-align:center;margin:14px 0 0">את הקוד מקבלים מהמורה.</p>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
     bindCode($(".codebox"), loadClass);
-    setTimeout(()=>$(".codebox input").focus(),30);
+    setTimeout(()=>$(".codebox input")?.focus(),30);
   };
   const loadClass = async v => {
     err(); const { data } = await sb.rpc("hw_class_lookup", { p_code: v });
@@ -667,7 +667,7 @@ function studentAuth(mode, code=""){
       }
       pick = data; pick.claimed ? stepPin() : stepEmail();
     };
-    setTimeout(()=>$("#n").focus(),30);
+    setTimeout(()=>$("#n")?.focus(),30);
   };
   const stepPin = () => {
     box().innerHTML = `
@@ -688,7 +688,7 @@ function studentAuth(mode, code=""){
       if(data.error){ err(data.error); clear($("#p1")); return; }
       store("hw-token", data.token); toast("שלום "+pick.name.split(" ")[0]); go("#/");
     }, true);
-    setTimeout(()=>$("#p1 input").focus(),30);
+    setTimeout(()=>$("#p1 input")?.focus(),30);
   };
   const stepEmail = () => {
     box().innerHTML = `
@@ -710,7 +710,7 @@ function studentAuth(mode, code=""){
       if(r.error) return err(r.error);
       stepVerify("claim", r.sent_to);
     };
-    setTimeout(()=>$("#em").focus(),30);
+    setTimeout(()=>$("#em")?.focus(),30);
   };
   const stepReset = async () => {
     box().innerHTML = `${top("שחזור קוד", true)}<p class="muted" style="text-align:center">שולחים קוד למייל <bdi class="ltr" style="font-weight:800">${esc(pick.email_hint||"")}</bdi>…</p><p class="err" id="ae" role="alert" style="text-align:center"></p>`;
@@ -743,7 +743,7 @@ function studentAuth(mode, code=""){
       if(data.error){ err(data.error); if(!data.expired){ clear($("#p2")); clear($("#p1")); $("#p2w").style.display="none"; clear($("#ec")); } return; }
       store("hw-token", data.token); toast(purpose==="claim" ? "ברוכים הבאים! מעכשיו נכנסים עם הקוד הסודי" : "הקוד החדש נשמר"); go("#/");
     }, true);
-    setTimeout(()=>$("#ec input").focus(),30);
+    setTimeout(()=>$("#ec input")?.focus(),30);
   };
   const stepReport = () => {
     box().innerHTML = `
@@ -1205,7 +1205,7 @@ async function newAssignment(D, preset){
   let mode = "homework";
   $$("#na_m button", d).forEach(b => b.onclick = () => { mode = b.dataset.m; $$("#na_m button", d).forEach(x=>x.classList.toggle("on", x===b)); });
   $("#na_x", d).onclick = () => d.close();
-  setTimeout(()=>$("#na_t",d).focus(),30);
+  setTimeout(()=>$("#na_t",d)?.focus(),30);
   $("#na_ok", d).onclick = async () => {
     const title = $("#na_t", d).value.trim() || "משימה חדשה";
     const ins = { title, is_open:false, mode, show_results:true, max_attempts: mode==="practice" ? null : 1, time_limit_min: mode==="exam" ? 45 : null };
@@ -1571,7 +1571,7 @@ function downloadCsv(name, rows){
 /* questions editor */
 /* questions from AI: a shared "AlfaMath format" any AI can produce */
 function aiPrompt(o){
-  const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי" }[o.mix];
+  const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי", understand:"שאלות הבנה: אמריקאיות שהמסיחים בהן הם טעויות נפוצות, וטענות נכון / לא נכון" }[o.mix];
   const task = o.source==="sheet"
     ? `הפוך את דף העבודה שאצרף (צילום, PDF או טקסט) לשאלות לאתר. שמור על סדר השאלות ועל המספרים שבדף.`
     : `כתוב ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}.`;
@@ -1582,7 +1582,12 @@ ${o.notes ? "דגשים מהמורה: " + o.notes + "\n" : ""}סוגי שאלו�
 ${o.figures ? "הוסף שרטוט לכל שאלה שצריך בה שרטוט (גיאומטריה, גרפים, מעגלים חשמליים, כוחות)." : "בלי שרטוטים."}
 ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מספרים אחרים: כתוב משתנים בסוגריים מסולסלים בתוך השאלה, הגדר להם טווח ב-params, וכתוב את התשובה כנוסחה ב-formula." : ""}
 
-לפני שאתה כותב: פתור כל שאלה בעצמך פעמיים ובדוק שהתשובה נכונה. שאלה של "הסבר" או "הוכח" – הפוך לשאלה עם תשובה סופית, או השמט אותה.
+לפני שאתה כותב: פתור כל שאלה בעצמך פעמיים ובדוק שהתשובה נכונה.
+
+שאלות בלי תשובה מספרית (הסבר, הוכח, נמק, תאר, השווה): ${{
+    convert: `אל תשמיט אותן. הפוך כל אחת לשאלות שבודקות הבנה: אמריקאית שבה המסיחים הם טעויות נפוצות של תלמידים, או סדרה של 2–4 טענות "נכון / לא נכון" (kind: "truefalse") שמכסות את הרעיון המרכזי. בשאלת הוכחה – שאל על השלבים: איזה משפט מצדיק צעד, מה נובע ממה, איזו טענה שגויה.`,
+    split: `פרק כל אחת לשאלות קטנות עם תשובה סופית (מספר, מילה או בחירה), לפי שלבי הפתרון.`,
+    skip: `השמט אותן.` }[o.open || "convert"]}
 
 החזר רק בלוק קוד אחד של JSON, בלי טקסט לפני או אחרי, בפורמט AlfaMath:
 \`\`\`json
@@ -1595,10 +1600,11 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 \`\`\`
 
 כללי הפורמט:
-- kind: "number" לתשובה מספרית, "choice" לאמריקאית, "text" למילה או מושג.
+- kind: "number" לתשובה מספרית, "choice" לאמריקאית, "truefalse" לנכון / לא נכון, "text" למילה או מושג.
 - number: ב-value מספר בלבד (לא ביטוי, לא שבר כתוב, לא יחידות), יחידות ב-unit. מספר לא שלם עד 3 ספרות אחרי הנקודה. אפשר "tol_pct" לטווח מותר באחוזים (ברירת מחדל: מספר שלם מדויק, לא שלם 1%).
 - params (לא חובה): לכל משתנה [מינימום, מקסימום, קפיצה]. formula משתמשת בשמות המשתנים, ב-+ - * / ^ ובפונקציות sqrt, sin, cos, tan, radians, abs, round, pi. בחר טווחים שלא יוצאת בהם תשובה שלילית, אפס או לא הגיונית.
 - choice: 4 אפשרויות, index של התשובה הנכונה מתחיל מ-0, מסיחים הגיוניים.
+- truefalse: טענה אחת ב-prompt, ו-"answer": {"value": true} או {"value": false}. למשל: {"kind": "truefalse", "prompt": "נכון או לא נכון: בכל טרפז האלכסונים שווים.", "answer": {"value": false}, "topic": "טרפז"}
 - text: ב-accepted כל הצורות המקובלות של התשובה.
 - נוסחאות בתוך $...$ בכתיב LaTeX. בתוך JSON כל \\ נכתב פעמיים.
 - figure (לא חובה): קוד SVG אחד, עם xmlns ו-viewBox ברוחב 320, קווים כהים בעובי 2, תוויות ברורות, "?" על הגודל המבוקש. השרטוט לא חושף את התשובה.
@@ -1644,7 +1650,9 @@ function openAIGenerator(onAdd){
     <div id="g_sheetbox" style="display:none"><p class="info small" style="margin:12px 0 0">ב-ChatGPT, ב-Claude או ב-Gemini מצרפים צילום או PDF של הדף יחד עם ההנחיה. אפשר גם להדביק כאן את הטקסט של הדף.</p>
       <textarea id="g_sheet" style="min-height:90px;margin-top:8px" placeholder="טקסט הדף (לא חובה)"></textarea></div>
     <label class="f" for="g_m">סוגי שאלות</label>
-    <select id="g_m"><option value="number">בעיקר מספריות</option><option value="mixed">שילוב</option><option value="choice">בעיקר אמריקאיות</option><option value="text">בעיקר מילים ומושגים</option></select>
+    <select id="g_m"><option value="number">בעיקר מספריות</option><option value="mixed">שילוב</option><option value="choice">בעיקר אמריקאיות</option><option value="text">בעיקר מילים ומושגים</option><option value="understand">בדיקת הבנה: אמריקאית ונכון / לא נכון</option></select>
+    <label class="f" for="g_o">שאלות בלי תשובה מספרית (הסבר, הוכח)</label>
+    <select id="g_o"><option value="convert">להפוך לאמריקאית ולנכון / לא נכון, לבדיקת הבנה</option><option value="split">לפרק לשאלות קטנות עם תשובה סופית</option><option value="skip">להשמיט</option></select>
     <label class="chk" style="margin:12px 0 0"><input type="checkbox" id="g_f" checked><span>עם שרטוטים כשצריך</span></label>
     <label class="chk" style="margin:8px 0 0"><input type="checkbox" id="g_p" checked><span>מספרים שונים לכל תלמיד, כשאפשר</span></label>
     <label class="f" for="g_x">דגשים <span class="muted">(לא חובה)</span></label>
@@ -1667,7 +1675,7 @@ function openAIGenerator(onAdd){
   let src = "topic", parsed = [];
   d.querySelectorAll("#g_src button").forEach(b => b.onclick = () => { src = b.dataset.v; d.querySelectorAll("#g_src button").forEach(x=>x.classList.toggle("on", x===b)); $d("#g_topic").style.display = src==="topic"?"block":"none"; $d("#g_sheetbox").style.display = src==="sheet"?"block":"none"; });
   const P = () => { const sh = src==="sheet" ? $d("#g_sheet").value.trim() : ""; return aiPrompt0() + (sh ? "\n\nטקסט הדף:\n" + sh.slice(0, 6000) : ""); };
-  const aiPrompt0 = () => aiPrompt({ source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, notes:$d("#g_x").value.trim() });
+  const aiPrompt0 = () => aiPrompt({ source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, open:$d("#g_o").value, notes:$d("#g_x").value.trim() });
   const openAI = (base) => { const t = P(); try{ navigator.clipboard.writeText(t); }catch(e){} window.open(base + encodeURIComponent(t), "_blank", "noopener"); toast("ההנחיה גם הועתקה. אם היא לא מופיעה שם, הדביקו אותה"); };
   $d("#g_cgpt").onclick = () => openAI("https://chatgpt.com/?q=");
   $d("#g_claude").onclick = () => openAI("https://claude.ai/new?q=");
@@ -1791,6 +1799,11 @@ function normParams(p){
   return Object.keys(out).length ? out : null;
 }
 function normalizeQ(x){
+  if(["truefalse","tf","boolean","true_false"].includes(x.kind)){
+    let v = x.answer && typeof x.answer === "object" ? x.answer.value : x.answer;
+    if(typeof v === "string") v = /^(true|נכון|כן|yes)$/i.test(v.trim());
+    x = { ...x, kind:"choice", choices:["נכון","לא נכון"], answer:{ index: v ? 0 : 1 } };
+  }
   const kind = ["number","choice","text"].includes(x.kind) ? x.kind : (x.choices ? "choice" : "number");
   let answer = x.answer ?? {};
   if(kind==="number"){
