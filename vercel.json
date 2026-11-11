@@ -99,6 +99,46 @@
         }
       ],
       "destination": "/homework/icon-512.png"
+    },
+    {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.alfamath.co.il"
+        }
+      ],
+      "destination": "/homework/sitemap.xml"
     }
   ],
   "headers": [
