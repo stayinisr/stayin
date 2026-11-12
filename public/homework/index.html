@@ -1686,7 +1686,7 @@ function aiPrompt(o){
   const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי", understand:"שאלות הבנה: אמריקאיות שהמסיחים בהן הם טעויות נפוצות, שאלות של סימון כמה תשובות נכונות, וטענות נכון / לא נכון" }[o.mix];
   const task = o.source==="sheet"
     ? `הפוך את דף העבודה שאצרף (צילום, PDF או טקסט) לשאלות לאתר. שמור על סדר השאלות ועל המספרים שבדף.`
-    : `כתוב ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}.`;
+    : `כתוב בדיוק ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}. במערך questions חייבות להיות ${o.count} שאלות – ספור לפני שאתה מחזיר.`;
   return `אתה עוזר למורה ליצור שאלות לאתר שיעורי הבית AlfaMath. האתר בודק רק תשובה סופית, בלי דרך פתרון.
 
 המשימה: ${task}
@@ -1854,7 +1854,12 @@ function openAIGenerator(onAdd){
     upd();
   };
   const upd = () => { const n = parsed.filter(p=>p.q && p.on!==false).length; $d("#g_add").disabled = !n; $d("#g_add").textContent = n ? `הוספת ${n} שאלות` : "הוספה למשימה"; };
-  $d("#g_read").onclick = () => { $d("#g_err").textContent = ""; try{ parsed = parseAIQuestions($d("#g_in").value); drawPrev(); }catch(e){ parsed = []; drawPrev(); $d("#g_err").textContent = e.message; } };
+  $d("#g_read").onclick = () => { $d("#g_err").textContent = ""; try{ parsed = parseAIQuestions($d("#g_in").value); drawPrev(); }catch(e){ parsed = []; drawPrev(); $d("#g_err").textContent = e.message; return; }
+    // fewer than asked: offer a ready "continue" message for the same AI chat
+    const want = src === "topic" ? Math.max(1,Math.min(30,+$d("#g_n").value||8)) : 0, got = parsed.filter(p=>p.q).length;
+    if(want && got < want){ const more = `המשך: כתוב עוד ${want-got} שאלות חדשות באותו נושא ובאותו פורמט AlfaMath (JSON בלבד), בלי לחזור על השאלות הקודמות.`;
+      $d("#g_err").innerHTML = `<span style="color:var(--ink)">התקבלו ${got} שאלות מתוך ${want}. </span><button class="light sm" type="button" id="g_more">העתקת בקשה ל-${want-got} שאלות נוספות</button>`;
+      $d("#g_more").onclick = () => { copy(more, "הועתק. הוסיפו קודם את השאלות שכבר נקראו, ואז הדביקו את הבקשה באותה שיחה עם ה-AI"); }; } };
   $d("#g_add").onclick = () => { const qs = parsed.filter(p=>p.q && p.on!==false).map(p=>p.q); d.close(); onAdd(qs); };
 }
 function tabQuestions(){
