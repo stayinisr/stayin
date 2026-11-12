@@ -1055,6 +1055,10 @@ async function studentAssignment(id){
   else body.innerHTML = `<div class="card"><div class="empty"><b>המשימה סגורה להגשה</b>אם זו טעות, פנו למורה.</div></div>`;
 }
 async function startForm(body, a){
+  // "new numbers every attempt": fetch this attempt's numbers before showing the form
+  if(a.reroll && a.attempts > 0 && a.qAtt !== a.attempts){
+    try{ const f = await rpcS("hw_student_assignment2", { p_id:a.id, p_next:true }); a.questions = f.questions; a.qAtt = a.attempts; }catch(e){ return toast(errMsg(e)); }
+  }
   if(a.time_limit_min && !a.started_at){
     body.innerHTML = `<div class="card"><div class="bd" style="text-align:center;padding:34px 20px">
       <div class="label">מבחן עם זמן</div><div style="font-size:64px;font-weight:900;line-height:1.1">${a.time_limit_min}<span style="font-size:22px"> דקות</span></div>
@@ -1068,7 +1072,7 @@ async function startForm(body, a){
 let timerInt = null;
 function showForm(body, a){
   clearInterval(timerInt);
-  const dkey = "hw-draft-"+a.id;
+  const dkey = "hw-draft-"+a.id+(a.reroll ? "-"+a.attempts : "");
   const draft = store(dkey) || {};
   body.innerHTML = `
     <div class="card flat"><div class="bd" id="qs">
@@ -2111,7 +2115,8 @@ function tabSettings(){
       <div><label class="f" for="s_w">משקל בממוצע</label><select id="s_w">${[0.5,1,2,3].map(n=>`<option value="${n}" ${+A.weight===n?"selected":""}>×${n}</option>`).join("")}</select></div>
       <div id="s_tl_w"><label class="f" for="s_tl">זמן למבחן בדקות <span class="muted">ריק = בלי הגבלה</span></label><input id="s_tl" type="number" min="1" max="600" value="${A.time_limit_min??""}"></div>
     </div>
-    <label class="chk" style="margin-top:18px"><input type="checkbox" id="s_shuf" ${A.shuffle?"checked":""}><span>ערבוב סדר השאלות והתשובות לכל תלמיד<br><span class="muted small">כל תלמיד מקבל סדר אחר, וזה מקשה על העתקות.</span></span></label>
+    <label class="chk" style="margin-top:18px"><input type="checkbox" id="s_reroll" ${A.reroll?"checked":""}><span>מספרים חדשים בכל ניסיון<br><span class="muted small">בשאלות עם מספרים משתנים, כל ניסיון נוסף מקבל מספרים אחרים. כך אי אפשר רק לנחש עד שיוצא "נכון".</span></span></label>
+    <label class="chk"><input type="checkbox" id="s_shuf" ${A.shuffle?"checked":""}><span>ערבוב סדר השאלות והתשובות לכל תלמיד<br><span class="muted small">כל תלמיד מקבל סדר אחר, וזה מקשה על העתקות.</span></span></label>
     <label class="chk"><input type="checkbox" id="s_show" ${A.show_results?"checked":""}><span>להראות לתלמיד ציון ותשובות נכונות אחרי ההגשה<br><span class="muted small">אם תכבו, התלמידים יראו רק "הוגש". אפשר להדליק אחר כך.</span></span></label>
     <div class="row" style="margin-top:20px"><button class="primary" id="s_save">שמירת ההגדרות</button></div>
   </div></div>
@@ -2125,7 +2130,7 @@ function tabSettings(){
     const iso = id => $(id).value ? new Date($(id).value).toISOString() : null;
     const upd = { title:$("#s_title").value.trim()||"משימה ללא שם", description:$("#s_desc").value, mode, opens_at:iso("#s_open"), due_at:iso("#s_due"),
       max_attempts: $("#s_att").value? +$("#s_att").value : null, weight:+$("#s_w").value, time_limit_min: mode==="exam" && $("#s_tl").value ? Math.max(1,+$("#s_tl").value) : null,
-      shuffle:$("#s_shuf").checked, show_results:$("#s_show").checked };
+      shuffle:$("#s_shuf").checked, reroll:$("#s_reroll").checked, show_results:$("#s_show").checked };
     const { error } = await sb.from("hw_assignments").update(upd).eq("id",A.id);
     if(error) return toast(error.message);
     const want = $$(".s_cls:checked").map(x=>x.value), add = want.filter(x=>!ACL.includes(x)), del = ACL.filter(x=>!want.includes(x));
@@ -2134,7 +2139,7 @@ function tabSettings(){
     ACL = want; Object.assign(A, upd); $("#ttl").textContent = A.title; drawAssignHeader(); toast("ההגדרות נשמרו");
   };
   $("#s_dup").onclick = async () => {
-    const { data:n, error } = await sb.from("hw_assignments").insert({ title:A.title+" (עותק)", description:A.description, is_open:false, show_results:A.show_results, max_attempts:A.max_attempts, mode:A.mode, time_limit_min:A.time_limit_min, shuffle:A.shuffle, weight:A.weight }).select("id").single();
+    const { data:n, error } = await sb.from("hw_assignments").insert({ title:A.title+" (עותק)", description:A.description, is_open:false, show_results:A.show_results, max_attempts:A.max_attempts, mode:A.mode, time_limit_min:A.time_limit_min, reroll:!!A.reroll, shuffle:A.shuffle, weight:A.weight }).select("id").single();
     if(error) return toast(error.message);
     if(Q.length){ const r = await sb.from("hw_questions").insert(Q.map((q,i)=>({ assignment_id:n.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.choices, answer:q.answer, points:q.points, figure:q.figure||null, topic:q.topic, hint:q.hint, hint_penalty:q.hint_penalty, solution:q.solution, params:q.params }))); if(r.error) return toast(r.error.message); }
     toast("נוצר עותק. בחרו לו כיתה"); go("#/teacher/a/"+n.id+"?tab=settings");
