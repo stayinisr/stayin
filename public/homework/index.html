@@ -1670,23 +1670,32 @@ function parseAIQuestions(raw){
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(fence) t = fence[1].trim();
   // phones and chat apps add invisible direction marks, non-breaking spaces and curly quotes when copying
   t = t.replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "").replace(/[\u00a0\u2007\u202f]/g, " ");
+  // top-level {...} / [...] blocks (a field pasted into twice holds two of them)
+  const spans = []; { let depth = 0, inStr = false, q = "", esc = false, st = -1;
+    for(let k = 0; k < t.length; k++){ const c = t[k];
+      if(inStr){ if(esc) esc = false; else if(c === "\\") esc = true; else if(c === q) inStr = false; continue; }
+      if(c === '"' || c === "“" || c === "”"){ if(depth > 0){ inStr = true; q = c === "“" ? "”" : c; } continue; }
+      if(c === "{" || c === "["){ if(depth === 0) st = k; depth++; }
+      else if((c === "}" || c === "]") && depth > 0){ depth--; if(depth === 0 && st >= 0){ spans.push(t.slice(st, k + 1)); st = -1; } }
+    } }
   const fo = t.indexOf("{"), fa = t.indexOf("[");
   const start = fa >= 0 && (fo < 0 || fa < fo) ? fa : fo;
   if(start < 0) throw new Error("לא נמצא JSON בטקסט. ודאו שהדבקתם את כל התשובה של ה-AI");
-  const end = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
-  t = t.slice(start, end + 1);
-  const tries = [ t, t.replace(/,\s*([}\]])/g, "$1"),
-    // curly quotes used as JSON quotes (outside strings) -> straight quotes
-    t.replace(/[“”„]/g, '"').replace(/[‘’]/g, "'").replace(/,\s*([}\]])/g, "$1"),
-    // raw line breaks inside strings
-    t.replace(/"(?:[^"\\]|\\.)*"/g, m => m.replace(/\r?\n/g, "\\n")).replace(/,\s*([}\]])/g, "$1") ];
+  const whole = t.slice(start, Math.max(t.lastIndexOf("}"), t.lastIndexOf("]")) + 1);
+  const fixes = x => [ x, x.replace(/,\s*([}\]])/g, "$1"),
+    x.replace(/[“”„]/g, '"').replace(/[‘’]/g, "'").replace(/,\s*([}\]])/g, "$1"),
+    x.replace(/"(?:[^"\\]|\\.)*"/g, m => m.replace(/\r?\n/g, "\\n")).replace(/,\s*([}\]])/g, "$1") ];
+  const hasQ = d => Array.isArray(d) || (d && typeof d === "object" && (Array.isArray(d.questions) || d.prompt));
   let data, err;
-  for(const x of tries){ try{ data = JSON.parse(x); break; }catch(e){ err = e; } }
+  for(const c of [whole, ...spans.filter(x => x !== whole).reverse()]){
+    for(const x of fixes(c)){ try{ const d = JSON.parse(x); if(hasQ(d)){ data = d; break; } }catch(e){ err = err || e; } }
+    if(data !== undefined) break;
+  }
   if(data === undefined){
-    const pos = +(String(err?.message||"").match(/position (\d+)/)||[])[1];
-    const near = Number.isFinite(pos) ? ` (ליד: "${t.slice(Math.max(0,pos-25), pos+15).replace(/\s+/g," ")}")` : "";
+    const msg = String(err?.message || ""), pos = +(msg.match(/position (\d+)/)||[])[1];
+    const near = Number.isFinite(pos) ? ` (ליד: "${whole.slice(Math.max(0,pos-25), pos+15).replace(/\s+/g," ")}")` : msg ? ` (${msg.slice(0,80)})` : "";
     const cut = !/[}\]]\s*$/.test(String(raw).replace(/```\s*$/,"").trim()) ? " נראה שהתשובה נקטעה – ודאו שהעתקתם עד הסוף." : "";
-    throw new Error("ה-JSON לא תקין" + near + "." + cut + " אפשר לבקש מה-AI: \"תחזיר שוב רק JSON תקין בפורמט AlfaMath\"");
+    throw new Error("ה-JSON לא תקין" + near + "." + cut + " נסו לנקות את התיבה ולהדביק שוב, או לבקש מה-AI: \"תחזיר שוב רק JSON תקין בפורמט AlfaMath\"");
   }
   const arr = Array.isArray(data) ? data : (data.questions || data.items);
   if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
@@ -1736,8 +1745,8 @@ function openAIGenerator(onAdd){
       <button class="ghost sm" id="g_copy">העתקת ההנחיה</button>
     </div>
     <label class="f" for="g_in" style="margin-top:20px">מה שה-AI החזיר</label>
-    <textarea id="g_in" class="ltr" style="min-height:120px;font-size:13px" placeholder="מדביקים כאן את כל התשובה, גם אם יש בה טקסט מסביב"></textarea>
-    <div class="row" style="margin-top:10px"><button class="light" id="g_read">קריאת השאלות</button></div>
+    <textarea id="g_in" class="ltr" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="min-height:120px;font-size:13px" placeholder="מדביקים כאן את כל התשובה, גם אם יש בה טקסט מסביב"></textarea>
+    <div class="row" style="margin-top:10px"><button class="light" id="g_read">קריאת השאלות</button><button class="ghost sm" id="g_clr" type="button">ניקוי התיבה</button></div>
     <p class="err" id="g_err" role="alert"></p>
     <div id="g_prev"></div>
     <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="ghost" id="g_x2">סגירה</button><button class="primary" id="g_add" disabled>הוספה למשימה</button></div>`);
@@ -1760,7 +1769,8 @@ function openAIGenerator(onAdd){
     site.disabled = false; site.textContent = "יצירת שאלות";
     if(r?.error) return $d("#g_err").textContent = r.error;
     if(r.left != null){ TEACHER.ai_left = r.left; $d("#g_left").textContent = r.left; }
-    $d("#g_in").value = r.text || ""; $d("#g_read").click();
+    $d("#g_in").value = r.text || ""; $d("#g_clr").onclick = () => { const x = $d("#g_in"); x.value = ""; x.focus(); };
+  $d("#g_read").click();
   };
   $d("#g_x2").onclick = () => d.close();
   const drawPrev = () => {
