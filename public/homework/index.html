@@ -1889,8 +1889,7 @@ function openAIGenerator(onAdd){
     site.disabled = false; site.textContent = "יצירת שאלות";
     if(r?.error) return $d("#g_err").textContent = r.error;
     if(r.left != null){ TEACHER.ai_left = r.left; $d("#g_left").textContent = r.left; }
-    $d("#g_in").value = r.text || ""; $d("#g_clr").onclick = () => { const x = $d("#g_in"); x.value = ""; x.focus(); };
-  $d("#g_read").click();
+    $d("#g_in").value = r.text || ""; $d("#g_read").click();
   };
   $d("#g_x2").onclick = () => d.close();
   const drawPrev = () => {
@@ -1907,6 +1906,7 @@ function openAIGenerator(onAdd){
     upd();
   };
   const upd = () => { const n = parsed.filter(p=>p.q && p.on!==false).length; $d("#g_add").disabled = !n; $d("#g_add").textContent = n ? `הוספת ${n} שאלות` : "הוספה למשימה"; };
+  $d("#g_clr").onclick = () => { const x = $d("#g_in"); x.value = ""; $d("#g_err").textContent = ""; parsed = []; drawPrev(); x.focus(); };
   $d("#g_read").onclick = () => { $d("#g_err").textContent = ""; try{ parsed = parseAIQuestions($d("#g_in").value); drawPrev(); }catch(e){ parsed = []; drawPrev(); $d("#g_err").textContent = e.message; return; }
     // fewer than asked: offer a ready "continue" message for the same AI chat
     const want = src === "topic" ? Math.max(1,Math.min(30,+$d("#g_n").value||8)) : 0, got = parsed.filter(p=>p.q).length;
