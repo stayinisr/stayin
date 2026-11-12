@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F49D6">
+<script>(function(){var t;try{t=localStorage.getItem("hw-theme")}catch(e){}var d=t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light"})()</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AlfaMath">
 <title>AlfaMath · שיעורי בית</title>
@@ -344,6 +345,42 @@
   }
   @media (max-width:640px){ .grade .n{font-size:80px} .card{box-shadow:4px 4px 0 #C9D6FB} }
   @media (hover:none){ .primary:hover,.light:hover,.tile:hover{transform:none;box-shadow:none} .light:hover{background:#fff} }
+  /* ================= dark mode ("notebook at night") ================= */
+  .themebtn{background:none;border:none;padding:8px;color:var(--ink);cursor:pointer;display:grid;place-items:center;min-height:40px}
+  .themebtn .sun{display:none} [data-theme=dark] .themebtn .sun{display:inline} [data-theme=dark] .themebtn .moon{display:none}
+  [data-theme=dark]{color-scheme:dark;
+    --ink:#E8EEFA; --ink-2:#C3CDE3; --bg:#0B1324; --card:#121C33; --soft:#172240;
+    --line:#25324F; --line-2:#36486F; --muted:#97A3C0; --faint:#6B789D;
+    --pri:#5B82FF; --pri-2:#86A2FF; --pri-wash:#1A2A55;
+    --hot:#FF6B6B; --hot-wash:#3A1820; --sun:#FFE347; --sun-wash:#2E2A12;
+    --acc:#5B82FF; --acc-wash:#1A2A55;
+    --ok:#34D399; --ok-wash:#0F2E25; --bad:#FF6B6B; --bad-wash:#3A1820; --warn:#FB923C; --warn-wash:#3A2213;
+  }
+  [data-theme=dark] body{background-color:#0B1324;background-image:linear-gradient(#141F38 1px,transparent 1px),linear-gradient(90deg,#141F38 1px,transparent 1px)}
+  [data-theme=dark] header{background:rgba(11,19,36,.92);border-bottom-color:#36486F}
+  [data-theme=dark] .bnav,[data-theme=dark] .dock{background:rgba(18,28,51,.97);border-top-color:#36486F}
+  :where([data-theme=dark]) :is(input,select,textarea,.codebox input,.ans input,.keys button,.choice,.qedit,.preview,.tile,.light,.date,.chip,.badge.locked){background:var(--card);color:var(--ink)}
+  :where([data-theme=dark]) .date.late{background:var(--bad-wash)}
+  [data-theme=dark] .hero{background:#2F5BF0}
+  [data-theme=dark] .light:hover{background:var(--sun);color:#0B1324}
+  [data-theme=dark] :is(.card,.hero,dialog,.light,.date,.tile,.choice.sel,.seg){border-color:#4A5D88}
+  [data-theme=dark] .card{box-shadow:5px 5px 0 #050A16}
+  [data-theme=dark] :is(.hero,dialog){box-shadow:6px 6px 0 #050A16}
+  [data-theme=dark] :is(.primary:hover,.light:hover,.tile:hover){box-shadow:4px 4px 0 #050A16}
+  [data-theme=dark] .primary{background:#2F5BF0;color:#fff;border-color:#86A2FF}
+  [data-theme=dark] :is(.toast,.seg button.on,.qn,.choice.sel .let,.chip.ink,.cells i.f){color:#0B1324}
+  [data-theme=dark] .choice.sel{background:var(--sun-wash);box-shadow:inset -5px 0 0 var(--sun)}
+  [data-theme=dark] th{background:#172240;color:var(--ink-2)}
+  [data-theme=dark] .meter{background:#25324F}
+  [data-theme=dark] :is(.chip.ok,.mark.ok){border-color:#1E6B50} [data-theme=dark] :is(.chip.bad,.mark.bad){border-color:#7A2A33}
+  [data-theme=dark] :is(.chip.warn,.note){border-color:#7A5A1A} [data-theme=dark] :is(.chip.acc,.info){border-color:#36486F}
+  [data-theme=dark] .fig img{background:#fff;padding:6px} /* drawings stay on white paper */
+  [data-theme=dark] .tabs button.on::after{background:rgba(255,227,71,.35)}
+  [data-theme=dark] .grade .n{filter:brightness(1.15)}
+  [data-theme=dark] .katex{color:inherit}
+  [data-theme=dark] .mark.ok{color:var(--ok)} [data-theme=dark] .mark.bad{color:var(--bad)}
+  [data-theme=dark] .chip.ink{background:var(--ink);border-color:var(--ink);color:#0B1324}
+  [data-theme=dark] .wa{border-color:#34D399;color:#34D399}
   @media print{
     header,.bnav,.dock,.noprint,.toast{display:none!important}
     body{background:#fff!important;background-image:none!important} main{padding:0;max-width:none} .card{box-shadow:none!important}
@@ -393,6 +430,7 @@
 <header><div class="in">
   <button class="brand" id="brand" aria-label="AlfaMath – לדף הבית של האתר"><span class="logo">α</span><span><b>Alfa<span>Math</span></b><small>שיעורי בית במתמטיקה ופיזיקה</small></span></button>
   <div class="sp"></div>
+  <button class="themebtn" id="themebtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button>
   <div id="hdr"></div>
 </div></header>
 <main id="app"><p class="muted">טוען…</p></main>
@@ -624,6 +662,7 @@ async function route(){
 function renderHeader(){
   const t = (location.hash||"").startsWith("#/teacher");
   $("#brand").onclick = () => { location.href = "/"; };
+  $("#themebtn").onclick = () => { const d = document.documentElement.dataset.theme !== "dark"; document.documentElement.dataset.theme = d ? "dark" : "light"; try{ localStorage.setItem("hw-theme", d ? "dark" : "light"); }catch(e){} };
   if(t) $("#hdr").innerHTML = session ? `<button class="ghost" onclick="logout()">יציאה</button>` : `<button class="ghost" onclick="go('#/')">כניסת תלמידים</button>`;
   else $("#hdr").innerHTML = store("hw-token") ? `<button class="ghost" onclick="studentLogout()">יציאה</button>` : `<button class="ghost" onclick="go('#/teacher')">כניסת מורה</button>`;
 }
