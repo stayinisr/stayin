@@ -401,7 +401,7 @@
 const SUPABASE_URL = "https://unddypgjumuwsnsatuxe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BGJ55jTK4C7j0QVbyt0I2Q_1vmjHXQ-";
 let TEACHER = null;
-const OTP_LEN = 8;
+const OTP_LEN = 6;
 let sb = null, session = null;
 
 /* ================= helpers ================= */
@@ -1158,9 +1158,11 @@ function loginPage(){
   bindCode($(".codebox"), async code => {
     err();
     const email = $("#em").value.trim().toLowerCase();
-    let { data, error } = await sb.auth.verifyOtp({ email, token:code, type:"email" });
-    if(error){ const r2 = await sb.auth.verifyOtp({ email, token:code, type:"magiclink" }); if(!r2.error){ data = r2.data; error = null; } }
-    if(error){ err("הקוד שגוי או שפג תוקפו."); $$(".codebox input").forEach(i=>{i.value="";i.classList.remove("on");}); $(".codebox input").focus(); return; }
+    const wipe = m => { err(m); $$(".codebox input").forEach(i=>{i.value="";i.classList.remove("on");}); $(".codebox input").focus(); };
+    let v; try{ const { data:d, error:e } = await sb.functions.invoke("alfamath-mail", { body: { purpose:"teacher_verify", email, code } }); v = e ? { error:"משהו השתבש. נסו שוב" } : d; }catch(x){ v = { error:"אין חיבור לאינטרנט" }; }
+    if(!v?.token_hash) return wipe(v?.error || "הקוד שגוי או שפג תוקפו.");
+    const { data, error } = await sb.auth.verifyOtp({ token_hash:v.token_hash, type:"magiclink" });
+    if(error) return wipe("הקוד שגוי או שפג תוקפו.");
     session = data.session; TEACHER = null; route();
   }, true);
 }
