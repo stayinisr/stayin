@@ -1,8 +1,8 @@
 {
  "name": "AlfaMath – שיעורי בית",
  "short_name": "AlfaMath",
- "start_url": "./index.html",
- "scope": "./",
+ "start_url": "/app#/",
+ "scope": "/",
  "display": "standalone",
  "dir": "rtl",
  "lang": "he",
@@ -20,5 +20,6 @@
    "type": "image/png",
    "purpose": "any maskable"
   }
- ]
+ ],
+ "id": "/app"
 }

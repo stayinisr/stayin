@@ -9,7 +9,7 @@ const alfamathRoutes: [string, string][] = [
   ["/icon-192.png", "/homework/icon-192.png"],
   ["/icon-512.png", "/homework/icon-512.png"],
   ["/robots.txt", "/homework/robots.txt"],
-  ["/sitemap.xml", "/homework/sitemap.xml"],
+  ["/sitemap.xml", "/homework/sitemap.xml"], ["/sw.js", "/homework/sw.js"],
   ["/terms", "/homework/terms.html"],
   ["/privacy", "/homework/privacy.html"],
 ];

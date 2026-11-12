@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AlfaMath">
 <title>AlfaMath · שיעורי בית</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -468,6 +468,7 @@ function spark(values, dark){
     ${values.map((v,i)=>`<rect x="${x(i)-3.5}" y="${y(v)-3.5}" width="7" height="7" fill="${col}"/>`).join("")}</svg>`;
 }
 const waShare = text => `https://wa.me/?text=${encodeURIComponent(text)}`;
+function busy(el, on){ if(el){ el.disabled = on; el.classList.toggle("busy", on); } }
 async function copy(text, okMsg){ try{ await navigator.clipboard.writeText(text); toast(okMsg); }catch(e){ prompt("העתיקו:", text); } }
 function ask(html, okLabel="אישור", cancelLabel="ביטול", danger=false){
   return new Promise(res => {
@@ -650,6 +651,36 @@ function teacherNav(active, pick){
   $("#bnav").innerHTML = `<nav class="bnav tnav" style="--n:${items.length}" aria-label="ניווט מורה">${items.map(([k,l,i])=>`<button data-t="${k}" class="${active===k?"on":""}">${i}${l}</button>`).join("")}</nav>`;
   $$("#bnav button").forEach(b => b.onclick = () => pick ? pick(b.dataset.t) : go("#/teacher?tab="+b.dataset.t));
 }
+/* notifications: email (from the server) + web push (needs the service worker; on iPhone only from the home-screen app) */
+const VAPID_PUBLIC = "BK0Uiwm8j1rPWfqxmEQ8r67TLtQSZKmUDPRD4Bd_8qC9U89ddjp1xl9gJap1x2bocNo7LA9jt-9jPtUl_yJH3VQ";
+const pushOK = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const b64u = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+async function pushSub(){ if(!pushOK()) return null; const reg = await navigator.serviceWorker.getRegistration("/"); return reg ? reg.pushManager.getSubscription() : null; }
+async function pushEnable(){
+  const perm = await Notification.requestPermission();
+  if(perm !== "granted") throw new Error(perm === "denied" ? "ההתראות חסומות. אפשר לאשר אותן בהגדרות הדפדפן או הטלפון" : "לא אישרתם התראות");
+  const reg = await navigator.serviceWorker.register("/sw.js", { scope:"/" }); await navigator.serviceWorker.ready;
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUBLIC) });
+  const r = await rpcS("hw_student_push_save", { p_sub: sub.toJSON() }); if(r?.error) throw new Error(r.error);
+  try{ reg.showNotification("ההתראות הופעלו", { body:"נודיע כאן על משימות חדשות ועל הגשות שמתקרבות", icon:"/icon-192.png", lang:"he", dir:"rtl" }); }catch(e){}
+}
+async function notifyCard(){
+  const el = $("#ntf"); if(!el) return;
+  let st; try{ st = await rpcS("hw_student_notify_get", {}); }catch(e){ el.innerHTML = `<p class="err">${esc(errMsg(e))}</p>`; return; }
+  const sub = await pushSub().catch(()=>null);
+  const pushRow = !pushOK()
+    ? (isIOS() && !standalone()
+      ? `<div class="info" style="margin:12px 0 0"><b>התראות לאייפון:</b> לוחצים על כפתור השיתוף <b>⎙</b> בתחתית ספארי, בוחרים <b>"הוספה למסך הבית"</b>, פותחים את AlfaMath מהאייקון החדש ונכנסים שוב לכאן.</div>`
+      : `<p class="muted small" style="margin:12px 0 0">הדפדפן הזה לא תומך בהתראות. אפשר לנסות בכרום.</p>`)
+    : sub ? `<div class="row" style="margin-top:12px"><span class="chip ok">התראות בטלפון פעילות</span><div class="grow"></div><button class="ghost sm" id="poff">כיבוי</button></div>`
+          : `<button class="primary wide" id="pon" style="margin-top:12px">הפעלת התראות בטלפון</button>`;
+  el.innerHTML = `${st?.has_email ? `<label class="chk" style="margin-top:0"><input type="checkbox" id="nem" ${st.email_on?"checked":""}><span>מייל על משימה חדשה ותזכורת יום לפני ההגשה</span></label>` : `<p class="muted small" style="margin:0">לחשבון אין מייל, אז אין התראות במייל.</p>`}${pushRow}`;
+  const nem = $("#nem"); if(nem) nem.onchange = async () => { try{ await rpcS("hw_student_notify_set", { p_email:nem.checked }); toast(nem.checked ? "מיילים הופעלו" : "מיילים כובו"); }catch(e){ toast(errMsg(e)); nem.checked = !nem.checked; } };
+  const on = $("#pon"); if(on) on.onclick = async () => { busy(on, true); try{ await pushEnable(); toast("ההתראות הופעלו"); }catch(e){ toast(e.message || errMsg(e)); } busy(on, false); notifyCard(); };
+  const off = $("#poff"); if(off) off.onclick = async () => { try{ const s2 = await pushSub(); if(s2){ await rpcS("hw_student_push_remove", { p_endpoint:s2.endpoint }); await s2.unsubscribe(); } toast("ההתראות בטלפון כובו"); }catch(e){ toast(errMsg(e)); } notifyCard(); };
+}
 async function studentMe(){
   if(!store("hw-token")) return studentAuth("login");
   app().innerHTML = `<p class="muted">טוען…</p>`;
@@ -664,6 +695,12 @@ async function studentMe(){
       <div class="me-row"><span class="k">כיתה</span><span class="grow">${esc(me.class)}</span></div>
       <div class="me-row"><span class="k">מייל</span><bdi class="grow" dir="ltr" style="text-align:right">${esc(me.email||"לא הוגדר")}</bdi></div>
       ${me.claimed_at?`<div class="me-row"><span class="k">נרשמת</span><span class="grow">${fmtDate(me.claimed_at)}</span></div>`:""}
+    </div></div>
+    <div class="card"><div class="hd"><h2>התראות על משימות</h2></div><div class="bd" id="ntf"><p class="muted small" style="margin:0">טוען…</p></div></div>
+    <div class="card"><div class="hd"><h2>הצעה לשיפור</h2></div><div class="bd">
+      <p class="muted small" style="margin:0 0 8px">משהו מציק, חסר או יכול להיות טוב יותר? ההצעה מגיעה ישר למי שבונה את האתר.</p>
+      <textarea id="fbt" maxlength="2000" placeholder="למשל: הייתי רוצה לראות את כל הציונים שלי בגרף"></textarea>
+      <button class="primary" id="fbs" style="margin-top:10px">שליחת ההצעה</button>
     </div></div>
     <div class="card"><div class="hd"><h2>החלפת קוד סודי</h2></div><div class="bd">
       <label class="f" style="margin-top:0">הקוד הנוכחי</label><div id="c0">${codeBoxes(4, "", true)}</div>
@@ -688,6 +725,10 @@ async function studentMe(){
     toast("הקוד הסודי הוחלף"); studentMe();
   };
   $("#out1").onclick = studentLogout;
+  $("#fbs").onclick = async () => { const t = $("#fbt").value.trim(); if(t.length < 3) return toast("כתבו כמה מילים");
+    busy($("#fbs"), true); let r; try{ r = await rpcS("hw_student_feedback", { p_text:t }); }catch(e){ r = { error:errMsg(e) }; } busy($("#fbs"), false);
+    if(r?.error) return toast(r.error); $("#fbt").value = ""; toast("תודה! ההצעה נשלחה"); };
+  notifyCard();
   const oa = $("#outall"); if(oa) oa.onclick = async () => { if(!(await ask(`<h2>לצאת מכל המכשירים?</h2><p class="muted">תצטרכו להיכנס שוב עם הקוד הסודי בכל מכשיר.</p>`, "יציאה"))) return; try{ await rpcS("hw_student_logout_all", {}); }catch(e){} store("hw-token", null); HOME=null; go("#/"); };
 }
 
@@ -1237,6 +1278,12 @@ async function tabTeachers(){
     if(error) return toast(errMsg(error));
     toast(b.dataset.s==="approved" ? "המורה אושר" : "המורה נחסם"); tabTeachers();
   });
+  const fb = (await sb.rpc("hw_admin_feedback")).data || [];
+  const open = fb.filter(f=>!f.done).length;
+  box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>הצעות לשיפור מתלמידים</h2>${open?`<span class="chip warn">${open} חדשות</span>`:""}</div>
+    ${fb.length ? `<div>${fb.map(f=>`<div class="ann" style="${f.done?"opacity:.55":""}"><div class="row"><b class="grow">${esc(f.author||"תלמיד")}</b><span class="tiny">${esc(f.class_name||"")} · ${fmtDate(f.created_at)}</span>
+      <button class="ghost sm" data-fb="${f.id}" data-done="${f.done?0:1}">${f.done?"החזרה":"טופל"}</button></div><div class="prompt" style="margin-top:4px">${esc(f.body)}</div></div>`).join("")}</div>` : `<div class="empty"><b>עוד אין הצעות</b>התלמידים שולחים הצעות מהאזור האישי.</div>`}</div>`);
+  $$("#tab button[data-fb]").forEach(b => b.onclick = async () => { const { error } = await sb.rpc("hw_admin_feedback_done", { p_id:b.dataset.fb, p_done:b.dataset.done==="1" }); if(error) return toast(errMsg(error)); tabTeachers(); });
 }
 /* shared teacher data */
 async function loadAll(){
