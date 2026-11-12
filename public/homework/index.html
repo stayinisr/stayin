@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Secular+One&family=Caveat:wght@700&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -277,9 +277,74 @@
   .sq{width:10px;height:10px;flex:none}
   .spark{display:block;width:100%;height:70px}
   .print-only{display:none}
+  /* ================= notebook design layer ================= */
+  body{background-color:#F6F8FC;background-image:linear-gradient(#E7EDF6 1px,transparent 1px),linear-gradient(90deg,#E7EDF6 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+  header{background:rgba(255,255,255,.9);border-bottom:2px solid var(--ink)}
+  h1{font-family:"Secular One","Rubik",sans-serif;font-weight:400;letter-spacing:-.01em}
+  .card{border:1.5px solid var(--ink);box-shadow:5px 5px 0 #C9D6FB}
+  .card > .hd{border-bottom:1.5px solid var(--line)}
+  .card > .hd::before{background:var(--sun);width:6px;top:14px;bottom:14px}
+  .hero{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
+  /* buttons: ink outline + lift */
+  button,.btn{transition:transform .14s,box-shadow .14s,background .14s,color .14s}
+  .primary{border-color:var(--ink)}
+  .primary:hover{background:var(--pri);border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+  .light{background:#fff;border:1.5px solid var(--ink)}
+  .light:hover{background:var(--sun);color:var(--ink);border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+  button:active,.btn:active{transform:translate(0,0)!important;box-shadow:none!important}
+  /* tabs: highlighter under the active tab */
+  .tabs{border-bottom:2px solid var(--ink)}
+  .tabs button.on{color:var(--ink)}
+  .tabs button.on::after{height:10px;bottom:9px;inset-inline:10px;background:var(--sun);z-index:-1}
+  .tabs button{isolation:isolate}
+  .seg{border:1.5px solid var(--ink)}
+  .seg button.on{background:var(--ink)}
+  /* rows and date tiles */
+  .rows > .r:hover{background:var(--sun-wash)}
+  .date{border:1.5px solid var(--ink);background:#fff;color:var(--ink);position:relative;padding-top:5px}
+  .date::before{content:"";position:absolute;top:0;inset-inline:0;height:6px;background:var(--hot)}
+  .date.none::before{background:var(--line-2)}
+  .date.late{background:var(--bad-wash)}
+  .tile{border:1.5px solid var(--ink);border-top-width:5px}
+  .tile:hover{border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--ink)}
+  /* questions */
+  .qn{background:var(--ink)}
+  .choice{border:1.5px solid var(--line-2)}
+  .choice:hover{border-color:var(--ink)}
+  .choice.sel{border-color:var(--ink);background:var(--sun-wash);box-shadow:inset -5px 0 0 var(--sun)}
+  .choice.sel .let{background:var(--ink);border-color:var(--ink)}
+  .ans input:focus{box-shadow:inset 0 -3px 0 var(--sun)}
+  input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--sun)}
+  .mark.ok{animation:pop .35s ease-out both}
+  @keyframes pop{0%{transform:scale(.97);opacity:0}100%{transform:none;opacity:1}}
+  /* grade: red-pen number with a drawn circle */
+  .grade .n{font-family:"Caveat","Secular One",cursive;font-weight:700;font-size:96px;line-height:.9;position:relative;display:inline-block;padding:4px 18px 0;letter-spacing:0}
+  .grade .n::after{content:"";position:absolute;inset:-6px -4px -2px;border:3px solid currentColor;border-radius:50%;transform:rotate(-5deg);opacity:.85;animation:circle .7s .25s ease-out both}
+  @keyframes circle{from{clip-path:inset(0 0 0 100%)}to{clip-path:inset(0 0 0 0)}}
+  .cells i.f{background:var(--ink)}
+  .meter{background:#E3E9F3} .meter i{background:var(--ink)}
+  .bnav{border-top:2px solid var(--ink)}
+  .bnav button.on{color:var(--ink)}
+  .bnav button.on::before{height:4px;background:var(--sun);inset-inline:18%}
+  .bnav button.on svg{color:var(--pri)}
+  .dock{border-top:2px solid var(--ink)}
+  dialog{border:2px solid var(--ink);border-top:8px solid var(--pri);box-shadow:8px 8px 0 var(--ink)}
+  .toast{box-shadow:5px 5px 0 var(--sun);border:2px solid var(--ink)}
+  .chip.ink{background:var(--ink);border-color:var(--ink)}
+  th{background:#EEF2F9;color:var(--ink-2)}
+  /* page enter: one quick settle per navigation */
+  main.enter > *{animation:enter .32s cubic-bezier(.2,.8,.2,1) both}
+  main.enter > *:nth-child(2){animation-delay:.04s} main.enter > *:nth-child(3){animation-delay:.08s} main.enter > *:nth-child(n+4){animation-delay:.12s}
+  @keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    main.enter > *,.mark.ok,.grade .n::after{animation:none!important}
+    button,.btn,.tile{transition:none} .primary:hover,.light:hover,.tile:hover{transform:none}
+  }
+  @media (max-width:640px){ .grade .n{font-size:80px} .card{box-shadow:4px 4px 0 #C9D6FB} }
+  @media (hover:none){ .primary:hover,.light:hover,.tile:hover{transform:none;box-shadow:none} .light:hover{background:#fff} }
   @media print{
     header,.bnav,.dock,.noprint,.toast{display:none!important}
-    body{background:#fff} main{padding:0;max-width:none}
+    body{background:#fff!important;background-image:none!important} main{padding:0;max-width:none} .card{box-shadow:none!important}
     .card{border:none;margin:0} .print-only{display:block}
     .q{break-inside:avoid}
   }
@@ -324,7 +389,7 @@
 </head>
 <body>
 <header><div class="in">
-  <button class="brand" id="brand" aria-label="AlfaMath – דף הבית"><span class="logo">α</span><span><b>Alfa<span>Math</span></b><small>שיעורי בית במתמטיקה ופיזיקה</small></span></button>
+  <button class="brand" id="brand" aria-label="AlfaMath – לדף הבית של האתר"><span class="logo">α</span><span><b>Alfa<span>Math</span></b><small>שיעורי בית במתמטיקה ופיזיקה</small></span></button>
   <div class="sp"></div>
   <div id="hdr"></div>
 </div></header>
@@ -555,7 +620,7 @@ async function route(){
 }
 function renderHeader(){
   const t = (location.hash||"").startsWith("#/teacher");
-  $("#brand").onclick = () => go(t ? "#/teacher" : "#/");
+  $("#brand").onclick = () => { location.href = "/"; };
   if(t) $("#hdr").innerHTML = session ? `<button class="ghost" onclick="logout()">יציאה</button>` : `<button class="ghost" onclick="go('#/')">כניסת תלמידים</button>`;
   else $("#hdr").innerHTML = store("hw-token") ? `<button class="ghost" onclick="studentLogout()">יציאה</button>` : `<button class="ghost" onclick="go('#/teacher')">כניסת מורה</button>`;
 }
@@ -2046,6 +2111,9 @@ async function teacherPrint(id){
 
 /* ================= boot ================= */
 window.addEventListener("hashchange", route);
+{ let seenNav = -1; const appEl = $("#app");
+  new MutationObserver(() => { if(seenNav === navSeq || !appEl.querySelector(".card,.hero,h1,.auth")) return; seenNav = navSeq;
+    appEl.classList.remove("enter"); void appEl.offsetWidth; appEl.classList.add("enter"); }).observe(appEl, { childList:true }); }
 window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue=""; } });
 window.addEventListener("load", async () => {
   if(!window.supabase){ app().innerHTML = `<div class="card"><div class="bd"><p class="err">האתר לא נטען עד הסוף. בדקו את החיבור לאינטרנט ורעננו.</p></div></div>`; return; }
