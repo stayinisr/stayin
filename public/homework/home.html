@@ -7,179 +7,304 @@
 <meta name="description" content="המורה מעלה משימה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. שיעורי בית במתמטיקה ובפיזיקה עם בדיקה אוטומטית, מספרים שונים לכל תלמיד וניתוח כיתתי.">
 <meta property="og:title" content="AlfaMath – שיעורי בית שנבדקים מעצמם">
 <meta property="og:description" content="שיעורי בית במתמטיקה ובפיזיקה עם בדיקה אוטומטית וניתוח כיתתי.">
-<meta name="theme-color" content="#4F3BFF">
+<meta name="theme-color" content="#1F49D6">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Secular+One&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#F5F4FF}html{scroll-behavior:smooth}
+:root{
+  --paper:#FBFCFE; --grid:#DCE5F3; --ink:#0F1E3D; --ink-2:#3A4766; --muted:#5D6B85;
+  --pen:#1F49D6; --pen-2:#1638AE; --hl:#FFE347; --red:#E23B3B; --ok:#0E9F6E;
+}
 *{box-sizing:border-box;border-radius:0}
-a{color:#4F3BFF}a:hover{color:#3A26E0}
-.am-wrap{max-width:1180px;margin:0 auto;padding:0 32px}
-.am-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;font:800 16px Heebo,sans-serif;text-decoration:none;border:2px solid #15123B}
-.am-pri{background:#4F3BFF;border-color:#4F3BFF;color:#fff}.am-pri:hover{background:#3A26E0;color:#fff}
-.am-light{background:#fff;color:#15123B}.am-light:hover{background:#EFEDFF;color:#15123B}
-@media (max-width:760px){
- .am-wrap{padding:0 18px}
- .am-nav-links{display:none!important}
- .am-hero{grid-template-columns:minmax(0,1fr)!important;padding-top:28px!important}
- .am-h1{font-size:40px!important}
- .am-grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
- .am-grid3,.am-grid2{grid-template-columns:minmax(0,1fr)!important}
- .am-nav-cta .am-light{display:none!important}
- .am-band{flex-direction:column;align-items:flex-start!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 Rubik,Heebo,system-ui,sans-serif}
+a{color:var(--pen)}a:hover{color:var(--pen-2)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.wrap{max-width:1160px;margin:0 auto;padding-inline:32px}
+.disp{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em}
+.hand{font-family:Caveat,cursive}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;font:700 16px Rubik,sans-serif;text-decoration:none;border:2px solid var(--ink);transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.btn.pri{background:var(--pen);border-color:var(--ink);color:#fff}.btn.pri:hover{color:#fff}
+.btn.lt{background:#fff;color:var(--ink)}.btn.lt:hover{color:var(--ink)}
+.btn.big{min-height:58px;font-size:18px;padding:0 30px}
+
+/* header */
+header{position:sticky;top:0;z-index:10;background:rgba(251,252,254,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--grid)}
+.hd{display:flex;align-items:center;gap:28px;height:72px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo i{width:40px;height:40px;background:var(--pen);color:#fff;display:grid;place-items:center;font:italic 700 27px Georgia,serif;position:relative}
+.logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid var(--ink)}
+.logo b{direction:ltr;font-weight:800;font-size:23px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
+nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{color:var(--ink);text-decoration:none}nav.links a:hover{color:var(--pen)}
+.cta{margin-inline-start:auto;display:flex;gap:10px}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;-webkit-mask-image:linear-gradient(to left,transparent 0%,#000 55%);mask-image:linear-gradient(to left,transparent 0%,#000 55%);opacity:.8}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center;padding-top:76px;padding-bottom:84px}
+.hero h1{margin:0;font-size:68px;line-height:1.02}
+.hero h1 .mk{background:linear-gradient(transparent 58%,var(--hl) 58%,var(--hl) 92%,transparent 92%);padding:0 4px}
+.lead{margin:24px 0 0;font-size:20px;line-height:1.6;color:var(--ink-2);max-width:520px}
+.acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.fine{margin:16px 0 0;font-size:14px;color:var(--muted)}
+
+/* notebook scene */
+.scene{position:relative;min-height:560px}
+.page{position:absolute;inset-inline-end:0;top:0;width:min(400px,100%);background:#fff;border:2px solid var(--ink);box-shadow:10px 10px 0 var(--ink);background-image:linear-gradient(#E3EAF6 1px,transparent 1px),linear-gradient(90deg,#E3EAF6 1px,transparent 1px);background-size:24px 24px;background-position:-1px -1px}
+.page::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:46px;width:2px;background:var(--red);opacity:.7}
+.page .top{position:relative;background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:11px 18px;font-weight:700;font-size:14px}
+.page .top span:last-child{color:var(--hl)}
+.page .body{position:relative;padding:20px 22px 22px 22px;padding-inline-start:62px}
+.page .q{margin:0;font-weight:600;font-size:17px}
+.work{display:block;width:68%;height:auto;margin:6px 0 4px;direction:ltr;margin-left:0;margin-right:auto}
+.work text{font-family:Caveat,cursive;font-weight:700;fill:transparent;stroke:var(--pen);stroke-width:1.1;stroke-dasharray:260;stroke-dashoffset:260}
+.ansrow{display:flex;gap:10px;align-items:stretch;direction:rtl}
+.ansbox{flex:1;height:52px;border:2px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:flex-start;padding:0 14px;font-weight:800;font-size:22px;direction:ltr}
+.ansbox .car{display:inline-block;width:2px;height:24px;background:var(--ink);margin-left:2px}
+.verdict{display:flex;align-items:center;padding:0 14px;background:var(--ok);color:#fff;font-weight:700;opacity:0;transform:translateX(-8px)}
+.redpen{position:absolute;pointer-events:none;direction:ltr}
+.redpen path,.redpen ellipse{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.redpen text{fill:var(--red);font-family:Caveat,cursive;font-weight:700;opacity:0}
+.stats{position:absolute;inset-inline-start:0;bottom:0;width:270px;background:#fff;border:2px solid var(--ink);padding:16px 18px}
+.stats h3{margin:0 0 12px;font-size:15px;font-weight:800}
+.bar{display:grid;grid-template-columns:52px minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:13px;margin-top:8px}
+.bar s{display:block;height:10px;background:#E6ECF6;text-decoration:none;position:relative;overflow:hidden}
+.bar s i{position:absolute;inset-block:0;inset-inline-start:0;background:var(--c);width:var(--w);transform-origin:right;transform:scaleX(0)}
+.stats p{margin:12px 0 0;font-size:12.5px;color:var(--muted)}
+
+/* the one orchestrated moment */
+.play .work text{animation:write 1.1s ease-out forwards}
+.play .work text:nth-child(2){animation-delay:1.1s}.play .work text:nth-child(3){animation-delay:2.2s}
+.play .ansbox .d{animation:show .01s 3.4s both}.play .ansbox .car{animation:blink .8s 4 steps(1)}
+.play .verdict{animation:slide .35s 3.7s ease-out forwards}
+.play .redpen .ck{stroke-dasharray:120;stroke-dashoffset:120;animation:draw .45s 4.2s ease-out forwards}
+.play .redpen ellipse{stroke-dasharray:220;stroke-dashoffset:220;animation:draw .6s 4.7s ease-out forwards}
+.play .redpen text{animation:show .3s 4.9s forwards}
+.play .bar s i{animation:grow .9s cubic-bezier(.2,.8,.2,1) forwards}
+.play .bar:nth-of-type(2) s i{animation-delay:.15s}.play .bar:nth-of-type(3) s i{animation-delay:.3s}
+@keyframes write{60%{fill:transparent}100%{stroke-dashoffset:0;fill:var(--pen)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes show{from{opacity:0;visibility:hidden}to{opacity:1;visibility:visible}}
+@keyframes slide{to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+@keyframes grow{to{transform:scaleX(1)}}
+.ansbox .d{visibility:hidden}
+@media (prefers-reduced-motion:reduce){
+  .work text{fill:var(--pen)!important;stroke-dashoffset:0!important;animation:none!important}
+  .ansbox .d{visibility:visible!important;animation:none!important}.ansbox .car{display:none}
+  .verdict{opacity:1!important;transform:none!important;animation:none!important}
+  .redpen .ck,.redpen ellipse{stroke-dashoffset:0!important;animation:none!important}.redpen text{opacity:1!important;animation:none!important}
+  .bar s i{transform:none!important;animation:none!important}
+  .btn{transition:none}.btn:hover{transform:none}
 }
 
-a:focus-visible{outline:3px solid #FF5C39;outline-offset:2px}
+/* features */
+.feat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--grid)}
+.feat div{padding:34px 26px 34px 26px;border-inline-start:1px solid var(--grid)}
+.feat div:first-child{border-inline-start:none;padding-inline-start:0}
+.feat h3{margin:0;font-size:19px;font-weight:800}
+.feat h3::before{content:"";display:block;width:34px;height:4px;background:var(--pen);margin-bottom:14px}
+.feat p{margin:8px 0 0;color:var(--ink-2);font-size:15.5px;line-height:1.55}
+
+/* how */
+.how{padding-top:96px;padding-bottom:96px}
+.how h2,.duo h2,.band h2{margin:0;font-size:44px;line-height:1.1}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px;counter-reset:s}
+.step{position:relative;background:#fff;border:2px solid var(--ink);padding:30px 28px 28px}
+.step .n{position:absolute;top:-30px;inset-inline-start:20px;font:700 64px/1 Caveat,cursive;color:var(--red);background:var(--paper);padding:0 8px}
+.step h3{margin:14px 0 0;font-size:23px;font-weight:800}
+.step p{margin:10px 0 0;color:var(--ink-2);font-size:16px;line-height:1.6}
+
+/* teachers / students */
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-bottom:96px}
+.duo > div{padding:38px;border:2px solid var(--ink)}
+.duo .t{background:var(--ink);color:#fff;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:24px 24px}
+.duo .s{background:#fff}
+.duo h2{font-size:34px}
+.duo ul{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5}
+.duo li{display:flex;gap:12px}
+.duo li::before{content:"✓";font:700 22px/1 Caveat,cursive;color:var(--hl);flex:none;margin-top:2px}
+.duo .s li::before{color:var(--ok)}
+.duo .btn{margin-top:30px}
+.duo .t .btn{border-color:#fff}
+
+/* band */
+.band{background:var(--hl);border-block:2px solid var(--ink)}
+.band .wrap{display:flex;align-items:center;gap:24px;padding-top:52px;padding-bottom:52px}
+.band h2{font-size:36px}
+.band p{margin:8px 0 0;font-size:17px;color:var(--ink-2)}
+.band .btn{margin-inline-start:auto}
+
+footer{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding-top:30px;padding-bottom:42px;color:var(--muted);font-size:14px}
+footer .logo b{font-size:19px}
+footer a:first-of-type{margin-inline-start:auto}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:40px;padding-top:40px;padding-bottom:56px}
+  .hero h1{font-size:46px}
+  .lead{font-size:18px}
+  .scene{min-height:0;display:grid;gap:18px}
+  .page,.stats{position:relative;inset:auto;width:auto}
+  .page{margin-inline-end:10px}
+  .feat{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feat div:nth-child(3){border-inline-start:none;padding-inline-start:0}
+  .feat div{border-top:1px solid var(--grid)}
+  .steps,.duo{grid-template-columns:minmax(0,1fr)}
+  .steps{gap:44px}
+  .how{padding-top:64px;padding-bottom:64px}
+  .how h2,.band h2{font-size:34px}
+  .band .wrap{flex-direction:column;align-items:flex-start}
+  .band .btn{margin-inline-start:0}
+}
+@media (max-width:620px){
+  .wrap{padding-inline:18px}
+  nav.links{display:none}
+  .cta .lt{display:none}
+  .hero h1{font-size:40px}
+  .feat{grid-template-columns:minmax(0,1fr)}
+  .feat div{border-inline-start:none!important;padding-inline-start:0;padding-block:24px}
+  .duo > div{padding:28px 22px}
+  .redpen{width:96px!important;top:66px!important;right:40px!important}
+  .page .body{padding-inline-start:52px}
+  .page::before{inset-inline-start:38px}
+  footer a:first-of-type{margin-inline-start:0}
+}
 </style>
 </head>
 <body>
-<div style="font-family:Heebo,sans-serif;color:#15123B;background:#F5F4FF;direction:rtl">
 
-<header style="background:#fff;border-bottom:1px solid #E6E3F5;position:sticky;top:0;z-index:5">
- <div class="am-wrap" style="display:flex;align-items:center;gap:28px;height:72px">
-  <a href="#top" aria-label="AlfaMath, דף הבית" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#15123B">
-   <span style="width:40px;height:40px;background:#4F3BFF;color:#fff;display:grid;place-items:center;font:italic 900 26px Georgia,serif;position:relative">α<span style="position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:#FF5C39"></span></span>
-   <span style="direction:ltr;font-weight:900;font-size:23px;letter-spacing:-0.02em">Alfa<span style="color:#4F3BFF">Math</span></span>
-  </a>
-  <nav class="am-nav-links" aria-label="ניווט" style="display:flex;gap:24px;font-weight:700;font-size:15px">
-   <a href="#how" style="color:#15123B;text-decoration:none">איך זה עובד</a>
-   <a href="#teachers" style="color:#15123B;text-decoration:none">למורים</a>
-   <a href="#students" style="color:#15123B;text-decoration:none">לתלמידים</a>
+<header>
+ <div class="wrap hd">
+  <a class="logo" href="#top" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
+  <nav class="links" aria-label="ניווט">
+   <a href="#how">איך זה עובד</a>
+   <a href="#teachers">למורים</a>
+   <a href="#students">לתלמידים</a>
   </nav>
-  <div class="am-nav-cta" style="margin-inline-start:auto;display:flex;gap:10px">
-   <a class="am-btn am-light" href="/app#/">כניסת תלמיד</a>
-   <a class="am-btn am-pri" href="/app#/teacher">כניסת מורה</a>
+  <div class="cta">
+   <a class="btn lt" href="/app#/">כניסת תלמיד</a>
+   <a class="btn pri" href="/app#/teacher">כניסת מורה</a>
   </div>
  </div>
 </header>
 
-<section id="top" class="am-wrap am-hero" style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr);gap:56px;align-items:center;padding-top:72px;padding-bottom:72px">
- <div>
-  <p style="margin:0 0 18px;font-weight:800;color:#4F3BFF;font-size:16px">מתמטיקה ופיזיקה · חטיבה ותיכון</p>
-  <h1 class="am-h1" style="margin:0;font-size:60px;line-height:1.05;font-weight:900;letter-spacing:-0.03em">שיעורי בית<br>שנבדקים מעצמם.</h1>
-  <p style="margin:22px 0 0;font-size:20px;line-height:1.6;color:#3B3766;max-width:540px">המורה מעלה משימה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. אתם רואים מי הגיש, איפה הכיתה נתקעה ומה כדאי לחזור עליו בשיעור הבא.</p>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:32px">
-   <a class="am-btn am-pri" href="/app#/teacher" style="min-height:56px;font-size:18px;padding:0 28px">הרשמה למורים</a>
-   <a class="am-btn am-light" href="/app#/" style="min-height:56px;font-size:18px;padding:0 28px">יש לי קוד כיתה</a>
-  </div>
-  <p style="margin:16px 0 0;font-size:14px;color:#6B6890">בשלב הזה ההצטרפות למורים חינם, אחרי אישור.</p>
- </div>
-
- <div style="position:relative;min-height:580px" aria-label="דוגמה למסך שאלה בטלפון" role="img">
-  <div style="position:absolute;inset-inline-end:28px;top:0;width:300px;background:#fff;border:2px solid #15123B;box-shadow:12px 12px 0 #4F3BFF">
-   <div style="background:#15123B;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;font-weight:800;font-size:14px"><span>טרפז – תרגול</span><span style="color:#FFC83D">3 / 10</span></div>
-   <div style="padding:18px 16px">
-    <div style="display:flex;gap:10px;align-items:flex-start">
-     <span style="width:28px;height:28px;background:#EFEDFF;color:#4F3BFF;display:grid;place-items:center;font-weight:900;flex:none">3</span>
-     <p style="margin:0;font-size:15px;line-height:1.55">בטרפז ABCD הבסיסים מקבילים. נתון <span style="direction:ltr;unicode-bidi:isolate;font-style:italic">∠A = 65°</span>. מה גודל <span style="direction:ltr;unicode-bidi:isolate;font-style:italic">∠D</span>?</p>
-    </div>
-    <svg viewBox="0 0 260 110" style="display:block;width:100%;margin:14px 0" aria-hidden="true"><polygon points="40,95 220,95 180,18 80,18" fill="#EFEDFF" stroke="#15123B" stroke-width="2.5"/><text x="28" y="108" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">D</text><text x="224" y="108" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">C</text><text x="184" y="14" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">B</text><text x="68" y="14" font-size="13" font-family="Heebo" font-weight="700" fill="#15123B">A</text><text x="86" y="36" font-size="12" font-family="Heebo" fill="#FF5C39" font-weight="800">65°</text></svg>
-    <div style="display:flex;gap:8px;align-items:center">
-     <div style="flex:1;height:48px;border:2px solid #0E9F6E;display:flex;align-items:center;padding:0 12px;font-weight:900;font-size:20px;direction:ltr;justify-content:flex-end">115</div>
-     <span style="height:48px;padding:0 12px;background:#0E9F6E;color:#fff;display:flex;align-items:center;font-weight:800;font-size:15px">נכון ✓</span>
-    </div>
-   </div>
-  </div>
-  <div style="position:absolute;inset-inline-start:0;bottom:0;width:280px;background:#fff;border:2px solid #15123B;padding:16px">
-   <div style="font-weight:900;font-size:15px;margin-bottom:12px">ניתוח שאלות · ט׳ מתמטיקה</div>
-   <div style="display:grid;gap:9px;font-size:13px">
-    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 1</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:88%;background:#0E9F6E"></span></span><b>88%</b></div>
-    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 2</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:71%;background:#4F3BFF"></span></span><b>71%</b></div>
-    <div style="display:grid;grid-template-columns:42px minmax(0,1fr) 38px;gap:8px;align-items:center"><span>שאלה 3</span><span style="height:10px;background:#E6E3F5"><span style="display:block;height:10px;width:34%;background:#FF5C39"></span></span><b>34%</b></div>
-   </div>
-   <p style="margin:12px 0 0;font-size:12.5px;color:#6B6890">טעות נפוצה בשאלה 3: <b style="color:#15123B">65</b></p>
-  </div>
- </div>
-</section>
-
-<section style="background:#fff;border-top:1px solid #E6E3F5;border-bottom:1px solid #E6E3F5">
- <div class="am-wrap am-grid4" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0">
-  <div style="padding:30px 24px 30px 0;border-inline-start:0">
-   <div style="font-weight:900;font-size:18px">מספרים שונים לכל תלמיד</div>
-   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">כל אחד מקבל גרסה משלו של אותה שאלה, ככה העתקה מחבר לא עוזרת.</p>
-  </div>
-  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
-   <div style="font-weight:900;font-size:18px">בדיקה הוגנת</div>
-   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">תשובה עשרונית מתקבלת בטווח סביר. מספר שלם צריך להיות מדויק.</p>
-  </div>
-  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
-   <div style="font-weight:900;font-size:18px">שרטוטים ונוסחאות</div>
-   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">שאלות מילוליות, אמריקאיות ומספריות, עם שרטוט ונוסחאות כמו בדף עבודה.</p>
-  </div>
-  <div style="padding:30px 24px;border-inline-start:1px solid #E6E3F5">
-   <div style="font-weight:900;font-size:18px">בלי התקנה</div>
-   <p style="margin:8px 0 0;color:#5C5880;font-size:15px;line-height:1.55">עובד מהדפדפן בטלפון ובמחשב. התלמיד נכנס עם קוד כיתה והשם שלו.</p>
-  </div>
- </div>
-</section>
-
-<section id="how" class="am-wrap" style="padding-top:88px;padding-bottom:88px">
- <h2 style="margin:0;font-size:40px;font-weight:900;letter-spacing:-0.02em">איך זה עובד</h2>
- <div class="am-grid3" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px">
-  <div style="background:#fff;border:2px solid #15123B;padding:28px">
-   <div style="width:48px;height:48px;background:#4F3BFF;color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px">1</div>
-   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">יוצרים משימה</h3>
-   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">כותבים שאלות בעורך, או מדביקים שאלות שהכנתם עם בינה מלאכותית. קובעים מועד הגשה, ניסיונות ושעון למבחן.</p>
-  </div>
-  <div style="background:#fff;border:2px solid #15123B;padding:28px">
-   <div style="width:48px;height:48px;background:#FF5C39;color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px">2</div>
-   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">שולחים לכיתה</h3>
-   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">שולחים לתלמידים את קוד הכיתה בוואטסאפ. כל תלמיד נכנס עם השם שלו וקוד סודי, ורואה רק את המשימות של הכיתה שלו.</p>
-  </div>
-  <div style="background:#fff;border:2px solid #15123B;padding:28px">
-   <div style="width:48px;height:48px;background:#FFC83D;color:#15123B;display:grid;place-items:center;font-weight:900;font-size:24px">3</div>
-   <h3 style="margin:20px 0 0;font-size:22px;font-weight:900">מקבלים ציונים וניתוח</h3>
-   <p style="margin:10px 0 0;color:#3B3766;font-size:16px;line-height:1.6">הציון מוכן מיד. גיליון ציונים משוקלל, אחוז הצלחה בכל שאלה והטעויות הנפוצות. מייצאים לאקסל בלחיצה.</p>
-  </div>
- </div>
-</section>
-
-<section class="am-wrap am-grid2" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-bottom:88px">
- <div id="teachers" style="background:#15123B;color:#fff;padding:36px">
-  <h2 style="margin:0;font-size:30px;font-weight:900">למורים</h2>
-  <ul style="margin:20px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5">
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>לוח ניהול: מי לא הגיש, מי בירידה, מה נסגר השבוע</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>מאגר שאלות אישי שאפשר להעתיק בין משימות</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>תיקון ציון ידני והערה אישית לכל הגשה</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#FFC83D;margin-top:9px;flex:none"></span>הודעות לכיתה ודף עבודה להדפסה</li>
-  </ul>
-  <a class="am-btn am-pri" href="/app#/teacher" style="margin-top:28px;border-color:#fff">הרשמה למורים</a>
- </div>
- <div id="students" style="background:#fff;border:2px solid #15123B;padding:36px">
-  <h2 style="margin:0;font-size:30px;font-weight:900">לתלמידים</h2>
-  <ul style="margin:20px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5">
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>כל המשימות במקום אחד, עם תאריך הגשה ותזכורת ליומן</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>ציון ופתרון מיד אחרי ההגשה</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>מחברת טעויות לתרגול חוזר עד שזה יושב</li>
-   <li style="display:flex;gap:12px"><span style="width:10px;height:10px;background:#4F3BFF;margin-top:9px;flex:none"></span>מעקב התקדמות לפי נושאים</li>
-  </ul>
-  <a class="am-btn am-light" href="/app#/" style="margin-top:28px">כניסת תלמיד</a>
- </div>
-</section>
-
-<section style="background:#4F3BFF;color:#fff">
- <div class="am-wrap am-band" style="display:flex;align-items:center;gap:24px;padding-top:48px;padding-bottom:48px">
+<main>
+<section class="hero" id="top">
+ <div class="wrap">
   <div>
-   <h2 style="margin:0;font-size:32px;font-weight:900">רוצים לנסות עם הכיתה שלכם?</h2>
-   <p style="margin:8px 0 0;font-size:17px;color:#E4E0FF">נרשמים עם המייל, ממלאים כמה פרטים, ואנחנו מאשרים את החשבון.</p>
+   <h1 class="disp">שיעורי בית<br>שנבדקים מעצמם</h1>
+   <p class="lead">המורה מעלה משימה במתמטיקה או בפיזיקה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. אתם רואים מי הגיש, איפה הכיתה נתקעה ומה כדאי לחזור עליו בשיעור הבא.</p>
+   <div class="acts">
+    <a class="btn pri big" href="/app#/teacher">הרשמה למורים</a>
+    <a class="btn lt big" href="/app#/">יש לי קוד כיתה</a>
+   </div>
+   <p class="fine">בשלב הזה ההצטרפות למורים חינם, אחרי אישור.</p>
   </div>
-  <a class="am-btn" href="/app#/teacher" style="margin-inline-start:auto;background:#fff;color:#15123B;border-color:#fff;min-height:56px;font-size:18px">הרשמה למורים</a>
+
+  <div class="scene" id="scene" role="img" aria-label="דוגמה: תלמיד פותר משוואה בטלפון, התשובה נבדקת ומקבלת 100">
+   <div class="page">
+    <div class="top"><span>משוואות – תרגול</span><span><bdi dir="ltr">4 / 10</bdi></span></div>
+    <div class="body">
+     <p class="q">פתרו את המשוואה. מה ערכו של x?</p>
+     <svg class="work" viewBox="0 0 300 132" aria-hidden="true">
+      <text x="10" y="38" font-size="36">3x + 5 = 26</text>
+      <text x="10" y="80" font-size="36">3x = 21</text>
+      <text x="10" y="122" font-size="36">x = 7</text>
+     </svg>
+     <div class="ansrow">
+      <div class="ansbox"><span class="d">7</span><span class="car"></span></div>
+      <span class="verdict">נכון ✓</span>
+     </div>
+     <svg class="redpen" viewBox="0 0 150 120" style="width:130px;top:52px;right:54px" aria-hidden="true">
+      <path class="ck" d="M14 64 L38 92 L84 22"/>
+      <ellipse cx="104" cy="88" rx="38" ry="24" transform="rotate(-8 104 88)"/>
+      <text x="104" y="99" font-size="32" text-anchor="middle">100</text>
+     </svg>
+    </div>
+   </div>
+   <div class="stats" aria-hidden="true">
+    <h3>אחוז הצלחה לפי שאלה</h3>
+    <div class="bar"><span>שאלה 1</span><s><i style="--w:91%;--c:var(--ok)"></i></s><b>91%</b></div>
+    <div class="bar"><span>שאלה 2</span><s><i style="--w:68%;--c:var(--pen)"></i></s><b>68%</b></div>
+    <div class="bar"><span>שאלה 3</span><s><i style="--w:31%;--c:var(--red)"></i></s><b>31%</b></div>
+    <p>הטעות הנפוצה בשאלה 3: <bdi dir="ltr" style="color:var(--ink);font-weight:700">x = 31/3</bdi></p>
+   </div>
+  </div>
  </div>
 </section>
 
-<footer class="am-wrap" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding-top:28px;padding-bottom:40px;color:#5C5880;font-size:14px">
- <span style="direction:ltr;font-weight:900;color:#15123B">Alfa<span style="color:#4F3BFF">Math</span></span>
- <span>Math, Physics &amp; More</span>
- <a href="/app#/teacher" style="margin-inline-start:auto">כניסת מורה</a>
+<section class="wrap feat" aria-label="מה מקבלים">
+ <div><h3>מספרים שונים לכל תלמיד</h3><p>כל אחד מקבל גרסה משלו של אותה שאלה, ככה העתקה מחבר לא עוזרת.</p></div>
+ <div><h3>בדיקה הוגנת</h3><p>תשובה עשרונית מתקבלת בטווח סביר. מספר שלם צריך להיות מדויק.</p></div>
+ <div><h3>שרטוטים ונוסחאות</h3><p>שאלות מספריות, אמריקאיות ומילוליות, עם שרטוט ונוסחאות כמו בדף עבודה.</p></div>
+ <div><h3>בלי התקנה</h3><p>עובד מהדפדפן בטלפון ובמחשב. התלמיד נכנס עם קוד כיתה והשם שלו.</p></div>
+</section>
+
+<section class="wrap how" id="how">
+ <h2 class="disp">איך זה עובד</h2>
+ <div class="steps">
+  <div class="step"><span class="n" aria-hidden="true">1</span><h3>יוצרים משימה</h3><p>בונים שאלות בעורך, או מבקשים מ-ChatGPT, מ-Claude או מ-Gemini להכין אותן, גם מצילום של דף עבודה. קובעים מועד הגשה, ניסיונות ושעון למבחן.</p></div>
+  <div class="step"><span class="n" aria-hidden="true">2</span><h3>שולחים לכיתה</h3><p>שולחים לתלמידים את קוד הכיתה בוואטסאפ. כל תלמיד נכנס עם השם שלו וקוד סודי, ורואה רק את המשימות של הכיתה שלו.</p></div>
+  <div class="step"><span class="n" aria-hidden="true">3</span><h3>מקבלים ציונים וניתוח</h3><p>הציון מוכן מיד. גיליון ציונים משוקלל, אחוז הצלחה בכל שאלה והטעויות הנפוצות. מייצאים לאקסל בלחיצה.</p></div>
+ </div>
+</section>
+
+<section class="wrap duo">
+ <div class="t" id="teachers">
+  <h2 class="disp">למורים</h2>
+  <ul>
+   <li>לוח ניהול: מי לא הגיש, מי בירידה, מה נסגר השבוע</li>
+   <li>מאגר שאלות אישי שאפשר להעתיק בין משימות</li>
+   <li>תיקון ציון ידני והערה אישית לכל הגשה</li>
+   <li>הודעות לכיתה ודף עבודה להדפסה</li>
+  </ul>
+  <a class="btn pri" href="/app#/teacher">הרשמה למורים</a>
+ </div>
+ <div class="s" id="students">
+  <h2 class="disp">לתלמידים</h2>
+  <ul>
+   <li>כל המשימות במקום אחד, עם תאריך הגשה ותזכורת ליומן</li>
+   <li>ציון ופתרון מיד אחרי ההגשה</li>
+   <li>מחברת טעויות לתרגול חוזר עד שזה יושב</li>
+   <li>מעקב התקדמות לפי נושאים</li>
+  </ul>
+  <a class="btn lt" href="/app#/">כניסת תלמיד</a>
+ </div>
+</section>
+
+<section class="band">
+ <div class="wrap">
+  <div>
+   <h2 class="disp">רוצים לנסות עם הכיתה שלכם?</h2>
+   <p>נרשמים עם המייל, ממלאים כמה פרטים, ואנחנו מאשרים את החשבון.</p>
+  </div>
+  <a class="btn pri big" href="/app#/teacher">הרשמה למורים</a>
+ </div>
+</section>
+</main>
+
+<footer class="wrap">
+ <span class="logo"><b>Alfa<span>Math</span></b></span>
+ <a href="/app#/teacher">כניסת מורה</a>
  <a href="/app#/">כניסת תלמיד</a>
  <a href="/terms">תנאי שימוש</a>
  <a href="/privacy">פרטיות</a>
  <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
 </footer>
-</div>
 
+<script>
+(function(){
+  var s = document.getElementById("scene");
+  if (!s || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  function run(){ s.classList.remove("play"); void s.offsetWidth; s.classList.add("play"); }
+  var start = function(){ run(); setInterval(function(){ if(!document.hidden) run(); }, 11000); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+})();
+</script>
 </body>
 </html>

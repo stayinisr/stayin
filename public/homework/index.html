@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4F3BFF">
+<meta name="theme-color" content="#1F49D6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AlfaMath">
 <title>AlfaMath · שיעורי בית</title>
@@ -12,30 +12,30 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
   :root{
-    --ink:#15123B; --ink-2:#2B2760; --bg:#F5F4FF; --card:#fff; --soft:#F9F8FF;
-    --line:#E6E3F5; --line-2:#D2CEEA; --muted:#6B6890; --faint:#A29FC0;
-    --pri:#4F3BFF; --pri-2:#3A26E0; --pri-wash:#EFEDFF;
-    --hot:#FF5C39; --hot-wash:#FFF0EC; --sun:#FFC83D; --sun-wash:#FFF7DB;
-    --acc:#4F3BFF; --acc-wash:#EFEDFF;
-    --ok:#0E9F6E; --ok-wash:#E9FAF3; --bad:#E5383B; --bad-wash:#FDEDEE; --warn:#C2410C; --warn-wash:#FFF0EC;
+    --ink:#0F1E3D; --ink-2:#26385E; --bg:#F2F5FA; --card:#fff; --soft:#F7F9FC;
+    --line:#DFE6F0; --line-2:#C8D2E2; --muted:#5D6B85; --faint:#9AA6BC;
+    --pri:#1F49D6; --pri-2:#1638AE; --pri-wash:#E8EEFD;
+    --hot:#E23B3B; --hot-wash:#FDECEC; --sun:#FFE347; --sun-wash:#FFF9D6;
+    --acc:#1F49D6; --acc-wash:#E8EEFD;
+    --ok:#0E9F6E; --ok-wash:#E9FAF3; --bad:#E23B3B; --bad-wash:#FDECEC; --warn:#C2410C; --warn-wash:#FFF0EC;
   }
   *{box-sizing:border-box;border-radius:0}
   html{-webkit-text-size-adjust:100%}
-  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Rubik","Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh}
   ::selection{background:var(--ink);color:#fff}
   /* ---------- header ---------- */
   header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
   header .in{max-width:880px;margin:auto;padding:0 18px;height:60px;display:flex;align-items:center;gap:12px}
   .brand{display:flex;align-items:center;gap:10px;background:none;border:none;padding:0;cursor:pointer;color:var(--ink)}
   .logo{width:36px;height:36px;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px;line-height:1;flex:none;position:relative;font-family:Georgia,"Times New Roman",serif;font-style:italic}
-  .logo::after{content:"";position:absolute;top:-4px;left:-4px;width:11px;height:11px;background:var(--hot)}
+  .logo::after{content:"";position:absolute;top:-4px;left:-4px;width:11px;height:11px;background:var(--sun)}
   .brand b{font-weight:900;font-size:21px;letter-spacing:-.02em;line-height:1;direction:ltr;display:block;text-align:right}
   .brand b span{color:var(--pri)}
   .brand small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
@@ -61,13 +61,13 @@
   .card > .hd h2{flex:1}
   .card > .bd{padding:18px 20px}
   .card.flat > .bd{padding:0}
-  .hero{background:var(--pri);color:#fff;padding:24px 22px;margin:4px 0 16px;position:relative;overflow:hidden;isolation:isolate}
-  .hero::before{content:"";position:absolute;z-index:-1;width:260px;height:260px;border:34px solid rgba(255,255,255,.08);transform:rotate(18deg);left:-70px;top:-90px}
-  .hero::after{content:"";position:absolute;z-index:-1;width:64px;height:64px;background:var(--sun);transform:rotate(18deg);left:150px;bottom:-26px;box-shadow:-120px -40px 0 -18px var(--hot)}
+  .hero{background:var(--pri);color:#fff;padding:24px 22px;padding-inline-start:38px;margin:4px 0 16px;position:relative;overflow:hidden;isolation:isolate}
+  .hero::before{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(100deg,#000 10%,transparent 75%);mask-image:linear-gradient(100deg,#000 10%,transparent 75%)}
+  .hero::after{content:"";position:absolute;z-index:-1;inset-block:0;inset-inline-start:18px;width:2px;background:rgba(255,227,71,.75)}
   .hero h1{color:#fff;margin:0}
-  .hero .muted{color:#D4CEFF}
+  .hero .muted{color:#C9D6FB}
   .hero .stats > div{border-color:rgba(255,255,255,.22)}
-  .hero .stats .k{color:#D4CEFF}
+  .hero .stats .k{color:#C9D6FB}
   .stats{display:grid;grid-template-columns:repeat(var(--n,3),1fr)}
   .stats > div{padding:2px 16px;border-inline-start:1px solid var(--line)}
   .stats > div:first-child{border-inline-start:none;padding-inline-start:0}
@@ -77,7 +77,7 @@
   button,.btn{font:inherit;font-weight:800;font-size:15px;border:2px solid var(--pri);background:transparent;color:var(--pri);padding:9px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.3;transition:background .15s,color .15s,transform .15s,box-shadow .15s,border-color .15s;white-space:nowrap}
   button:hover,.btn:hover{background:var(--pri);color:#fff}
   .primary{background:var(--pri);color:#fff}
-  .primary:hover{background:var(--pri-2);border-color:var(--pri-2);transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(79,59,255,.7)}
+  .primary:hover{background:var(--pri-2);border-color:var(--pri-2);transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(31,73,214,.7)}
   .light{border-color:var(--line-2);font-weight:700;color:var(--ink)}
   .light:hover{background:var(--pri-wash);color:var(--pri);border-color:var(--pri)}
   .ghost{border-color:transparent;background:transparent;color:var(--ink);padding:6px 10px;font-weight:700;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:4px}
@@ -119,7 +119,7 @@
   .chip.ok{border-color:#BBF7D0;color:var(--ok);background:var(--ok-wash)}
   .chip.bad{border-color:#FECACA;color:var(--bad);background:var(--bad-wash)}
   .chip.warn{border-color:#FDE68A;color:var(--warn);background:var(--warn-wash)}
-  .chip.acc{border-color:#C7D2FE;color:var(--acc);background:var(--acc-wash)}
+  .chip.acc{border-color:#C9D6FB;color:var(--acc);background:var(--acc-wash)}
   /* tabs */
   .tabs{display:flex;gap:0;border-bottom:1px solid var(--line-2);margin:18px 0 0;overflow-x:auto;scrollbar-width:none}
   .tabs::-webkit-scrollbar{display:none}
@@ -233,7 +233,7 @@
   .back:hover{background:none;color:var(--pri)}
   .back svg{width:14px;height:14px}
   .note{background:var(--warn-wash);border:1px solid #FDE68A;border-inline-start:3px solid var(--warn);padding:12px 16px;margin:16px 0;font-size:15px}
-  .info{background:var(--acc-wash);border:1px solid #C7D2FE;border-inline-start:3px solid var(--acc);padding:12px 16px;margin:16px 0;font-size:15px}
+  .info{background:var(--acc-wash);border:1px solid #C9D6FB;border-inline-start:3px solid var(--acc);padding:12px 16px;margin:16px 0;font-size:15px}
   .bigcode{font-size:40px;font-weight:900;letter-spacing:.18em;direction:ltr;display:inline-block;line-height:1;color:var(--pri)}
   .empty{text-align:center;padding:30px 16px;color:var(--muted)}
   .empty b{display:block;color:var(--ink);font-size:17px;font-weight:800;margin-bottom:4px}
@@ -269,7 +269,7 @@
   .tile{background:#fff;border:1px solid var(--line);padding:16px 18px;cursor:pointer;transition:border-color .12s,transform .12s}
   .tile{border-top:4px solid var(--pri)}
   .tile:nth-child(3n+2){border-top-color:var(--hot)} .tile:nth-child(3n+3){border-top-color:var(--sun)}
-  .tile:hover{border-color:var(--pri);transform:translateY(-2px);box-shadow:0 12px 26px -16px rgba(79,59,255,.6)}
+  .tile:hover{border-color:var(--pri);transform:translateY(-2px);box-shadow:0 12px 26px -16px rgba(31,73,214,.6)}
   .tile .t{font-weight:800}
   .alert-row{display:flex;gap:12px;align-items:center;padding:12px 20px;border-top:1px solid var(--line);cursor:pointer}
   .alert-row:first-child{border-top:none}
@@ -394,7 +394,7 @@ function gbadge(p){ return `<span class="gbadge ${band(p)}">${p}</span>`; }
 function spark(values, dark){
   if(values.length < 2) return "";
   const w = 300, h = 70, n = values.length, x = i => 6 + i*(w-12)/(n-1), y = v => 6 + (100-v)*(h-12)/100;
-  const col = dark ? "#fff" : "#4F3BFF", grid = dark ? "rgba(255,255,255,.22)" : "#E6E3F5";
+  const col = dark ? "#fff" : "#1F49D6", grid = dark ? "rgba(255,255,255,.22)" : "#DFE6F0";
   return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
     ${[0,50,100].map(v=>`<line x1="0" x2="${w}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}" stroke-width="1"/>`).join("")}
     <polyline fill="none" stroke="${col}" stroke-width="2.5" points="${values.map((v,i)=>`${x(i)},${y(v)}`).join(" ")}"/>
@@ -1220,7 +1220,7 @@ async function newAssignment(D, preset){
   const d = sheet(`<h2>משימה חדשה</h2>
     <label class="f" for="na_t">שם</label><input id="na_t" type="text" value="${esc(preset?.title||"")}" placeholder="למשל: טרפז – תרגול">
     <label class="f">סוג</label><div class="seg" id="na_m"><button data-m="homework" class="on">שיעורי בית</button><button data-m="exam">מבחן</button><button data-m="practice">תרגול</button></div>
-    <label class="f">כיתות</label>${cls.length ? cls.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" class="na_c" value="${c.id}" ${cls.length===1?"checked":""}><span>${esc(c.name)}</span></label>`).join("") : `<p class="muted small">אין עדיין כיתות. אפשר לבחור אחר כך.</p>`}
+    <label class="f">כיתות</label>${cls.length ? cls.map(c=>`<label class="chk" style="margin:6px 0"><input type="checkbox" class="na_c" value="${c.id}" ${cls.length===1||c.id===preset?.class_id?"checked":""}><span>${esc(c.name)}</span></label>`).join("") : `<p class="muted small">אין עדיין כיתות. אפשר לבחור אחר כך.</p>`}
     <div class="row" style="margin-top:20px;justify-content:flex-end"><button class="light" id="na_x">ביטול</button><button class="primary" id="na_ok">יצירה</button></div>`);
   let mode = "homework";
   $$("#na_m button", d).forEach(b => b.onclick = () => { mode = b.dataset.m; $$("#na_m button", d).forEach(x=>x.classList.toggle("on", x===b)); });
@@ -1378,6 +1378,10 @@ async function teacherClass(id){
         ${(anns||[]).length?`<div style="margin-top:12px;border-top:1px solid var(--line)">${anns.map(n=>`<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start"><div class="grow"><div class="prompt small">${esc(n.body)}</div><div class="tiny muted">${fmtDate(n.created_at)}</div></div><button class="ghost danger sm" data-ann="${n.id}">מחיקה</button></div>`).join("")}</div>`:""}
       </div></div>
     </div>
+    <div class="card"><div class="hd"><h2>משימות הכיתה</h2><span class="muted small">${D.asgFor(id).length}</span><button class="primary sm" id="cnew">משימה חדשה</button></div>
+      <div class="rows">${D.asgFor(id).length ? D.asgFor(id).sort((x,y)=>new Date(y.due_at||y.created_at)-new Date(x.due_at||x.created_at)).map(a=>{ const n = students.filter(st=>D.last[st.id+"|"+a.id]).length, p = students.length ? pct(n, students.length) : 0;
+        const st = !a.is_open ? `<span class="chip">טיוטה</span>` : a.opens_at && !isPast(a.opens_at) ? `<span class="chip warn">ייפתח ${dm(a.opens_at)}</span>` : `<span class="chip ok">פתוחה</span>`;
+        return `<div class="r" data-href="#/teacher/a/${a.id}">${dateTile(a.due_at)}<div class="grow"><div class="t">${esc(a.title)} ${a.mode==="exam"?`<span class="chip ink">מבחן</span>`:a.mode==="practice"?`<span class="chip acc">תרגול</span>`:""}</div><div class="sub">${n} מתוך ${students.length} הגישו</div>${a.is_open&&students.length?`<div class="meter" style="margin-top:6px;max-width:220px"><i style="width:${p}%"></i></div>`:""}</div><div class="end">${st}${IC.chev}</div></div>`; }).join("") : `<div class="empty"><b>עוד אין משימות לכיתה הזאת</b>צרו משימה והיא תשויך לכיתה אוטומטית.</div>`}</div></div>
     <div class="card"><div class="hd"><h2>גיליון ציונים</h2><span class="muted small">${students.length} תלמידים</span>${students.length&&asg.length?`<button class="light sm" id="csv">אקסל</button>`:""}</div>
       ${students.length ? `<div class="tw"><table>
         <thead><tr><th>תלמיד</th><th class="c">ממוצע</th>${asg.map((a,i)=>`<th class="c" title="${esc(a.title)}">${i+1}${+a.weight!==1?`<span class="muted"> ×${a.weight}</span>`:""}</th>`).join("")}</tr></thead>
@@ -1389,6 +1393,8 @@ async function teacherClass(id){
     </div>
     <div class="row" style="margin-top:22px"><button class="btn-danger sm" id="cdel">מחיקת הכיתה</button></div>`;
   $("#cp").onclick = () => copy(joinLink, "קישור ההצטרפות הועתק");
+  $("#cnew").onclick = () => newAssignment(D, { class_id:id });
+  $$(".rows [data-href]").forEach(el => el.onclick = () => go(el.dataset.href));
   $("#jo").onchange = async e => { const { error } = await sb.from("hw_classes").update({ join_open:e.target.checked }).eq("id",id); toast(error? error.message : (e.target.checked?"ההרשמה נפתחה":"ההרשמה נסגרה")); };
   $("#ren").onclick = async () => { const n = prompt("שם חדש לכיתה:", c.name); if(!n || !n.trim()) return; const { error } = await sb.from("hw_classes").update({ name:n.trim() }).eq("id",id); if(error) return toast(error.message); $("#ttl").textContent = n.trim(); toast("השם נשמר"); };
   $("#cdel").onclick = async () => { if(!(await ask(`<h2>למחוק את "${esc(c.name)}"?</h2><p class="muted">יימחקו גם חשבונות התלמידים וכל ההגשות שלהם. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return; const { error } = await sb.from("hw_classes").delete().eq("id",id); if(error) return toast(error.message); go("#/teacher?tab=c"); };
@@ -1527,7 +1533,9 @@ function drawAssignHeader(){
     <span class="grow"></span>
     <button class="${A.is_open?"light":"primary"} sm" id="tog">${A.is_open?"סגירה":"פרסום"}</button>
     ${A.is_open?`<a class="btn wa sm" href="${waShare(assignShareMsg())}" target="_blank" rel="noopener">${IC.wa}הודעה לכיתה</a>`:""}
-    <button class="light sm noprint" onclick="go('#/teacher/print/${A.id}')">הדפסה</button>`;
+    <button class="light sm noprint" onclick="go('#/teacher/print/${A.id}')">הדפסה</button>
+    <button class="ghost danger sm noprint" id="hdel">מחיקה</button>`;
+  $("#hdel").onclick = deleteAssignment;
   $("#nocls").innerHTML = names.length ? "" : `<div class="note">המשימה לא משויכת לאף כיתה. בחרו כיתה בלשונית "הגדרות".</div>`;
   $("#tog").onclick = async () => {
     const to = !A.is_open;
@@ -1647,29 +1655,44 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 - text: ב-accepted כל הצורות המקובלות של התשובה.
 - ניסוח: עברית תקנית, פשוטה וברורה לתלמיד, משפטים קצרים. כל הנתונים הדרושים כתובים בשאלה.
 - שילוב עברית עם אנגלית ומספרים (כדי שהטקסט לא יתהפך): כל ביטוי באנגלית או נוסחה עטופים ב-$...$, גם סימון של נקודה או צלע בודדת ($AB$). אל תצמיד אות עברית לנוסחה ("ו-$BO$", "ב-$5$") – כתוב "וגם $BO$", "במשך $5$ שניות". אל תתחיל משפט או תסיים משפט בנוסחה – תמיד מילה בעברית לפני ואחרי. ערך ויחידה כך: $5$ ס"מ.
-- נוסחאות בתוך $...$ בכתיב LaTeX. בתוך JSON כל \\ נכתב פעמיים. בתוך $...$ רק מתמטיקה: בלי מילים בעברית, בלי \\text בעברית. יחידות בעברית נכתבות מחוץ ל-$, למשל: $5$ מ'. אל תשים סימני $ סביב מילים.
+- נוסחאות בתוך $...$ בכתיב LaTeX, תמיד סימן $ בודד (לא $$). בתוך JSON כל \\ נכתב פעמיים. בתוך $...$ רק מתמטיקה: בלי מילים בעברית, בלי \\text בעברית. יחידות בעברית נכתבות מחוץ ל-$, למשל: $5$ מ'. אל תשים סימני $ סביב מילים.
 - figure (לא חובה): קוד SVG אחד עם xmlns ו-viewBox="0 0 320 H". כללי שרטוט מחייבים:
   • רקע לבן: <rect width="100%" height="100%" fill="#fff"/> ראשון בקוד.
-  • גופים: מילוי בהיר בלבד (#E9E7F5) עם קו מתאר כהה (#15123B) בעובי 2. לעולם לא גוף במילוי כהה.
+  • גופים: מילוי בהיר בלבד (#E8EEFD) עם קו מתאר כהה (#0F1E3D) בעובי 2. לעולם לא גוף במילוי כהה.
   • וקטורים (כוחות, מהירות, תאוצה): חץ עם ראש חץ (marker), עובי 3, כל וקטור בצבע בולט שונה מהגוף: כוחות #D62828, מהירות #1D6FE0, תאוצה #12A150. החץ מתחיל בגבול הגוף ויוצא החוצה, לא מצויר בתוך הגוף.
-  • תוויות: font-family="Arial" font-size="15", בצבע הווקטור, ליד קצה החץ ולא על קווים. סימונים באותיות לטיניות פשוטות (F, mg, N, v, a), בלי $ ובלי עברית בשרטוט.
-  • "?" על הגודל המבוקש. מרווח של 15 לפחות מהשוליים. השרטוט לא חושף את התשובה.
+  • תוויות: font-family="Arial" font-size="15", בצבע הווקטור, ליד קצה החץ ולא על קווים. סימונים קצרים בלבד: אותיות, מספרים וסמלים (A, O, F, mg, 5, 60°). בלי מילים שלמות בשום שפה (לא "Area = ?", לא "Type = ?"), בלי $ ובלי עברית בשרטוט.
+  • "?" לבד, ליד הגודל המבוקש עצמו (צלע, זווית, קטע). אם המבוקש אינו גודל בשרטוט – אין "?". מרווח של 15 לפחות מהשוליים. השרטוט לא חושף את התשובה.
 - hint ו-solution לא חובה, קצרים.`;
 }
 function parseAIQuestions(raw){
   let t = String(raw||"").trim();
   if(!t) throw new Error("לא הודבק טקסט");
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i); if(fence) t = fence[1].trim();
-  t = t.replace(/[“”״]/g, m => m === "״" ? m : '"').replace(/[‘’]/g, "'");
+  // phones and chat apps add invisible direction marks, non-breaking spaces and curly quotes when copying
+  t = t.replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "").replace(/[\u00a0\u2007\u202f]/g, " ");
   const fo = t.indexOf("{"), fa = t.indexOf("[");
   const start = fa >= 0 && (fo < 0 || fa < fo) ? fa : fo;
-  if(start < 0) throw new Error("לא נמצא JSON בטקסט");
+  if(start < 0) throw new Error("לא נמצא JSON בטקסט. ודאו שהדבקתם את כל התשובה של ה-AI");
   const end = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
-  t = t.slice(start, end + 1).replace(/,\s*([}\]])/g, "$1");
-  let data;
-  try{ data = JSON.parse(t); }catch(e){ throw new Error("ה-JSON לא תקין. בקשו מה-AI: \"תחזיר שוב רק JSON תקין בפורמט AlfaMath\""); }
+  t = t.slice(start, end + 1);
+  const tries = [ t, t.replace(/,\s*([}\]])/g, "$1"),
+    // curly quotes used as JSON quotes (outside strings) -> straight quotes
+    t.replace(/[“”„]/g, '"').replace(/[‘’]/g, "'").replace(/,\s*([}\]])/g, "$1"),
+    // raw line breaks inside strings
+    t.replace(/"(?:[^"\\]|\\.)*"/g, m => m.replace(/\r?\n/g, "\\n")).replace(/,\s*([}\]])/g, "$1") ];
+  let data, err;
+  for(const x of tries){ try{ data = JSON.parse(x); break; }catch(e){ err = e; } }
+  if(data === undefined){
+    const pos = +(String(err?.message||"").match(/position (\d+)/)||[])[1];
+    const near = Number.isFinite(pos) ? ` (ליד: "${t.slice(Math.max(0,pos-25), pos+15).replace(/\s+/g," ")}")` : "";
+    const cut = !/[}\]]\s*$/.test(String(raw).replace(/```\s*$/,"").trim()) ? " נראה שהתשובה נקטעה – ודאו שהעתקתם עד הסוף." : "";
+    throw new Error("ה-JSON לא תקין" + near + "." + cut + " אפשר לבקש מה-AI: \"תחזיר שוב רק JSON תקין בפורמט AlfaMath\"");
+  }
   const arr = Array.isArray(data) ? data : (data.questions || data.items);
   if(!Array.isArray(arr) || !arr.length) throw new Error("לא נמצאו שאלות");
+  // the site shows inline math only: "$$" (a common AI slip, e.g. "$${p}$") becomes "$"
+  const one$ = v => typeof v === "string" ? v.replace(/\${2,}/g, "$") : v;
+  arr.forEach(x => { if(!x || typeof x !== "object") return; for(const k of ["prompt","hint","solution"]) x[k] = one$(x[k]); if(Array.isArray(x.choices)) x.choices = x.choices.map(one$); });
   return arr.map((x, i) => { try{ const q = normalizeQ(x); return { q, err:null }; }catch(e){ return { q:null, err:`שאלה ${i+1}: ${e.message}` }; } });
 }
 function aiAnswerText(q){
@@ -1707,8 +1730,8 @@ function openAIGenerator(onAdd){
     ${!TEACHER?.ai_enabled ? `<p class="muted tiny" style="margin:14px 0 0"><span class="chip sun">בקרוב</span> יצירה ישירות באתר וצילום דף עבודה, בלי לעבור ל-AI אחר.</p>` : ""}
     ${TEACHER?.ai_enabled ? `<div class="info" style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="grow small"><b>יצירה כאן באתר</b>, בלי לצאת. נשארו החודש: <b id="g_left">${TEACHER.ai_left ?? ""}</b></div><button class="primary" id="g_site">יצירת שאלות</button></div><p class="muted tiny" style="margin:10px 0 0">או עם ה-AI שלכם:</p>` : ""}
     <div class="row" style="margin-top:${TEACHER?.ai_enabled?8:16}px;flex-wrap:wrap;gap:8px">
-      <button class="${TEACHER?.ai_enabled?"light":"primary"} sm" id="g_cgpt">פתיחה ב-ChatGPT</button>
-      <button class="light sm" id="g_claude">פתיחה ב-Claude</button>
+      <a class="btn ${TEACHER?.ai_enabled?"light":"primary"} sm" id="g_cgpt" target="_blank" rel="noopener" href="https://chatgpt.com/">פתיחה ב-ChatGPT</a>
+      <a class="btn light sm" id="g_claude" target="_blank" rel="noopener" href="https://claude.ai/new">פתיחה ב-Claude</a>
       <button class="light sm" id="g_gem">העתקה ל-Gemini</button>
       <button class="ghost sm" id="g_copy">העתקת ההנחיה</button>
     </div>
@@ -1723,9 +1746,11 @@ function openAIGenerator(onAdd){
   d.querySelectorAll("#g_src button").forEach(b => b.onclick = () => { src = b.dataset.v; d.querySelectorAll("#g_src button").forEach(x=>x.classList.toggle("on", x===b)); $d("#g_topic").style.display = src==="topic"?"block":"none"; $d("#g_sheetbox").style.display = src==="sheet"?"block":"none"; });
   const P = () => { const sh = src==="sheet" ? $d("#g_sheet").value.trim() : ""; return aiPrompt0() + (sh ? "\n\nטקסט הדף:\n" + sh.slice(0, 6000) : ""); };
   const aiPrompt0 = () => aiPrompt({ source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, open:$d("#g_o").value, notes:$d("#g_x").value.trim() });
-  const openAI = (base) => { const t = P(); try{ navigator.clipboard.writeText(t); }catch(e){} window.open(base + encodeURIComponent(t), "_blank", "noopener"); toast("ההנחיה גם הועתקה. אם היא לא מופיעה שם, הדביקו אותה"); };
-  $d("#g_cgpt").onclick = () => openAI("https://chatgpt.com/?q=");
-  $d("#g_claude").onclick = () => openAI("https://claude.ai/new?q=");
+  // real links (not window.open): on phones the AI app opens directly and no blank tab is left behind
+  const aiLinks = () => { const q = encodeURIComponent(P()); $d("#g_cgpt").href = "https://chatgpt.com/?q=" + q; $d("#g_claude").href = "https://claude.ai/new?q=" + q; };
+  d.addEventListener("input", aiLinks); d.addEventListener("change", aiLinks); d.addEventListener("click", e => { if(e.target.closest("#g_src button")) setTimeout(aiLinks); }, true);
+  const aiTap = () => { aiLinks(); try{ navigator.clipboard.writeText(P()); }catch(e){} toast("ההנחיה גם הועתקה. אם היא לא מופיעה שם, הדביקו אותה"); };
+  $d("#g_cgpt").addEventListener("click", aiTap); $d("#g_claude").addEventListener("click", aiTap); aiLinks();
   $d("#g_gem").onclick = async () => { await copy(P(), "ההנחיה הועתקה. הדביקו אותה ב-Gemini"); window.open("https://gemini.google.com/app", "_blank", "noopener"); };
   $d("#g_copy").onclick = () => copy(P(), "ההנחיה הועתקה");
   const site = $d("#g_site");
@@ -1983,10 +2008,11 @@ function tabSettings(){
     if(Q.length){ const r = await sb.from("hw_questions").insert(Q.map((q,i)=>({ assignment_id:n.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.choices, answer:q.answer, points:q.points, figure:q.figure||null, topic:q.topic, hint:q.hint, hint_penalty:q.hint_penalty, solution:q.solution, params:q.params }))); if(r.error) return toast(r.error.message); }
     toast("נוצר עותק. בחרו לו כיתה"); go("#/teacher/a/"+n.id+"?tab=settings");
   };
-  $("#s_del").onclick = async () => {
-    if(!(await ask(`<h2>למחוק את "${esc(A.title)}"?</h2><p class="muted">כל השאלות וכל ההגשות יימחקו. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return;
-    const { error } = await sb.from("hw_assignments").delete().eq("id",A.id); if(error) return toast(error.message); go("#/teacher?tab=a");
-  };
+  $("#s_del").onclick = deleteAssignment;
+}
+async function deleteAssignment(){
+  if(!(await ask(`<h2>למחוק את "${esc(A.title)}"?</h2><p class="muted">כל השאלות וכל ההגשות יימחקו. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return;
+  const { error } = await sb.from("hw_assignments").delete().eq("id",A.id); if(error) return toast(error.message); toast("המשימה נמחקה"); go("#/teacher?tab=a");
 }
 /* ---- printable worksheet ---- */
 async function teacherPrint(id){
