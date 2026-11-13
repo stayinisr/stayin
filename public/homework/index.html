@@ -1353,6 +1353,16 @@ async function tabTeachers(){
   box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>הצעות לשיפור מתלמידים</h2>${open?`<span class="chip warn">${open} חדשות</span>`:""}</div>
     ${fb.length ? `<div>${fb.map(f=>`<div class="ann" style="${f.done?"opacity:.55":""}"><div class="row"><b class="grow">${esc(f.author||"תלמיד")}</b><span class="tiny">${esc(f.class_name||"")} · ${fmtDate(f.created_at)}</span>
       <button class="ghost sm" data-fb="${f.id}" data-done="${f.done?0:1}">${f.done?"החזרה":"טופל"}</button></div><div class="prompt" style="margin-top:4px">${esc(f.body)}</div></div>`).join("")}</div>` : `<div class="empty"><b>עוד אין הצעות</b>התלמידים שולחים הצעות מהאזור האישי.</div>`}</div>`);
+  const [{ data:flg }, { data:bpend }] = await Promise.all([sb.rpc("hw_admin_bank", { p_status:"flagged" }), sb.rpc("hw_admin_bank", { p_status:"pending" })]);
+  box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>מאגר משותף: מחכות להחלטתך</h2><span class="muted small">${(bpend||[]).length} ממתינות לבדיקה השבועית</span></div>
+    ${(flg||[]).length ? `<div>${flg.map(x=>{ const sq = toStudentQ({ ...x, answer:x.answer||{} }); return `<div class="ann"><div class="row tiny" style="gap:6px"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span class="chip">${esc(x.grade)}</span><span class="muted">${esc(x.teacher_name||"")}</span></div>
+      <div class="prompt" style="margin-top:6px">${esc(sq.prompt)}</div>${figHtml(sq.figure)}<div class="tiny" style="margin-top:6px;color:var(--ok);font-weight:700">תשובה: <bdi>${esc(answerText({ ...x, answer:x.answer||{} }))}</bdi></div>
+      ${x.review_note?`<div class="note" style="margin:8px 0"><b>הערת הבדיקה:</b> ${esc(x.review_note)}</div>`:""}
+      <div class="row" style="justify-content:flex-end"><button class="ghost danger sm" data-bk="${x.id}" data-st="rejected">דחייה</button><button class="primary sm" data-bk="${x.id}" data-st="approved">אישור</button></div></div>`; }).join("")}</div>` : `<div class="empty"><b>אין שאלות שמחכות לך</b>שאלות שהבדיקה השבועית לא בטוחה לגביהן יופיעו כאן.</div>`}</div>`);
+  math(box);
+  $$("#tab button[data-bk]").forEach(b => b.onclick = async () => {
+    let note = null; if(b.dataset.st === "rejected"){ note = prompt("סיבת הדחייה (המורה יראה אותה):", ""); if(note === null) return; }
+    const { error } = await sb.rpc("hw_admin_bank_set", { p_id:b.dataset.bk, p_status:b.dataset.st, p_note:note }); if(error) return toast(errMsg(error)); toast(b.dataset.st==="approved"?"השאלה נכנסה למאגר":"השאלה נדחתה"); tabTeachers(); });
   $$("#tab button[data-fb]").forEach(b => b.onclick = async () => { const { error } = await sb.rpc("hw_admin_feedback_done", { p_id:b.dataset.fb, p_done:b.dataset.done==="1" }); if(error) return toast(errMsg(error)); tabTeachers(); });
 }
 /* shared teacher data */
@@ -1501,17 +1511,64 @@ function tabClasses(D){
   $("#ncf").onsubmit = async e => { e.preventDefault(); const { data, error } = await sb.from("hw_classes").insert({ name:$("#ncn").value.trim() }).select("id").single(); if(error) return toast(error.message); go("#/teacher/c/"+data.id); };
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
 }
+let BANKV = "mine";
+const bankSeg = () => `<div class="seg" style="margin-top:16px" role="tablist">${[["mine","השאלות שלי"],["shared","מאגר משותף"],["myshares","השיתופים שלי"]].map(([k,t])=>`<button data-bv="${k}" class="${BANKV===k?"on":""}">${t}</button>`).join("")}</div>`;
+const bindBankSeg = D => $$("[data-bv]").forEach(b => b.onclick = () => { BANKV = b.dataset.bv; tabBank(D); });
+const kindName = k => k==="number"?"מספר":k==="choice"?"אמריקאית":k==="multi"?"כמה תשובות":"מילים";
+async function bankSharedView(D){
+  $("#tab").innerHTML = `${bankSeg()}
+    <div class="row" style="margin-top:14px;gap:8px"><select id="fs" style="width:auto">${Object.keys(TAX).map(x=>`<option>${x}</option>`).join("")}</select>
+      <select id="fg" style="width:auto"><option value="">כל השכבות</option>${GRADES.map(x=>`<option>${x}</option>`).join("")}</select>
+      <select id="ft" style="width:auto;max-width:200px"><option value="">כל הנושאים</option></select>
+      <input id="fq" type="text" class="grow" placeholder="חיפוש" style="max-width:240px"></div>
+    <p class="muted small" style="margin-top:10px">שאלות שמורים שיתפו ונבדקו. סמנו והעתיקו למשימה. העותק שלכם, ואפשר לערוך אותו בחופשיות.</p>
+    <div class="card flat"><div class="bd" id="slist"><p class="muted">טוען…</p></div></div>
+    <div class="dock"><div class="in"><div class="grow small"><b id="ssel">0</b> נבחרו</div><select id="sto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="primary" id="scopy">העתקה למשימה</button></div></div>`;
+  bindBankSeg(D);
+  const sel = new Set();
+  const fillTopics = () => { $("#ft").innerHTML = `<option value="">כל הנושאים</option>` + Object.keys(TAX[$("#fs").value]||{}).map(x=>`<option>${x}</option>`).join(""); };
+  let timer;
+  const load = async () => {
+    const { data, error } = await sb.rpc("hw_bank_search", { p_subject:$("#fs").value, p_grade:$("#fg").value, p_topic:$("#ft").value, p_q:$("#fq").value.trim() });
+    if(error) return $("#slist").innerHTML = `<p class="err">${esc(errMsg(error))}</p>`;
+    $("#slist").innerHTML = data.length ? data.map(x=>{ const s = toStudentQ({ ...x, answer:x.answer||{} }); return `<label class="q" style="display:flex;gap:12px;cursor:pointer"><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?"checked":""} style="width:18px;height:18px;margin-top:4px;accent-color:var(--ink);flex:none"><div class="grow">
+      <div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span class="chip">${esc(x.grade)}${x.units?` · ${esc(x.units)} יח"ל`:""}</span><span class="chip">${kindName(x.kind)}</span>${x.uses?`<span class="muted">${x.uses} מורים השתמשו</span>`:""}${x.mine?`<span class="muted">שלך</span>`:""}</div>
+      <div class="prompt">${esc(s.prompt)}</div>${figHtml(s.figure)}</div></label>`; }).join("") : `<div class="empty"><b>עוד אין שאלות כאן</b>המאגר מתמלא משאלות שמורים משתפים. אפשר לשתף שאלות שלכם מעורך המשימה או מ"השאלות שלי".</div>`;
+    math($("#slist"));
+    $$("#slist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#ssel").textContent = sel.size; });
+  };
+  $("#fs").onchange = () => { fillTopics(); load(); }; $("#fg").onchange = load; $("#ft").onchange = load; $("#fq").oninput = () => { clearTimeout(timer); timer = setTimeout(load, 300); };
+  fillTopics(); load();
+  $("#scopy").onclick = async () => {
+    if(!sel.size) return toast("סמנו קודם שאלות"); const to = $("#sto").value; if(!to) return toast("צרו קודם משימה");
+    const { data, error } = await sb.rpc("hw_bank_copy", { p_ids:[...sel], p_assignment:to }); if(error) return toast(errMsg(error));
+    toast(`הועתקו ${data.count} שאלות`); go("#/teacher/a/"+to+"?tab=questions");
+  };
+}
+async function bankMySharesView(D){
+  $("#tab").innerHTML = `${bankSeg()}<p class="muted small" style="margin-top:14px">${BANK_NOTE}</p><div class="card flat"><div class="bd" id="mlist"><p class="muted">טוען…</p></div></div>`;
+  bindBankSeg(D);
+  const { data, error } = await sb.rpc("hw_bank_mine"); if(error) return $("#mlist").innerHTML = `<p class="err">${esc(errMsg(error))}</p>`;
+  const st = { pending:["ממתינה לבדיקה","warn"], flagged:["ממתינה לבדיקה","warn"], approved:["במאגר","ok"], rejected:["לא אושרה","bad"] };
+  $("#mlist").innerHTML = data.length ? data.map(x=>`<div class="q"><div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="chip ${st[x.status][1]}">${st[x.status][0]}</span><span class="chip acc">${esc(x.topic)}</span><span class="chip">${esc(x.grade)}</span>${x.uses?`<span class="muted">${x.uses} מורים השתמשו</span>`:""}<div class="grow"></div><button class="ghost danger sm" data-un="${x.id}">הסרה מהמאגר</button></div>
+    <div class="prompt">${esc(x.prompt)}</div>${x.status==="rejected"&&x.note?`<div class="note" style="margin:8px 0 0"><b>סיבה:</b> ${esc(x.note)}</div>`:""}</div>`).join("") : `<div class="empty"><b>עוד לא שיתפתם שאלות</b>בעורך המשימה לוחצים "שיתוף במאגר", או מסמנים "לשתף גם במאגר המשותף" כשבונים עם AI.</div>`;
+  math($("#mlist"));
+  $$("[data-un]").forEach(b => b.onclick = async () => { if(!(await ask("<h2>להסיר את השאלה מהמאגר?</h2><p class='muted'>מורים שכבר העתיקו אותה ישמרו את העותק שלהם.</p>", "הסרה", "ביטול", true))) return;
+    const { error } = await sb.rpc("hw_bank_unshare", { p_id:b.dataset.un }); if(error) return toast(errMsg(error)); bankMySharesView(D); });
+}
 async function tabBank(D){
+  if(BANKV === "shared") return bankSharedView(D);
+  if(BANKV === "myshares") return bankMySharesView(D);
   $("#tab").innerHTML = `<p class="muted" style="margin-top:16px">טוען…</p>`;
   const { data:qs, error } = await sb.from("hw_questions").select("*").order("position");
   if(error) return $("#tab").innerHTML = `<p class="err">${esc(error.message)}</p>`;
   const aname = Object.fromEntries(D.assignments.map(a=>[a.id,a.title]));
   const topics = [...new Set(qs.map(q=>q.topic).filter(Boolean))].sort();
-  $("#tab").innerHTML = `
-    <div class="row" style="margin-top:16px"><input id="bq" type="text" class="grow" placeholder="חיפוש בנוסח השאלה" style="max-width:320px"><select id="bt" style="width:auto"><option value="">כל הנושאים</option>${topics.map(t=>`<option>${esc(t)}</option>`).join("")}</select></div>
+  $("#tab").innerHTML = `${bankSeg()}
+    <div class="row" style="margin-top:14px"><input id="bq" type="text" class="grow" placeholder="חיפוש בנוסח השאלה" style="max-width:320px"><select id="bt" style="width:auto"><option value="">כל הנושאים</option>${topics.map(t=>`<option>${esc(t)}</option>`).join("")}</select></div>
     <p class="muted small" style="margin-top:10px">כל השאלות מכל המשימות שלך. סמנו שאלות והעתיקו אותן למשימה אחרת. כדי לתייג שאלה בנושא, ערכו אותה בעורך המשימה.</p>
     <div class="card flat"><div class="bd" id="blist"></div></div>
-    <div class="dock"><div class="in"><div class="grow small"><b id="bsel">0</b> שאלות נבחרו</div><select id="bto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="primary" id="bcopy">העתקה למשימה</button></div></div>`;
+    <div class="dock"><div class="in"><div class="grow small"><b id="bsel">0</b> שאלות נבחרו</div><select id="bto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="light" id="bshare">שיתוף</button><button class="primary" id="bcopy">העתקה למשימה</button></div></div>`;
   const sel = new Set();
   const draw = () => {
     const q = $("#bq").value.trim(), t = $("#bt").value;
@@ -1522,7 +1579,8 @@ async function tabBank(D){
     math($("#blist"));
     $$("#blist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#bsel").textContent = sel.size; });
   };
-  $("#bq").oninput = draw; $("#bt").onchange = draw; draw();
+  $("#bq").oninput = draw; $("#bt").onchange = draw; draw(); bindBankSeg(D);
+  $("#bshare").onclick = () => { if(!sel.size) return toast("סמנו קודם שאלות לשיתוף"); shareDialog(qs.filter(x=>sel.has(x.id))); };
   $("#bcopy").onclick = async () => {
     if(!sel.size) return toast("סמנו קודם שאלות");
     const to = $("#bto").value; if(!to) return toast("בחרו משימה");
@@ -1908,6 +1966,88 @@ function aiAnswerText(q){
   if(q.kind==="multi") return (q.answer.indices||[]).map(j=>(q.choices||[])[j]).join(" + ");
   return (q.answer.accepted||[]).join(" / ");
 }
+
+/* ---------- shared question bank: fixed topic list (by curriculum) ---------- */
+const TAX = {
+  "מתמטיקה": {
+    "אלגברה": ["ביטויים אלגבריים","משוואות ממעלה ראשונה","מערכות משוואות","משוואות ריבועיות","אי-שוויונות","בעיות מילוליות"],
+    "מספרים": ["שברים ואחוזים","חזקות ושורשים","יחס ופרופורציה","גדילה ודעיכה","מספרים מרוכבים"],
+    "פונקציות": ["פונקציה קווית","פונקציה ריבועית","פולינומים","פונקציות רציונליות","פונקציות שורש","פונקציות טריגונומטריות","פונקציות מעריכיות ולוגריתמיות"],
+    "חשבון דיפרנציאלי ואינטגרלי": ["גבולות","נגזרות","חקירת פונקציה","בעיות קיצון","אינטגרלים","שטחים ונפחים"],
+    "גאומטריה": ["זוויות ומשולשים","חפיפת משולשים","משולש שווה שוקיים","מקבילית","מלבן, מעוין וריבוע","טרפז","דמיון משולשים","משפט פיתגורס","מעגל","שטחים והיקפים","גופים במרחב"],
+    "גאומטריה אנליטית": ["הישר","מרחק ואמצע קטע","מעגל","פרבולה ואליפסה"],
+    "טריגונומטריה": ["במשולש ישר זווית","משפט הסינוסים והקוסינוסים","זהויות ומשוואות","טריגונומטריה במרחב"],
+    "סדרות": ["סדרה חשבונית","סדרה הנדסית","נוסחאות נסיגה","אינדוקציה"],
+    "הסתברות וסטטיסטיקה": ["סטטיסטיקה תיאורית","הסתברות","הסתברות מותנית","התפלגות בינומית","התפלגות נורמלית"],
+  },
+  "פיזיקה": {
+    "מדידות ווקטורים": ["יחידות והמרות","וקטורים","ניתוח גרפים"],
+    "קינמטיקה": ["תנועה בקו ישר","תנועה בשני ממדים","זריקות"],
+    "דינמיקה": ["חוקי ניוטון","חיכוך","מישור משופע","תנועה מעגלית","כבידה"],
+    "אנרגיה ותנע": ["עבודה והספק","שימור אנרגיה","תנע ומתקף","התנגשויות"],
+    "תנודות וגלים": ["תנועה הרמונית","גלים","קול","התאבכות ועקיפה"],
+    "אופטיקה": ["החזרה ושבירה","עדשות ומראות"],
+    "חשמל ומגנטיות": ["כוח ושדה חשמלי","פוטנציאל ומתח","מעגלים חשמליים","קבלים","שדה מגנטי","השראה אלקטרומגנטית"],
+    "חום": ["טמפרטורה וחום","גזים"],
+    "פיזיקה מודרנית": ["האפקט הפוטואלקטרי","מודל האטום","פיזיקה גרעינית","יחסות"],
+  },
+};
+const GRADES = ["ז","ח","ט","י","יא","יב"];
+const BANK_NOTE = "השאלות ששיתפתם נבדקות פעם בשבוע ומאושרות אחרי בדיקה. עד אז הן מופיעות רק אצלכם.";
+function guessTax(topic){
+  const t = String(topic||"");
+  for(const [subj, groups] of Object.entries(TAX)) for(const [g, subs] of Object.entries(groups)){
+    if(t && (t.includes(g) || g.includes(t))) return { subj, g, sub:"" };
+    for(const x of subs) if(t && (t.includes(x) || x.includes(t.split(/[–—-]/)[0].trim()))) return { subj, g, sub:x };
+  }
+  return { subj: Object.keys(TAX)[0], g:"", sub:"" };
+}
+function taxPicker(pre, guess){
+  const gs = guess || { subj:"מתמטיקה", g:"", sub:"" };
+  return `<div class="row" style="gap:10px;align-items:flex-end">
+      <div style="min-width:120px"><label class="f">מקצוע</label><select id="${pre}s">${Object.keys(TAX).map(x=>`<option ${x===gs.subj?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="width:90px"><label class="f">שכבה</label><select id="${pre}g"><option value="">בחרו</option>${GRADES.map(x=>`<option>${x}</option>`).join("")}</select></div>
+      <div style="width:100px"><label class="f">יחידות</label><select id="${pre}u"><option value="">—</option><option>3</option><option>4</option><option>5</option></select></div></div>
+    <div class="row" style="gap:10px;align-items:flex-end;margin-top:8px">
+      <div class="grow" style="min-width:160px"><label class="f">נושא</label><select id="${pre}t"></select></div>
+      <div class="grow" style="min-width:160px"><label class="f">תת-נושא</label><select id="${pre}b"></select></div></div>
+    <label class="chk" style="margin-top:12px"><input type="checkbox" id="${pre}ok"><span>אני מאשר/ת שהשאלות נכונות לפי מיטב ידיעתי, ושאני אחראי/ת לתוכן שלהן, כולל זכויות יוצרים: יש לי זכות לשתף אותן.</span></label>
+    <p class="muted tiny" style="margin:6px 0 0">${BANK_NOTE}</p>`;
+}
+function bindTax(root, pre, guess){
+  const $r = x => root.querySelector(x), gs = guess || {};
+  const fillT = () => { const groups = TAX[$r(`#${pre}s`).value] || {}; $r(`#${pre}t`).innerHTML = `<option value="">בחרו</option>` + Object.keys(groups).map(x=>`<option ${x===gs.g?"selected":""}>${x}</option>`).join(""); fillB(); };
+  const fillB = () => { const subs = (TAX[$r(`#${pre}s`).value]||{})[$r(`#${pre}t`).value] || []; $r(`#${pre}b`).innerHTML = `<option value="">—</option>` + subs.map(x=>`<option ${x===gs.sub?"selected":""}>${x}</option>`).join(""); };
+  const fixU = () => { const hi = ["י","יא","יב"].includes($r(`#${pre}g`).value); $r(`#${pre}u`).disabled = !hi; if(!hi) $r(`#${pre}u`).value = ""; };
+  $r(`#${pre}s`).onchange = () => { gs.g = ""; gs.sub = ""; fillT(); }; $r(`#${pre}t`).onchange = fillB; $r(`#${pre}g`).onchange = fixU; fillT(); fixU();
+}
+function readTax(root, pre){
+  const $r = x => root.querySelector(x);
+  const t = { subject:$r(`#${pre}s`).value, grade:$r(`#${pre}g`).value, units:$r(`#${pre}u`).value, topic:$r(`#${pre}t`).value, subtopic:$r(`#${pre}b`).value, ok:$r(`#${pre}ok`).checked };
+  if(!t.grade || !t.topic) return { error:"בחרו שכבה ונושא" };
+  if(!t.ok) return { error:"צריך לאשר את הצהרת האחריות" };
+  return t;
+}
+async function bankShare(ids, t){
+  const { data, error } = await sb.rpc("hw_bank_share", { p_qids:ids, p_subject:t.subject, p_grade:t.grade, p_units:t.units||null, p_topic:t.topic, p_subtopic:t.subtopic||null, p_accept:true });
+  if(error) throw new Error(errMsg(error)); if(data?.error) throw new Error(data.error); return data.count;
+}
+async function shareDialog(qs){
+  if(!qs.length) return toast("אין שאלות שמורות לשתף");
+  const d = $("#dlg"); d.className = "wide";
+  d.innerHTML = `<h2>שיתוף במאגר המשותף</h2><p class="muted small">סמנו אילו שאלות לשתף. מורים אחרים יוכלו להעתיק אותן למשימות שלהם. השאלות שלכם לא משתנות.</p>
+    <div style="max-height:34vh;overflow:auto;border:1px solid var(--line);padding:4px 10px">${qs.map((q,i)=>`<label class="chk" style="margin:8px 0"><input type="checkbox" data-sq="${q.id}" checked><span><b>${i+1}.</b> <span class="prompt" style="display:inline">${esc(String(q.prompt).slice(0,120))}</span></span></label>`).join("")}</div>
+    <div style="margin-top:14px">${taxPicker("sh", guessTax(qs[0].topic))}</div>
+    <p class="err" id="sherr"></p>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="ghost" id="shx">ביטול</button><button class="primary" id="shgo">שליחה לבדיקה</button></div>`;
+  math(d); bindTax(d, "sh", guessTax(qs[0].topic)); d.showModal();
+  d.querySelector("#shx").onclick = () => d.close();
+  d.querySelector("#shgo").onclick = async () => {
+    const t = readTax(d, "sh"); if(t.error) return d.querySelector("#sherr").textContent = t.error;
+    const ids = [...d.querySelectorAll("[data-sq]:checked")].map(x=>x.dataset.sq); if(!ids.length) return d.querySelector("#sherr").textContent = "לא נבחרו שאלות";
+    try{ const n = await bankShare(ids, t); d.close(); toast(`${n} שאלות נשלחו לבדיקה. הן ייכנסו למאגר אחרי האישור השבועי`); }catch(e){ d.querySelector("#sherr").textContent = e.message; }
+  };
+}
 function openAIGenerator(onAdd){
   const d = sheet(`
     <h2>בנייה עם AI</h2>
@@ -1947,6 +2087,7 @@ function openAIGenerator(onAdd){
     <div class="row" style="margin-top:10px"><button class="light" id="g_read">קריאת השאלות</button><button class="ghost sm" id="g_clr" type="button">ניקוי התיבה</button></div>
     <p class="err" id="g_err" role="alert"></p>
     <div id="g_prev"></div>
+    <div id="g_shbox" style="margin-top:14px;border:1px dashed var(--line-2);padding:12px 14px"><label class="chk" style="margin:0"><input type="checkbox" id="g_share"><span><b>לשתף גם במאגר המשותף</b> כדי שמורים אחרים יוכלו להשתמש בשאלות</span></label><div id="g_shf" hidden style="margin-top:10px"></div></div>
     <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="ghost" id="g_x2">סגירה</button><button class="primary" id="g_add" disabled>הוספה למשימה</button></div>`);
   const $d = s => d.querySelector(s);
   let src = "topic", parsed = [];
@@ -1991,13 +2132,16 @@ function openAIGenerator(onAdd){
     if(want && got < want){ const more = `המשך: כתוב עוד ${want-got} שאלות חדשות באותו נושא ובאותו פורמט AlfaMath (JSON בלבד), בלי לחזור על השאלות הקודמות.`;
       $d("#g_err").innerHTML = `<span style="color:var(--ink)">התקבלו ${got} שאלות מתוך ${want}. </span><button class="light sm" type="button" id="g_more">העתקת בקשה ל-${want-got} שאלות נוספות</button>`;
       $d("#g_more").onclick = () => { copy(more, "הועתק. הוסיפו קודם את השאלות שכבר נקראו, ואז הדביקו את הבקשה באותה שיחה עם ה-AI"); }; } };
-  $d("#g_add").onclick = () => { const qs = parsed.filter(p=>p.q && p.on!==false).map(p=>p.q); d.close(); onAdd(qs); };
+  $d("#g_share").onchange = () => { const f = $d("#g_shf"); f.hidden = !$d("#g_share").checked; if(!f.hidden && !f.innerHTML){ const gs = guessTax(parsed.find(p=>p.q)?.q.topic || $d("#g_topic")?.value); f.innerHTML = taxPicker("gs", gs); bindTax(d, "gs", gs); } };
+  $d("#g_add").onclick = () => { const qs = parsed.filter(p=>p.q && p.on!==false).map(p=>p.q);
+    if($d("#g_share").checked){ const t = readTax(d, "gs"); if(t.error){ $d("#g_err").textContent = t.error; return; } qs.forEach(q => q._share = t); }
+    d.close(); onAdd(qs); };
 }
 function tabQuestions(){
   const el = $("#tab");
   el.innerHTML = `
     <div class="row" style="margin-top:16px">
-      <button class="light" id="add">בנייה ידנית</button><button class="primary" id="imp">בנייה עם AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button>
+      <button class="light" id="add">בנייה ידנית</button><button class="primary" id="imp">בנייה עם AI</button><button class="light" onclick="go('#/teacher?tab=b')">מהמאגר</button><button class="ghost" id="shq">שיתוף במאגר</button>
       <div class="grow"></div><span class="muted tiny" id="dirtyl"></span><button class="primary" id="save" disabled>שמירה</button>
     </div>
     <div id="qlist"></div>`;
@@ -2011,6 +2155,7 @@ function tabQuestions(){
   };
   draw();
   $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:""}, points:1, figure:null, topic:Q.length?Q[Q.length-1].topic:null, hint:null, hint_penalty:0, solution:null, params:null, _new:true }); draw(); markDirty(); $$(".qedit").pop().scrollIntoView({behavior:"smooth",block:"start"}); };
+  $("#shq").onclick = () => { if(dirty) return toast("שמרו קודם את השינויים"); shareDialog(Q.filter(q=>!q._new)); };
   $("#imp").onclick = () => openAIGenerator(qs => { qs.forEach(q => { q.assignment_id = A.id; if(!q.topic && Q.length) q.topic = Q[Q.length-1].topic; }); Q.push(...qs); draw(); markDirty(); toast(`נוספו ${qs.length} שאלות. בדקו ולחצו שמירה`); });
   $("#qlist").addEventListener("input", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
@@ -2059,7 +2204,11 @@ function tabQuestions(){
         if(q.kind==="number"){ ans = { unit:q.answer.unit||"" }; if(q.answer.formula) ans.formula = q.answer.formula; else ans.value = Number(q.answer.value); if(q.answer.tol_pct!=null && q.answer.tol_pct!=="") ans.tol_pct = Number(q.answer.tol_pct); }
         return { id:q.id, assignment_id:A.id, position:i+1, prompt:q.prompt, kind:q.kind, choices:q.kind==="choice"||q.kind==="multi"?q.choices:null, answer:ans, points:q.points, figure:q.figure||null, topic:q.topic||null, hint:q.hint||null, hint_penalty:q.hint_penalty||0, solution:q.solution||null, params:q.kind==="number"&&q.answer.formula?q.params:null }; });
       if(rows.length){ const { error } = await sb.from("hw_questions").upsert(rows); if(error) throw error; }
-      Q.forEach(q=>delete q._new); removed = []; setDirty(false); toast("השאלות נשמרו");
+      Q.forEach(q=>delete q._new); removed = []; setDirty(false);
+      const toShare = Q.filter(q=>q._share); let shared = 0;
+      for(const t of [...new Set(toShare.map(q=>q._share))]){ try{ shared += await bankShare(toShare.filter(q=>q._share===t).map(q=>q.id), t); }catch(e){ toast("השיתוף למאגר נכשל: "+e.message); } }
+      toShare.forEach(q=>delete q._share);
+      toast(shared ? `השאלות נשמרו. ${shared} נשלחו לבדיקת המאגר המשותף` : "השאלות נשמרו");
     }catch(e){ toast("השמירה נכשלה: "+e.message); $("#save").disabled=false; }
     $("#save").textContent = "שמירה";
   };
