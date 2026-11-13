@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   // short, shareable links on the AlfaMath domain
   async redirects() {
     return ALFAMATH_HOSTS.flatMap((host) => [
-      { source: "/teachers", destination: "/app#/teacher", permanent: false, has: [{ type: "host" as const, value: host }] },
+      { source: "/teachers", destination: "/", permanent: false, has: [{ type: "host" as const, value: host }] },
       { source: "/join/:code", destination: "/app#/join/:code", permanent: false, has: [{ type: "host" as const, value: host }] },
     ]);
   },
