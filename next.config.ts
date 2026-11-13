@@ -15,6 +15,13 @@ const alfamathRoutes: [string, string][] = [
 ];
 
 const nextConfig: NextConfig = {
+  // short, shareable links on the AlfaMath domain
+  async redirects() {
+    return ALFAMATH_HOSTS.flatMap((host) => [
+      { source: "/teachers", destination: "/app#/teacher", permanent: false, has: [{ type: "host" as const, value: host }] },
+      { source: "/join/:code", destination: "/app#/join/:code", permanent: false, has: [{ type: "host" as const, value: host }] },
+    ]);
+  },
   async rewrites() {
     return {
       beforeFiles: ALFAMATH_HOSTS.flatMap((host) =>
