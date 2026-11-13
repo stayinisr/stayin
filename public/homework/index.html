@@ -741,6 +741,7 @@ async function studentMe(){
       <textarea id="fbt" maxlength="2000" placeholder="למשל: הייתי רוצה לראות את כל הציונים שלי בגרף"></textarea>
       <button class="primary" id="fbs" style="margin-top:10px">שליחת ההצעה</button>
     </div></div>
+    <p class="muted small" style="text-align:center"><a href="/guide#students" target="_blank" rel="noopener">מדריך: כל מה שאפשר לעשות באתר</a></p>
     <div class="card"><div class="hd"><h2>החלפת קוד סודי</h2></div><div class="bd">
       <label class="f" style="margin-top:0">הקוד הנוכחי</label><div id="c0">${codeBoxes(4, "", true)}</div>
       <label class="f">קוד חדש</label><div id="c1">${codeBoxes(4, "", true)}</div>
@@ -864,6 +865,7 @@ function studentAuth(mode, code=""){
       <form id="ef">
         <label class="f" for="em">המייל שלך</label>
         <input id="em" type="email" class="ltr" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@gmail.com">
+        <label class="chk" style="margin:14px 0 0"><input type="checkbox" id="tok"><span>קראתי ואני מסכים/ה ל<a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></span></label>
         <button class="primary big wide" id="snd" style="margin-top:16px">שליחת קוד למייל</button>
       </form>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
@@ -872,6 +874,7 @@ function studentAuth(mode, code=""){
     $("#ef").onsubmit = async e => {
       e.preventDefault(); err(); const em = $("#em").value.trim();
       if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) return err("כתובת המייל לא תקינה");
+      if(!$("#tok").checked) return err("צריך לאשר את תנאי השימוש ואת מדיניות הפרטיות");
       busy($("#snd"), true); const r = await mail("claim", em); busy($("#snd"), false);
       if(r.error) return err(r.error);
       stepVerify("claim", r.sent_to);
@@ -930,6 +933,12 @@ function studentAuth(mode, code=""){
 async function loadHome(force){
   if(HOME && !force) return HOME;
   HOME = await rpcS("hw_student_home", {});
+  // students who joined before the terms checkbox existed accept once
+  if(HOME && HOME.terms === false){
+    const ok = await ask(`<h2>לפני שממשיכים</h2><p>כדי להמשיך להשתמש באתר צריך לאשר את <a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a>.</p>`, "קראתי ואני מסכים/ה", "יציאה");
+    if(!ok){ studentLogout(); throw new Error("יש לאשר את התנאים"); }
+    try{ await rpcS("hw_student_accept_terms", {}); HOME.terms = true; }catch(e){}
+  }
   try{ HOME.mistakes = (await rpcS("hw_student_mistakes", {})).length; }catch(e){ HOME.mistakes = 0; }
   return HOME;
 }
@@ -1360,7 +1369,7 @@ async function teacherHome(){
   let D; try{ D = await loadAll(); }catch(e){ if(seq===navSeq) app().innerHTML = `<div class="card"><div class="bd"><p class="err">הטעינה נכשלה: ${esc(errMsg(e))}</p></div></div>`; return; }
   if(seq!==navSeq) return;
   app().innerHTML = `
-    <div class="row"><h1 class="grow">לוח ניהול</h1><button class="primary" id="new">משימה חדשה</button></div>
+    <div class="row"><h1 class="grow">לוח ניהול</h1><a class="ghost sm" href="/guide#teachers" target="_blank" rel="noopener">מדריך</a><button class="primary" id="new">משימה חדשה</button></div>
     <div class="tabs home" role="tablist"><button data-t="o">סקירה</button><button data-t="a">משימות</button><button data-t="c">כיתות</button><button data-t="b">מאגר שאלות</button>${TEACHER?.is_admin?`<button data-t="t">מורים</button>`:""}</div>
     <div id="tab"></div>`;
   $("#new").onclick = () => newAssignment(D);

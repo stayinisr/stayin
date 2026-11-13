@@ -11,7 +11,7 @@ const alfamathRoutes: [string, string][] = [
   ["/robots.txt", "/homework/robots.txt"],
   ["/sitemap.xml", "/homework/sitemap.xml"], ["/sw.js", "/homework/sw.js"],
   ["/terms", "/homework/terms.html"],
-  ["/privacy", "/homework/privacy.html"],
+  ["/privacy", "/homework/privacy.html"], ["/guide", "/homework/guide.html"],
 ];
 
 const nextConfig: NextConfig = {

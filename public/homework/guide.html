@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>איך זה עובד – AlfaMath</title>
+<meta name="description" content="מדריך מלא ל-AlfaMath: כל מה שתלמידים ומורים יכולים לעשות באתר, מהכניסה הראשונה ועד ציונים, התראות ובניית שאלות.">
+<meta name="theme-color" content="#1F49D6">
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Secular+One&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FBFCFE;--grid:#DCE5F3;--ink:#0F1E3D;--ink-2:#3A4766;--muted:#5D6B85;--pen:#1F49D6;--hl:#FFE347;--red:#E23B3B;--ok:#0E9F6E;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--paper:#0B1324;--grid:#16213B;--ink:#E8EEFA;--ink-2:#C3CDE3;--muted:#97A3C0;--pen:#86A2FF;--card:#121C33}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.65 Rubik,Heebo,system-ui,sans-serif;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+a{color:var(--pen)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding-inline:24px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
+.hd{display:flex;align-items:center;gap:16px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo i{width:36px;height:36px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 24px Georgia,serif;position:relative}
+.logo i::after{content:"";position:absolute;top:-4px;left:-4px;width:11px;height:11px;background:var(--hl);border:2px solid #0F1E3D}
+.logo b{direction:ltr;font-weight:800;font-size:21px}.logo b span{color:var(--pen)}
+.hd nav{margin-inline-start:auto;display:flex;gap:6px}
+.tab{font:700 15px Rubik,sans-serif;padding:9px 16px;border:2px solid var(--ink);background:var(--card);color:var(--ink);text-decoration:none}
+.tab:hover{background:var(--hl);color:#0F1E3D}
+h1,h2{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em;margin:0}
+h1{font-size:46px;line-height:1.1}
+.intro{padding:48px 0 12px}
+.intro p{margin:14px 0 0;font-size:19px;color:var(--ink-2);max-width:620px}
+.jump{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.jump a{display:block;flex:1 1 240px;padding:18px 20px;background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);color:var(--ink);text-decoration:none}
+.jump a b{display:block;font-size:20px}.jump a span{color:var(--muted);font-size:15px}
+.jump a:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+section.part{padding:48px 0 8px;scroll-margin-top:72px}
+.part > h2{font-size:36px;display:inline-block;background:linear-gradient(transparent 60%,var(--hl) 60%,var(--hl) 92%,transparent 92%);padding:0 4px}
+.part > h2.dark-ok{color:var(--ink)}
+@media (prefers-color-scheme:dark){.part > h2{background:linear-gradient(transparent 60%,rgba(255,227,71,.35) 60%,rgba(255,227,71,.35) 92%,transparent 92%)}}
+.part > p.lead{color:var(--ink-2);margin:10px 0 0}
+.block{background:var(--card);border:1.5px solid var(--ink);box-shadow:5px 5px 0 #C9D6FB;margin-top:22px;padding:22px 24px}
+@media (prefers-color-scheme:dark){.block{box-shadow:5px 5px 0 #050A16}}
+.block h3{margin:0 0 10px;font-size:21px;font-weight:800;display:flex;gap:10px;align-items:baseline}
+.block h3 .n{font:700 30px/1 Caveat,cursive;color:var(--red);min-width:22px}
+.block ul,.block ol{margin:0;padding-inline-start:22px}
+.block li{margin:7px 0}
+.block li b{color:var(--ink)}
+.tip{margin-top:12px;padding:10px 14px;border-inline-start:4px solid var(--hl);background:color-mix(in srgb,var(--hl) 14%,transparent);font-size:15.5px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin:40px 0 0;padding:26px;border:2px solid var(--ink);background:var(--hl);color:#0F1E3D;align-items:center}
+.cta b{font-size:20px;flex:1 1 260px}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;font:700 16px Rubik,sans-serif;text-decoration:none;border:2px solid #0F1E3D;background:#1F49D6;color:#fff}
+.btn.lt{background:#fff;color:#0F1E3D}
+footer{padding:34px 0 48px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:16px}
+@media (max-width:620px){h1{font-size:36px}.part > h2{font-size:30px}.block{padding:18px 18px}.hd nav .tab{padding:8px 11px;font-size:14px}.logo b{display:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap hd">
+ <a class="logo" href="/" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
+ <nav aria-label="חלקי המדריך"><a class="tab" href="#students">לתלמידים</a><a class="tab" href="#teachers">למורים</a></nav>
+</div></header>
+
+<main class="wrap">
+<div class="intro">
+ <h1>איך זה עובד</h1>
+ <p>כל מה שאפשר לעשות ב-AlfaMath, צעד אחרי צעד. בחרו את החלק שלכם.</p>
+ <div class="jump">
+  <a href="#students"><b>אני תלמיד/ה</b><span>כניסה, פתרון משימות, ציונים, תרגול והתראות</span></a>
+  <a href="#teachers"><b>אני מורה</b><span>כיתות, משימות, בניית שאלות, ציונים וניתוח</span></a>
+ </div>
+</div>
+
+<!-- ======================= students ======================= -->
+<section class="part" id="students">
+ <h2>לתלמידים</h2>
+ <p class="lead">צריך רק את קוד הכיתה שהמורה שלח. אין מה להתקין.</p>
+
+ <div class="block"><h3><span class="n">1</span>כניסה בפעם הראשונה</h3>
+  <ol>
+   <li>נכנסים לקישור שהמורה שלח, או ל-<a href="/app#/">alfamath.co.il/app</a>, ומקלידים את <b>קוד הכיתה</b> (6 תווים).</li>
+   <li>כותבים <b>שם פרטי ושם משפחה</b>. לא צריך לדייק באיות, האתר ימצא אתכם.</li>
+   <li>כותבים <b>מייל</b>, מאשרים את תנאי השימוש ומקלידים את הקוד בן 6 הספרות שמגיע למייל.</li>
+   <li>בוחרים <b>קוד סודי של 4 ספרות</b>. איתו נכנסים מעכשיו, בלי מייל.</li>
+  </ol>
+  <div class="tip">אם כתוב שהשם כבר בשימוש ואתם לא נכנסתם, לוחצים "זה לא אני" ושולחים דיווח. המורה יקבל אותו ויסדר.</div>
+ </div>
+
+ <div class="block"><h3><span class="n">2</span>כניסה רגילה ושכחתי קוד</h3>
+  <ul>
+   <li>קוד כיתה, שם, ואז הקוד הסודי.</li>
+   <li><b>שכחתם את הקוד הסודי?</b> לוחצים "שכחתי", מקבלים קוד למייל ובוחרים קוד סודי חדש.</li>
+   <li>אפשר גם לבקש מהמורה לאפס את הקוד.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">3</span>מסך המשימות</h3>
+  <ul>
+   <li><b>לביצוע:</b> משימות פתוחות עם תאריך ההגשה. אפשר להוסיף כל משימה ליומן בטלפון.</li>
+   <li><b>תרגול חופשי:</b> תרגול בלי ציון, כמה פעמים שרוצים.</li>
+   <li><b>הוגשו וציונים:</b> כל מה שהגשתם, עם הציון.</li>
+   <li><b>הודעות מהמורה</b> מופיעות בתחתית.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">4</span>פתרון משימה</h3>
+  <ul>
+   <li><b>סוגי תשובות:</b> מספר (עם מקלדת עזר לשברים, חזקות וסוגריים), אמריקאית, "סמנו את כל התשובות הנכונות", או מילה קצרה.</li>
+   <li><b>לכל תלמיד מספרים משלו</b> באותה שאלה, אז אין טעם להעתיק תשובה מחבר.</li>
+   <li>תשובה עשרונית מתקבלת בטווח סביר. מספר שלם צריך להיות מדויק.</li>
+   <li><b>רמז:</b> בחלק מהשאלות יש כפתור רמז. לפעמים שימוש ברמז מוריד מעט נקודות.</li>
+   <li><b>מה שכתבתם נשמר</b> בטלפון עד ההגשה, גם אם יוצאים וחוזרים.</li>
+   <li><b>ניסיון נוסף:</b> אם המורה אפשר, אפשר להגיש שוב. לפעמים מקבלים מספרים חדשים בכל ניסיון.</li>
+  </ul>
+  <div class="tip"><b>מבחן עם שעון:</b> הזמן מתחיל כשלוחצים "התחלה" וממשיך לרוץ גם אם סוגרים את הדף. כדאי להתחיל רק כשמוכנים.</div>
+ </div>
+
+ <div class="block"><h3><span class="n">5</span>אחרי ההגשה</h3>
+  <ul>
+   <li>רואים מיד <b>ציון</b>, מה נכון ומה לא, ואת <b>הפתרון</b>, אם המורה בחר להציג.</li>
+   <li>המורה יכול לכתוב לכם <b>הערה אישית</b> או לתקן ציון.</li>
+   <li><b>טעויות:</b> כל שאלה שטעיתם בה נכנסת ללשונית "טעויות", ושם אפשר לנסות אותה שוב עד שמצליחים.</li>
+   <li><b>התקדמות:</b> הציונים לאורך זמן והנושאים החזקים והחלשים שלכם.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">6</span>האזור האישי ("אני")</h3>
+  <ul>
+   <li><b>התראות:</b> מייל על משימה חדשה ותזכורת יום לפני ההגשה, למי שעוד לא הגיש. אפשר להפעיל גם התראות בטלפון.</li>
+   <li><b>באייפון</b> התראות בטלפון עובדות רק מהאפליקציה: בספארי לוחצים שיתוף ואז "הוספה למסך הבית", פותחים מהאייקון ומפעילים.</li>
+   <li><b>החלפת הקוד הסודי</b> ו<b>יציאה מכל המכשירים</b>, למשל אם נכנסתם מטלפון של מישהו אחר.</li>
+   <li><b>הצעה לשיפור:</b> משהו חסר או מציק? כותבים, וזה מגיע ישר למי שבונה את האתר.</li>
+   <li><b>מצב כהה:</b> כפתור הירח בכותרת העליונה. ברירת המחדל לפי הגדרת הטלפון.</li>
+  </ul>
+ </div>
+</section>
+
+<!-- ======================= teachers ======================= -->
+<section class="part" id="teachers">
+ <h2>למורים</h2>
+ <p class="lead">מהרשמה ועד ניתוח הכיתה. הכול עובד מהטלפון ומהמחשב.</p>
+
+ <div class="block"><h3><span class="n">1</span>הרשמה</h3>
+  <ul>
+   <li>נכנסים ל<a href="/app#/teacher">כניסת מורה</a>, כותבים מייל ומקלידים את הקוד בן 6 הספרות שמגיע.</li>
+   <li>בפעם הראשונה ממלאים שם, בית ספר ומקצועות, ומאשרים את תנאי השימוש. החשבון נפתח אחרי אישור.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">2</span>כיתות ותלמידים</h3>
+  <ul>
+   <li><b>כיתה חדשה</b> מקבלת קוד הצטרפות וקישור. מעתיקים ושולחים לקבוצת הוואטסאפ של הכיתה.</li>
+   <li><b>רשימת שמות:</b> מדביקים רשימה, כל שם בשורה, והתלמידים מוכנים מראש. אפשר גם לאפשר לתלמידים להצטרף לבד, ולסגור את זה כשכולם בפנים.</li>
+   <li><b>כרטיס תלמיד:</b> המייל שאימת, כל ההגשות והציונים, איפוס קוד סודי, הערה אישית וייצוא גיליון התלמיד.</li>
+   <li><b>דיווחי "זה לא אני"</b> מתלמידים שהשם שלהם נתפס מופיעים בלוח הניהול.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">3</span>משימות והגדרות</h3>
+  <ul>
+   <li><b>שלושה סוגים:</b> שיעורי בית, תרגול (בלי ציון, ללא הגבלת ניסיונות) ומבחן.</li>
+   <li><b>זמנים:</b> מועד הגשה, פתיחה מתוזמנת, ושעון למבחן בדקות.</li>
+   <li><b>ניסיונות:</b> מספר הגשות מותר, ו"מספרים חדשים בכל ניסיון" כדי שאי אפשר יהיה לנחש עד שיוצא נכון.</li>
+   <li><b>עוד הגדרות:</b> ערבוב סדר השאלות והתשובות, הצגת ציון ופתרון אחרי הגשה, ו<b>משקל</b> של המשימה בציון המשוקלל.</li>
+   <li>משימה אחת אפשר לשייך לכמה כיתות.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">4</span>בניית שאלות</h3>
+  <ul>
+   <li><b>בנייה ידנית:</b> שאלה מספרית (עם יחידות וטווח סובלנות), אמריקאית, "סמנו את כל הנכונות" (אפשר לכתוב כמה לסמן) או תשובה מילולית.</li>
+   <li><b>מספרים שונים לכל תלמיד:</b> כותבים בשאלה משתנים כמו {a}, קובעים להם טווח, והתשובה מחושבת מנוסחה.</li>
+   <li><b>רמז</b> (אפשר עם הורדת נקודות), <b>פתרון מלא</b> שהתלמיד רואה אחרי ההגשה, ו<b>שרטוט</b>.</li>
+   <li><b>בנייה עם AI:</b> בוחרים נושא, כמות, רמה וסוגי שאלות, ולוחצים "פתיחה ב-ChatGPT" או ב-Claude, או מעתיקים ל-Gemini. מדביקים חזרה את התשובה, בודקים בתצוגה מקדימה ומוסיפים.</li>
+   <li><b>מדף עבודה:</b> מצלמים דף עבודה ומעלים אותו לצ'אט עם ההנחיה. שאלות פתוחות (הסבר או הוכחה) הופכות לשאלות הבנה שנבדקות אוטומטית.</li>
+   <li><b>מאגר:</b> כל השאלות שבניתם נשמרות, ואפשר להעתיק אותן למשימות חדשות.</li>
+   <li><b>הדפסה:</b> כל משימה אפשר להדפיס כדף עבודה.</li>
+  </ul>
+  <div class="tip">"כך התלמיד רואה" מתחת לכל שאלה מראה את השאלה כמו אצל התלמיד, עם מספרים לדוגמה והתשובה הנכונה.</div>
+ </div>
+
+ <div class="block"><h3><span class="n">5</span>ציונים וניתוח</h3>
+  <ul>
+   <li><b>גיליון ציונים</b> לכל כיתה, כולל ממוצע משוקלל לפי משקלי המשימות.</li>
+   <li><b>בכל משימה:</b> מי הגיש ומי לא, אחוז הצלחה בכל שאלה, והטעויות הנפוצות. כך יודעים מה לחזור עליו בשיעור.</li>
+   <li><b>תיקון ציון והערה</b> לכל הגשה.</li>
+   <li><b>ייצוא לאקסל</b> של תוצאות המשימה ושל גיליון תלמיד.</li>
+  </ul>
+ </div>
+
+ <div class="block"><h3><span class="n">6</span>לוח ניהול ותקשורת</h3>
+  <ul>
+   <li><b>סקירה:</b> כמה כיתות, תלמידים ומשימות פתוחות יש, הממוצע הכללי, מי לא הגיש ומה נסגר השבוע.</li>
+   <li><b>הודעות לכיתה</b> שמופיעות לתלמידים במסך הבית.</li>
+   <li><b>התראות אוטומטיות:</b> התלמידים מקבלים מייל (ומי שהפעיל, גם התראה בטלפון) על כל משימה חדשה, ותזכורת יום לפני ההגשה. לא צריך לעשות כלום.</li>
+   <li><b>גיבוי:</b> כפתור בלוח הניהול שמוריד קובץ עם כל הנתונים שלכם.</li>
+  </ul>
+ </div>
+
+ <div class="cta"><b>רוצים לנסות עם הכיתה שלכם?</b><a class="btn" href="/app#/teacher">כניסת מורה</a><a class="btn lt" href="/app#/">כניסת תלמיד</a></div>
+</section>
+</main>
+
+<footer class="wrap">
+ <a href="/">דף הבית</a><a href="/terms">תנאי שימוש</a><a href="/privacy">פרטיות</a><a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
+</footer>
+</body>
+</html>
