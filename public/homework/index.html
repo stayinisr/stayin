@@ -1021,6 +1021,11 @@ async function studentProgress(){
       ${st.avg!=null?cells(st.avg):""}
     </div></div>
     <div class="card"><div class="hd"><h2>הציונים לאורך זמן</h2></div><div class="bd">${st.hist.length>1 ? spark(st.hist) : `<p class="muted" style="margin:0">הגרף יופיע אחרי שני ציונים.</p>`}</div></div>
+    <div class="card"><div class="hd"><h2>כל הציונים</h2><span class="muted small">${d.assignments.filter(a=>a.attempts).length} הגשות</span></div>
+      <div class="rows">${d.assignments.filter(a=>a.attempts).sort((x,y)=>new Date(y.last.at)-new Date(x.last.at)).map(a=>{ const has = a.last && a.last.score != null, p = has ? pct(a.last.score,a.last.max) : null;
+        return `<div class="r" data-href="#/s/${a.id}"><div class="grow"><div class="t">${esc(a.title)} ${a.mode==="exam"?`<span class="chip ink">מבחן</span>`:a.mode==="practice"?`<span class="chip acc">תרגול</span>`:""}</div>
+          <div class="sub">הוגש ${fmtDate(a.last.at)}${a.attempts>1?` · ${a.attempts} ניסיונות`:""}${a.mode!=="practice"&&+a.weight!==1?` · משקל ${+a.weight}`:""}${a.last.note?` · <b>יש הערה מהמורה</b>`:""}</div></div>
+          <div class="end">${has ? gbadge(p) : `<span class="chip">ממתין לציון</span>`}${IC.chev}</div></div>`; }).join("") || `<div class="empty"><b>עוד אין הגשות</b>הציונים יופיעו כאן אחרי ההגשה הראשונה.</div>`}</div></div>
     <div class="card"><div class="hd"><h2>לפי נושאים</h2><span class="muted small">החלשים למעלה</span></div><div class="bd">
       ${topics.length ? `<div class="bars">${topics.map(t=>{ const p = pct(t.ok,t.total); return `<div class="b"><span class="name">${esc(t.topic)}</span><div class="meter ${band(p)}"><i style="width:${p}%"></i></div><span class="v">${p}%</span></div>`; }).join("")}</div>
         <p class="muted tiny" style="margin:10px 0 0">נושא עם פחות מ-60% כדאי לחזור עליו. במסך "טעויות" אפשר לתרגל שוב את השאלות שנפלת בהן.</p>` : `<p class="muted" style="margin:0">כשתגיש משימות עם ציון, נראה כאן איך אתה מסתדר בכל נושא.</p>`}
@@ -1028,6 +1033,7 @@ async function studentProgress(){
     <div class="card"><div class="hd"><h2>הישגים</h2><span class="muted small">${BADGES.filter(b=>b.ok(d,st)).length} מתוך ${BADGES.length}</span></div><div class="bd">
       <div class="badges">${BADGES.map(b=>`<div class="badge ${b.ok(d,st)?"":"locked"}"><div class="ic">${b.ic}</div><b>${b.t}</b><span>${b.s}</span></div>`).join("")}</div>
     </div></div></div>`;
+  $$(".rows [data-href]").forEach(el => el.onclick = () => go(el.dataset.href));
   studentNav("progress", d.mistakes);
 }
 async function studentMistakes(){
@@ -1043,15 +1049,27 @@ async function studentMistakes(){
       ${list.length ? list.map((q,i)=>`<div class="q" data-id="${q.id}"><div class="qh"><span class="qn">${i+1}</span><div class="body">
         <div class="tiny muted" style="margin-bottom:4px">${esc(q.assignment)}${q.topic?` · ${esc(q.topic)}`:""}</div>
         <div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}${answerInput(q,"")}
-        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button><span class="muted tiny">בפעם הקודמת ענית: <bdi>${esc(q.given!=null?givenText(q,q.given):"—")}</bdi></span></div>
+        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button>${q.similar?`<button class="light sm sim">שאלה דומה</button>`:""}<span class="muted tiny prev">בפעם הקודמת ענית: <bdi>${esc(q.given!=null?givenText(q,q.given):"—")}</bdi></span></div>
         <div class="slot"></div></div></div></div>`).join("") : `<div class="empty"><b>אין טעויות פתוחות</b>כל הכבוד. שאלות שתטעה בהן יופיעו כאן לתרגול.</div>`}
     </div></div></div>`;
   math(app()); bindKeys(app()); bindChoices(app());
+  // "similar question": same question with fresh numbers, checked on the server
+  $$(".sim").forEach(b => b.onclick = async () => {
+    const q = b.closest(".q"), n = 1 + Math.floor(Math.random()*999999); b.disabled = true;
+    try{ const r = await rpcS("hw_student_similar", { p_qid:q.dataset.id, p_n:n });
+      q.dataset.sim = n; q.querySelector(".prompt").textContent = r.prompt;
+      const old = q.querySelector(".fig"); if(old) old.outerHTML = figHtml(r.figure); 
+      q.querySelectorAll("input.ansin").forEach(i => i.value = ""); q.querySelector(".slot").innerHTML = "";
+      const pv = q.querySelector(".prev"); if(pv) pv.textContent = "שאלה דומה עם מספרים חדשים";
+      math(q); b.textContent = "עוד אחת";
+    }catch(e){ toast(errMsg(e)); }
+    b.disabled = false;
+  });
   $$(".try").forEach(b => b.onclick = async () => {
     const q = b.closest(".q"), ans = collect(q.parentElement)[q.dataset.id];
     if(!ans) return toast("כתבו תשובה קודם");
     b.disabled = true;
-    try{ const r = await rpcS("hw_student_try", { p_qid:q.dataset.id, p_given:ans });
+    try{ const r = q.dataset.sim ? await rpcS("hw_student_similar", { p_qid:q.dataset.id, p_n:+q.dataset.sim, p_given:ans }) : await rpcS("hw_student_try", { p_qid:q.dataset.id, p_given:ans });
       q.querySelector(".slot").innerHTML = r.correct ? `<div class="mark ok"><b>נכון.</b> עכשיו זה יושב.</div>` : `<div class="mark bad"><b>עדיין לא.</b>&nbsp;התשובה: <bdi class="ltr">${esc(r.answer)}</bdi></div>${r.solution?`<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(r.solution)}</div></div>`:""}`;
       math(q);
     }catch(e){ toast(errMsg(e)); }
@@ -1718,10 +1736,13 @@ function drawAssignHeader(){
 let sortBy = "name";
 async function tabResults(){
   const el = $("#tab"); el.innerHTML = `<p class="muted" style="margin-top:16px">טוען…</p>`; const seq = navSeq;
-  const [{ data:subs, error }, { data:students }] = await Promise.all([
+  const [{ data:subs, error }, { data:students }, { data:exts }] = await Promise.all([
     sb.from("hw_submissions").select("*").eq("assignment_id",A.id).order("created_at"),
-    ACL.length ? sb.from("hw_students").select("id,display_name,class_id").in("class_id",ACL).order("display_name") : Promise.resolve({data:[]})
+    ACL.length ? sb.from("hw_students").select("id,display_name,class_id").in("class_id",ACL).order("display_name") : Promise.resolve({data:[]}),
+    A.due_at ? sb.rpc("hw_teacher_extensions", { p_assignment:A.id }) : Promise.resolve({data:[]})
   ]);
+  const EXT = Object.fromEntries((exts||[]).map(e=>[e.student_id, e.until]));
+  const extCell = r => !A.due_at || !r.sid ? "" : `${EXT[r.sid]?`<span class="chip warn" title="הארכה">עד ${dm(EXT[r.sid])}</span> `:""}<button class="ghost sm" data-ext="${r.sid}" data-name="${esc(r.name)}">${EXT[r.sid]?"שינוי":"הארכה"}</button>`;
   if(seq!==navSeq || !el.isConnected) return;
   if(error){ el.innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
   const by = {}; subs.forEach(s => { const k = s.student_id || ("n:"+s.student_name.trim().toLowerCase()); (by[k] ||= []).push(s); });
@@ -1754,18 +1775,27 @@ async function tabResults(){
       ${done.length?`<button class="light sm" id="csv">אקסל</button>`:""}</div>
       <div class="tw"><table>
         <thead><tr><th>שם</th>${multi?"<th>כיתה</th>":""}<th class="c">ציון</th>${Q.map((q,i)=>`<th class="c">${i+1}</th>`).join("")}<th>הוגש</th><th></th></tr></thead>
-        <tbody>${sorted.map(r=>{ if(!r.subs.length) return `<tr><td style="font-weight:700">${esc(r.name)}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c"><span class="chip bad">לא הגיש</span></td>${Q.map(()=>`<td></td>`).join("")}<td></td><td></td></tr>`;
+        <tbody>${sorted.map(r=>{ if(!r.subs.length) return `<tr><td style="font-weight:700">${esc(r.name)}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c"><span class="chip bad">לא הגיש</span></td>${Q.map(()=>`<td></td>`).join("")}<td></td><td style="white-space:nowrap">${extCell(r)}</td></tr>`;
           const s=lastOf(r);
           return `<tr class="click" data-sub="${s.id}"><td><span style="font-weight:800">${esc(r.name)}</span>${r.subs.length>1?` <span class="muted tiny">(${r.subs.length} ניסיונות)</span>`:""}${s.teacher_note?` <span class="chip acc">הערה</span>`:""}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c">${gbadge(eff(s))}${s.manual_score!=null?'<div class="tiny muted">ידני</div>':""}</td>
           ${Q.map(q=>{ const x=(s.results||[]).find(z=>z.question_id===q.id); return `<td class="c" title="${esc(x?.given??"")}">${!x?"–":x.correct?'<span class="yes">✓</span>':'<span class="no">✗</span>'}</td>`; }).join("")}
-          <td class="muted tiny">${fmtDate(s.created_at)}</td><td><button class="ghost danger sm" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
+          <td class="muted tiny">${fmtDate(s.created_at)}</td><td style="white-space:nowrap">${extCell(r)}<button class="ghost danger sm" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
       </table></div>
       <div class="bd" style="padding-top:10px"><p class="muted tiny" style="margin:0">לחיצה על שורה פותחת את ההגשה: תשובות, תיקון ציון והערה לתלמיד. "איפוס" מוחק את ההגשה כדי שהתלמיד יוכל להגיש מחדש.</p></div>
     </div>`;
   math(el);
   $("#sort").value = sortBy; $("#sort").onchange = e => { sortBy = e.target.value; tabResults(); };
   const cm = $("#cpmiss"); if(cm) cm.onclick = () => copy(missing.map(r=>r.name).join("\n"), `הועתקו ${missing.length} שמות`);
-  $$("tr[data-sub]", el).forEach(tr => tr.onclick = e => { if(e.target.closest("[data-del]")) return; openSubmission(tr.dataset.sub, tabResults); });
+  $$("tr[data-sub]", el).forEach(tr => tr.onclick = e => { if(e.target.closest("[data-del],[data-ext]")) return; openSubmission(tr.dataset.sub, tabResults); });
+  $$("[data-ext]", el).forEach(b => b.onclick = async e => {
+    e.stopPropagation(); const sid = b.dataset.ext, cur = EXT[sid] ? new Date(EXT[sid]) : new Date(Math.max(Date.now(), new Date(A.due_at).getTime()) + 2*864e5);
+    const local = new Date(cur.getTime() - cur.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    const pr = ask(`<h2>הארכה ל${esc(b.dataset.name)}</h2><p class="muted">התלמיד יוכל להגיש עד המועד הזה, גם אם מועד ההגשה של הכיתה עבר.</p><label class="f" for="extd">להגיש עד</label><input type="datetime-local" id="extd" value="${local}">${EXT[sid]?`<button class="ghost danger sm" id="extrm" type="button" style="margin-top:10px">ביטול ההארכה</button>`:""}`, "שמירה", "סגירה");
+    const rm = $("#extrm"); if(rm) rm.onclick = async () => { $("#dlg").close(); const { error } = await sb.rpc("hw_teacher_extend", { p_assignment:A.id, p_student:sid, p_until:null }); if(error) return toast(errMsg(error)); toast("ההארכה בוטלה"); tabResults(); };
+    const ok = await pr; const v = $("#extd")?.value; if(!ok || !v) return;
+    const { error } = await sb.rpc("hw_teacher_extend", { p_assignment:A.id, p_student:sid, p_until:new Date(v).toISOString() });
+    if(error) return toast(errMsg(error)); toast("ההארכה נשמרה"); tabResults();
+  });
   $$("[data-del]", el).forEach(b => b.onclick = async e => {
     e.stopPropagation();
     const r = rows.find(x=>x.key===b.dataset.del);
