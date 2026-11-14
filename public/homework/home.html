@@ -42,7 +42,13 @@ header{position:sticky;top:0;z-index:10;background:rgba(251,252,254,.92);backdro
 .logo b{direction:ltr;font-weight:800;font-size:23px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
 nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{color:var(--ink);text-decoration:none}nav.links a:hover{color:var(--pen)}
 .cta{margin-inline-start:auto;display:flex;gap:14px;align-items:center}
-.cta .alt{font-weight:600;font-size:14.5px;color:var(--ink-2);white-space:nowrap}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
+[hidden]{display:none!important}
+.acct{position:relative}
+.acct .btn{gap:8px}
+.menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:210px;background:#fff;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);z-index:20;display:flex;flex-direction:column}
+.menu a{padding:13px 16px;color:var(--ink);text-decoration:none;font-weight:600;border-bottom:1px solid var(--grid)}
+.menu a:last-child{border-bottom:none;color:var(--red)}
+.menu a:hover,.menu a:focus-visible{background:var(--hl)}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
 
 /* hero */
 .hero{position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
@@ -187,8 +193,11 @@ footer a:first-of-type{margin-inline-start:auto}
    <a href="#students">לתלמידים</a>
   </nav>
   <div class="cta">
-   <a class="alt" id="enter2" href="#" hidden></a>
    <a class="btn pri" id="enter" href="/app#/login">כניסה</a>
+   <div class="acct" id="acct" hidden>
+    <button class="btn pri" id="acctbtn" type="button" aria-haspopup="true" aria-expanded="false"><span id="acctlbl"></span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg></button>
+    <div class="menu" id="acctmenu" role="menu" hidden></div>
+   </div>
   </div>
  </div>
 </header>
@@ -304,12 +313,20 @@ footer a:first-of-type{margin-inline-start:auto}
     student = !!JSON.parse(localStorage.getItem("hw-token") || "null");
     for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(/^sb-.*-auth-token$/.test(k) && localStorage.getItem(k)) teacher = true; }
   }catch(e){}
-  var to = student ? ["המשימות שלי", "/app#/"] : teacher ? ["ללוח הניהול", "/app#/teacher"] : null;
-  if(to) [document.getElementById("enter")].concat([].slice.call(document.querySelectorAll(".enter-link"))).forEach(function(a){ if(a){ a.textContent = to[0]; a.href = to[1]; } });
-  // shared computer: one tap to the other kind of login
-  var alt = document.getElementById("enter2");
-  if(student){ alt.textContent = "מורה? כניסה"; alt.href = "/app#/teacher"; alt.hidden = false; }
-  else if(teacher){ alt.textContent = "תלמיד/ה? כניסה"; alt.href = "/app#/"; alt.hidden = false; }
+  if(!student && !teacher) return;
+  // signed in: one button that opens a small menu (go in, switch to the other login, sign out)
+  var items = student
+    ? [["המשימות שלי", "/app#/"], ["כניסה כמורה", "/app#/teacher"], ["התנתקות", "/app#/logout"]]
+    : [["לוח הניהול", "/app#/teacher"], ["כניסה כתלמיד/ה", "/app#/"], ["התנתקות", "/app#/logout"]];
+  var acct = document.getElementById("acct"), btn = document.getElementById("acctbtn"), menu = document.getElementById("acctmenu");
+  document.getElementById("enter").hidden = true; acct.hidden = false;
+  document.getElementById("acctlbl").textContent = items[0][0];
+  menu.innerHTML = items.map(function(x){ return '<a role="menuitem" href="' + x[1] + '">' + x[0] + '</a>'; }).join("");
+  [].slice.call(document.querySelectorAll(".enter-link")).forEach(function(a){ a.textContent = items[0][0]; a.href = items[0][1]; });
+  function close(){ menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  btn.addEventListener("click", function(e){ e.stopPropagation(); var open = menu.hidden; menu.hidden = !open; btn.setAttribute("aria-expanded", String(open)); if(open) menu.querySelector("a").focus(); });
+  document.addEventListener("click", function(e){ if(!acct.contains(e.target)) close(); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape"){ close(); btn.focus(); } });
 })();
 (function(){
   var s = document.getElementById("scene");

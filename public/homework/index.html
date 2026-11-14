@@ -711,6 +711,7 @@ async function route(){
   renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav", "has-tnav", "nocopy");
   document.body.dataset.area = h.startsWith("#/teacher") ? "teacher" : "student";
   let m;
+  if(h.startsWith("#/logout")){ if(store("hw-token")) return studentLogout(); if(session) return logout(); return location.replace("#/login"); }
   if(h.startsWith("#/login")){ const r = store("hw-role"); return location.replace(r === "t" ? "#/teacher" : "#/"); }
   if((m = h.match(/^#\/join\/([A-Za-z0-9]+)/))) return studentAuth("register", m[1].toUpperCase());
   if((m = h.match(/^#\/s\/([0-9a-f-]+)/))) return studentAssignment(m[1]);
