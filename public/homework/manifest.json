@@ -1,7 +1,7 @@
 {
  "name": "AlfaMath – שיעורי בית",
  "short_name": "AlfaMath",
- "start_url": "/app#/",
+ "start_url": "/app#/login",
  "scope": "/",
  "display": "standalone",
  "dir": "rtl",
