@@ -316,11 +316,11 @@ footer a:first-of-type{margin-inline-start:auto}
   if(!student && !teacher) return;
   // signed in: one button that opens a small menu (go in, sign out)
   var items = student
-    ? [["המשימות שלי", "/app#/"], ["התנתקות", "/app#/logout"]]
+    ? [["המשימות שלי", "/app#/"], ["הציונים שלי", "/app#/progress"], ["התנתקות", "/app#/logout"]]
     : [["לוח הניהול", "/app#/teacher"], ["התנתקות", "/app#/logout"]];
   var acct = document.getElementById("acct"), btn = document.getElementById("acctbtn"), menu = document.getElementById("acctmenu");
   document.getElementById("enter").hidden = true; acct.hidden = false;
-  document.getElementById("acctlbl").textContent = items[0][0];
+  document.getElementById("acctlbl").textContent = "אזור אישי";
   menu.innerHTML = items.map(function(x){ return '<a role="menuitem" href="' + x[1] + '">' + x[0] + '</a>'; }).join("");
   [].slice.call(document.querySelectorAll(".enter-link")).forEach(function(a){ a.textContent = items[0][0]; a.href = items[0][1]; });
   function close(){ menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
