@@ -365,6 +365,8 @@
   #help .tip{margin-top:10px;padding:8px 12px;border-inline-start:4px solid var(--sun);background:var(--sun-wash);font-size:14px}
   .welcome{display:flex;gap:14px;align-items:center;border:1.5px dashed var(--ink);background:var(--sun-wash);padding:14px 16px;margin-bottom:16px}
   .welcome b{display:block}
+  .roleseg{max-width:340px;margin:0 auto 22px;display:flex}
+  .roleseg button{flex:1;min-height:46px;font-size:16px}
   /* ================= dark mode ("notebook at night") ================= */
   .themebtn{background:none;border:none;padding:8px;color:var(--ink);cursor:pointer;display:grid;place-items:center;min-height:40px}
   .themebtn .sun{display:none} [data-theme=dark] .themebtn .sun{display:inline} [data-theme=dark] .themebtn .moon{display:none}
@@ -709,6 +711,7 @@ async function route(){
   renderHeader(); $("#bnav").innerHTML = ""; document.body.classList.remove("has-bnav", "has-tnav", "nocopy");
   document.body.dataset.area = h.startsWith("#/teacher") ? "teacher" : "student";
   let m;
+  if(h.startsWith("#/login")){ const r = store("hw-role"); return location.replace(r === "t" ? "#/teacher" : "#/"); }
   if((m = h.match(/^#\/join\/([A-Za-z0-9]+)/))) return studentAuth("register", m[1].toUpperCase());
   if((m = h.match(/^#\/s\/([0-9a-f-]+)/))) return studentAssignment(m[1]);
   if(h.startsWith("#/progress")) return studentProgress();
@@ -726,8 +729,8 @@ function renderHeader(){
   $("#brand").onclick = () => { location.href = "/"; };
   $("#helpbtn").onclick = () => openHelp();
   $("#themebtn").onclick = () => { const d = document.documentElement.dataset.theme !== "dark"; document.documentElement.dataset.theme = d ? "dark" : "light"; try{ localStorage.setItem("hw-theme", d ? "dark" : "light"); }catch(e){} };
-  if(t) $("#hdr").innerHTML = session ? `<button class="ghost" onclick="logout()">יציאה</button>` : `<button class="ghost" onclick="go('#/')">כניסת תלמידים</button>`;
-  else $("#hdr").innerHTML = store("hw-token") ? `<button class="ghost" onclick="studentLogout()">יציאה</button>` : `<button class="ghost" onclick="go('#/teacher')">כניסת מורה</button>`;
+  if(t) $("#hdr").innerHTML = session ? `<button class="ghost" onclick="logout()">יציאה</button>` : "";
+  else $("#hdr").innerHTML = store("hw-token") ? `<button class="ghost" onclick="studentLogout()">יציאה</button>` : "";
 }
 
 /* ================= STUDENT ================= */
@@ -835,15 +838,25 @@ async function studentMe(){
   const oa = $("#outall"); if(oa) oa.onclick = async () => { if(!(await ask(`<h2>לצאת מכל המכשירים?</h2><p class="muted">תצטרכו להיכנס שוב עם הקוד הסודי בכל מכשיר.</p>`, "יציאה"))) return; try{ await rpcS("hw_student_logout_all", {}); }catch(e){} store("hw-token", null); HOME=null; go("#/"); };
 }
 
+/* one login page with a student / teacher switch; the choice is remembered on this device */
+function roleSwitch(active){
+  return `<div class="seg roleseg" role="tablist" aria-label="מי נכנס?"><button type="button" role="tab" data-role="s" class="${active==="s"?"on":""}" aria-selected="${active==="s"}">תלמיד/ה</button><button type="button" role="tab" data-role="t" class="${active==="t"?"on":""}" aria-selected="${active==="t"}">מורה</button></div>`;
+}
+function bindRoleSwitch(){
+  $$(".roleseg [data-role]").forEach(b => b.onclick = () => { store("hw-role", b.dataset.role); go(b.dataset.role === "t" ? "#/teacher" : "#/"); });
+}
 function studentAuth(mode, code=""){
+  if(mode !== "register") store("hw-role", "s");
   code = (code || store("hw-class") || "").toUpperCase();
   let R = null, pick = null, typed = "";
   app().innerHTML = `
     <div class="auth">
-      <h1 style="text-align:center">כניסה לשיעורי הבית</h1>
+      ${mode === "register" ? "" : roleSwitch("s")}
+      <h1 style="text-align:center">כניסה</h1>
       <p class="muted" style="text-align:center">קוד כיתה, השם שלך וקוד סודי.</p>
       <div class="card"><div class="bd" id="af"></div></div>
     </div>`;
+  bindRoleSwitch();
   const box = () => $("#af");
   const err = m => { const e = $("#ae"); if(e) e.textContent = m || ""; };
   const busy = (el, on) => { if(el){ el.disabled = on; el.classList.toggle("busy", on); } };
@@ -1300,9 +1313,11 @@ function showReview(body, a, last, fresh){
 /* ================= TEACHER ================= */
 async function logout(){ await sb.auth.signOut(); session=null; TEACHER=null; go("#/teacher"); }
 function loginPage(){
+  store("hw-role", "t");
   app().innerHTML = `
     <div class="auth">
-      <h1 style="text-align:center">כניסה והרשמה למורים</h1>
+      ${roleSwitch("t")}
+      <h1 style="text-align:center">כניסה למורים</h1>
       <p class="muted" style="text-align:center">נשלח קוד חד-פעמי למייל שלך. מורה חדש? אותה דרך, ואחרי זה ממלאים כמה פרטים.</p>
       <div class="card"><div class="bd">
         <form id="lf">
@@ -1318,8 +1333,8 @@ function loginPage(){
         </div>
         <p class="err" id="le" role="alert" style="text-align:center"></p>
       </div></div>
-      <p style="text-align:center"><a href="#/" class="small">תלמידים? לכניסת תלמיד</a></p>
     </div>`;
+  bindRoleSwitch();
   const err = m => $("#le").textContent = m || "";
   $("#lf").onsubmit = async e => {
     e.preventDefault(); err(); const b = $("#lsend"); b.disabled = true;

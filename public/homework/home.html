@@ -41,7 +41,8 @@ header{position:sticky;top:0;z-index:10;background:rgba(251,252,254,.92);backdro
 .logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid var(--ink)}
 .logo b{direction:ltr;font-weight:800;font-size:23px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
 nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{color:var(--ink);text-decoration:none}nav.links a:hover{color:var(--pen)}
-.cta{margin-inline-start:auto;display:flex;gap:10px}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
+.cta{margin-inline-start:auto;display:flex;gap:14px;align-items:center}
+.cta .alt{font-weight:600;font-size:14.5px;color:var(--ink-2);white-space:nowrap}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
 
 /* hero */
 .hero{position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
@@ -164,7 +165,6 @@ footer a:first-of-type{margin-inline-start:auto}
 @media (max-width:620px){
   .wrap{padding-inline:18px}
   nav.links{display:none}
-  .cta .lt{display:none}
   .hero h1{font-size:40px}
   .feat{grid-template-columns:minmax(0,1fr)}
   .feat div{border-inline-start:none!important;padding-inline-start:0;padding-block:24px}
@@ -187,8 +187,8 @@ footer a:first-of-type{margin-inline-start:auto}
    <a href="#students">לתלמידים</a>
   </nav>
   <div class="cta">
-   <a class="btn lt" href="/app#/">כניסת תלמיד</a>
-   <a class="btn pri" href="/app#/teacher">כניסת מורה</a>
+   <a class="alt" id="enter2" href="#" hidden></a>
+   <a class="btn pri" id="enter" href="/app#/login">כניסה</a>
   </div>
  </div>
 </header>
@@ -290,8 +290,7 @@ footer a:first-of-type{margin-inline-start:auto}
 
 <footer class="wrap">
  <span class="logo"><b>Alfa<span>Math</span></b></span>
- <a href="/app#/teacher">כניסת מורה</a>
- <a href="/app#/">כניסת תלמיד</a>
+ <a href="/app#/login" class="enter-link">כניסה</a>
  <a href="/guide">איך זה עובד</a>
  <a href="/terms">תנאי שימוש</a>
  <a href="/privacy">פרטיות</a>
@@ -299,6 +298,19 @@ footer a:first-of-type{margin-inline-start:auto}
 </footer>
 
 <script>
+(function(){
+  var student = false, teacher = false;
+  try{
+    student = !!JSON.parse(localStorage.getItem("hw-token") || "null");
+    for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(/^sb-.*-auth-token$/.test(k) && localStorage.getItem(k)) teacher = true; }
+  }catch(e){}
+  var to = student ? ["המשימות שלי", "/app#/"] : teacher ? ["ללוח הניהול", "/app#/teacher"] : null;
+  if(to) [document.getElementById("enter")].concat([].slice.call(document.querySelectorAll(".enter-link"))).forEach(function(a){ if(a){ a.textContent = to[0]; a.href = to[1]; } });
+  // shared computer: one tap to the other kind of login
+  var alt = document.getElementById("enter2");
+  if(student){ alt.textContent = "מורה? כניסה"; alt.href = "/app#/teacher"; alt.hidden = false; }
+  else if(teacher){ alt.textContent = "תלמיד/ה? כניסה"; alt.href = "/app#/"; alt.hidden = false; }
+})();
 (function(){
   var s = document.getElementById("scene");
   if (!s || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
