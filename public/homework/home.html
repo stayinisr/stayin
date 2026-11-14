@@ -316,7 +316,7 @@ footer a:first-of-type{margin-inline-start:auto}
   if(!student && !teacher) return;
   // signed in: one button that opens a small menu (go in, sign out)
   var items = student
-    ? [["המשימות שלי", "/app#/"], ["הציונים שלי", "/app#/progress"], ["התנתקות", "/app#/logout"]]
+    ? [["המשימות שלי", "/app#/"], ["הציונים שלי", "/app#/progress"], ["האזור האישי", "/app#/me"], ["התנתקות", "/app#/logout"]]
     : [["לוח הניהול", "/app#/teacher"], ["התנתקות", "/app#/logout"]];
   var acct = document.getElementById("acct"), btn = document.getElementById("acctbtn"), menu = document.getElementById("acctmenu");
   document.getElementById("enter").hidden = true; acct.hidden = false;
