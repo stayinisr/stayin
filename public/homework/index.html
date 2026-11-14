@@ -432,6 +432,11 @@
     .toast{bottom:32px}
   }
   @media (max-width:640px){
+    /* bank: selection bar wraps to two rows instead of overflowing */
+    .bankdock .in{flex-wrap:wrap;gap:8px;padding-block:10px}
+    .bankdock select{order:-1;flex:1 1 100%;max-width:none!important;width:100%!important}
+    .bankdock .grow{flex:1 1 auto}
+    .bankdock button{flex:none;padding-inline:14px}
     /* keep logo + help + theme + exit on one line on small phones */
     header .in{gap:4px;padding:0 10px}
     .brand small{display:none}
@@ -1583,7 +1588,7 @@ async function bankSharedView(D){
       <input id="fq" type="text" class="grow" placeholder="חיפוש" style="max-width:240px"></div>
     <p class="muted small" style="margin-top:10px">שאלות שמורים שיתפו ונבדקו. סמנו והעתיקו למשימה. העותק שלכם, ואפשר לערוך אותו בחופשיות.</p>
     <div class="card flat"><div class="bd" id="slist"><p class="muted">טוען…</p></div></div>
-    <div class="dock"><div class="in"><div class="grow small"><b id="ssel">0</b> נבחרו</div><select id="sto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="primary" id="scopy">העתקה למשימה</button></div></div>`;
+    <div style="height:90px"></div><div class="dock bankdock"><div class="in"><div class="grow small"><b id="ssel">0</b> נבחרו</div><select id="sto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="primary" id="scopy">העתקה למשימה</button></div></div>`;
   bindBankSeg(D);
   const sel = new Set();
   const fillTopics = () => { $("#ft").innerHTML = `<option value="">כל הנושאים</option>` + Object.keys(TAX[$("#fs").value]||{}).map(x=>`<option>${x}</option>`).join(""); };
@@ -1628,7 +1633,7 @@ async function tabBank(D){
     <div class="row" style="margin-top:14px"><input id="bq" type="text" class="grow" placeholder="חיפוש בנוסח השאלה" style="max-width:320px"><select id="bt" style="width:auto"><option value="">כל הנושאים</option>${topics.map(t=>`<option>${esc(t)}</option>`).join("")}</select></div>
     <p class="muted small" style="margin-top:10px">כל השאלות מכל המשימות שלך. סמנו שאלות והעתיקו אותן למשימה אחרת. כדי לתייג שאלה בנושא, ערכו אותה בעורך המשימה.</p>
     <div class="card flat"><div class="bd" id="blist"></div></div>
-    <div class="dock"><div class="in"><div class="grow small"><b id="bsel">0</b> שאלות נבחרו</div><select id="bto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="light" id="bshare">שיתוף</button><button class="primary" id="bcopy">העתקה למשימה</button></div></div>`;
+    <div style="height:90px"></div><div class="dock bankdock"><div class="in"><div class="grow small"><b id="bsel">0</b> שאלות נבחרו</div><select id="bto" style="width:auto;max-width:200px">${D.assignments.map(a=>`<option value="${a.id}">${esc(a.title)}</option>`).join("")}</select><button class="light" id="bshare">שיתוף</button><button class="primary" id="bcopy">העתקה למשימה</button></div></div>`;
   const sel = new Set();
   const draw = () => {
     const q = $("#bq").value.trim(), t = $("#bt").value;
