@@ -1449,7 +1449,7 @@ async function tabTeachers(){
 /* shared teacher data */
 async function loadAll(){
   const [c, s, a, sub, q, rp] = await Promise.all([
-    sb.from("hw_classes").select("id,name,join_code,join_open,created_at").order("created_at"),
+    sb.from("hw_classes").select(CL_COLS).order("created_at"),
     sb.from("hw_students").select("id,class_id,display_name,username,created_at,teacher_note,email,claimed_at").order("display_name"),
     sb.from("hw_assignments").select("id,title,is_open,opens_at,due_at,created_at,mode,weight,time_limit_min,show_results,hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
     sb.from("hw_submissions").select("id,assignment_id,student_id,score,max_score,manual_score,created_at").order("created_at"),
@@ -1587,10 +1587,13 @@ function tabAssignments(D){
 }
 function tabClasses(D){
   $("#tab").innerHTML = `
-    <form class="card" id="ncf"><div class="bd row"><input id="ncn" type="text" class="grow" placeholder="שם כיתה חדשה, למשל ט׳2 מתמטיקה" required aria-label="שם כיתה חדשה"><button class="primary">יצירת כיתה</button></div></form>
+    <form class="card" id="ncf"><div class="hd"><h2>כיתה חדשה</h2></div><div class="bd">${classForm({ school: schoolsOf(D.classes)[0] || "", subject: D.classes[D.classes.length-1]?.subject || "מתמטיקה" }, schoolsOf(D.classes))}
+      <p class="err" id="ncerr"></p><button class="primary" style="margin-top:6px">יצירת כיתה</button></div></form>
     <div class="card"><div class="rows">${D.classes.length ? D.classes.map(c=>{ const sts = D.studentsOf(c.id); const avgs = sts.map(D.studentAvg).filter(x=>x!=null); const avg = avgs.length ? Math.round(avgs.reduce((s,x)=>s+x,0)/avgs.length) : null;
       return `<div class="r" data-href="#/teacher/c/${c.id}"><div class="grow"><div class="t">${esc(c.name)}</div><div class="sub">${sts.length} תלמידים, ${c.join_open?"ההרשמה פתוחה":"ההרשמה סגורה"}, קוד ${c.join_code}</div></div><div class="end">${avg!=null?gbadge(avg):""}${IC.chev}</div></div>`; }).join("") : `<div class="empty"><b>עוד אין כיתות</b>צרו כיתה ושלחו לתלמידים את קישור ההצטרפות.</div>`}</div></div>`;
-  $("#ncf").onsubmit = async e => { e.preventDefault(); const { data, error } = await sb.from("hw_classes").insert({ name:$("#ncn").value.trim() }).select("id").single(); if(error) return toast(error.message); go("#/teacher/c/"+data.id); };
+  const readNew = bindClassForm($("#ncf"));
+  $("#ncf").onsubmit = async e => { e.preventDefault(); const v = readNew(); if(v.error) return $("#ncerr").textContent = v.error;
+    const { data, error } = await sb.from("hw_classes").insert(v).select("id").single(); if(error) return toast(error.message); go("#/teacher/c/"+data.id); };
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
 }
 let BANKV = "mine";
@@ -1639,6 +1642,7 @@ async function bankSharedView(D){
     $$("#slist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#ssel").textContent = sel.size; $(".bankdock").hidden = !sel.size; });
   };
   $("#fs").onchange = () => { fillTopics(); load(); }; $("#fg").onchange = load; $("#ft").onchange = load; $("#fq").oninput = () => { clearTimeout(timer); timer = setTimeout(load, 300); };
+  const mySubj = [...D.classes].reverse().find(c=>c.subject && TAX[c.subject])?.subject; if(mySubj) $("#fs").value = mySubj;
   fillTopics(); load();
   $("#scopy").onclick = async () => {
     if(!sel.size) return toast("סמנו קודם שאלות"); const to = await pickAssignment(D, sel.size); if(!to) return;
@@ -1681,7 +1685,9 @@ async function tabBank(D){
     $$("#blist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#bsel").textContent = sel.size; $(".bankdock").hidden = !sel.size; });
   };
   $("#bq").oninput = draw; $("#bt").onchange = draw; draw(); bindBankSeg(D);
-  $("#bshare").onclick = () => { if(!sel.size) return toast("סמנו קודם שאלות לשיתוף"); shareDialog(qs.filter(x=>sel.has(x.id))); };
+  $("#bshare").onclick = () => { if(!sel.size) return toast("סמנו קודם שאלות לשיתוף"); const picked = qs.filter(x=>sel.has(x.id));
+    const cids = [...new Set(picked.flatMap(x => (D.assignments.find(a=>a.id===x.assignment_id)?.hw_assignment_classes||[]).map(y=>y.class_id)))];
+    shareDialog(picked, classMeta(cids, D.classes)); };
   $("#bcopy").onclick = async () => {
     if(!sel.size) return toast("סמנו קודם שאלות");
     const to = await pickAssignment(D, sel.size); if(!to) return;
@@ -1712,7 +1718,7 @@ async function teacherClass(id){
   const joinMsg = `שיעורי הבית של "${c.name}" עוברים ל-AlfaMath:\n${joinLink}\nנכנסים, כותבים שם פרטי ושם משפחה, מאמתים את המייל פעם אחת וקובעים קוד סודי של 4 ספרות.\nקוד הכיתה: ${c.join_code}`;
   app().innerHTML = `
     ${backBtn("לוח ניהול","#/teacher?tab=c")}
-    <div class="row"><h1 class="grow" id="ttl">${esc(c.name)}</h1><button class="light sm" id="ren">שינוי שם</button></div>
+    <div class="row"><h1 class="grow" id="ttl">${esc(c.name)}</h1><button class="light sm" id="ren">פרטי הכיתה</button></div>
     <div class="grid2">
       <div class="card" style="margin:0"><div class="hd"><h2>כניסת תלמידים</h2><label class="chk" style="margin:0;font-size:14px"><input type="checkbox" id="jo" ${c.join_open?"checked":""}><span>הצטרפות עצמית</span></label></div><div class="bd">
         <div class="label">קוד הכיתה</div><div class="bigcode" style="margin:8px 0 16px">${c.join_code}</div>
@@ -1741,7 +1747,13 @@ async function teacherClass(id){
   $("#cnew").onclick = () => newAssignment(D, { class_id:id });
   $$(".rows [data-href]").forEach(el => el.onclick = () => go(el.dataset.href));
   $("#jo").onchange = async e => { const { error } = await sb.from("hw_classes").update({ join_open:e.target.checked }).eq("id",id); toast(error? error.message : (e.target.checked?"ההרשמה נפתחה":"ההרשמה נסגרה")); };
-  $("#ren").onclick = async () => { const n = prompt("שם חדש לכיתה:", c.name); if(!n || !n.trim()) return; const { error } = await sb.from("hw_classes").update({ name:n.trim() }).eq("id",id); if(error) return toast(error.message); $("#ttl").textContent = n.trim(); toast("השם נשמר"); };
+  $("#ren").onclick = () => {
+    const d = $("#dlg"); d.className = "wide";
+    d.innerHTML = `<h2>פרטי הכיתה</h2>${classForm(c, schoolsOf(D.classes))}<p class="err" id="cferr"></p><div class="row" style="justify-content:flex-end;margin-top:12px"><button class="ghost" id="cfx">ביטול</button><button class="primary" id="cfok">שמירה</button></div>`;
+    const read = bindClassForm(d); d.showModal(); d.querySelector("#cfx").onclick = () => d.close();
+    d.querySelector("#cfok").onclick = async () => { const v = read(); if(v.error) return d.querySelector("#cferr").textContent = v.error;
+      const { error } = await sb.from("hw_classes").update(v).eq("id", id); if(error) return d.querySelector("#cferr").textContent = errMsg(error); d.close(); toast("פרטי הכיתה נשמרו"); teacherClass(id); };
+  };
   $("#cdel").onclick = async () => { if(!(await ask(`<h2>למחוק את "${esc(c.name)}"?</h2><p class="muted">יימחקו גם חשבונות התלמידים וכל ההגשות שלהם. אי אפשר לבטל.</p>`, "מחיקה", "ביטול", true))) return; const { error } = await sb.from("hw_classes").delete().eq("id",id); if(error) return toast(error.message); go("#/teacher?tab=c"); };
   $("#annf").onsubmit = async e => { e.preventDefault(); const t = $("#annt").value.trim(); if(!t) return; const { error } = await sb.from("hw_announcements").insert({ class_id:id, body:t }); if(error) return toast(error.message); toast("ההודעה פורסמה לתלמידים"); teacherClass(id); };
   $$("[data-ann]").forEach(b => b.onclick = async () => { await sb.from("hw_announcements").delete().eq("id", b.dataset.ann); teacherClass(id); });
@@ -1843,7 +1855,7 @@ async function teacherAssignment(idq){
   const [{data:a, error}, {data:qq}, {data:cl}, {data:acl}] = await Promise.all([
     sb.from("hw_assignments").select("*").eq("id",id).single(),
     sb.from("hw_questions").select("*").eq("assignment_id",id).order("position"),
-    sb.from("hw_classes").select("id,name").order("created_at"),
+    sb.from("hw_classes").select(CL_COLS).order("created_at"),
     sb.from("hw_assignment_classes").select("class_id").eq("assignment_id",id)
   ]);
   if(seq!==navSeq) return;
@@ -2103,12 +2115,41 @@ function guessTax(topic){
   }
   return { subj: Object.keys(TAX)[0], g:"", sub:"" };
 }
+/* classes carry school / grade / subject / units / group; the name is built from them */
+const CL_COLS = "id,name,join_code,join_open,created_at,school,grade,subject,units,grp";
+function classTitle(c){ return [c.grade, c.subject, c.units ? `${c.units} יח"ל` : "", c.grp].filter(Boolean).join(" ") + (c.school ? ` – ${c.school}` : ""); }
+function classMeta(ids, classes){
+  const cs = (classes||[]).filter(c => ids.includes(c.id)); if(!cs.length) return null;
+  const one = k => { const v = [...new Set(cs.map(c=>c[k]||""))]; return v.length===1 ? v[0] : ""; };
+  return { subj: one("subject") || "", grade: one("grade"), units: one("units") };
+}
+function classForm(c, schools){
+  c = c || {}; const hi = ["י","יא","יב"].includes(c.grade);
+  return `<div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:2 1 200px"><label class="f" for="cf_school">בית הספר</label><input id="cf_school" type="text" list="cf_schools" value="${esc(c.school||"")}" placeholder="שם בית הספר"><datalist id="cf_schools">${(schools||[]).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
+      <div style="flex:1 1 90px"><label class="f" for="cf_grade">שכבה</label><select id="cf_grade"><option value="">בחרו</option>${GRADES.map(x=>`<option ${x===c.grade?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="flex:1 1 120px"><label class="f" for="cf_subj">מקצוע</label><select id="cf_subj">${Object.keys(TAX).map(x=>`<option ${x===c.subject?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="flex:1 1 90px"><label class="f" for="cf_units">יחידות</label><select id="cf_units" ${hi?"":"disabled"}><option value="">—</option>${["3","4","5"].map(x=>`<option ${x===c.units?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="flex:1 1 150px"><label class="f" for="cf_grp">קבוצה <span class="muted">(לא חובה)</span></label><input id="cf_grp" type="text" value="${esc(c.grp||"")}" placeholder="למשל יב4-5"></div>
+    </div>
+    <p class="muted small" style="margin:10px 0 0">שם הכיתה: <b id="cf_name">${esc(classTitle(c)||"—")}</b></p>`;
+}
+function bindClassForm(root){
+  const $r = x => root.querySelector(x);
+  const read = () => ({ school:$r("#cf_school").value.trim(), grade:$r("#cf_grade").value, subject:$r("#cf_subj").value, units:$r("#cf_units").disabled ? "" : $r("#cf_units").value, grp:$r("#cf_grp").value.trim() });
+  const upd = () => { const hi = ["י","יא","יב"].includes($r("#cf_grade").value); $r("#cf_units").disabled = !hi; if(!hi) $r("#cf_units").value = ""; $r("#cf_name").textContent = classTitle(read()) || "—"; };
+  root.querySelectorAll("#cf_school,#cf_grade,#cf_subj,#cf_units,#cf_grp").forEach(x => x.addEventListener("input", upd));
+  root.querySelectorAll("select").forEach(x => x.addEventListener("change", upd));
+  return () => { const v = read(); if(!v.school) return { error:"כתבו את שם בית הספר" }; if(!v.grade) return { error:"בחרו שכבה" };
+    return { name:classTitle(v), school:v.school, grade:v.grade, subject:v.subject, units:v.units||null, grp:v.grp||null }; };
+}
+const schoolsOf = classes => [...new Set([...(classes||[]).map(c=>c.school), TEACHER?.school].filter(Boolean))];
 function taxPicker(pre, guess){
   const gs = guess || { subj:"מתמטיקה", g:"", sub:"" };
   return `<div class="row" style="gap:10px;align-items:flex-end">
       <div style="min-width:120px"><label class="f">מקצוע</label><select id="${pre}s">${Object.keys(TAX).map(x=>`<option ${x===gs.subj?"selected":""}>${x}</option>`).join("")}</select></div>
-      <div style="width:90px"><label class="f">שכבה</label><select id="${pre}g"><option value="">בחרו</option>${GRADES.map(x=>`<option>${x}</option>`).join("")}</select></div>
-      <div style="width:100px"><label class="f">יחידות</label><select id="${pre}u"><option value="">—</option><option>3</option><option>4</option><option>5</option></select></div></div>
+      <div style="width:90px"><label class="f">שכבה</label><select id="${pre}g"><option value="">בחרו</option>${GRADES.map(x=>`<option ${x===gs.grade?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="width:100px"><label class="f">יחידות</label><select id="${pre}u"><option value="">—</option>${["3","4","5"].map(x=>`<option ${x===gs.units?"selected":""}>${x}</option>`).join("")}</select></div></div>
     <div class="row" style="gap:10px;align-items:flex-end;margin-top:8px">
       <div class="grow" style="min-width:160px"><label class="f">נושא</label><select id="${pre}t"></select></div>
       <div class="grow" style="min-width:160px"><label class="f">תת-נושא</label><select id="${pre}b"></select></div></div>
@@ -2120,6 +2161,7 @@ function bindTax(root, pre, guess){
   const fillT = () => { const groups = TAX[$r(`#${pre}s`).value] || {}; $r(`#${pre}t`).innerHTML = `<option value="">בחרו</option>` + Object.keys(groups).map(x=>`<option ${x===gs.g?"selected":""}>${x}</option>`).join(""); fillB(); };
   const fillB = () => { const subs = (TAX[$r(`#${pre}s`).value]||{})[$r(`#${pre}t`).value] || []; $r(`#${pre}b`).innerHTML = `<option value="">—</option>` + subs.map(x=>`<option ${x===gs.sub?"selected":""}>${x}</option>`).join(""); };
   const fixU = () => { const hi = ["י","יא","יב"].includes($r(`#${pre}g`).value); $r(`#${pre}u`).disabled = !hi; if(!hi) $r(`#${pre}u`).value = ""; };
+  if(gs.grade) $r(`#${pre}g`).value = gs.grade; if(gs.units) $r(`#${pre}u`).value = gs.units;
   $r(`#${pre}s`).onchange = () => { gs.g = ""; gs.sub = ""; fillT(); }; $r(`#${pre}t`).onchange = fillB; $r(`#${pre}g`).onchange = fixU; fillT(); fixU();
 }
 function readTax(root, pre){
@@ -2133,15 +2175,16 @@ async function bankShare(ids, t){
   const { data, error } = await sb.rpc("hw_bank_share", { p_qids:ids, p_subject:t.subject, p_grade:t.grade, p_units:t.units||null, p_topic:t.topic, p_subtopic:t.subtopic||null, p_accept:true });
   if(error) throw new Error(errMsg(error)); if(data?.error) throw new Error(data.error); return data.count;
 }
-async function shareDialog(qs){
+const withMeta = (guess, meta) => { const g = { ...guess }; if(meta){ if(meta.subj && TAX[meta.subj] && meta.subj !== g.subj){ g.subj = meta.subj; g.g = ""; g.sub = ""; } if(meta.grade) g.grade = meta.grade; if(meta.units) g.units = meta.units; } return g; };
+async function shareDialog(qs, meta){
   if(!qs.length) return toast("אין שאלות שמורות לשתף");
   const d = $("#dlg"); d.className = "wide";
   d.innerHTML = `<h2>שיתוף במאגר המשותף</h2><p class="muted small">סמנו אילו שאלות לשתף. מורים אחרים יוכלו להעתיק אותן למשימות שלהם. השאלות שלכם לא משתנות.</p>
     <div style="max-height:34vh;overflow:auto;border:1px solid var(--line);padding:4px 10px">${qs.map((q,i)=>`<label class="chk" style="margin:8px 0"><input type="checkbox" data-sq="${q.id}" checked><span><b>${i+1}.</b> <span class="prompt" style="display:inline">${esc(String(q.prompt).slice(0,120))}</span></span></label>`).join("")}</div>
-    <div style="margin-top:14px">${taxPicker("sh", guessTax(qs[0].topic))}</div>
+    <div style="margin-top:14px">${taxPicker("sh", withMeta(guessTax(qs[0].topic), meta))}</div>
     <p class="err" id="sherr"></p>
     <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="ghost" id="shx">ביטול</button><button class="primary" id="shgo">שליחה לבדיקה</button></div>`;
-  math(d); bindTax(d, "sh", guessTax(qs[0].topic)); d.showModal();
+  math(d); bindTax(d, "sh", withMeta(guessTax(qs[0].topic), meta)); d.showModal();
   d.querySelector("#shx").onclick = () => d.close();
   d.querySelector("#shgo").onclick = async () => {
     const t = readTax(d, "sh"); if(t.error) return d.querySelector("#sherr").textContent = t.error;
@@ -2149,7 +2192,7 @@ async function shareDialog(qs){
     try{ const n = await bankShare(ids, t); d.close(); toast(`${n} שאלות נשלחו לבדיקה. הן ייכנסו למאגר אחרי האישור השבועי`); }catch(e){ d.querySelector("#sherr").textContent = e.message; }
   };
 }
-function openAIGenerator(onAdd){
+function openAIGenerator(onAdd, meta){
   const d = sheet(`
     <h2>בנייה עם AI</h2>
     <p class="muted small" style="margin:6px 0 0">כל AI עובד: ChatGPT, Gemini או Claude. ממלאים מה צריך, שולחים ל-AI, ומדביקים כאן את מה שהוא מחזיר.</p>
@@ -2157,11 +2200,11 @@ function openAIGenerator(onAdd){
     <div id="g_topic">
       <div class="row" style="margin-top:4px">
         <div class="grow" style="min-width:140px"><label class="f" for="g_t">נושא</label><input id="g_t" type="text" placeholder="למשל: טרפז, חוק שני של ניוטון"></div>
-        <div style="width:110px"><label class="f" for="g_g">כיתה</label><input id="g_g" type="text" placeholder="ט׳"></div>
+        <div style="width:110px"><label class="f" for="g_g">כיתה</label><input id="g_g" type="text" placeholder="ט׳" value="${esc(meta?.grade ? meta.grade + (meta.units ? ` (${meta.units} יח"ל)` : "") : "")}"></div>
       </div>
       <div class="row">
         <div style="width:110px"><label class="f" for="g_n">כמה שאלות</label><input id="g_n" type="number" min="1" max="30" value="8" class="ltr"></div>
-        <div style="width:130px"><label class="f" for="g_s">מקצוע</label><select id="g_s"><option>מתמטיקה</option><option>פיזיקה</option></select></div>
+        <div style="width:130px"><label class="f" for="g_s">מקצוע</label><select id="g_s">${["מתמטיקה","פיזיקה"].map(x=>`<option ${x===meta?.subj?"selected":""}>${x}</option>`).join("")}</select></div>
         <div style="width:130px"><label class="f" for="g_l">רמה</label><select id="g_l"><option>בינונית</option><option>קלה</option><option>קשה</option><option>מדורגת, מקל לקשה</option></select></div>
       </div>
     </div>
@@ -2233,7 +2276,7 @@ function openAIGenerator(onAdd){
     if(want && got < want){ const more = `המשך: כתוב עוד ${want-got} שאלות חדשות באותו נושא ובאותו פורמט AlfaMath (JSON בלבד), בלי לחזור על השאלות הקודמות.`;
       $d("#g_err").innerHTML = `<span style="color:var(--ink)">התקבלו ${got} שאלות מתוך ${want}. </span><button class="light sm" type="button" id="g_more">העתקת בקשה ל-${want-got} שאלות נוספות</button>`;
       $d("#g_more").onclick = () => { copy(more, "הועתק. הוסיפו קודם את השאלות שכבר נקראו, ואז הדביקו את הבקשה באותה שיחה עם ה-AI"); }; } };
-  $d("#g_share").onchange = () => { const f = $d("#g_shf"); f.hidden = !$d("#g_share").checked; if(!f.hidden && !f.innerHTML){ const gs = guessTax(parsed.find(p=>p.q)?.q.topic || $d("#g_topic")?.value); f.innerHTML = taxPicker("gs", gs); bindTax(d, "gs", gs); } };
+  $d("#g_share").onchange = () => { const f = $d("#g_shf"); f.hidden = !$d("#g_share").checked; if(!f.hidden && !f.innerHTML){ const gs = withMeta(guessTax(parsed.find(p=>p.q)?.q.topic || $d("#g_t")?.value), meta); f.innerHTML = taxPicker("gs", gs); bindTax(d, "gs", gs); } };
   $d("#g_add").onclick = () => { const qs = parsed.filter(p=>p.q && p.on!==false).map(p=>p.q);
     if($d("#g_share").checked){ const t = readTax(d, "gs"); if(t.error){ $d("#g_err").textContent = t.error; return; } qs.forEach(q => q._share = t); }
     d.close(); onAdd(qs); };
@@ -2256,8 +2299,8 @@ function tabQuestions(){
   };
   draw();
   $("#add").onclick = () => { Q.push({ id:uuid(), assignment_id:A.id, prompt:"", kind:"number", choices:null, answer:{value:""}, points:1, figure:null, topic:Q.length?Q[Q.length-1].topic:null, hint:null, hint_penalty:0, solution:null, params:null, _new:true }); draw(); markDirty(); $$(".qedit").pop().scrollIntoView({behavior:"smooth",block:"start"}); };
-  $("#shq").onclick = () => { if(dirty) return toast("שמרו קודם את השינויים"); shareDialog(Q.filter(q=>!q._new)); };
-  $("#imp").onclick = () => openAIGenerator(qs => { qs.forEach(q => { q.assignment_id = A.id; if(!q.topic && Q.length) q.topic = Q[Q.length-1].topic; }); Q.push(...qs); draw(); markDirty(); toast(`נוספו ${qs.length} שאלות. בדקו ולחצו שמירה`); });
+  $("#shq").onclick = () => { if(dirty) return toast("שמרו קודם את השינויים"); shareDialog(Q.filter(q=>!q._new), classMeta(ACL, CL)); };
+  $("#imp").onclick = () => openAIGenerator(qs => { qs.forEach(q => { q.assignment_id = A.id; if(!q.topic && Q.length) q.topic = Q[Q.length-1].topic; }); Q.push(...qs); draw(); markDirty(); toast(`נוספו ${qs.length} שאלות. בדקו ולחצו שמירה`); }, classMeta(ACL, CL));
   $("#qlist").addEventListener("input", e => {
     const box = e.target.closest(".qedit"); if(!box) return;
     const i = +box.dataset.i, q = Q[i], f = e.target.dataset.f, v = e.target.value; if(!f) return;
