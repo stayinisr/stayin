@@ -314,10 +314,10 @@ footer a:first-of-type{margin-inline-start:auto}
     for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(/^sb-.*-auth-token$/.test(k) && localStorage.getItem(k)) teacher = true; }
   }catch(e){}
   if(!student && !teacher) return;
-  // signed in: one button that opens a small menu (go in, switch to the other login, sign out)
+  // signed in: one button that opens a small menu (go in, sign out)
   var items = student
-    ? [["המשימות שלי", "/app#/"], ["כניסה כמורה", "/app#/teacher"], ["התנתקות", "/app#/logout"]]
-    : [["לוח הניהול", "/app#/teacher"], ["כניסה כתלמיד/ה", "/app#/"], ["התנתקות", "/app#/logout"]];
+    ? [["המשימות שלי", "/app#/"], ["התנתקות", "/app#/logout"]]
+    : [["לוח הניהול", "/app#/teacher"], ["התנתקות", "/app#/logout"]];
   var acct = document.getElementById("acct"), btn = document.getElementById("acctbtn"), menu = document.getElementById("acctmenu");
   document.getElementById("enter").hidden = true; acct.hidden = false;
   document.getElementById("acctlbl").textContent = items[0][0];
