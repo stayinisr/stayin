@@ -1386,6 +1386,7 @@ function loginPage(){
     $("#lf").style.display = "none"; $("#vf").style.display = "block"; $(".codebox input").focus();
   };
   $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; err(); };
+  if(store("hw-autosend")){ store("hw-autosend", null); if($("#em").value) setTimeout(() => $("#lf").requestSubmit(), 50); }
   bindCode($(".codebox"), async code => {
     err();
     const email = $("#em").value.trim().toLowerCase();
