@@ -119,6 +119,17 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .feat p{margin:8px 0 0;color:var(--ink-2);font-size:15.5px;line-height:1.55}
 
 /* how */
+.shots{padding-bottom:96px}
+.shots h2{margin:0;font-size:44px;line-height:1.1}
+.shots .g{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,.75fr);gap:40px;align-items:start;margin-top:40px}
+.shots figure{margin:0}
+.shots .frame{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:#fff;overflow:hidden}
+.shots .frame img{display:block;width:100%;height:auto}
+.shots .phone{border-radius:30px;padding:10px;background:var(--ink);box-shadow:6px 6px 0 var(--hl);max-width:300px;margin-inline:auto}
+.shots .phone img{display:block;width:100%;height:auto;border-radius:22px}
+.shots figcaption{margin-top:16px;color:var(--ink-2);font-size:16px;line-height:1.55}
+.shots figcaption b{color:var(--ink)}
+@media (max-width:900px){.shots .g{grid-template-columns:minmax(0,1fr);gap:48px}.shots{padding-bottom:64px}.shots h2{font-size:34px}}
 .how{padding-top:96px;padding-bottom:96px}
 .how h2,.duo h2,.band h2{margin:0;font-size:44px;line-height:1.1}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px;counter-reset:s}
@@ -260,6 +271,16 @@ footer a:first-of-type{margin-inline-start:auto}
   <div class="step"><span class="n" aria-hidden="true">1</span><h3>יוצרים משימה</h3><p>בונים שאלות בעורך, או מבקשים מ-ChatGPT, מ-Claude או מ-Gemini להכין אותן, גם מצילום של דף עבודה. קובעים מועד הגשה, ניסיונות ושעון למבחן.</p></div>
   <div class="step"><span class="n" aria-hidden="true">2</span><h3>שולחים לכיתה</h3><p>שולחים לתלמידים את קוד הכיתה בוואטסאפ. כל תלמיד נכנס עם השם שלו וקוד סודי, ורואה רק את המשימות של הכיתה שלו.</p></div>
   <div class="step"><span class="n" aria-hidden="true">3</span><h3>מקבלים ציונים וניתוח</h3><p>הציון מוכן מיד. גיליון ציונים משוקלל, אחוז הצלחה בכל שאלה והטעויות הנפוצות. מייצאים לאקסל בלחיצה.</p></div>
+ </div>
+</section>
+
+<section class="wrap shots" aria-label="איך זה נראה">
+ <h2 class="disp">ככה זה נראה</h2>
+ <div class="g">
+  <figure><div class="frame"><img src="/homework/shot-analysis.webp" width="1036" height="397" loading="lazy" alt="ניתוח שאלות: אחוז הצלחה בכל שאלה והתשובות השגויות שחזרו הכי הרבה"></div>
+   <figcaption><b>אצל המורה:</b> אחוז ההצלחה בכל שאלה, והטעות שחזרה הכי הרבה פעמים. רואים מיד מה צריך להסביר שוב בשיעור.</figcaption></figure>
+  <figure><div class="phone"><img src="/homework/shot-student.webp" width="390" height="720" loading="lazy" alt="המסך של התלמיד בטלפון: המשימה הבאה וכפתור התחלה"></div>
+   <figcaption><b>אצל התלמיד:</b> המשימה הבאה מחכה למעלה, עם כפתור אחד להתחלה.</figcaption></figure>
  </div>
 </section>
 

@@ -68,6 +68,10 @@
   .hero::after{content:"";position:absolute;z-index:-1;inset-block:0;inset-inline-start:18px;width:2px;background:rgba(255,227,71,.75)}
   .hero h1{color:#fff;margin:0}
   .hero .muted{color:#C9D6FB}
+  .hero .nt{font-size:clamp(26px,6vw,38px);line-height:1.15;margin:6px 0 6px}
+  .hero .nsub{color:#E4EBFF;font-size:15.5px} .hero .nsub b{color:#fff}
+  .hero .hstats{margin-top:18px;padding-top:12px;border-top:1px solid rgba(255,255,255,.22);font-size:13.5px;color:#C9D6FB}
+  .btn-sun{background:var(--sun);color:var(--ink);border-color:var(--ink)} .btn-sun:hover{background:#fff;color:var(--ink)}
   .hero .stats > div{border-color:rgba(255,255,255,.22)}
   .hero .stats .k{color:#C9D6FB}
   .stats{display:grid;grid-template-columns:repeat(var(--n,3),1fr)}
@@ -114,6 +118,7 @@
   .codebox input.on{border-color:var(--pri);color:var(--pri)}
   .codebox input:focus{border-color:var(--acc);box-shadow:inset 0 -3px 0 var(--acc)}
   /* chips */
+  .qmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-bottom:6px;font-size:12.5px;color:var(--ink-3,var(--ink-2))}
   .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 9px;border:1px solid var(--line-2);color:var(--ink-2);background:#fff;white-space:nowrap}
   .chip.ink{background:var(--pri);border-color:var(--pri);color:#fff}
   .chip.hot{background:var(--hot);border-color:var(--hot);color:#fff}
@@ -283,16 +288,17 @@
   body{background-color:#F6F8FC;background-image:linear-gradient(#E7EDF6 1px,transparent 1px),linear-gradient(90deg,#E7EDF6 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
   header{background:rgba(255,255,255,.9);border-bottom:2px solid var(--ink)}
   h1{font-family:"Secular One","Rubik",sans-serif;font-weight:400;letter-spacing:-.01em}
-  .card{border:1.5px solid var(--ink);box-shadow:5px 5px 0 #C9D6FB}
+  .card{border:1px solid var(--line-2);box-shadow:none}
+  .card.key{border:1.5px solid var(--ink);box-shadow:5px 5px 0 #C9D6FB}
   .card > .hd{border-bottom:1.5px solid var(--line)}
-  .card > .hd::before{background:var(--sun);width:6px;top:14px;bottom:14px}
+  .card > .hd::before{background:var(--sun);width:4px;top:16px;bottom:16px}
   .hero{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
   /* buttons: ink outline + lift */
   button,.btn{transition:transform .14s,box-shadow .14s,background .14s,color .14s}
   .primary{border-color:var(--ink)}
   .primary:hover{background:var(--pri);border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
-  .light{background:#fff;border:1.5px solid var(--ink)}
-  .light:hover{background:var(--sun);color:var(--ink);border-color:var(--ink);transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+  .light{background:#fff;border:1.5px solid var(--line-2)}
+  .light:hover{background:var(--pri-wash);color:var(--pri);border-color:var(--pri)}
   button:active,.btn:active{transform:translate(0,0)!important;box-shadow:none!important}
   /* tabs: highlighter under the active tab */
   .tabs{border-bottom:2px solid var(--ink)}
@@ -344,7 +350,7 @@
     main.enter > *,.mark.ok,.grade .n::after{animation:none!important}
     button,.btn,.tile{transition:none} .primary:hover,.light:hover,.tile:hover{transform:none}
   }
-  @media (max-width:640px){ .grade .n{font-size:80px} .card{box-shadow:4px 4px 0 #C9D6FB} }
+  @media (max-width:640px){ .grade .n{font-size:80px} .card.key{box-shadow:4px 4px 0 #C9D6FB} }
   @media (hover:none){ .primary:hover,.light:hover,.tile:hover{transform:none;box-shadow:none} .light:hover{background:#fff} }
   /* help: header button + in-app guide */
   .helpbtn{gap:6px;display:inline-flex;align-items:center;font:600 14px Rubik,sans-serif}
@@ -385,11 +391,12 @@
   :where([data-theme=dark]) :is(input,select,textarea,.codebox input,.ans input,.keys button,.choice,.qedit,.preview,.tile,.light,.date,.chip,.badge.locked){background:var(--card);color:var(--ink)}
   :where([data-theme=dark]) .date.late{background:var(--bad-wash)}
   [data-theme=dark] .hero{background:#2F5BF0}
-  [data-theme=dark] .light:hover{background:var(--sun);color:#0B1324}
+  [data-theme=dark] .btn-sun{color:#0B1324;border-color:#0B1324}
+  [data-theme=dark] .light:hover{background:var(--pri-wash);color:var(--ink)}
   [data-theme=dark] :is(.card,.hero,dialog,.light,.date,.tile,.choice.sel,.seg){border-color:#4A5D88}
-  [data-theme=dark] .card{box-shadow:5px 5px 0 #050A16}
+  [data-theme=dark] .card.key{box-shadow:5px 5px 0 #050A16}
   [data-theme=dark] :is(.hero,dialog){box-shadow:6px 6px 0 #050A16}
-  [data-theme=dark] :is(.primary:hover,.light:hover,.tile:hover){box-shadow:4px 4px 0 #050A16}
+  [data-theme=dark] :is(.primary:hover,.tile:hover){box-shadow:4px 4px 0 #050A16}
   [data-theme=dark] .primary{background:#2F5BF0;color:#fff;border-color:#86A2FF}
   [data-theme=dark] :is(.toast,.seg button.on,.qn,.choice.sel .let,.chip.ink,.cells i.f){color:#0B1324}
   [data-theme=dark] .choice.sel{background:var(--sun-wash);box-shadow:inset -5px 0 0 var(--sun)}
@@ -816,7 +823,7 @@ async function studentMe(){
       <label class="f">הקוד החדש שוב</label><div id="c2">${codeBoxes(4, "", true)}</div>
       <button class="primary wide" id="chp" style="margin-top:18px">שמירת קוד חדש</button>
       <p class="err" id="ae" role="alert"></p>
-      <p class="muted small" style="margin:10px 0 0">שכחת את הקוד הנוכחי? צא מהחשבון ולחץ "שכחתי את הקוד" במסך הכניסה.</p>
+      <p class="muted small" style="margin:10px 0 0">שכחתם את הקוד? מתנתקים ולוחצים "שכחתי את הקוד" במסך הכניסה.</p>
     </div></div>
     <div class="card"><div class="bd">
       <button class="light wide" id="out1">יציאה</button>
@@ -855,7 +862,7 @@ function studentAuth(mode, code=""){
     <div class="auth">
       ${mode === "register" ? "" : roleSwitch("s")}
       <h1 style="text-align:center">כניסה</h1>
-      <p class="muted" style="text-align:center">קוד כיתה, השם שלך וקוד סודי.</p>
+      <p class="muted" style="text-align:center">קוד כיתה, שם וקוד סודי.</p>
       <div class="card"><div class="bd" id="af"></div></div>
     </div>`;
   bindRoleSwitch();
@@ -868,7 +875,7 @@ function studentAuth(mode, code=""){
     try{
       const { data, error } = await sb.functions.invoke("alfamath-mail", { body: { class_code:code, student_id:pick.id, email, purpose } });
       if(error) return { error: "לא הצלחנו לשלוח מייל. נסו שוב בעוד רגע" };
-      return data || { error: "משהו השתבש" };
+      return data || { error: "לא התקבלה תשובה מהשרת. נסו שוב בעוד רגע." };
     }catch(e){ return { error: "אין חיבור. נסו שוב" }; }
   };
   const stepCode = () => {
@@ -941,7 +948,7 @@ function studentAuth(mode, code=""){
       <h2 style="text-align:center">${esc(pick.name)}</h2>
       <p class="muted" style="text-align:center;margin:6px 0 4px">נשלח לך קוד למייל, רק בפעם הראשונה. אחר כך נכנסים עם קוד סודי.</p>
       <form id="ef">
-        <label class="f" for="em">המייל שלך</label>
+        <label class="f" for="em">מייל</label>
         <input id="em" type="email" class="ltr" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@gmail.com">
         <label class="chk" style="margin:14px 0 0"><input type="checkbox" id="tok"><span>קראתי ואני מסכים/ה ל<a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></span></label>
         <button class="primary big wide" id="snd" style="margin-top:16px">שליחת קוד למייל</button>
@@ -996,14 +1003,14 @@ function studentAuth(mode, code=""){
     box().innerHTML = `
       ${top("דיווח למורה", true)}
       <h2 style="text-align:center">${esc(pick.name)}</h2>
-      <p class="muted" style="text-align:center;margin:6px 0 12px">אם מעולם לא נכנסת והחשבון כבר פעיל, כנראה מישהו אחר נכנס בשמך. המורה יקבל הודעה, יראה מי נרשם, ויאפס לך את החשבון.</p>
+      <p class="muted" style="text-align:center;margin:6px 0 12px">אם לא נכנסתם אף פעם והחשבון כבר פעיל, כנראה מישהו אחר נכנס בשמכם. המורה יקבל הודעה ויאפס את החשבון.</p>
       <label class="f" for="nt">הערה למורה <span class="muted">(לא חובה)</span></label><input id="nt" type="text" maxlength="200">
       <button class="primary big wide" id="sr" style="margin-top:16px">שליחת דיווח</button>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
     $("#bk").onclick = stepPin;
     $("#sr").onclick = async () => { busy($("#sr"), true); const { data, error } = await sb.rpc("hw_student_report", { p_code:code, p_student:pick.id, p_note:$("#nt").value }); busy($("#sr"), false);
       if(error || data?.error) return err(error ? errMsg(error) : data.error);
-      box().innerHTML = `<h2 style="text-align:center">הדיווח נשלח</h2><p class="muted" style="text-align:center;margin:10px 0 16px">אחרי שהמורה יאפס, חוזרים לכאן ונרשמים עם המייל שלך.</p><button class="light wide" id="bk">חזרה</button>`;
+      box().innerHTML = `<h2 style="text-align:center">הדיווח נשלח</h2><p class="muted" style="text-align:center;margin:10px 0 16px">אחרי שהמורה יאפס, חוזרים לכאן ונרשמים מחדש.</p><button class="light wide" id="bk">חזרה</button>`;
       $("#bk").onclick = () => stepName(); };
   };
   if(code.length === 6) loadClass(code).then(()=>{ if(!R) stepCode(); }); else stepCode();
@@ -1055,23 +1062,28 @@ async function studentHome(){
       <div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${sub}</div></div><div class="end">${end}${off?"":IC.chev}</div></div>`;
   };
   app().innerHTML = `${welcomeCard("hw-help-s", "שתי דקות על כל מה שאפשר לעשות כאן: משימות, ציונים, תרגול טעויות והתראות.")}
-    <div class="hero">
-      <div class="row" style="align-items:flex-start"><div class="grow"><h1>שלום ${esc(d.name.split(" ")[0])}</h1><div class="muted">${esc(d.class)}</div></div>
-        ${st.streak>=2?`<span class="chip sun">רצף של ${st.streak} הגשות בזמן</span>`:""}</div>
-      <div class="stats" style="margin-top:20px"><div><div class="v">${todo.length}</div><div class="k">לביצוע</div></div><div><div class="v">${st.submitted}</div><div class="k">הוגשו</div></div><div><div class="v">${st.avg ?? "–"}</div><div class="k">ממוצע</div></div></div>
-      ${st.hist.length>1?`<div style="margin-top:16px">${spark(st.hist, true)}</div>`:""}
-    </div>
+    ${(()=>{ const nx = todo[0], hi = esc(d.name.split(" ")[0]);
+      const statLine = `<div class="hstats">${st.submitted} הוגשו${st.avg!=null?`, ממוצע ${st.avg}`:""}${st.streak>=2?`, רצף של ${st.streak} בזמן`:""}</div>`;
+      return nx ? `<div class="hero next" data-id="${nx.id}">
+        <div class="muted small">שלום ${hi}, המשימה הבאה:</div>
+        <h1 class="nt">${esc(nx.title)}</h1>
+        <div class="nsub">${nx.questions} שאלות${nx.due_at?`, <b>${relDue(nx.due_at)}</b>`:""}${nx.mode==="exam"?`, מבחן${nx.time_limit_min?` של ${nx.time_limit_min} דק׳`:""}`:""}</div>
+        <div class="row" style="margin-top:16px;flex-wrap:wrap;gap:12px"><button class="btn-sun big" id="gonext">התחלה</button>${todo.length>1?`<span class="small">ועוד ${todo.length-1} לביצוע</span>`:""}</div>
+        ${statLine}</div>`
+      : `<div class="hero"><h1>שלום ${hi}</h1><div class="muted">${esc(d.class)}</div>
+        <div class="nsub" style="margin-top:12px"><b>אין משימות פתוחות.</b> משימה חדשה תופיע כאן ברגע שהמורה יפרסם אותה.</div>${st.submitted?statLine:""}</div>`; })()}
     <div class="cols"><div>
-    <div class="card"><div class="hd"><h2>לביצוע</h2><span class="muted small">${todo.length||""}</span></div>
-      ${todo.length ? `<div class="rows">${todo.map(todoRow).join("")}</div>` : `<div class="empty"><b>הכול מוגש</b>משימה חדשה תופיע כאן ברגע שהמורה יפרסם אותה.</div>`}</div>
-    ${practice.length?`<div class="card"><div class="hd"><h2>תרגול חופשי</h2><span class="muted small">בלי ציון, כמה פעמים שרוצים</span></div><div class="rows">${practice.map(a=>`<div class="r" data-id="${a.id}"><div class="date none"><b>∞</b><span>תרגול</span></div><div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${a.questions} שאלות${a.attempts?`, תרגלת ${a.attempts} פעמים`:""}</div></div><div class="end">${a.last&&a.last.score!=null?gbadge(pct(a.last.score,a.last.max)):""}${IC.chev}</div></div>`).join("")}</div></div>`:""}
+    ${todo.length>1?`<div class="card"><div class="hd"><h2>עוד לביצוע</h2><span class="muted small">${todo.length-1}</span></div>
+      <div class="rows">${todo.slice(1).map(todoRow).join("")}</div></div>`:""}
+    ${practice.length?`<div class="card"><div class="hd"><h2>תרגול חופשי</h2><span class="muted small">בלי ציון, כמה פעמים שרוצים</span></div><div class="rows">${practice.map(a=>`<div class="r" data-id="${a.id}"><div class="date none"><b>∞</b><span>תרגול</span></div><div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${a.questions} שאלות${a.attempts?`, תורגל ${a.attempts} פעמים`:""}</div></div><div class="end">${a.last&&a.last.score!=null?gbadge(pct(a.last.score,a.last.max)):""}${IC.chev}</div></div>`).join("")}</div></div>`:""}
     ${rest.length ? `<div class="card"><div class="hd"><h2>הוגשו וציונים</h2></div><div class="rows">${rest.map(doneRow).join("")}</div></div>` : ""}
     </div><aside>
     ${d.announcements.length?`<div class="card"><div class="hd"><h2>הודעות מהמורה</h2></div>${d.announcements.slice(0,3).map(n=>`<div class="ann"><div class="prompt">${esc(n.body)}</div><div class="tiny">${fmtDate(n.at)}</div></div>`).join("")}</div>`:""}
     ${(d.topics||[]).length?`<div class="card"><div class="hd"><h2>כדאי לחזק</h2><button class="ghost sm" onclick="go('#/progress')">הכול</button></div><div class="bd"><div class="bars">${d.topics.slice(0,3).map(t=>{ const p = pct(t.ok,t.total); return `<div class="b"><span class="name">${esc(t.topic)}</span><div class="meter ${band(p)}"><i style="width:${p}%"></i></div><span class="v">${p}%</span></div>`; }).join("")}</div></div></div>`:""}
-    ${d.mistakes?`<div class="card"><div class="bd"><div class="row"><div class="grow"><b>${d.mistakes} שאלות לתרגול חוזר</b><div class="muted small">שאלות שטעית בהן, בלי ציון</div></div><button class="primary sm" onclick="go('#/mistakes')">לתרגול</button></div></div></div>`:""}
+    ${d.mistakes?`<div class="card"><div class="bd"><div class="row"><div class="grow"><b>${d.mistakes} שאלות לתרגול חוזר</b><div class="muted small">שאלות עם טעות, בלי ציון</div></div><button class="primary sm" onclick="go('#/mistakes')">לתרגול</button></div></div></div>`:""}
     </aside></div>`;
   $$(".r[data-id]").forEach(el => { if(el.dataset.off!=="true") el.onclick = () => go("#/s/"+el.dataset.id); });
+  const gn = $("#gonext"); if(gn) gn.onclick = () => go("#/s/"+$(".hero.next").dataset.id);
   bindWelcome("hw-help-s", "students");
   studentNav("tasks", d.mistakes);
 }
@@ -1123,12 +1135,12 @@ async function studentMistakes(){
   if(HOME) HOME.mistakes = list.length;
   app().innerHTML = `<div class="narrow">
     <h1>מחברת טעויות</h1>
-    <p class="muted">כל השאלות שטעית בהן. נסו שוב, זה לא משנה את הציון.</p>
+    <p class="muted">כל השאלות שהיו בהן טעויות. נסו שוב, זה לא משנה את הציון.</p>
     <div class="card flat"><div class="bd" id="qs">
       ${list.length ? list.map((q,i)=>`<div class="q" data-id="${q.id}"><div class="qh"><span class="qn">${i+1}</span><div class="body">
         <div class="tiny muted" style="margin-bottom:4px">${esc(q.assignment)}${q.topic?` · ${esc(q.topic)}`:""}</div>
         <div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}${answerInput(q,"")}
-        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button>${q.similar?`<button class="light sm sim">שאלה דומה</button>`:""}<span class="muted tiny prev">בפעם הקודמת ענית: <bdi>${esc(q.given!=null?givenText(q,q.given):"—")}</bdi></span></div>
+        <div class="row" style="margin-top:12px"><button class="primary sm try">בדיקה</button>${q.similar?`<button class="light sm sim">שאלה דומה</button>`:""}<span class="muted tiny prev">תשובה קודמת: <bdi>${esc(q.given!=null?givenText(q,q.given):"—")}</bdi></span></div>
         <div class="slot"></div></div></div></div>`).join("") : `<div class="empty"><b>אין טעויות פתוחות</b>כל הכבוד. שאלות שתטעה בהן יופיעו כאן לתרגול.</div>`}
     </div></div></div>`;
   math(app()); bindKeys(app()); bindChoices(app());
@@ -1274,7 +1286,7 @@ function showForm(body, a){
       const firstEmpty = a.questions.findIndex(q => !ans[q.id]);
       if(!(await ask(`<h2>חסרות ${missing} תשובות</h2><p class="muted">שאלה ${firstEmpty+1} עוד ריקה. שאלה בלי תשובה נחשבת שגויה.</p>`, "להגיש בכל זאת", "לחזור לשאלות"))){
         const el = $$("#qs .q")[firstEmpty]; el.scrollIntoView({behavior:"smooth",block:"center"}); const inp = el.querySelector("input.ansin"); inp && setTimeout(()=>inp.focus({preventScroll:true}),350); return; }
-    } else if(final && !(await ask(`<h2>להגיש?</h2><p class="muted">ענית על כל השאלות. אחרי ההגשה אי אפשר לשנות.</p>`, "הגשה", "עוד רגע"))) return;
+    } else if(final && !(await ask(`<h2>להגיש?</h2><p class="muted">כל השאלות נענו. אחרי ההגשה אי אפשר לשנות.</p>`, "הגשה", "עוד רגע"))) return;
     send(false);
   };
   if(a.time_limit_min && a.started_at){
@@ -1292,7 +1304,7 @@ function showReview(body, a, last, fresh){
   const right = (last.results||[]).filter(x=>x.correct).length;
   body.innerHTML = `
     <div class="card"><div class="bd">
-      ${graded ? `<div class="grade"><div><div class="label">${fresh?"הוגש. הציון שלך":"הציון שלך"}</div><div class="n ${band(p)}">${p}</div></div>
+      ${graded ? `<div class="grade"><div><div class="label">${fresh?"הוגש! הציון":"הציון"}</div><div class="n ${band(p)}">${p}</div></div>
           <div class="grow" style="min-width:180px"><div style="font-weight:800">${right} מתוך ${a.questions.length} נכונות</div><div class="muted small">${+(+last.score).toFixed(2)} מתוך ${last.max} נקודות · הוגש ${fmtDate(last.at)}</div></div></div>${cells(p, fresh)}`
         : `<h2>${fresh?"ההגשה התקבלה":"הוגש"}</h2><p class="muted" style="margin:6px 0 0">הוגש ${fmtDate(last.at)}. הציון יופיע כאן כשהמורה יפרסם אותו.</p>`}
     </div></div>
@@ -1305,7 +1317,7 @@ function showReview(body, a, last, fresh){
         else if(x.correct === false) fb = `<div class="mark bad"><b>לא נכון.</b>${x.answer!=null?`<span>התשובה: <bdi class="ltr" style="font-weight:800">${esc(x.answer)}</bdi></span>`:""}</div>`;
         const sol = q.solution && x.correct !== undefined ? `<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(q.solution)}</div></div>` : "";
         return `<div class="q"><div class="qh"><span class="qn" style="${x.correct===true?"background:var(--ok)":x.correct===false?"background:var(--bad)":""}">${i+1}</span><div class="body"><div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}
-          <div class="yours">התשובה שלך: <b><bdi class="${q.kind==="choice"||q.kind==="multi"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}${sol}</div></div></div>`; }).join("")}
+          <div class="yours">התשובה שנשלחה: <b><bdi class="${q.kind==="choice"||q.kind==="multi"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}${sol}</div></div></div>`; }).join("")}
     </div></div>
     ${fresh ? `<button class="wide big light" onclick="go('#/')">חזרה למשימות</button>` : ""}`;
   math(body);
@@ -1320,7 +1332,7 @@ function loginPage(){
     <div class="auth">
       ${roleSwitch("t")}
       <h1 style="text-align:center">כניסה למורים</h1>
-      <p class="muted" style="text-align:center">נשלח קוד חד-פעמי למייל שלך. מורה חדש? אותה דרך, ואחרי זה ממלאים כמה פרטים.</p>
+      <p class="muted" style="text-align:center">נשלח קוד למייל. מורה חדש? נרשמים באותה דרך.</p>
       <div class="card"><div class="bd">
         <form id="lf">
           <label class="f" for="em">אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" autocapitalize="none" spellcheck="false" required value="${esc(store("hw-teacher-email")||"")}">
@@ -1353,7 +1365,7 @@ function loginPage(){
     err();
     const email = $("#em").value.trim().toLowerCase();
     const wipe = m => { err(m); $$(".codebox input").forEach(i=>{i.value="";i.classList.remove("on");}); $(".codebox input").focus(); };
-    let v; try{ const { data:d, error:e } = await sb.functions.invoke("alfamath-mail", { body: { purpose:"teacher_verify", email, code } }); v = e ? { error:"משהו השתבש. נסו שוב" } : d; }catch(x){ v = { error:"אין חיבור לאינטרנט" }; }
+    let v; try{ const { data:d, error:e } = await sb.functions.invoke("alfamath-mail", { body: { purpose:"teacher_verify", email, code } }); v = e ? { error:"הבדיקה לא הצליחה. בקשו קוד חדש ונסו שוב." } : d; }catch(x){ v = { error:"אין חיבור לאינטרנט" }; }
     if(!v?.token_hash) return wipe(v?.error || "הקוד שגוי או שפג תוקפו.");
     const { data, error } = await sb.auth.verifyOtp({ token_hash:v.token_hash, type:"magiclink" });
     if(error) return wipe("הקוד שגוי או שפג תוקפו.");
@@ -1366,7 +1378,7 @@ async function requireTeacher(){
   if(TEACHER?.status === "approved") return true;
   const out = async () => { await sb.auth.signOut(); session = null; TEACHER = null; go("#/teacher"); };
   if(TEACHER?.status === "pending"){
-    app().innerHTML = `<div class="auth"><div class="card"><div class="empty" style="padding:32px 20px"><b>הבקשה שלך התקבלה</b>
+    app().innerHTML = `<div class="auth"><div class="card"><div class="empty" style="padding:32px 20px"><b>הבקשה התקבלה</b>
       נבדוק את הפרטים ונאשר את החשבון בקרוב. כשהחשבון יאושר, פשוט נכנסים שוב.<br><br>
       <span class="muted small">${esc(TEACHER.name||"")}${TEACHER.school?", "+esc(TEACHER.school):""}</span></div>
       <div class="bd" style="padding-top:0"><button class="light wide" id="rf">בדיקה מחדש</button><button class="ghost wide" id="lo" style="margin-top:8px">יציאה</button></div></div></div>`;
@@ -1435,7 +1447,7 @@ async function tabTeachers(){
     ${fb.length ? `<div>${fb.map(f=>`<div class="ann" style="${f.done?"opacity:.55":""}"><div class="row"><b class="grow">${esc(f.author||"תלמיד")}</b><span class="tiny">${esc(f.class_name||"")} · ${fmtDate(f.created_at)}</span>
       <button class="ghost sm" data-fb="${f.id}" data-done="${f.done?0:1}">${f.done?"החזרה":"טופל"}</button></div><div class="prompt" style="margin-top:4px">${esc(f.body)}</div></div>`).join("")}</div>` : `<div class="empty"><b>עוד אין הצעות</b>התלמידים שולחים הצעות מהאזור האישי.</div>`}</div>`);
   const [{ data:flg }, { data:bpend }] = await Promise.all([sb.rpc("hw_admin_bank", { p_status:"flagged" }), sb.rpc("hw_admin_bank", { p_status:"pending" })]);
-  box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>מאגר משותף: מחכות להחלטתך</h2><span class="muted small">${(bpend||[]).length} ממתינות לבדיקה השבועית</span></div>
+  box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>מאגר משותף: מחכות לבדיקה</h2><span class="muted small">${(bpend||[]).length} ממתינות לבדיקה השבועית</span></div>
     ${(flg||[]).length ? `<div>${flg.map(x=>{ const sq = toStudentQ({ ...x, answer:x.answer||{} }); return `<div class="ann"><div class="row tiny" style="gap:6px"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span class="chip">${esc(x.grade)}</span><span class="muted">${esc(x.teacher_name||"")}</span></div>
       <div class="prompt" style="margin-top:6px">${esc(sq.prompt)}</div>${figHtml(sq.figure)}<div class="tiny" style="margin-top:6px;color:var(--ok);font-weight:700">תשובה: <bdi>${esc(answerText({ ...x, answer:x.answer||{} }))}</bdi></div>
       ${x.review_note?`<div class="note" style="margin:8px 0"><b>הערת הבדיקה:</b> ${esc(x.review_note)}</div>`:""}
@@ -1521,16 +1533,19 @@ function tabOverview(D){
   const soon = D.assignments.filter(a=>a.is_open && a.due_at && !isPast(a.due_at) && new Date(a.due_at)-new Date() < 7*864e5).sort((x,y)=>new Date(x.due_at)-new Date(y.due_at));
   const cname = Object.fromEntries(D.classes.map(c=>[c.id,c.name]));
   const subRate = a => { const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); const n = sts.filter(s=>D.last[s.id+"|"+a.id]).length; return { n, total:sts.length }; };
+  const todoL = D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(st.display_name)} דיווח שמישהו אחר נכנס לחשבון</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div></div>${IC.chev}</div>`; }).filter(Boolean);
+  const urgent = soon.filter(a=>new Date(a.due_at)-new Date() < 2*864e5).map(a=>{ const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); return { a, miss: sts.filter(s=>!D.last[s.id+"|"+a.id]) }; }).filter(x=>x.miss.length)[0];
+  if(urgent) todoL.push(`<div class="alert-row" data-href="#/teacher/a/${urgent.a.id}"><span class="sq" style="background:var(--warn,#E8A10B)"></span><div class="grow"><div style="font-weight:800">${urgent.miss.length} עוד לא הגישו את "${esc(urgent.a.title)}"</div><div class="tiny muted">נסגרת ${relDue(urgent.a.due_at).replace(/^נסגר[תה]? ?/,"")}: ${urgent.miss.slice(0,3).map(s=>esc(s.display_name)).join(", ")}${urgent.miss.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
+  if(risk.length) todoL.push(`<div class="alert-row" data-jump="riskc"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${risk.length===1?"תלמיד אחד צריך":`${risk.length} תלמידים צריכים`} תשומת לב</div><div class="tiny muted">${risk.slice(0,3).map(x=>esc(x.st.display_name)).join(", ")}${risk.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
   $("#tab").innerHTML = `
+    <div class="card key" id="todoc"><div class="hd"><h2>דורש טיפול</h2></div><div id="todol">${todoL.join("") || `<div class="empty" style="padding:18px 20px"><b>הכול בשליטה</b>אין משימה שנסגרת בקרוב בלי הגשות, ואין תלמידים בסיכון.</div>`}</div></div>
     <div class="card"><div class="bd"><div class="stats" style="--n:4">
       <div><div class="v">${D.classes.length}</div><div class="k">כיתות</div></div>
       <div><div class="v">${D.students.length}</div><div class="k">תלמידים</div></div>
       <div><div class="v">${openA.length}</div><div class="k">משימות פתוחות</div></div>
       <div><div class="v">${allAvg ?? "–"}</div><div class="k">ממוצע כללי</div></div></div></div></div>
-    ${D.reports.length ? `<div class="card" style="border-color:var(--bad)"><div class="hd"><h2>דיווחים על חשבון תפוס</h2><span class="chip bad">${D.reports.length}</span></div>
-      ${D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(st.display_name)}</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div></div>${IC.chev}</div>`; }).join("")}</div>` : ""}
     <div class="grid2">
-      <div class="card" style="margin:0"><div class="hd"><h2>דורשים תשומת לב</h2><span class="chip ${risk.length?"bad":""}">${risk.length}</span></div>
+      <div class="card" style="margin:0" id="riskc"><div class="hd"><h2>תלמידים בסיכון</h2><span class="chip ${risk.length?"bad":""}">${risk.length}</span></div>
         ${risk.length ? risk.slice(0,8).map(x=>`<div class="alert-row" data-href="#/teacher/st/${x.st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(x.st.display_name)}</div><div class="tiny muted">${esc(cname[x.st.class_id]||"")}: ${x.why.join(", ")}</div></div>${IC.chev}</div>`).join("") : `<div class="empty"><b>אין התראות</b>תלמיד שלא מגיש או שהציון שלו יורד יופיע כאן.</div>`}
       </div>
       <div class="card" style="margin:0"><div class="hd"><h2>נסגרות השבוע</h2></div>
@@ -1542,9 +1557,16 @@ function tabOverview(D){
         return `<div class="tile" data-href="#/teacher/c/${c.id}"><div class="row"><div class="t grow">${esc(c.name)}</div>${avg!=null?gbadge(avg):""}</div>
           <div class="tiny muted" style="margin-top:6px">${sts.length} תלמידים, ${D.asgFor(c.id).filter(a=>a.is_open).length} משימות פתוחות</div></div>`; }).join("") || `<p class="muted">עוד אין כיתות.</p>`}
     </div></div></div>
-    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>גיבוי</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות שלך. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת גיבוי</button></div></div>`;
+    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>גיבוי</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת גיבוי</button></div></div>`;
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
+  $$("[data-jump]", $("#tab")).forEach(el => el.onclick = () => $("#"+el.dataset.jump)?.scrollIntoView({ behavior:"smooth", block:"start" }));
   $("#bkp").onclick = backupAll;
+  if(TEACHER?.is_admin) Promise.all([sb.rpc("hw_admin_bank", { p_status:"pending" }), sb.rpc("hw_admin_bank", { p_status:"flagged" })]).then(([p, f]) => {
+    const n = (p.data?.length||0) + (f.data?.length||0), box = $("#todol"); if(!n || !box) return;
+    const row = `<div class="alert-row" data-go="t"><span class="sq" style="background:var(--pri)"></span><div class="grow"><div style="font-weight:800">${n} שאלות במאגר המשותף מחכות לבדיקה</div><div class="tiny muted">בלשונית מורים</div></div>${IC.chev}</div>`;
+    if(box.querySelector(".empty")) box.innerHTML = row; else box.insertAdjacentHTML("beforeend", row);
+    box.querySelector("[data-go]").onclick = () => document.querySelector('.tabs [data-t="t"]')?.click();
+  }).catch(()=>{});
 }
 async function backupAll(){
   const b = $("#bkp"); if(b){ b.disabled = true; b.textContent = "מכין…"; }
@@ -1636,7 +1658,7 @@ async function bankSharedView(D){
     const { data, error } = await sb.rpc("hw_bank_search", { p_subject:$("#fs").value, p_grade:$("#fg").value, p_topic:$("#ft").value, p_q:$("#fq").value.trim() });
     if(error) return $("#slist").innerHTML = `<p class="err">${esc(errMsg(error))}</p>`;
     $("#slist").innerHTML = data.length ? data.map(x=>{ const s = toStudentQ({ ...x, answer:x.answer||{} }); return `<label class="q" style="display:flex;gap:12px;cursor:pointer"><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?"checked":""} style="width:18px;height:18px;margin-top:4px;accent-color:var(--ink);flex:none"><div class="grow">
-      <div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span class="chip">${esc(x.grade)}${x.units?` · ${esc(x.units)} יח"ל`:""}</span><span class="chip">${kindName(x.kind)}</span>${x.uses?`<span class="muted">${x.uses} מורים השתמשו</span>`:""}${x.mine?`<span class="muted">שלך</span>`:""}</div>
+      <div class="qmeta"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span>${[esc(x.grade)+(x.units?` ${esc(x.units)} יח"ל`:""), kindName(x.kind), x.uses?`${x.uses} מורים השתמשו`:"", x.mine?"שיתפתם":""].filter(Boolean).join(", ")}</span></div>
       <div class="prompt">${esc(s.prompt)}</div>${figHtml(s.figure)}</div></label>`; }).join("") : `<div class="empty"><b>עוד אין שאלות כאן</b>המאגר מתמלא משאלות שמורים משתפים. אפשר לשתף שאלות שלכם מעורך המשימה או מ"השאלות שלי".</div>`;
     math($("#slist"));
     $$("#slist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#ssel").textContent = sel.size; $(".bankdock").hidden = !sel.size; });
@@ -1679,7 +1701,7 @@ async function tabBank(D){
     const q = $("#bq").value.trim(), t = $("#bt").value;
     const list = qs.filter(x => (!q || x.prompt.includes(q)) && (!t || x.topic===t)).slice(0, 150);
     $("#blist").innerHTML = list.length ? list.map(x=>`<label class="q" style="display:flex;gap:12px;cursor:pointer"><input type="checkbox" data-id="${x.id}" ${sel.has(x.id)?"checked":""} style="width:18px;height:18px;margin-top:4px;accent-color:var(--ink);flex:none"><div class="grow">
-      <div class="row tiny" style="gap:6px;margin-bottom:4px"><span class="muted">${esc(aname[x.assignment_id]||"")}</span>${x.topic?`<span class="chip acc">${esc(x.topic)}</span>`:""}<span class="chip">${x.kind==="number"?"מספר":x.kind==="choice"?"אמריקאית":x.kind==="multi"?"כמה תשובות":"מילים"}</span>${x.params?`<span class="chip">מספרים משתנים</span>`:""}</div>
+      <div class="qmeta">${x.topic?`<span class="chip acc">${esc(x.topic)}</span>`:""}<span>${[x.kind==="number"?"מספר":x.kind==="choice"?"אמריקאית":x.kind==="multi"?"כמה תשובות":"מילים", x.params?"מספרים שונים לכל תלמיד":"", aname[x.assignment_id]?"מתוך: "+esc(aname[x.assignment_id]):""].filter(Boolean).join(", ")}</span></div>
       <div class="prompt">${esc(x.prompt)}</div></div></label>`).join("") : `<div class="empty"><b>לא נמצאו שאלות</b></div>`;
     math($("#blist"));
     $$("#blist input[type=checkbox]").forEach(cb => cb.onchange = () => { cb.checked ? sel.add(cb.dataset.id) : sel.delete(cb.dataset.id); $("#bsel").textContent = sel.size; $(".bankdock").hidden = !sel.size; });
@@ -2189,7 +2211,7 @@ async function shareDialog(qs, meta){
   d.querySelector("#shgo").onclick = async () => {
     const t = readTax(d, "sh"); if(t.error) return d.querySelector("#sherr").textContent = t.error;
     const ids = [...d.querySelectorAll("[data-sq]:checked")].map(x=>x.dataset.sq); if(!ids.length) return d.querySelector("#sherr").textContent = "לא נבחרו שאלות";
-    try{ const n = await bankShare(ids, t); d.close(); toast(`${n} שאלות נשלחו לבדיקה. הן ייכנסו למאגר אחרי האישור השבועי`); }catch(e){ d.querySelector("#sherr").textContent = e.message; }
+    try{ const n = await bankShare(ids, t); d.close(); toast(n===1 ? "השאלה נשלחה לבדיקה ותיכנס למאגר אחרי האישור השבועי" : `${n} שאלות נשלחו לבדיקה ויכנסו למאגר אחרי האישור השבועי`); }catch(e){ d.querySelector("#sherr").textContent = e.message; }
   };
 }
 function openAIGenerator(onAdd, meta){
@@ -2412,9 +2434,9 @@ function qEditor(q,i){
   if(k==="number") ans = `
     <div class="row" style="align-items:flex-end">
       <div class="grow" style="min-width:120px"><label class="f">תשובה נכונה</label><input type="text" class="ltr" data-f="value" value="${esc(q.answer.value??"")}" inputmode="decimal" ${q.answer.formula?"disabled placeholder='לפי הנוסחה'":""}></div>
-      <div style="width:120px"><label class="f">טווח מותר %</label><input type="number" min="0" step="0.1" class="ltr" data-f="tol_pct" value="${q.answer.tol_pct??""}" placeholder="אוטומטי"></div>
+      <div style="width:120px"><label class="f">סטייה מותרת (%)</label><input type="number" min="0" step="0.1" class="ltr" data-f="tol_pct" value="${q.answer.tol_pct??""}" placeholder="אוטומטי"></div>
       <div style="width:110px"><label class="f">יחידות</label><input type="text" class="ltr" data-f="unit" value="${esc(q.answer.unit||"")}"></div></div>
-    <p class="muted tiny" style="margin:6px 0 0">טווח אוטומטי: מספר שלם חייב להיות מדויק, מספר לא שלם מקבל 1%.</p>
+    <p class="muted tiny" style="margin:6px 0 0">בלי מילוי: מספר שלם חייב להיות מדויק, מספר לא שלם מקבל סטייה של 1%.</p>
     <details ${q.answer.formula?"open":""}><summary>מספרים שונים לכל תלמיד</summary><div>
       <p class="muted tiny" style="margin:8px 0 0">כתבו בשאלה {a}, {b} במקום המספרים. לכל תלמיד ייבחרו מספרים אחרים, והתשובה תחושב לפי הנוסחה.</p>
       <label class="f">טווחים</label><input type="text" class="ltr" data-f="params" value="${esc(paramsText(q.params))}" placeholder="a=4..9, b=10..15, h=3..6">
@@ -2450,7 +2472,7 @@ function qEditor(q,i){
 function tabPreview(){
   const el = $("#tab");
   el.innerHTML = `
-    <div class="info">כך התלמידים רואים את המשימה. אפשר לענות ולבדוק, ושום דבר לא נשמר.${dirty?" כולל שינויים שעוד לא נשמרו.":""}${Q.some(q=>q.answer?.formula)?" בשאלות עם מספרים משתנים מוצגים הערכים הנמוכים.":""}</div>
+    <div class="info">כך התלמידים רואים את המשימה. אפשר לענות ולבדוק, ושום דבר לא נשמר.${dirty?" כולל שינויים שעוד לא נשמרו.":""}${Q.some(q=>q.answer?.formula)?" בשאלות שבהן לכל תלמיד מספרים משלו, מוצגים כאן הערכים הנמוכים.":""}</div>
     ${A.description ? `<p class="prompt">${esc(A.description)}</p>` : ""}
     <div class="card flat"><div class="bd" id="qs">
       ${Q.length ? Q.map((q,i)=>{ const s = toStudentQ(q); return `<div class="q" data-id="${q.id}"><div class="qh"><span class="qn">${i+1}</span><div class="body"><div><span class="prompt">${esc(s.prompt)}</span>${q.points!=1?` <span class="pts">${q.points} נק׳</span>`:""}</div>
@@ -2486,7 +2508,7 @@ function tabSettings(){
       <div><label class="f" for="s_w">משקל בממוצע</label><select id="s_w">${[0.5,1,2,3].map(n=>`<option value="${n}" ${+A.weight===n?"selected":""}>×${n}</option>`).join("")}</select></div>
       <div id="s_tl_w"><label class="f" for="s_tl">זמן למבחן בדקות <span class="muted">ריק = בלי הגבלה</span></label><input id="s_tl" type="number" min="1" max="600" value="${A.time_limit_min??""}"></div>
     </div>
-    <label class="chk" style="margin-top:18px"><input type="checkbox" id="s_reroll" ${A.reroll?"checked":""}><span>מספרים חדשים בכל ניסיון<br><span class="muted small">בשאלות עם מספרים משתנים, כל ניסיון נוסף מקבל מספרים אחרים. כך אי אפשר רק לנחש עד שיוצא "נכון".</span></span></label>
+    <label class="chk" style="margin-top:18px"><input type="checkbox" id="s_reroll" ${A.reroll?"checked":""}><span>מספרים חדשים בכל ניסיון<br><span class="muted small">כל ניסיון נוסף מקבל מספרים אחרים, כך שאי אפשר לנחש עד שיוצא "נכון".</span></span></label>
     <label class="chk"><input type="checkbox" id="s_shuf" ${A.shuffle?"checked":""}><span>ערבוב סדר השאלות והתשובות לכל תלמיד<br><span class="muted small">כל תלמיד מקבל סדר אחר, וזה מקשה על העתקות.</span></span></label>
     <label class="chk"><input type="checkbox" id="s_show" ${A.show_results?"checked":""}><span>להראות לתלמיד ציון ותשובות נכונות אחרי ההגשה<br><span class="muted small">אם תכבו, התלמידים יראו רק "הוגש". אפשר להדליק אחר כך.</span></span></label>
     <div class="row" style="margin-top:20px"><button class="primary" id="s_save">שמירת ההגדרות</button></div>
