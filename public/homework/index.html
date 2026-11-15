@@ -1501,7 +1501,7 @@ async function loadAll(){
     sb.from("hw_assignments").select("id,title,is_open,opens_at,due_at,created_at,mode,weight,time_limit_min,show_results,hw_assignment_classes(class_id)").order("created_at",{ascending:false}),
     sb.from("hw_submissions").select("id,assignment_id,student_id,score,max_score,manual_score,created_at").order("created_at"),
     sb.from("hw_questions").select("id,assignment_id,topic"),
-    sb.from("hw_claim_reports").select("id,student_id,note,created_at").eq("resolved", false).order("created_at")
+    sb.from("hw_claim_reports").select("id,student_id,note,created_at,kind").eq("resolved", false).order("created_at")
   ]);
   const err = c.error || s.error || a.error || sub.error || q.error; if(err) throw err;
   const D = { classes:c.data, students:s.data, assignments:a.data, subs:sub.data, questions:q.data, reports:rp.data||[] };
@@ -1568,7 +1568,7 @@ function tabOverview(D){
   const soon = D.assignments.filter(a=>a.is_open && a.due_at && !isPast(a.due_at) && new Date(a.due_at)-new Date() < 7*864e5).sort((x,y)=>new Date(x.due_at)-new Date(y.due_at));
   const cname = Object.fromEntries(D.classes.map(c=>[c.id,c.name]));
   const subRate = a => { const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); const n = sts.filter(s=>D.last[s.id+"|"+a.id]).length; return { n, total:sts.length }; };
-  const todoL = D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${esc(st.display_name)} דיווח שמישהו אחר נכנס לחשבון</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div></div>${IC.chev}</div>`; }).filter(Boolean);
+  const todoL = D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow">${r.kind==="lock" ? `<div style="font-weight:800">החשבון של ${esc(st.display_name)} ננעל</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: ${esc(r.note||"הרבה ניסיונות שגויים לקוד הסודי")}. התלמיד יכול לאפס דרך המייל, או שתאפסו לו בדף התלמיד.</div>` : `<div style="font-weight:800">${esc(st.display_name)} דיווח שמישהו אחר נכנס לחשבון</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div>`}</div>${IC.chev}</div>`; }).filter(Boolean);
   const urgent = soon.filter(a=>new Date(a.due_at)-new Date() < 2*864e5).map(a=>{ const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); return { a, miss: sts.filter(s=>!D.last[s.id+"|"+a.id]) }; }).filter(x=>x.miss.length)[0];
   if(urgent) todoL.push(`<div class="alert-row" data-href="#/teacher/a/${urgent.a.id}"><span class="sq" style="background:var(--warn,#E8A10B)"></span><div class="grow"><div style="font-weight:800">${urgent.miss.length} עוד לא הגישו את "${esc(urgent.a.title)}"</div><div class="tiny muted">נסגרת ${relDue(urgent.a.due_at).replace(/^נסגר[תה]? ?/,"")}: ${urgent.miss.slice(0,3).map(s=>esc(s.display_name)).join(", ")}${urgent.miss.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
   if(risk.length) todoL.push(`<div class="alert-row" data-jump="riskc"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${risk.length===1?"תלמיד אחד צריך":`${risk.length} תלמידים צריכים`} תשומת לב</div><div class="tiny muted">${risk.slice(0,3).map(x=>esc(x.st.display_name)).join(", ")}${risk.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
@@ -1592,7 +1592,7 @@ function tabOverview(D){
         return `<div class="tile" data-href="#/teacher/c/${c.id}"><div class="row"><div class="t grow">${esc(c.name)}</div>${avg!=null?gbadge(avg):""}</div>
           <div class="tiny muted" style="margin-top:6px">${sts.length} תלמידים, ${D.asgFor(c.id).filter(a=>a.is_open).length} משימות פתוחות</div></div>`; }).join("") || `<p class="muted">עוד אין כיתות.</p>`}
     </div></div></div>
-    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>גיבוי</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת גיבוי</button></div></div>`;
+    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>הנתונים שלכם</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת הנתונים שלי</button></div></div>`;
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
   $$("[data-jump]", $("#tab")).forEach(el => el.onclick = () => $("#"+el.dataset.jump)?.scrollIntoView({ behavior:"smooth", block:"start" }));
   $("#bkp").onclick = backupAll;
@@ -1616,7 +1616,7 @@ async function backupAll(){
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
     toast(`הגיבוי ירד: ${classes.length} כיתות, ${assignments.length} משימות, ${submissions.length} הגשות`);
   }catch(e){ toast("הגיבוי נכשל: " + errMsg(e)); }
-  if(b){ b.disabled = false; b.textContent = "הורדת גיבוי"; }
+  if(b){ b.disabled = false; b.textContent = "הורדת הנתונים שלי"; }
 }
 function tabAssignments(D){
   const cname = Object.fromEntries(D.classes.map(c=>[c.id,c.name]));

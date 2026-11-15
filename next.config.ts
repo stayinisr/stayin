@@ -14,7 +14,24 @@ const alfamathRoutes: [string, string][] = [
   ["/privacy", "/homework/privacy.html"], ["/guide", "/homework/guide.html"],
 ];
 
+// basic browser protections for AlfaMath pages (no visual effect)
+const ALFAMATH_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+  { key: "Permissions-Policy", value: "geolocation=(), microphone=(), payment=()" },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return ALFAMATH_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host }],
+      headers: ALFAMATH_HEADERS,
+    }));
+  },
   // short, shareable links on the AlfaMath domain
   async redirects() {
     return ALFAMATH_HOSTS.flatMap((host) => [
