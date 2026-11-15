@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
+<script>(function(){var t;try{t=localStorage.getItem("hw-theme")}catch(e){}var d=t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light"})()</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AlfaMath – שיעורי בית במתמטיקה ובפיזיקה שנבדקים מעצמם</title>
 <meta name="description" content="המורה מעלה משימה, התלמידים עונים מהטלפון, והציון מוכן ברגע ההגשה. שיעורי בית במתמטיקה ובפיזיקה עם בדיקה אוטומטית, מספרים שונים לכל תלמיד וניתוח כיתתי.">
@@ -18,7 +19,18 @@
 :root{
   --paper:#FBFCFE; --grid:#DCE5F3; --ink:#0F1E3D; --ink-2:#3A4766; --muted:#5D6B85;
   --pen:#1F49D6; --pen-2:#1638AE; --hl:#FFE347; --red:#E23B3B; --ok:#0E9F6E;
+  --card:#fff; --shadow:#0F1E3D; --pgrid:#E3EAF6;
 }
+[data-theme=dark]{--paper:#0B1324;--grid:#16213B;--ink:#E8EEFA;--ink-2:#C3CDE3;--muted:#97A3C0;--pen:#86A2FF;--pen-2:#A9BDFF;--card:#121C33;--shadow:#050A16;--pgrid:#1C2944;--red:#FF6B6B;--ok:#34D399;color-scheme:dark}
+[data-theme=dark] .band{--ink:#0F1E3D;--ink-2:#3A4766;--shadow:#0F1E3D;color:#0F1E3D}
+[data-theme=dark] .page .top{background:#1F49D6}
+[data-theme=dark] .duo .t{background-color:#16213B}
+[data-theme=dark] .btn.pri{background:#2F5BF0;border-color:#E8EEFA}
+[data-theme=dark] .hero h1 .mk{background:linear-gradient(transparent 58%,rgba(255,227,71,.35) 58%,rgba(255,227,71,.35) 92%,transparent 92%)}
+[data-theme=dark] .menu a:hover,[data-theme=dark] .menu a:focus-visible{color:#0F1E3D}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn:hover{background:var(--hl);color:#0F1E3D}
+.tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
 *{box-sizing:border-box;border-radius:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 Rubik,Heebo,system-ui,sans-serif}
@@ -28,24 +40,24 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset
 .disp{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em}
 .hand{font-family:Caveat,cursive}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;font:700 16px Rubik,sans-serif;text-decoration:none;border:2px solid var(--ink);transition:transform .15s,box-shadow .15s,background .15s}
-.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow)}
 .btn.pri{background:var(--pen);border-color:var(--ink);color:#fff}.btn.pri:hover{color:#fff}
-.btn.lt{background:#fff;color:var(--ink)}.btn.lt:hover{color:var(--ink)}
+.btn.lt{background:var(--card);color:var(--ink)}.btn.lt:hover{color:var(--ink)}
 .btn.big{min-height:58px;font-size:18px;padding:0 30px}
 
 /* header */
-header{position:sticky;top:0;z-index:10;background:rgba(251,252,254,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--grid)}
-.hd{display:flex;align-items:center;gap:28px;height:72px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
+.hd{display:flex;align-items:center;gap:28px;height:64px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-.logo i{width:40px;height:40px;background:var(--pen);color:#fff;display:grid;place-items:center;font:italic 700 27px Georgia,serif;position:relative}
+.logo i{width:38px;height:38px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 25px Georgia,serif;position:relative}
 .logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid var(--ink)}
-.logo b{direction:ltr;font-weight:800;font-size:23px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
+.logo b{direction:ltr;font-weight:800;font-size:21px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
 nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{color:var(--ink);text-decoration:none}nav.links a:hover{color:var(--pen)}
 .cta{margin-inline-start:auto;display:flex;gap:14px;align-items:center}
 [hidden]{display:none!important}
 .acct{position:relative}
 .acct .btn{gap:8px}
-.menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:210px;background:#fff;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);z-index:20;display:flex;flex-direction:column}
+.menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:210px;background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--shadow);z-index:20;display:flex;flex-direction:column}
 .menu a{padding:13px 16px;color:var(--ink);text-decoration:none;font-weight:600;border-bottom:1px solid var(--grid)}
 .menu a:last-child{border-bottom:none;color:var(--red)}
 .menu a:hover,.menu a:focus-visible{background:var(--hl)}.cta .btn{min-height:44px;font-size:15px;padding:0 18px}
@@ -62,7 +74,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 
 /* notebook scene */
 .scene{position:relative;min-height:560px}
-.page{position:absolute;inset-inline-end:0;top:0;width:min(400px,100%);background:#fff;border:2px solid var(--ink);box-shadow:10px 10px 0 var(--ink);background-image:linear-gradient(#E3EAF6 1px,transparent 1px),linear-gradient(90deg,#E3EAF6 1px,transparent 1px);background-size:24px 24px;background-position:-1px -1px}
+.page{position:absolute;inset-inline-end:0;top:0;width:min(400px,100%);background:var(--card);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--shadow);background-image:linear-gradient(var(--pgrid) 1px,transparent 1px),linear-gradient(90deg,var(--pgrid) 1px,transparent 1px);background-size:24px 24px;background-position:-1px -1px}
 .page::before{content:"";position:absolute;top:0;bottom:0;inset-inline-start:46px;width:2px;background:var(--red);opacity:.7}
 .page .top{position:relative;background:var(--ink);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:11px 18px;font-weight:700;font-size:14px}
 .page .top span:last-child{color:var(--hl)}
@@ -71,16 +83,16 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .work{display:block;width:68%;height:auto;margin:6px 0 4px;direction:ltr;margin-left:0;margin-right:auto}
 .work text{font-family:Caveat,cursive;font-weight:700;fill:transparent;stroke:var(--pen);stroke-width:1.1;stroke-dasharray:260;stroke-dashoffset:260}
 .ansrow{display:flex;gap:10px;align-items:stretch;direction:rtl}
-.ansbox{flex:1;height:52px;border:2px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:flex-start;padding:0 14px;font-weight:800;font-size:22px;direction:ltr}
+.ansbox{flex:1;height:52px;border:2px solid var(--ink);background:var(--card);display:flex;align-items:center;justify-content:flex-start;padding:0 14px;font-weight:800;font-size:22px;direction:ltr}
 .ansbox .car{display:inline-block;width:2px;height:24px;background:var(--ink);margin-left:2px}
 .verdict{display:flex;align-items:center;padding:0 14px;background:var(--ok);color:#fff;font-weight:700;opacity:0;transform:translateX(-8px)}
 .redpen{position:absolute;pointer-events:none;direction:ltr}
 .redpen path,.redpen ellipse{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .redpen text{fill:var(--red);font-family:Caveat,cursive;font-weight:700;opacity:0}
-.stats{position:absolute;inset-inline-start:0;bottom:0;width:270px;background:#fff;border:2px solid var(--ink);padding:16px 18px}
+.stats{position:absolute;inset-inline-start:0;bottom:0;width:270px;background:var(--card);border:2px solid var(--ink);padding:16px 18px}
 .stats h3{margin:0 0 12px;font-size:15px;font-weight:800}
 .bar{display:grid;grid-template-columns:52px minmax(0,1fr) 38px;gap:8px;align-items:center;font-size:13px;margin-top:8px}
-.bar s{display:block;height:10px;background:#E6ECF6;text-decoration:none;position:relative;overflow:hidden}
+.bar s{display:block;height:10px;background:var(--pgrid);text-decoration:none;position:relative;overflow:hidden}
 .bar s i{position:absolute;inset-block:0;inset-inline-start:0;background:var(--c);width:var(--w);transform-origin:right;transform:scaleX(0)}
 .stats p{margin:12px 0 0;font-size:12.5px;color:var(--muted)}
 
@@ -119,21 +131,45 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .feat p{margin:8px 0 0;color:var(--ink-2);font-size:15.5px;line-height:1.55}
 
 /* how */
-.shots{padding-bottom:96px}
+.shots{padding-bottom:96px;scroll-margin-top:84px}
+#how,#teachers,#students{scroll-margin-top:84px}
+.shots .top{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
 .shots h2{margin:0;font-size:44px;line-height:1.1}
-.shots .g{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,.75fr);gap:40px;align-items:start;margin-top:40px}
-.shots figure{margin:0}
-.shots .frame{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:#fff;overflow:hidden}
-.shots .frame img{display:block;width:100%;height:auto}
-.shots .phone{border-radius:30px;padding:10px;background:var(--ink);box-shadow:6px 6px 0 var(--hl);max-width:300px;margin-inline:auto}
-.shots .phone img{display:block;width:100%;height:auto;border-radius:22px}
-.shots figcaption{margin-top:16px;color:var(--ink-2);font-size:16px;line-height:1.55}
-.shots figcaption b{color:var(--ink)}
-@media (max-width:900px){.shots .g{grid-template-columns:minmax(0,1fr);gap:48px}.shots{padding-bottom:64px}.shots h2{font-size:34px}}
+.shots .sub{margin:10px 0 0;color:var(--ink-2);font-size:17px}
+.rsw{margin-inline-start:auto;display:inline-grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);background:var(--card)}
+.rsw button{font:700 16px Rubik,sans-serif;padding:11px 26px;border:none;background:none;color:var(--ink);cursor:pointer;min-height:46px}
+.rsw button[aria-selected=true]{background:var(--ink);color:var(--paper)}
+.rail{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:2px;padding:36px 2px 18px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.rail::-webkit-scrollbar{display:none}
+.rail[hidden]{display:none}
+.slide{flex:none;scroll-snap-align:start;margin:0}
+.rail.t .slide{width:min(820px,86%)}
+.rail.s .slide{width:250px}
+.slide figcaption{margin-top:18px;max-width:46ch}
+.slide figcaption b{display:block;font-size:19px;font-weight:800;color:var(--ink)}
+.slide figcaption span{display:block;margin-top:4px;color:var(--ink-2);font-size:15.5px;line-height:1.55}
+.bw{border:2px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);background:var(--card)}
+.bw .bar2{display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-bottom:2px solid var(--ink);background:var(--paper)}
+.bw .bar2 i{width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%}
+.bw .bar2 em{margin-inline-start:12px;font:500 12.5px Rubik,sans-serif;font-style:normal;color:var(--muted);direction:ltr}
+.bw img,.ph img{display:block;width:100%;height:auto}
+.ph{border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:7px 7px 0 var(--hl)}
+.ph img{border-radius:26px}
+.ctl{display:flex;align-items:center;gap:14px;margin-top:6px}
+@media (max-width:700px){.rail.t .slide{width:62%}.bw{border:none;border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:7px 7px 0 var(--hl)}.bw .bar2{display:none}.bw img{border-radius:26px}}
+.ctl .dots{display:flex;gap:8px}
+.ctl .dots button{width:28px;height:6px;padding:0;border:none;background:var(--grid);cursor:pointer}
+.ctl .dots button.on{background:var(--pen)}
+.ctl .arr{margin-inline-start:auto;display:flex;gap:10px}
+.ctl .arr button{width:46px;height:46px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.ctl .arr button:hover{background:var(--hl);color:#0F1E3D}
+.ctl .arr button:disabled{opacity:.3;cursor:default;background:var(--card);color:var(--ink)}
+@media (max-width:900px){.shots{padding-bottom:64px}.shots h2{font-size:34px}.rsw{margin-inline-start:0;width:100%}.rail{gap:18px;padding-top:28px}.rail.t .slide{width:88%}.rail.s .slide{width:62%}.ctl .arr{display:none}.ctl{justify-content:center}}
+@media (max-width:700px){.rail.t .slide,.rail.s .slide{width:68%}}
 .how{padding-top:96px;padding-bottom:96px}
 .how h2,.duo h2,.band h2{margin:0;font-size:44px;line-height:1.1}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px;counter-reset:s}
-.step{position:relative;background:#fff;border:2px solid var(--ink);padding:30px 28px 28px}
+.step{position:relative;background:var(--card);border:2px solid var(--ink);padding:30px 28px 28px}
 .step .n{position:absolute;top:-30px;inset-inline-start:20px;font:700 64px/1 Caveat,cursive;color:var(--red);background:var(--paper);padding:0 8px}
 .step h3{margin:14px 0 0;font-size:23px;font-weight:800}
 .step p{margin:10px 0 0;color:var(--ink-2);font-size:16px;line-height:1.6}
@@ -142,7 +178,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-bottom:96px}
 .duo > div{padding:38px;border:2px solid var(--ink)}
 .duo .t{background:var(--ink);color:#fff;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:24px 24px}
-.duo .s{background:#fff}
+.duo .s{background:var(--card)}
 .duo h2{font-size:34px}
 .duo ul{margin:22px 0 0;padding:0;list-style:none;display:grid;gap:14px;font-size:17px;line-height:1.5}
 .duo li{display:flex;gap:12px}
@@ -199,11 +235,13 @@ footer a:first-of-type{margin-inline-start:auto}
  <div class="wrap hd">
   <a class="logo" href="#top" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
   <nav class="links" aria-label="ניווט">
+   <a href="#look">הצצה</a>
    <a href="/guide">איך זה עובד</a>
    <a href="#teachers">למורים</a>
    <a href="#students">לתלמידים</a>
   </nav>
   <div class="cta">
+   <button class="tbtn" id="tbtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button>
    <a class="btn pri" id="enter" href="/app#/login">כניסה</a>
    <div class="acct" id="acct" hidden>
     <button class="btn pri" id="acctbtn" type="button" aria-haspopup="true" aria-expanded="false"><span id="acctlbl"></span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg></button>
@@ -274,14 +312,26 @@ footer a:first-of-type{margin-inline-start:auto}
  </div>
 </section>
 
-<section class="wrap shots" aria-label="איך זה נראה">
- <h2 class="disp">ככה זה נראה</h2>
- <div class="g">
-  <figure><div class="frame"><img src="/homework/shot-analysis.webp" width="1036" height="397" loading="lazy" alt="ניתוח שאלות: אחוז הצלחה בכל שאלה והתשובות השגויות שחזרו הכי הרבה"></div>
-   <figcaption><b>אצל המורה:</b> אחוז ההצלחה בכל שאלה, והטעות שחזרה הכי הרבה פעמים. רואים מיד מה צריך להסביר שוב בשיעור.</figcaption></figure>
-  <figure><div class="phone"><img src="/homework/shot-student.webp" width="390" height="720" loading="lazy" alt="המסך של התלמיד בטלפון: המשימה הבאה וכפתור התחלה"></div>
-   <figcaption><b>אצל התלמיד:</b> המשימה הבאה מחכה למעלה, עם כפתור אחד להתחלה.</figcaption></figure>
+<section class="wrap shots" id="look" aria-label="הצצה לאתר">
+ <div class="top">
+  <div><h2 class="disp">הצצה פנימה</h2><p class="sub">מסכים מהאתר עצמו, עם כיתה לדוגמה.</p></div>
+  <div class="rsw" role="tablist" aria-label="תצוגה"><button role="tab" aria-selected="true" data-r="t">המורה רואה</button><button role="tab" aria-selected="false" data-r="s">התלמיד רואה</button></div>
  </div>
+ <div class="rail t" id="rail-t" tabindex="0" aria-label="מסכים של מורה">
+   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-analysis.webp" width="390" height="760"><img src="/homework/shots/t-analysis.webp" width="1440" height="900" loading="lazy" alt="ניתוח לכל שאלה"></picture></div><figcaption><b>ניתוח לכל שאלה</b><span>איזו שאלה הכשילה את הכיתה, ואיזו טעות חזרה הכי הרבה. יודעים מה להסביר שוב בשיעור.</span></figcaption></figure>
+   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-ai.webp" width="390" height="760"><img src="/homework/shots/t-ai.webp" width="1440" height="900" loading="lazy" alt="שאלות מ-AI, בלי להקליד"></picture></div><figcaption><b>שאלות מ-AI, בלי להקליד</b><span>מדביקים את מה ש-ChatGPT או Claude החזירו, בודקים ומוסיפים למשימה. כולל שרטוטים ונוסחאות.</span></figcaption></figure>
+   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-grades.webp" width="390" height="760"><img src="/homework/shots/t-grades.webp" width="1440" height="900" loading="lazy" alt="גיליון ציונים"></picture></div><figcaption><b>גיליון ציונים</b><span>כל תלמיד, כל שאלה, נכון או לא. הערה אישית, הארכה ויצוא לאקסל.</span></figcaption></figure>
+   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-overview.webp" width="390" height="760"><img src="/homework/shots/t-overview.webp" width="1440" height="900" loading="lazy" alt="מה דורש טיפול היום"></picture></div><figcaption><b>מה דורש טיפול היום</b><span>מי לא הגיש משימה שנסגרת מחר, מי בירידה, ומה נסגר השבוע.</span></figcaption></figure>
+   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-class.webp" width="390" height="760"><img src="/homework/shots/t-class.webp" width="1440" height="900" loading="lazy" alt="כיתה בתוך דקה"></picture></div><figcaption><b>כיתה בתוך דקה</b><span>פותחים כיתה ושולחים קוד אחד בוואטסאפ. התלמידים נכנסים לבד.</span></figcaption></figure>
+ </div>
+ <div class="rail s" id="rail-s" tabindex="0" aria-label="מסכים של תלמיד" hidden>
+   <figure class="slide"><div class="ph"><img src="/homework/shots/s-home.webp" width="390" height="760" loading="lazy" alt="מה עושים עכשיו"></div><figcaption><b>מה עושים עכשיו</b><span>המשימה הקרובה מחכה למעלה, עם המועד וכפתור אחד להתחלה.</span></figcaption></figure>
+   <figure class="slide"><div class="ph"><img src="/homework/shots/s-question.webp" width="390" height="760" loading="lazy" alt="פותרים מהטלפון"></div><figcaption><b>פותרים מהטלפון</b><span>שרטוטים, נוסחאות ומקלדת מתמטית שנוחה לאצבע.</span></figcaption></figure>
+   <figure class="slide"><div class="ph"><img src="/homework/shots/s-grade.webp" width="390" height="760" loading="lazy" alt="ציון מיד"></div><figcaption><b>ציון מיד</b><span>ברגע ההגשה: ציון, מה נכון ומה לא, ופתרון.</span></figcaption></figure>
+   <figure class="slide"><div class="ph"><img src="/homework/shots/s-mistakes.webp" width="390" height="760" loading="lazy" alt="מחברת טעויות"></div><figcaption><b>מחברת טעויות</b><span>כל שאלה שטעו בה חוזרת לתרגול, בלי ציון, עד שזה יושב.</span></figcaption></figure>
+   <figure class="slide"><div class="ph"><img src="/homework/shots/s-progress.webp" width="390" height="760" loading="lazy" alt="רואים את ההתקדמות"></div><figcaption><b>רואים את ההתקדמות</b><span>ממוצע, גרף לאורך זמן והנושאים שכדאי לחזק.</span></figcaption></figure>
+ </div>
+ <div class="ctl"><div class="dots" id="dots"></div><div class="arr"><button type="button" id="prv" aria-label="הקודם"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button><button type="button" id="nxt" aria-label="הבא"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button></div></div>
 </section>
 
 <section class="wrap duo">
@@ -355,6 +405,21 @@ footer a:first-of-type{margin-inline-start:auto}
   function run(){ s.classList.remove("play"); void s.offsetWidth; s.classList.add("play"); }
   var start = function(){ run(); setInterval(function(){ if(!document.hidden) run(); }, 11000); };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+})();
+</script>
+<script>document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};</script>
+<script>
+(function(){
+  var cur="t", rails={t:document.getElementById("rail-t"),s:document.getElementById("rail-s")}, dots=document.getElementById("dots"), prv=document.getElementById("prv"), nxt=document.getElementById("nxt");
+  function slides(){return [].slice.call(rails[cur].querySelectorAll(".slide"))}
+  function idx(){var r=rails[cur], sl=slides(), x=r.getBoundingClientRect().right, best=0, d=1e9; sl.forEach(function(e,i){var v=Math.abs(e.getBoundingClientRect().right-x); if(v<d){d=v;best=i}}); return best}
+  function to(i){var sl=slides(); i=Math.max(0,Math.min(sl.length-1,i)); var r=rails[cur]; r.scrollBy({left:sl[i].getBoundingClientRect().right-r.getBoundingClientRect().right,behavior:"smooth"})}
+  function paint(){var i=idx(), n=slides().length; [].forEach.call(dots.children,function(b,k){b.classList.toggle("on",k===i)}); prv.disabled=i===0; nxt.disabled=i>=n-1 || Math.abs(rails[cur].scrollLeft)+rails[cur].clientWidth>=rails[cur].scrollWidth-4}
+  function build(){dots.innerHTML=""; slides().forEach(function(e,k){var b=document.createElement("button"); b.type="button"; b.setAttribute("aria-label","מסך "+(k+1)); b.onclick=function(){to(k)}; dots.appendChild(b)}); paint()}
+  [].forEach.call(document.querySelectorAll(".rsw button"),function(b){b.onclick=function(){var y=scrollY; cur=b.dataset.r; [].forEach.call(document.querySelectorAll(".rsw button"),function(x){x.setAttribute("aria-selected",x===b)}); rails.t.hidden=cur!=="t"; rails.s.hidden=cur!=="s"; rails[cur].scrollLeft=0; build(); scrollTo(0,y)}});
+  var tm; ["t","s"].forEach(function(k){rails[k].addEventListener("scroll",function(){clearTimeout(tm); tm=setTimeout(paint,60)},{passive:true}); rails[k].addEventListener("keydown",function(e){if(e.key==="ArrowLeft"){e.preventDefault();to(idx()+1)} if(e.key==="ArrowRight"){e.preventDefault();to(idx()-1)}})});
+  prv.onclick=function(){to(idx()-1)}; nxt.onclick=function(){to(idx()+1)};
+  addEventListener("resize",paint); build();
 })();
 </script>
 </body>
