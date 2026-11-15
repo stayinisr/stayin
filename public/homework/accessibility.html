@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הצהרת נגישות – AlfaMath</title>
+<meta name="theme-color" content="#1F49D6">
+<script>(function(){var t;try{t=localStorage.getItem("hw-theme")}catch(e){}var d=t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light"})()</script>
+<link rel="icon" href="/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Secular+One&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FBFCFE;--grid:#DCE5F3;--ink:#0F1E3D;--ink-2:#3A4766;--muted:#5D6B85;--pen:#1F49D6;--hl:#FFE347;--red:#E23B3B;--card:#fff;--shadow:#0F1E3D}
+[data-theme=dark]{--paper:#0B1324;--grid:#16213B;--ink:#E8EEFA;--ink-2:#C3CDE3;--muted:#97A3C0;--pen:#86A2FF;--card:#121C33;--shadow:#050A16;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.7 Rubik,Heebo,system-ui,sans-serif;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+a{color:var(--pen)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding-inline:24px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
+.hd{display:flex;align-items:center;gap:16px;height:56px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo i{width:32px;height:32px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 21px Georgia,serif;position:relative;font-style:italic}
+.logo i::after{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;background:var(--hl);border:2px solid #0F1E3D}
+.logo b{direction:ltr;font-weight:800;font-size:19px}.logo b span{color:var(--pen)}
+main.doc{max-width:780px;background:var(--card);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);margin:40px auto 48px;padding:40px 44px}
+h1,h2{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em}
+h1{font-size:40px;line-height:1.1;margin:0 0 8px}
+h2{font-size:23px;margin:32px 0 6px}
+p,li{font-size:16.5px;color:var(--ink-2)}
+ul{padding-inline-start:22px}
+li{margin:4px 0}
+.muted{color:var(--muted);font-size:14px}
+@media (max-width:700px){.wrap{padding-inline:18px}main.doc{margin:20px 12px 32px;padding:26px 20px;box-shadow:5px 5px 0 var(--shadow)}h1{font-size:32px}}
+.hcta{margin-inline-start:auto;display:flex;gap:12px;align-items:center}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:38px;height:38px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn:hover{background:var(--hl);color:#0F1E3D}
+.tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
+.hbtn{display:inline-flex;align-items:center;min-height:38px;padding:0 16px;font:700 14.5px Rubik,sans-serif;white-space:nowrap;text-decoration:none;background:#1F49D6;color:#fff;border:2px solid var(--ink)}
+.hbtn:hover{color:#fff;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow,#0F1E3D)}
+[data-theme=dark] .hbtn{background:#2F5BF0;border-color:#E8EEFA}
+@media (max-width:700px){.hbtn{padding:0 14px}.hcta{gap:10px}}
+.sitefoot{border-top:1px solid var(--grid);background:color-mix(in srgb,var(--paper) 94%,transparent)}
+.sitefoot .wrap{display:grid;grid-template-columns:1fr auto;gap:18px 32px;align-items:center;padding-top:32px;padding-bottom:36px}
+.sitefoot .fbrand p{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.flinks{display:flex;flex-wrap:wrap;gap:8px 24px}
+.flinks a{color:var(--ink-2);text-decoration:none;font-size:14.5px;font-weight:500}.flinks a:hover{color:var(--pen)}
+.fcopy{grid-column:1/-1;font-size:13px;color:var(--muted);border-top:1px solid var(--grid);padding-top:16px}
+@media (max-width:700px){.sitefoot .wrap{grid-template-columns:1fr}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header><div class="wrap hd">
+ <a class="logo" href="/"><i aria-hidden="true">α</i><b>Alfa<span>Math</span></b><span class="sr">, דף הבית</span></a>
+ <div class="hcta"><button class="tbtn" id="tbtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button><a class="hbtn" id="enter" href="/app#/login">כניסה / הרשמה</a></div>
+</div></header>
+<main class="doc">
+<h1>הצהרת נגישות</h1>
+<p class="muted">עודכנה לאחרונה: 15 בנובמבר 2026</p>
+<p>אנחנו רוצים ש-AlfaMath תהיה נוחה לשימוש לכל מורה ולכל תלמיד, כולל אנשים עם מוגבלות. האתר נבנה מתוך שאיפה לעמוד בדרישות תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג-2013, ובהנחיות התקן הישראלי 5568 ברמה AA.</p>
+
+<h2>מה עשינו באתר</h2>
+<ul>
+<li>אפשר לנווט בכל האתר גם עם מקלדת בלבד, והמיקום הנוכחי מסומן בבירור.</li>
+<li>הניגודיות בין טקסט לרקע נבדקה, וקיים גם מצב כהה.</li>
+<li>לכפתורים, לשדות ולתמונות יש תיאור שקוראי מסך יכולים להקריא.</li>
+<li>האתר מותאם לטלפון, לטאבלט ולמחשב, ואפשר להגדיל את התצוגה באצבעות או בדפדפן.</li>
+<li>מי שהגדיר במכשיר "הפחתת תנועה" יקבל את האתר בלי אנימציות.</li>
+<li>הטקסטים כתובים בשפה פשוטה וקצרה.</li>
+</ul>
+
+<h2>איך בדקנו</h2>
+<p>העמודים המרכזיים נבדקו בכלי בדיקה אוטומטי לנגישות (axe) לפי הנחיות WCAG 2.1 ברמה AA, במצב בהיר ובמצב כהה, ותוקנו כל הליקויים שנמצאו. נכון לעכשיו האתר עדיין לא נבדק על ידי מורשה נגישות, ואנחנו ממשיכים לשפר.</p>
+
+<h2>מגבלות ידועות</h2>
+<ul>
+<li>נוסחאות מתמטיות מוצגות בכתיבה מתמטית. ייתכן שחלק מקוראי המסך לא יקריאו אותן בצורה מלאה.</li>
+<li>שרטוטים בשאלות נוצרים על ידי המורים או בעזרת AI, ולא לכולם יש תיאור מפורט.</li>
+<li>צילומי המסך בדף הבית הם המחשה, וכל מה שמופיע בהם זמין גם בטקסט שלצידם.</li>
+</ul>
+
+<h2>נתקלתם בבעיה?</h2>
+<p>אם משהו באתר לא נגיש לכם, נשמח לשמוע ולתקן. כתבו לנו וציינו באיזה עמוד, מה ניסיתם לעשות, ובאיזה מכשיר ודפדפן השתמשתם.</p>
+<p><b>רכז הנגישות:</b> חן גואטה<br><b>מייל:</b> <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a></p>
+</main>
+<footer class="sitefoot">
+ <div class="wrap">
+  <div class="fbrand"><a class="logo" href="/"><i aria-hidden="true">α</i><b>Alfa<span>Math</span></b><span class="sr">, דף הבית</span></a><p>שיעורי בית במתמטיקה ובפיזיקה שנבדקים מעצמם.</p></div>
+  <nav class="flinks" aria-label="קישורים"><a href="/guide">איך זה עובד</a><a href="/terms">תנאי שימוש</a><a href="/privacy">פרטיות</a><a href="/accessibility">נגישות</a><a href="mailto:hello@alfamath.co.il">יצירת קשר</a></nav>
+  <div class="fcopy"><span dir="ltr">© 2026 AlfaMath</span></div>
+ </div>
+</footer>
+<script>(function(){
+  document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};
+  try{ var t=localStorage.getItem("hw-token"), s=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)}); if(t||s){ var e=document.getElementById("enter"); e.textContent="אזור אישי"; e.href=t?"/app#/":"/app#/teacher"; } }catch(e){}
+})();</script>
+<script>(function(){try{if(!/alfamath\.co\.il$/.test(location.hostname))return;var K="sb_publishable_BGJ55jTK4C7j0QVbyt0I2Q_1vmjHXQ-",U="https://unddypgjumuwsnsatuxe.supabase.co/rest/v1/rpc/hw_track",s=sessionStorage.getItem("am-sid");if(!s){s=Math.random().toString(36).slice(2,12);sessionStorage.setItem("am-sid",s)}var q=new URLSearchParams(location.search),r="";try{r=document.referrer?new URL(document.referrer).hostname:""}catch(e){}if(r===location.hostname)r="";window.amTrack=function(ev){try{fetch(U,{method:"POST",keepalive:true,headers:{apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"},body:JSON.stringify({p_path:location.pathname,p_ref:r,p_src:q.get("utm_source")||q.get("ref")||"",p_dev:innerWidth<700?"m":"d",p_ev:ev||"view",p_sid:s})}).catch(function(){})}catch(e){}};amTrack("view")}catch(e){}})()</script>
+</body>
+</html>

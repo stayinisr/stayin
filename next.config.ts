@@ -12,6 +12,7 @@ const alfamathRoutes: [string, string][] = [
   ["/sitemap.xml", "/homework/sitemap.xml"], ["/sw.js", "/homework/sw.js"],
   ["/terms", "/homework/terms.html"],
   ["/privacy", "/homework/privacy.html"], ["/guide", "/homework/guide.html"],
+  ["/accessibility", "/homework/accessibility.html"],
 ];
 
 // basic browser protections for AlfaMath pages (no visual effect)
