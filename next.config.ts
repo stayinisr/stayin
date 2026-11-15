@@ -13,6 +13,12 @@ const alfamathRoutes: [string, string][] = [
   ["/terms", "/homework/terms.html"],
   ["/privacy", "/homework/privacy.html"], ["/guide", "/homework/guide.html"],
   ["/accessibility", "/homework/accessibility.html"],
+  // home-screen icons: never fall through to the Stayin icons
+  ["/favicon.ico", "/homework/icon-192.png"],
+  ["/apple-touch-icon.png", "/homework/icon-192.png"],
+  ["/apple-touch-icon-precomposed.png", "/homework/icon-192.png"],
+  // anything else on the AlfaMath domain stays on AlfaMath (never a Stayin page)
+  ["/:path((?!homework/|_next/|_vercel/|api/).+)", "/homework/home.html"],
 ];
 
 // basic browser protections for AlfaMath pages (no visual effect)
