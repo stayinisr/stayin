@@ -67,7 +67,7 @@
   .hero{background:var(--pri);color:#fff;padding:24px 22px;padding-inline-start:38px;margin:4px 0 16px;position:relative;overflow:hidden;isolation:isolate}
   .hero::before{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(100deg,#000 10%,transparent 75%);mask-image:linear-gradient(100deg,#000 10%,transparent 75%)}
   .hero::after{content:"";position:absolute;z-index:-1;inset-block:0;inset-inline-start:18px;width:2px;background:rgba(255,227,71,.75)}
-  .hero h1{color:#fff;margin:0}
+  .hero h1{color:#fff;margin:0}.nmedit{display:inline-grid;place-items:center;width:40px;height:40px;margin-inline-start:4px;padding:0;border:0;background:transparent;color:rgba(255,255,255,.62);vertical-align:middle;cursor:pointer;border-radius:0;transition:color .15s,background .15s}.nmedit:hover{color:#fff;background:rgba(255,255,255,.12)}.nmedit:focus-visible{color:#fff;outline-color:#fff}
   .hero .muted{color:#C9D6FB}
   .hero .nt{font-size:clamp(26px,6vw,38px);line-height:1.15;margin:6px 0 6px}
   .hero .nsub{color:#E4EBFF;font-size:15.5px} .hero .nsub b{color:#fff}
@@ -1946,7 +1946,7 @@ async function teacherStudent(id){
   const avg = D.studentAvg(st), hist = D.studentHist(st), risk = D.risk(st);
   app().innerHTML = `
     ${backBtn(c?.name||"כיתה","#/teacher/c/"+st.class_id)}
-    <div class="hero"><div class="row" style="align-items:flex-start"><div class="grow"><h1>${esc(st.display_name)}</h1><div class="muted">${esc(c?.name||"")}</div></div>${avg!=null?`<div style="text-align:center"><div style="font-size:48px;font-weight:900;line-height:1">${avg}</div><div class="tiny muted">ממוצע</div></div>`:""}</div>
+    <div class="hero"><div class="row" style="align-items:flex-start"><div class="grow"><h1>${esc(st.display_name)}<button type="button" class="nmedit" id="stren" aria-label="שינוי שם" title="שינוי שם"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg></button></h1><div class="muted">${esc(c?.name||"")}</div></div>${avg!=null?`<div style="text-align:center"><div style="font-size:48px;font-weight:900;line-height:1">${avg}</div><div class="tiny muted">ממוצע</div></div>`:""}</div>
       ${hist.length>1?`<div style="margin-top:14px">${spark(hist, true)}</div>`:""}
       ${risk.length?`<div style="margin-top:12px"><span class="chip bad">${esc(risk.join(", "))}</span></div>`:""}</div>
     <div class="grid2">
@@ -1961,7 +1961,6 @@ async function teacherStudent(id){
       ${D.reports.some(r=>r.student_id===id)?`<p class="info" style="margin:0 0 12px">התלמיד דיווח שמישהו אחר נכנס בשמו. בדקו את המייל למטה, ואם הוא לא שלו, לחצו "איפוס החשבון".</p>`:""}
       <p style="margin:0 0 12px">${st.claimed_at?`נרשם ב-${fmtDate(st.claimed_at)} עם המייל <b class="ltr">${esc(st.email||"")}</b>`:st.email?`מייל: <b class="ltr">${esc(st.email)}</b>`:`<span class="chip warn">עוד לא נרשם</span>`}</p>
       <div class="row">
-      <button class="light sm" id="stren">שינוי שם</button>
       <select id="mv" style="width:auto">${D.classes.map(x=>`<option value="${x.id}" ${x.id===st.class_id?"selected":""}>${esc(x.name)}</option>`).join("")}</select><button class="light sm" id="mvb">העברה לכיתה</button>
       <button class="light sm" id="pw">איפוס החשבון</button><button class="btn-danger sm" id="rm">הסרת התלמיד</button></div></div></div>`;
   const sc = $("#scsv"); if(sc) sc.onclick = () => downloadCsv(st.display_name, [
