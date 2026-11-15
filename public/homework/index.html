@@ -1245,7 +1245,7 @@ async function studentMistakes(){
     if(!ans) return toast("כתבו תשובה קודם");
     b.disabled = true;
     try{ const r = q.dataset.sim ? await rpcS("hw_student_similar", { p_qid:q.dataset.id, p_n:+q.dataset.sim, p_given:ans }) : await rpcS("hw_student_try", { p_qid:q.dataset.id, p_given:ans });
-      q.querySelector(".slot").innerHTML = r.correct ? `<div class="mark ok"><b>נכון.</b> עכשיו זה יושב.</div>` : `<div class="mark bad"><b>עדיין לא.</b>&nbsp;התשובה: <bdi class="ltr">${esc(r.answer)}</bdi></div>${r.solution?`<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(r.solution)}</div></div>`:""}`;
+      q.querySelector(".slot").innerHTML = r.correct ? `<div class="mark ok"><b>נכון.</b> עכשיו זה יושב.</div>` : `<div class="mark bad"><b>עדיין לא.</b>&nbsp;${r.answer!=null?`התשובה: <bdi class="ltr">${esc(r.answer)}</bdi>`:"נסו שוב. התשובה תיפתח כשייגמרו הניסיונות במשימה."}</div>${r.solution?`<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(r.solution)}</div></div>`:""}`;
       math(q);
     }catch(e){ toast(errMsg(e)); }
     b.disabled = false;
@@ -1297,7 +1297,7 @@ async function studentAssignment(id){
 }
 async function startForm(body, a){
   // "new numbers every attempt": fetch this attempt's numbers before showing the form
-  if(a.reroll && a.attempts > 0 && a.qAtt !== a.attempts){
+  if((a.reroll || a.next_new) && a.attempts > 0 && a.qAtt !== a.attempts){
     try{ const f = await rpcS("hw_student_assignment2", { p_id:a.id, p_next:true }); a.questions = f.questions; a.qAtt = a.attempts; }catch(e){ return toast(errMsg(e)); }
   }
   if(a.time_limit_min && !a.started_at){
@@ -1313,7 +1313,7 @@ async function startForm(body, a){
 let timerInt = null;
 function showForm(body, a){
   clearInterval(timerInt);
-  const dkey = "hw-draft-"+a.id+(a.reroll ? "-"+a.attempts : "");
+  const dkey = "hw-draft-"+a.id+(a.reroll || a.next_new ? "-"+a.attempts : "");
   const draft = store(dkey) || {};
   body.innerHTML = `
     <div class="card flat"><div class="bd" id="qs">
@@ -1358,7 +1358,7 @@ function showForm(body, a){
     let r; try{ r = await rpcS("hw_student_submit", { p_id:a.id, p_answers:ans }); }
     catch(e){ sending = false; $("#sub").disabled=false; $("#sub").textContent="הגשה"; $("#out").innerHTML=`<p class="err">${esc(errMsg(e))}</p>`; return; }
     clearInterval(timerInt); store(dkey, null); HOME = null;
-    a.attempts = r.attempt; a.started_at = null;
+    a.attempts = r.attempt; a.started_at = null; a.solution_viewed = false; a.next_new = !!a.reroll; a.qAtt = a.reroll ? a.qAtt : null;
     if(auto) toast("הזמן נגמר. התשובות נשלחו");
     showReview(body, a, { score:r.score, max:r.max, results:r.results, answers:ans, at:new Date().toISOString() }, true);
     setTimeout(async () => { try{ await loadHome(true); checkBadges(true); }catch(e){} }, 1600);
@@ -1393,6 +1393,7 @@ function showReview(body, a, last, fresh){
           <div class="grow" style="min-width:180px"><div style="font-weight:800">${right} מתוך ${a.questions.length} נכונות</div><div class="muted small">${+(+last.score).toFixed(2)} מתוך ${last.max} נקודות · הוגש ${fmtDate(last.at)}</div></div></div>${cells(p, fresh)}`
         : `<h2>${fresh?"ההגשה התקבלה":"הוגש"}</h2><p class="muted" style="margin:6px 0 0">הוגש ${fmtDate(last.at)}. הציון יופיע כאן כשהמורה יפרסם אותו.</p>`}
     </div></div>
+    ${a.show_results && a.questions.some(q=>q.has_solution) ? `<div class="info"><div class="row"><div class="grow"><b>פתרון מלא</b><div class="muted small">${a.solution_viewed?"כבר פתחת את הפתרון. בניסיון הבא המספרים מתחלפים.":"דרך הפתרון המלאה, עם המספרים שקיבלת."}</div></div><button class="light sm" id="solb">צפייה בפתרון מלא</button></div></div>` : ""}
     ${last.note?`<div class="info"><b>הערה מהמורה:</b> <span class="prompt">${esc(last.note)}</span></div>`:""}
     <div class="card flat"><div class="bd">
       ${a.questions.map((q,i)=>{ const x = res[q.id] || {}; const given = (last.answers||{})[q.id] ?? x.given ?? "";
@@ -1400,13 +1401,25 @@ function showReview(body, a, last, fresh){
         let fb = "";
         if(x.correct === true) fb = `<div class="mark ok"><b>נכון</b>${x.hint && +x.points < q.points ? `<span class="tiny">(${x.points} נק׳, נעזרת ברמז)</span>`:""}</div>`;
         else if(x.correct === false) fb = `<div class="mark bad"><b>לא נכון.</b>${x.answer!=null?`<span>התשובה: <bdi class="ltr" style="font-weight:800">${esc(x.answer)}</bdi></span>`:""}</div>`;
-        const sol = q.solution && x.correct !== undefined ? `<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(q.solution)}</div></div>` : "";
-        return `<div class="q"><div class="qh"><span class="qn" style="${x.correct===true?"background:var(--ok)":x.correct===false?"background:var(--bad)":""}">${i+1}</span><div class="body"><div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}
+        const sol = q.has_solution ? `<div class="solslot"></div>` : "";
+        return `<div class="q" data-qid="${q.id}"><div class="qh"><span class="qn" style="${x.correct===true?"background:var(--ok)":x.correct===false?"background:var(--bad)":""}">${i+1}</span><div class="body"><div class="prompt">${esc(q.prompt)}</div>${figHtml(q.figure)}
           <div class="yours">התשובה שנשלחה: <b><bdi class="${q.kind==="choice"||q.kind==="multi"?"":"ltr"}">${given===""?"לא נענתה":esc(shown)}</bdi></b>${q.unit&&given!==""&&q.kind==="number"?` <bdi class="ltr">${esc(q.unit)}</bdi>`:""}</div>${fb}${sol}</div></div></div>`; }).join("")}
     </div></div>
     ${fresh ? `<button class="wide big light" onclick="go('#/')">חזרה למשימות</button>` : ""}`;
   math(body);
+  const sb2 = body.querySelector("#solb"); if(sb2) sb2.onclick = () => openSolution(body, a);
   if(fresh) window.scrollTo({top:0,behavior:"smooth"});
+}
+async function openSolution(body, a){
+  const more = a.is_open && !isPast(a.due_at) && (a.max_attempts==null || a.attempts < a.max_attempts);
+  if(more && !a.solution_viewed && !(await ask(`<h2>לפתוח את הפתרון המלא?</h2><p class="muted">אחרי שתראו את הפתרון, בניסיון הבא השאלות יגיעו עם מספרים חדשים, כדי לבדוק שהבנתם את הדרך ולא רק את התשובה.</p><p class="muted">בשאלות שאין בהן מספרים להחליף, הפתרון ייפתח רק כשייגמרו הניסיונות.</p>`, "פתיחת הפתרון", "לא עכשיו"))) return;
+  let r; try{ r = await rpcS("hw_student_solution", { p_id:a.id }); }catch(e){ return toast(errMsg(e)); }
+  if(r.more){ a.solution_viewed = true; a.next_new = true; a.qAtt = null; }
+  (r.questions||[]).forEach(x => { const el = body.querySelector(`.q[data-qid="${x.id}"] .solslot`); if(!el) return;
+    el.innerHTML = x.locked ? `<div class="sol muted">הפתרון לשאלה הזו ייפתח כשייגמרו הניסיונות.</div>` : `<div class="sol"><span class="label">פתרון מלא</span><div class="prompt">${esc(x.solution||"")}</div></div>`; });
+  math(body);
+  const b = body.querySelector("#solb"); if(b){ b.textContent = "הפתרון פתוח למטה"; b.disabled = true; }
+  const first = body.querySelector(".solslot .sol"); first && first.scrollIntoView({behavior:"smooth", block:"center"});
 }
 
 /* ================= TEACHER ================= */
@@ -1621,7 +1634,7 @@ async function newAssignment(D, preset){
   setTimeout(()=>$("#na_t",d)?.focus(),30);
   $("#na_ok", d).onclick = async () => {
     const title = $("#na_t", d).value.trim() || "משימה חדשה";
-    const ins = { title, is_open:false, mode, show_results:true, max_attempts: mode==="practice" ? null : 1, time_limit_min: mode==="exam" ? 45 : null };
+    const ins = { title, is_open:false, mode, show_results:true, max_attempts: mode==="practice" ? null : mode==="exam" ? 1 : 2, reroll: mode!=="exam", time_limit_min: mode==="exam" ? 45 : null };
     const { data, error } = await sb.from("hw_assignments").insert(ins).select("id").single();
     if(error) return toast(error.message);
     const ch = $$(".na_c:checked", d).map(x=>x.value);
@@ -1988,7 +2001,7 @@ async function openSubmission(subId, after){
   if(error) return toast(error.message);
   const { data:qs } = await sb.from("hw_questions").select("id,position,prompt,kind,choices,points").eq("assignment_id", s.assignment_id).order("position");
   const res = Object.fromEntries((s.results||[]).map(r=>[r.question_id, r]));
-  const d = sheet(`<h2>${esc(s.student_name)}</h2><p class="muted small">הוגש ${fmtDate(s.created_at)}. ציון אוטומטי: ${pct(s.score,s.max_score)} (${+(+s.score).toFixed(2)} מתוך ${s.max_score} נק׳)</p>
+  const d = sheet(`<h2>${esc(s.student_name)}</h2><p class="muted small">הוגש ${fmtDate(s.created_at)}. ציון אוטומטי: ${pct(s.score,s.max_score)} (${+(+s.score).toFixed(2)} מתוך ${s.max_score} נק׳)${s.solution_viewed_at?` · <b>צפה בפתרון המלא</b> אחרי ההגשה הזו`:""}</p>
     <div style="max-height:44vh;overflow:auto;border:1px solid var(--line);margin-top:10px">${(qs||[]).map((q,i)=>{ const r = res[q.id]||{}; const g = r.given!=null ? givenText(q, r.given) : r.given;
       return `<div style="padding:12px 14px;border-bottom:1px solid var(--line)"><div class="row" style="align-items:flex-start;flex-wrap:nowrap"><b class="${r.correct?"yes":"no"}" style="width:22px">${r.correct?"✓":"✗"}</b><div class="grow"><div class="small prompt">${i+1}. ${esc(q.prompt)}</div>
         <div class="tiny" style="margin-top:4px">ענה: <b><bdi>${esc(g??"—")}</bdi></b>${!r.correct&&r.answer?` · נכון: <bdi>${esc(r.answer)}</bdi>`:""}${r.hint?" · נעזר ברמז":""}</div></div></div></div>`; }).join("")}</div>
@@ -2168,7 +2181,7 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 \`\`\`json
 {"alfamath": 1, "questions": [
  {"kind": "number", "prompt": "רכב נוסע $120$ ק\\"מ ב-$1.5$ שעות. מה מהירותו הממוצעת?", "answer": {"value": 80, "unit": "קמ\\"ש"}, "topic": "מהירות", "hint": "מהירות = דרך חלקי זמן", "solution": "$v=\\\\frac{120}{1.5}=80$"},
- {"kind": "number", "prompt": "מלבן שאורכו {a} ס\\"מ ורוחבו {b} ס\\"מ. מה שטחו?", "params": {"a": [4, 12, 1], "b": [2, 9, 1]}, "answer": {"formula": "a*b", "unit": "סמ\\"ר"}, "topic": "שטחים"},
+ {"kind": "number", "prompt": "מלבן שאורכו {a} ס\\"מ ורוחבו {b} ס\\"מ. מה שטחו?", "params": {"a": [4, 12, 1], "b": [2, 9, 1]}, "answer": {"formula": "a*b", "unit": "סמ\\"ר"}, "topic": "שטחים", "solution": "שטח מלבן הוא אורך כפול רוחב.\\n$S={a}\\\\cdot{b}={=a*b}$ סמ\\"ר"},
  {"kind": "choice", "prompt": "איזה מהבאים הוא מספר ראשוני?", "choices": ["9", "15", "17", "21"], "answer": {"index": 2}, "topic": "מספרים"},
  {"kind": "multi", "prompt": "אילו מהמרובעים הבאים הם מקביליות?", "choices": ["מלבן", "טרפז", "מעוין", "דלתון", "ריבוע"], "answer": {"indices": [0, 2, 4], "show_count": true}, "topic": "מרובעים"},
  {"kind": "text", "prompt": "איך נקרא טרפז ששוקיו שוות?", "answer": {"accepted": ["טרפז שווה שוקיים", "שווה שוקיים"]}, "topic": "טרפז"}
@@ -2192,7 +2205,8 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
   • וקטורים (כוחות, מהירות, תאוצה): חץ עם ראש חץ (marker), עובי 3, כל וקטור בצבע בולט שונה מהגוף: כוחות #D62828, מהירות #1D6FE0, תאוצה #12A150. החץ מתחיל בגבול הגוף ויוצא החוצה, לא מצויר בתוך הגוף.
   • תוויות: font-family="Arial" font-size="15", בצבע הווקטור, ליד קצה החץ ולא על קווים. סימונים קצרים בלבד: אותיות, מספרים וסמלים (A, O, F, mg, 5, 60°). בלי מילים שלמות בשום שפה (לא "Area = ?", לא "Type = ?"), בלי $ ובלי עברית בשרטוט.
   • "?" לבד, ליד הגודל המבוקש עצמו (צלע, זווית, קטע). אם המבוקש אינו גודל בשרטוט – אין "?". מרווח של 15 לפחות מהשוליים. השרטוט לא חושף את התשובה.
-- hint ו-solution לא חובה, קצרים.`;
+- hint: לא חובה, משפט קצר שמכוון בלי לגלות את התשובה.
+- solution: חובה בכל שאלה. פתרון מלא שלב אחרי שלב, 2–5 שלבים קצרים, כל שלב בשורה נפרדת (\\n), שמראה איך מגיעים לתשובה ולא רק את התשובה. בשאלה עם params כתוב את הפתרון עם אותם משתנים, למשל {a}, וכל חישוב ביניים או תוצאה בתוך {=ביטוי}, למשל {=a*b}. כך כל תלמיד יראה את המספרים שלו. בתוך $...$ משתנה נכתב בסוגריים כפולים, למשל $\\\\frac{{a}}{{b}}$.`;
 }
 function parseAIQuestions(raw){
   let t = String(raw||"").trim();
@@ -2603,7 +2617,7 @@ function qEditor(q,i){
       <details ${q.hint||q.solution?"open":""}><summary>רמז ופתרון</summary><div>
         <label class="f">רמז <span class="muted">התלמיד יכול לפתוח בזמן הפתרון</span></label><textarea data-f="hint" style="min-height:56px">${esc(q.hint||"")}</textarea>
         <label class="f">כמה נקודות הרמז מוריד</label><input type="number" min="0" step="0.5" data-f="hint_penalty" value="${q.hint_penalty||0}" style="width:110px">
-        <label class="f">פתרון מלא <span class="muted">מוצג לתלמיד אחרי ההגשה</span></label><textarea data-f="solution" style="min-height:70px">${esc(q.solution||"")}</textarea></div></details>
+        <label class="f">פתרון מלא <span class="muted">נפתח לתלמיד אחרי ההגשה. {a} ו-{=a*b} יוצגו עם המספרים שלו</span></label><textarea data-f="solution" style="min-height:70px">${esc(q.solution||"")}</textarea></div></details>
       <details><summary>${q.figure?"שרטוט (יש)":"שרטוט"}</summary><div><textarea data-f="figure" class="ltr" style="min-height:60px;font-size:12px;margin-top:8px" placeholder="קוד SVG. אפשר לבקש מ-Claude לשרטט">${esc(q.figure||"")}</textarea></div></details>
       <div class="label" style="margin-top:16px">כך התלמיד רואה</div>
       <div class="preview" id="pv${i}"></div>
