@@ -1970,7 +1970,7 @@ async function teacherStudent(id){
     [], ["נושא","הצלחה","מספר שאלות"], ...topics.map(t => [t.t, t.p+"%", t.n])]);
   $("#tns").onclick = async () => { const { error } = await sb.from("hw_students").update({ teacher_note: $("#tn").value.trim() || null }).eq("id", id); toast(error ? error.message : "ההערה נשמרה"); };
   $("#stren").onclick = async () => {
-    if(!(await ask(`<h2>שינוי שם</h2><label for="rnm" class="small">שם פרטי ושם משפחה</label><input id="rnm" maxlength="60" autocomplete="off" value="${esc(st.display_name)}"><p class="muted small" style="margin:10px 0 0">${st.claimed_at?"התלמיד ממשיך להיכנס כרגיל. ":""}בכניסה מקוד הכיתה מקלידים מעכשיו את השם החדש.</p>`, "שמירה"))) return;
+    if(!(await ask(`<h2>שינוי שם</h2><label for="rnm" class="f">שם פרטי ושם משפחה</label><input type="text" id="rnm" maxlength="60" enterkeyhint="done" autocomplete="off" value="${esc(st.display_name)}"><p class="muted small" style="margin:10px 0 0">${st.claimed_at?"התלמיד ממשיך להיכנס כרגיל. ":""}בכניסה מקוד הכיתה מקלידים מעכשיו את השם החדש.</p>`, "שמירה"))) return;
     const nm = ($("#rnm").value||"").replace(/\s+/g," ").trim(), key = x => x.replace(/\s+/g," ").trim().toLowerCase();
     if(nm === st.display_name) return;
     if(nm.split(" ").length < 2 || nm.replace(/ /g,"").length < 3) return toast("כתבו שם פרטי ושם משפחה");
