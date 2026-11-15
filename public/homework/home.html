@@ -58,158 +58,106 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .menu a:last-child{border-bottom:none;color:var(--red)}
 .menu a:hover,.menu a:focus-visible{background:var(--hl)}.cta .btn{min-height:38px;font-size:14.5px;padding:0 16px;white-space:nowrap}
 
+html,body{overflow-x:clip}
+body{touch-action:manipulation}
+@media (max-width:760px){nav.links{display:none}.wrap{padding-inline:18px}}
 /* hero */
 .hero{position:relative;overflow:hidden;isolation:isolate;background:#0B1530;color:#fff}
 .hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,#000 35%,transparent 85%);mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,#000 35%,transparent 85%)}
-.hero::after{content:"";position:absolute;z-index:-1;inset-inline-end:-10%;top:10%;width:min(760px,90vw);aspect-ratio:1;background:radial-gradient(closest-side,rgba(47,91,240,.5),rgba(47,91,240,0))}
-.hgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:72px;align-items:center;padding-top:72px;padding-bottom:56px}
-.hero h1{margin:0;font-size:clamp(40px,5.3vw,80px);line-height:1.02;letter-spacing:-.02em;color:#fff}
-.hero .lead{margin:22px 0 0;font-size:clamp(17px,1.7vw,21px);line-height:1.55;color:#B7C4E6;max-width:30ch}
-.bigcta{margin-top:34px;display:inline-flex;align-items:center;gap:14px;min-height:66px;padding:0 30px;font:800 21px Rubik,sans-serif;text-decoration:none;color:#0F1E3D;background:var(--hl);border:2px solid #0F1E3D;box-shadow:6px 6px 0 #fff;transition:transform .18s,box-shadow .18s}
-.bigcta svg{transition:transform .25s}
-.bigcta:hover{color:#0F1E3D;transform:translate(-3px,-3px);box-shadow:9px 9px 0 #fff}.bigcta:hover svg{transform:translateX(-6px)}
-.bigcta:focus-visible{outline:3px solid #fff;outline-offset:4px}
-.ctasub{margin:16px 0 0;font-size:14.5px;color:#97A3C0}
-.ctasub a{color:#C9D6FB;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(201,214,251,.4);margin-inline-start:6px}
-.ctasub a:hover{color:#fff}
-/* features strip, part of the hero */
-.marq{position:relative;border-top:1px solid rgba(255,255,255,.1);padding:22px 0 26px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
-.mtrack{display:flex;gap:14px;width:max-content;animation:marq 48s linear infinite}
-.marq:hover .mtrack{animation-play-state:paused}
-.mi{display:flex;align-items:center;gap:12px;padding:12px 18px 12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);white-space:nowrap}
-.mi .ic{width:34px;height:34px;display:grid;place-items:center;background:var(--hl);color:#0F1E3D;font-weight:800;font-size:16px;flex:none}
-.mi b{display:block;font-size:15.5px;color:#fff}.mi span{display:block;font-size:13px;color:#97A3C0}
-@keyframes marq{to{transform:translateX(50%)}}
-@media (prefers-reduced-motion:reduce){.mtrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.mtrack .dup{display:none}.marq{-webkit-mask-image:none;mask-image:none}}
-
-/* hero v4 */
-.hgrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:64px;align-items:center;padding-top:76px;padding-bottom:64px}
-.hero h1{margin:0;font-size:clamp(44px,5.6vw,84px);line-height:1.02;letter-spacing:-.02em;color:#fff}
+.hero::after{content:"";position:absolute;z-index:-1;left:50%;top:18%;width:min(900px,120vw);aspect-ratio:1.4;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(47,91,240,.45),rgba(47,91,240,0))}
+.hx{text-align:center;padding-top:64px;padding-bottom:72px}
+.hero h1{margin:0;font-size:clamp(46px,6.6vw,96px);line-height:1;letter-spacing:-.02em;color:#fff}
 .hero h1 .ln{display:block;white-space:nowrap}
-.hero .h2{margin:18px 0 0;font:400 clamp(24px,2.6vw,38px)/1.15 "Secular One",Rubik,sans-serif;color:var(--hl)}
-.hero .lead{margin:20px 0 0;font-size:clamp(16px,1.5vw,19px);line-height:1.6;color:#B7C4E6;max-width:44ch}
-.hacts{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:32px}
-.bigcta{display:inline-flex;align-items:center;gap:14px;min-height:64px;padding:0 30px;font:800 20px Rubik,sans-serif;text-decoration:none;color:#0F1E3D;background:var(--hl);border:2px solid #0F1E3D;box-shadow:6px 6px 0 #fff;transition:transform .18s,box-shadow .18s}
+.hero .h2{margin:22px auto 0;font:400 clamp(24px,2.6vw,38px)/1.15 "Secular One",Rubik,sans-serif;color:var(--hl)}
+.hz{display:grid;grid-template-columns:repeat(3,minmax(0,170px));justify-content:center;gap:16px 44px;margin:38px auto 4px}
+.hz-i{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:Rubik,sans-serif;color:#fff;animation:fadeup .6s var(--d) cubic-bezier(.2,.8,.2,1) both}
+.hz-i svg{margin-bottom:6px}
+.hz-i svg path{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .9s var(--d) ease-out forwards}
+.hz-i b{font-size:16.5px;font-weight:700}
+.hz-i small{font-size:13.5px;color:#97A3C0}
+.hacts{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;margin-top:34px}
+.bigcta{display:inline-flex;align-items:center;gap:14px;height:64px;padding:0 30px;font:800 20px Rubik,sans-serif;text-decoration:none;color:#0F1E3D;background:var(--hl);border:2px solid #0F1E3D;box-shadow:6px 6px 0 #fff;transition:transform .18s,box-shadow .18s}
 .bigcta svg{transition:transform .25s}
 .bigcta:hover{color:#0F1E3D;transform:translate(-3px,-3px);box-shadow:9px 9px 0 #fff}.bigcta:hover svg{transform:translateX(-6px)}
-.bigcta:focus-visible,.ghostcta:focus-visible{outline:3px solid #fff;outline-offset:4px}
-.ghostcta{display:inline-flex;align-items:center;min-height:64px;padding:0 24px;font:700 17px Rubik,sans-serif;color:#fff;text-decoration:none;border:2px solid rgba(255,255,255,.45);transition:border-color .15s,background .15s}
+.ghostcta{display:inline-flex;align-items:center;height:64px;padding:0 26px;font:700 17px Rubik,sans-serif;color:#fff;text-decoration:none;border:2px solid rgba(255,255,255,.45);transition:border-color .15s,background .15s}
 .ghostcta:hover{color:#fff;border-color:#fff;background:rgba(255,255,255,.06)}
-.ctasub{margin:14px 0 0;font-size:14px;color:#97A3C0}
-/* hero visual: built and checked */
-.builder{position:relative;justify-self:center;width:min(460px,100%);font-family:Rubik,sans-serif;color:#0F1E3D}
-.pbar{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #0F1E3D;box-shadow:8px 8px 0 var(--hl);padding:10px 10px 10px 14px}
-.pbar .q{flex:1;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden}
-.pbar .q i{display:inline-block;width:2px;height:20px;background:#1F49D6;vertical-align:-4px;margin-inline-start:2px;animation:blink 1s steps(1) infinite}
-.pbar .b{flex:none;padding:10px 14px;background:#1F49D6;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px}
-.qs{display:grid;gap:10px;margin-top:16px}
-.qi{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #D5DDEB;padding:12px 14px;box-shadow:0 14px 30px -18px rgba(0,0,0,.6);animation:qin .7s cubic-bezier(.2,.8,.2,1) both}
-.qi:nth-child(2){animation-delay:.35s;margin-inline-start:18px}.qi:nth-child(3){animation-delay:.7s;margin-inline-start:36px}.qi:nth-child(4){animation-delay:1.05s;margin-inline-start:54px}
-.qi .n{flex:none;width:26px;height:26px;display:grid;place-items:center;background:#0F1E3D;color:#fff;font-size:13px;font-weight:700}
-.qi .t{flex:1;font-size:14.5px;font-weight:600;line-height:1.35}
-.qi .t small{display:block;font-weight:500;color:#5D6B85;font-size:12px}
-.qi .ok{flex:none;display:flex;align-items:center;gap:5px;padding:4px 8px;background:#E6F7EF;color:#0B7A55;font-size:12px;font-weight:800;animation:pop .4s both}
-.qi:nth-child(1) .ok{animation-delay:.9s}.qi:nth-child(2) .ok{animation-delay:1.25s}.qi:nth-child(3) .ok{animation-delay:1.6s}.qi:nth-child(4) .ok{animation-delay:1.95s}
-.qi svg.fig{flex:none;width:58px;height:34px}
-.engines{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;justify-content:center}
-.engines span{font-size:12.5px;font-weight:700;color:#C9D6FB;padding:5px 10px;border:1px solid rgba(255,255,255,.22)}
-@keyframes qin{from{opacity:0;transform:translateY(22px) scale(.97)}}
-@keyframes pop{from{opacity:0;transform:scale(.6)}}
-@keyframes blink{50%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.qi,.qi .ok{animation:none}.pbar .q i{animation:none}}
-@media (max-width:900px){.hgrid{grid-template-columns:minmax(0,1fr);gap:48px;padding-top:44px;padding-bottom:44px}}
-@media (max-width:600px){.hero h1{font-size:clamp(38px,11vw,50px)}.hacts{flex-direction:column;align-items:stretch}.bigcta,.ghostcta{justify-content:center}.bigcta{box-shadow:5px 5px 0 #fff}.qi:nth-child(n){margin-inline-start:0}}
-
-/* blockbuster panels */
-.pn{position:relative;overflow:hidden;padding:120px 0}
-.pn.dk{background:#0B1530;color:#fff}
-.pn.dk::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:32px 32px}
-.pn .wrap{position:relative;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:center}
-.pn.flip .wrap{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}.pn.flip .ptext{order:2}
-.ptext .k{display:inline-block;font:700 13px Rubik,sans-serif;color:var(--pen);border-bottom:2px solid currentColor;padding-bottom:2px}
-.pn.dk .ptext .k{color:var(--hl)}
-.ptext h2{margin:14px 0 0;font-size:clamp(36px,4.6vw,64px);line-height:1.04;letter-spacing:-.015em}
-.pn.dk .ptext h2{color:#fff}
-.ptext p{margin:18px 0 0;font-size:clamp(17px,1.5vw,20px);line-height:1.6;color:var(--ink-2);max-width:36ch}
-.pn.dk .ptext p{color:#B7C4E6}
-.pv{position:relative;font-family:Rubik,sans-serif;color:#0F1E3D}
-/* scroll-linked: every panel gets --p from 0 to 1 as it arrives */
-.pn{--p:0}
-.ptext{opacity:calc(.15 + var(--p) * .85);transform:translateY(calc((1 - var(--p)) * 40px))}
-.card{background:#fff;border:2px solid #0F1E3D;box-shadow:10px 10px 0 var(--hl)}
-.pn.dk .card{box-shadow:10px 10px 0 var(--hl)}
-/* P1 build */
-.p1 .pv{display:grid;gap:12px}
-.p1 .pbar{transform:translateY(calc((1 - var(--p)) * 30px))}
-.p1 .row{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #D5DDEB;padding:14px 16px;box-shadow:0 18px 34px -24px rgba(15,30,61,.5);opacity:clamp(0,calc(var(--p) * 5 - var(--i)),1);transform:translateY(calc(clamp(0,1 - (var(--p) * 5 - var(--i)),1) * 40px))}
-.p1 .row .n{flex:none;width:28px;height:28px;display:grid;place-items:center;background:#0F1E3D;color:#fff;font-size:13px;font-weight:700}
-.p1 .row .t{flex:1;font-size:15.5px;font-weight:600}.p1 .row .t small{display:block;font-size:12.5px;color:#5D6B85;font-weight:500}
-.p1 .row .tag{font-size:12px;font-weight:700;padding:3px 8px;background:#EEF2FF;color:#1F49D6}
-.p1 .eng{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.p1 .eng span{font:700 14px Rubik,sans-serif;padding:8px 14px;border:2px solid #0F1E3D;background:#fff}
-.p1 .eng span.on{background:var(--hl)}
-/* P2 fan */
-.p2 .pv{height:460px;display:grid;place-items:center}
-.mph{position:absolute;width:210px;height:400px;border-radius:32px;background:#05080F;padding:8px;border:2px solid #2A3550;box-shadow:0 30px 60px -24px rgba(0,0,0,.8)}
-.mph .sc{height:100%;border-radius:25px;background:#F4F7FC;padding:34px 14px 14px;font-family:Rubik,sans-serif}
-.mph .who{display:inline-block;font-size:12px;font-weight:800;padding:3px 8px;background:var(--hl);color:#0F1E3D}
-.mph .qq{margin-top:12px;font-size:15px;font-weight:600;line-height:1.5;color:#0F1E3D}
-.mph .qq b{color:#1F49D6;font-size:18px}
-.mph svg{display:block;margin:14px auto 0;width:150px;height:80px}
-.mph .in{margin-top:14px;height:40px;border:2px solid #C9D3E6;background:#fff}
-.mph.a{transform:translateX(calc(var(--p) * 180px)) rotate(calc(var(--p) * 9deg)) scale(.92)}
-.mph.c{transform:translateX(calc(var(--p) * -180px)) rotate(calc(var(--p) * -9deg)) scale(.92)}
-.mph.b{z-index:2;box-shadow:0 30px 60px -24px rgba(0,0,0,.8),10px 10px 0 var(--hl)}
-/* P3 student phone */
-.p3 .pv{display:flex;justify-content:center;gap:24px;align-items:center}
-.sph{width:270px;height:540px;border-radius:40px;background:#05080F;padding:10px;border:2px solid #2A3550;box-shadow:0 40px 80px -30px rgba(0,0,0,.6),12px 12px 0 var(--hl);transform:translateY(calc((1 - var(--p)) * 60px))}
-.sph .sc{height:100%;border-radius:30px;background:#fff;overflow:hidden;font-family:Rubik,sans-serif;display:flex;flex-direction:column}
-.sph .hd2{padding:36px 18px 14px;background:#F4F7FC;border-bottom:1px solid #E1E7F2}.sph .hd2 b{display:block;font-size:17px}.sph .hd2 span{font-size:12.5px;color:#5D6B85}
-.sph .gr{padding:22px 18px 0;text-align:center}
-.sph .gr small{font-size:13px;color:#5D6B85}
-.sph .g{position:relative;display:inline-block;margin-top:4px;font:700 92px/1 Caveat,"Secular One",cursive;color:#0E9F6E;padding:6px 26px 0}
-.sph .g svg{position:absolute;inset:-6px -10px -10px;width:calc(100% + 20px);height:calc(100% + 16px);overflow:visible}
-.sph .g ellipse{fill:none;stroke:#E23B3B;stroke-width:4;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:calc(420 - var(--p) * 420);transform-origin:center;transform:rotate(-6deg)}
-.sph ul{list-style:none;margin:18px 0 0;padding:0 18px;display:grid;gap:9px;text-align:start}
-.sph li{display:flex;align-items:center;gap:9px;font-size:14px;color:#3A4766}
-.sph li i{flex:none;width:20px;height:20px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:#0E9F6E}
-.sph li i.x{background:#E23B3B}
-.sph .sol{margin:14px 18px 0;padding:10px 12px;background:#FFF9D6;border-inline-start:4px solid var(--hl);font-size:13px;color:#3A4766}
-/* P4 tracking */
-.p4 .pv{display:grid;gap:18px}
-.trk{padding:26px}
-.trk .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.trk .cnt{font:400 64px/1 "Secular One",Rubik,sans-serif;color:#0F1E3D}
-.trk .cnt small{font:600 18px Rubik,sans-serif;color:#5D6B85}
-.trk .lb{font-size:14px;font-weight:700;color:#5D6B85}
-.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:20px}
-.dots i{aspect-ratio:1;display:grid;place-items:center;background:#E6ECF6;position:relative;font-style:normal}
-.dots i::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;background:#0E9F6E;color:#fff;font-weight:800;font-size:14px;opacity:clamp(0,calc(var(--p) * 30 - var(--i)),1)}
-.dots i.no::after{display:none}
-.dots i.no{background:#FDECEC;outline:2px dashed #E23B3B;outline-offset:-2px}
-.bell{display:flex;align-items:center;gap:14px;padding:16px 18px;background:#fff;border:2px solid #0F1E3D;transform:translateX(calc((1 - var(--p)) * -60px));opacity:var(--p)}
-.bell .ic{flex:none;width:44px;height:44px;display:grid;place-items:center;background:var(--hl)}
-.bell b{display:block;font-size:15.5px}.bell span{font-size:13.5px;color:#5D6B85}
-/* P5 gradebook */
-.gb{overflow:hidden}
-.gb .gh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid #0F1E3D}
-.gb .gh b{font-size:17px}
-.gb .xl{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#107C41;color:#fff;font-weight:800;font-size:13.5px}
-.gb table{width:100%;border-collapse:collapse;font-size:14px}
-.gb th{background:#F4F7FC;color:#5D6B85;font-weight:700;font-size:12.5px;text-align:start;padding:10px 14px}
-.gb td{padding:11px 14px;border-top:1px solid #E6ECF6}
-.gb tr.r{opacity:clamp(0,calc(var(--p) * 7 - var(--i)),1);transform:translateX(calc(clamp(0,1 - (var(--p) * 7 - var(--i)),1) * -30px))}
-.gb .bd{display:inline-grid;place-items:center;min-width:44px;height:30px;font-weight:800;border:2px solid currentColor}
-.gb .hi{color:#0E9F6E}.gb .md{color:#1F49D6}.gb .lo{color:#E23B3B}
-.gb .m{color:#5D6B85;font-size:12.5px}
-/* P6 analysis */
-.an{padding:24px}
-.an .ar{margin-top:16px}.an .ar:first-of-type{margin-top:10px}
-.an .ar .l{display:flex;justify-content:space-between;font-size:14.5px;font-weight:600}
-.an .ar s{display:block;height:12px;margin-top:8px;background:#E6ECF6;position:relative;overflow:hidden;text-decoration:none}
-.an .ar s i{position:absolute;inset-block:0;inset-inline-start:0;width:var(--w);background:var(--c);transform-origin:right;transform:scaleX(var(--p))}
-.an .call{margin-top:20px;display:flex;gap:12px;padding:14px 16px;background:#FDECEC;border-inline-start:4px solid #E23B3B;font-size:14.5px;color:#7A1D1D;opacity:clamp(0,calc(var(--p) * 2 - 1),1)}
-.an h3{margin:0;font-size:17px}
+.bigcta:focus-visible,.ghostcta:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.ctasub{margin:16px 0 0;font-size:14px;color:#97A3C0}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (max-width:700px){
+  .hx{padding-top:40px;padding-bottom:48px}
+  .hero h1{font-size:clamp(42px,12.5vw,56px)}
+  .hero .h2{font-size:clamp(19px,5.6vw,24px)}
+  .hz{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:30px}
+  .hz-i svg{width:30px;height:30px}.hz-i b{font-size:14.5px}.hz-i small{font-size:12.5px}
+  .hacts{flex-direction:column;align-items:stretch;gap:12px}.bigcta,.ghostcta{justify-content:center}.bigcta{box-shadow:5px 5px 0 #fff;height:62px}.ghostcta{height:56px}
+}
+/* product deck */
+.deck{position:relative;padding:96px 0 72px;scroll-margin-top:56px}
+.dtop{text-align:center}
+.deck h2{margin:0;font-size:clamp(36px,5vw,66px);line-height:1.04}
+.dsub{margin:12px 0 0;font-size:15px;color:var(--muted)}
+.dtabs{display:flex;justify-content:center;gap:8px;margin-top:28px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
+.dtabs::-webkit-scrollbar{display:none}
+.dtabs button{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px;font:700 15.5px Rubik,sans-serif;color:var(--ink-2);background:var(--card);border:1.5px solid var(--grid);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.dtabs button b{width:22px;height:22px;display:grid;place-items:center;font-size:12px;background:var(--grid);color:var(--ink)}
+.dtabs button:hover{border-color:var(--ink)}
+.dtabs button[aria-selected=true]{background:#0F1E3D;color:#fff;border-color:#0F1E3D}
+.dtabs button[aria-selected=true] b{background:var(--hl);color:#0F1E3D}
+[data-theme=dark] .dtabs button[aria-selected=true]{background:var(--hl);color:#0F1E3D;border-color:var(--hl)}[data-theme=dark] .dtabs button[aria-selected=true] b{background:#0F1E3D;color:#fff}
+.drail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin-top:20px}
+.drail::-webkit-scrollbar{display:none}
+.dslide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:24px 0 20px}
+.dwrap{max-width:1160px;margin:0 auto;padding-inline:32px;display:grid;grid-template-columns:minmax(0,.62fr) minmax(0,1.38fr);gap:56px;align-items:center}
+.dtext .k{display:inline-block;font:700 13px Rubik,sans-serif;color:var(--pen);border-bottom:2px solid currentColor;padding-bottom:2px}
+.dtext h3{margin:14px 0 0;font-size:clamp(30px,3.4vw,48px);line-height:1.06;font-weight:400}
+.dtext p{margin:16px 0 0;font-size:17.5px;line-height:1.6;color:var(--ink-2);max-width:34ch}
+.dmedia{position:relative}
+.shot .imgw{position:relative}
+.shot img{display:block;width:100%;height:auto}
+.bw{border:2px solid var(--ink);box-shadow:10px 10px 0 var(--hl);background:#fff}
+.bw .bar2{display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-bottom:2px solid var(--ink);background:var(--paper)}
+.bw .bar2 i{width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%}
+.bw .bar2 em{margin-inline-start:12px;font:500 12.5px Rubik,sans-serif;font-style:normal;color:var(--muted);direction:ltr}
+.duo{display:flex;justify-content:center;gap:28px}
+.ph{position:relative;width:min(270px,44%);border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:8px 8px 0 var(--hl)}
+.ph .imgw{border-radius:26px;overflow:hidden}
+.ptag{position:absolute;z-index:2;top:-14px;inset-inline-start:18px;font:800 13px Rubik,sans-serif;padding:4px 10px;background:var(--hl);color:#0F1E3D;border:2px solid #0F1E3D}
+.mark{position:absolute;pointer-events:none}
+.mark svg{width:100%;height:100%;overflow:visible}
+.mark ellipse{fill:none;stroke:#E23B3B;stroke-width:3.5;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transform-origin:center;transform:rotate(-2deg)}
+.dslide.on .mark ellipse{animation:draw .8s .35s ease-out forwards}
+.mm{display:none}
+@media (max-width:700px){.md{display:none}.mm{display:block}}
+.dctl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:14px}
+.ddots{display:flex;gap:8px}
+.ddots button{width:26px;height:6px;padding:0;border:none;background:var(--grid);cursor:pointer;transition:width .2s,background .2s}
+.ddots button.on{width:40px;background:var(--pen)}
+.dctl .arr{width:46px;height:46px;display:grid;place-items:center;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer}
+.dctl .arr:hover{background:var(--hl);color:#0F1E3D}
+.dctl .arr:disabled{opacity:.3;cursor:default;background:var(--card);color:var(--ink)}
+@media (max-width:900px){.deck{padding:64px 0 48px}.dtabs{justify-content:flex-start;margin-inline:-18px;padding-inline:18px}.dwrap{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:18px}.dtext{text-align:center}.dtext p{margin-inline:auto}}
+@media (max-width:700px){.dctl .arr{display:none}.bw{width:min(280px,82%);margin-inline:auto;border:none;border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:8px 8px 0 var(--hl)}.bw .bar2{display:none}.bw .imgw{border-radius:26px;overflow:hidden}.duo{gap:12px}.ph{width:47%;border-radius:26px;padding:6px;box-shadow:5px 5px 0 var(--hl)}.ph .imgw{border-radius:21px}.dtext h3{font-size:30px}.dtext p{font-size:16px}}
+/* before / after flip cards */
+.ba{padding:88px 0}
+.ba h2{margin:0;text-align:center;font-size:clamp(34px,4.6vw,60px);line-height:1.05}
+.flips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:40px}
+.flip{position:relative;height:210px;padding:0;border:none;background:none;cursor:pointer;perspective:900px;font:inherit;color:inherit;text-align:start}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;padding:20px;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.face .fl{font:800 12.5px Rubik,sans-serif}
+.face.old{background:transparent;border:1.5px dashed var(--grid);color:var(--muted)}
+.face.old s{text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;font-size:17px}
+.face.new{background:#0F1E3D;color:#fff;border:2px solid #0F1E3D;box-shadow:8px 8px 0 var(--hl);transform:rotateY(180deg)}
+.face.new .fl{color:var(--hl)}.face.new svg{color:var(--hl)}
+.face.new b{font-size:19px;line-height:1.3}
+.flip.on .old{transform:rotateY(-180deg)}.flip.on .new{transform:rotateY(0)}
+.flip:focus-visible{outline:3px solid var(--pen);outline-offset:4px}
+.bahint{margin:18px 0 0;text-align:center;font-size:14px;color:var(--muted)}
+[data-theme=dark] .face.new{background:#16213B;border-color:#2A3A5E}
+@media (max-width:900px){.flips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.ba{padding:60px 0}.flips{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:28px -18px 0;padding:0 18px 14px;scrollbar-width:none}.flips::-webkit-scrollbar{display:none}.flip{flex:0 0 62%;height:190px;scroll-snap-align:center}.face{padding:16px}.face.new{box-shadow:5px 5px 0 var(--hl)}}
+@media (prefers-reduced-motion:reduce){.hz-i,.hz-i svg path{animation:none;stroke-dashoffset:0}.mark ellipse{stroke-dashoffset:0;animation:none!important}.face{transition:none}}
 /* schools */
 .schools{padding:110px 0}
 .schools .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:start}
@@ -234,128 +182,10 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .lead-form .done b{display:block;font-size:24px}
 .tline{margin-top:28px;padding-top:22px;border-top:1px solid var(--grid);font-size:16px;color:var(--ink-2)}
 .tline a{font-weight:700}
-[data-theme=dark] .card,[data-theme=dark] .bell,[data-theme=dark] .p1 .row,[data-theme=dark] .p1 .eng span{color:#0F1E3D}
-@media (max-width:900px){
-  .pn{padding:80px 0}.pn .wrap,.pn.flip .wrap{grid-template-columns:minmax(0,1fr);gap:44px}.pn.flip .ptext{order:0}
-  .schools{padding:72px 0}.schools .wrap{grid-template-columns:minmax(0,1fr);gap:40px}
-}
-@media (max-width:600px){
-  .p2 .pv{height:380px}.mph{width:170px;height:330px;border-radius:26px}.mph .sc{border-radius:20px;padding:26px 10px 10px}.mph .qq{font-size:13px}.mph svg{width:120px;height:64px}
-  .mph.a{transform:translateX(calc(var(--p) * 84px)) rotate(calc(var(--p) * 7deg)) scale(.84)}.mph.c{transform:translateX(calc(var(--p) * -84px)) rotate(calc(var(--p) * -7deg)) scale(.84)}
-  .sph{width:240px;height:480px}
-  .trk{padding:18px}.trk .cnt{font-size:52px}.dots{gap:7px}
-  .gb td,.gb th{padding:9px 10px}.gb .m{display:none}
-  .lead-form{padding:22px;box-shadow:6px 6px 0 var(--pen)}.lead-form .two{grid-template-columns:1fr}
-}
-@media (prefers-reduced-motion:reduce){.pn{--p:1!important}}
-/* hero steps */
-.bsteps{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.bsteps span{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 14px;font-size:14px;font-weight:700;color:#97A3C0;border:1.5px solid rgba(255,255,255,.18);animation:stepon .5s both}
-.bsteps b{width:22px;height:22px;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;font-size:12.5px}
-.bsteps .s1{animation-delay:0s}.bsteps .s2{animation-delay:.5s}.bsteps .s3{animation-delay:1.4s}
-@keyframes stepon{from{color:#97A3C0}to{color:#fff;border-color:var(--hl)}}
-.bsteps span{animation-name:stepon;animation-fill-mode:both}
-.bsteps span b{animation:stepb .5s both}.bsteps .s1 b{animation-delay:0s}.bsteps .s2 b{animation-delay:.5s}.bsteps .s3 b{animation-delay:1.4s}
-@keyframes stepb{to{background:var(--hl);color:#0F1E3D}}
-@media (prefers-reduced-motion:reduce){.bsteps span,.bsteps b{animation-duration:0s}}
-/* before / after */
-.ba{padding:110px 0 90px;--p:0}
-.ba h2{margin:0;font-size:clamp(36px,5vw,68px);line-height:1.04;text-align:center}
-.basub{margin:16px auto 0;text-align:center;font-size:clamp(17px,1.6vw,20px);color:var(--ink-2);max-width:40ch}
-.barows{display:grid;gap:14px;margin:48px auto 0;max-width:980px}
-.barow{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:16px}
-.barow .old,.barow .new{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:18px 22px}
-.barow .old{background:transparent;border:1.5px dashed var(--grid)}
-.barow .new{background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--hl);opacity:clamp(0,calc(var(--p) * 6 - var(--i) - 1.5),1);transform:translateX(calc(clamp(0,1 - (var(--p) * 6 - var(--i) - 1.5),1) * -24px))}
-.barow .lbl{font-size:12px;font-weight:800;color:var(--muted)}
-.barow .new .lbl{color:#0E9F6E}
-.barow s{position:relative;text-decoration:none;font-size:18px;color:var(--muted);align-self:flex-start}
-.barow s::after{content:"";position:absolute;inset-inline:-4px;top:55%;height:3px;background:var(--red);transform-origin:right;transform:scaleX(clamp(0,calc(var(--p) * 6 - var(--i) - 1),1));border-radius:2px}
-.barow b{font-size:19px;color:var(--ink)}
-.barow .arr{align-self:center;font-size:26px;color:var(--pen);font-weight:700}
-@media (max-width:700px){.ba{padding:72px 0 56px}.barows{margin-top:32px}.barow{grid-template-columns:1fr;gap:0}.barow .arr{display:none}.barow .old{border-bottom:none;padding:12px 16px}.barow .new{padding:14px 16px;box-shadow:5px 5px 0 var(--hl)}.barow s{font-size:16px}.barow b{font-size:17px}}
-@media (prefers-reduced-motion:reduce){.ba{--p:1!important}}
-/* features deck */
-.deck{position:relative;background:#0B1530;color:#fff;padding:96px 0 72px;overflow:hidden}
-.deck::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:32px 32px}
-.dtop{position:relative;text-align:center}
-.deck h2{margin:0;font-size:clamp(36px,5vw,68px);line-height:1.04;color:#fff}
-.dtabs{display:flex;justify-content:center;gap:8px;margin-top:30px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
-.dtabs::-webkit-scrollbar{display:none}
-.dtabs button{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px;font:700 15.5px Rubik,sans-serif;color:#B7C4E6;background:transparent;border:1.5px solid rgba(255,255,255,.2);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
-.dtabs button b{width:22px;height:22px;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.12);color:#fff}
-.dtabs button:hover{color:#fff;border-color:rgba(255,255,255,.5)}
-.dtabs button[aria-selected=true]{background:var(--hl);color:#0F1E3D;border-color:var(--hl)}
-.dtabs button[aria-selected=true] b{background:#0F1E3D;color:#fff}
-.drail{position:relative;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin-top:24px}
-.drail::-webkit-scrollbar{display:none}
-.dslide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:40px 0 30px;overflow:visible}
-.dslide.pn{background:none}
-.dslide.pn::before{display:none}
-.dwrap{max-width:1160px;margin:0 auto;padding-inline:32px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:center}
-.dslide .ptext h2{color:#fff}.dslide .ptext p{color:#B7C4E6}.dslide .ptext .k{color:var(--hl)}
-.dslide .ptext h2{font-size:clamp(32px,4vw,54px)}
-.dctl{position:relative;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:10px}
-.ddots{display:flex;gap:8px}
-.ddots button{width:26px;height:6px;padding:0;border:none;background:rgba(255,255,255,.22);cursor:pointer;transition:width .2s,background .2s}
-.ddots button.on{width:40px;background:var(--hl)}
-.dctl .arr{width:46px;height:46px;display:grid;place-items:center;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer}
-.dctl .arr:hover{background:var(--hl);color:#0F1E3D;border-color:var(--hl)}
-.dctl .arr:disabled{opacity:.3;cursor:default;background:transparent;color:#fff}
-@media (max-width:900px){.deck{padding:72px 0 56px}.dtabs{justify-content:flex-start;margin-inline:-18px;padding-inline:18px}.dwrap{grid-template-columns:minmax(0,1fr);gap:36px;padding-inline:18px}.dslide{padding:24px 0}}
-@media (max-width:700px){.dctl .arr{display:none}}
-/* how */
-.shots{padding-top:110px;padding-bottom:96px;scroll-margin-top:84px}
-#how{scroll-margin-top:84px}
-.shots .top{text-align:center}
-.shots h2{margin:0;font-size:44px;line-height:1.1}
-.shots .sub{margin:10px 0 0;color:var(--ink-2);font-size:17px}
-.rsw{position:relative;isolation:isolate;display:inline-grid;grid-template-columns:1fr 1fr;width:min(340px,100%);margin-top:26px;border:2px solid var(--ink);background:var(--card)}
-.rsw::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:50%;background:var(--ink);z-index:-1;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
-.rsw[data-on=t]::before{transform:translateX(-100%)}
-.rsw button{font:700 16px Rubik,sans-serif;padding:0 20px;border:none;background:none;color:var(--ink);cursor:pointer;min-height:46px;transition:color .25s}
-.rsw button[aria-selected=true]{color:var(--paper)}
-.rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:36px 0 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
-.rail::-webkit-scrollbar{display:none}
-.rail[hidden]{display:none}
-.slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;margin:0;display:flex;flex-direction:column;align-items:center;padding:0 10px 12px}
-.slide figcaption{margin-top:22px;max-width:46ch;text-align:center}
-.slide figcaption b{display:block;font-size:21px;font-weight:800;color:var(--ink)}
-.slide figcaption span{display:block;margin-top:6px;color:var(--ink-2);font-size:16px;line-height:1.55}
-.bw{width:min(920px,100%);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);background:var(--card)}
-.bw .bar2{display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-bottom:2px solid var(--ink);background:var(--paper)}
-.bw .bar2 i{width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%}
-.bw .bar2 em{margin-inline-start:12px;font:500 12.5px Rubik,sans-serif;font-style:normal;color:var(--muted);direction:ltr}
-.bw img,.ph img{display:block;width:100%;height:auto}
-.ph{width:300px;max-width:78vw;border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:7px 7px 0 var(--hl)}
-.ph img{border-radius:26px}
-.rail.s .slide{flex-direction:row;justify-content:center;gap:56px}
-.rail.s .slide figcaption{text-align:start;margin-top:0;max-width:30ch}
-.rail.s .slide figcaption b{font-size:28px}
-.rail.s .slide figcaption span{font-size:18px}
-.ctl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:8px}
-.ctl .dots{display:flex;gap:8px}
-.ctl .dots button{width:28px;height:6px;padding:0;border:none;background:var(--grid);cursor:pointer;transition:background .2s,width .2s}
-.ctl .dots button.on{background:var(--pen);width:40px}
-.ctl .arr{width:46px;height:46px;border:2px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer;display:grid;place-items:center}
-.ctl .arr:hover{background:var(--hl);color:#0F1E3D}
-.ctl .arr:disabled{opacity:.3;cursor:default;background:var(--card);color:var(--ink)}
-@media (max-width:900px){.shots{padding-bottom:64px}.shots h2{font-size:34px}.rail{padding-top:28px}
-  .rail.s .slide{flex-direction:column;gap:0}.rail.s .slide figcaption{text-align:center;margin-top:22px}.rail.s .slide figcaption b{font-size:21px}.rail.s .slide figcaption span{font-size:16px}}
-@media (max-width:700px){.cta{gap:10px}.cta .btn{padding:0 14px}.hd{gap:12px}.ctl .arr{display:none}.ph{width:236px}
-  .bw{width:236px;border:none;border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:7px 7px 0 var(--hl)}.bw .bar2{display:none}.bw img{border-radius:26px}}
-
-/* teachers / students */
-
-/* band */
-
-
-@media (max-width:900px){
-}
-@media (max-width:620px){
-  .wrap{padding-inline:18px}
-  nav.links{display:none}
-}
+.ptext .k{display:inline-block;font:700 13px Rubik,sans-serif;color:var(--pen);border-bottom:2px solid currentColor;padding-bottom:2px}
+.ptext p{margin:18px 0 0;font-size:clamp(17px,1.5vw,20px);line-height:1.6;color:var(--ink-2)}
+@media (max-width:900px){.schools{padding:72px 0}.schools .wrap{grid-template-columns:minmax(0,1fr);gap:40px}}
+@media (max-width:600px){.lead-form{padding:22px;box-shadow:6px 6px 0 var(--pen)}.lead-form .two{grid-template-columns:1fr}}
 .sitefoot{border-top:1px solid var(--grid);background:color-mix(in srgb,var(--paper) 94%,transparent)}
 .sitefoot .wrap{display:grid;grid-template-columns:1fr auto;gap:18px 32px;align-items:center;padding-top:32px;padding-bottom:36px}
 .sitefoot .fbrand p{margin:8px 0 0;font-size:14px;color:var(--muted)}
@@ -371,8 +201,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
  <div class="wrap hd">
   <a class="logo" href="#top" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
   <nav class="links" aria-label="ניווט">
-   <a href="#features">יתרונות</a>
-   <a href="#look">מסכים</a>
+   <a href="#product">המוצר</a>
    <a href="#schools">לבתי ספר</a>
    <a href="/guide">איך זה עובד</a>
   </nav>
@@ -389,111 +218,42 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 
 <main>
 <section class="hero" id="top">
- <div class="wrap hgrid">
-  <div class="htext">
-   <h1 class="disp"><span class="ln">לא בונים.</span><span class="ln">לא בודקים.</span><span class="ln">לא רודפים.</span></h1>
-   <p class="h2">אתם מלמדים. כל השאר קורה לבד.</p>
-   <p class="lead">AlfaMath בונה שיעורי בית במתמטיקה ובפיזיקה עם AI, בודקת אותם ברגע ההגשה ועוקבת מי הגיש.</p>
-   <div class="hacts"><a class="bigcta enter-link" href="/app#/login">כניסה / הרשמה<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a><a class="ghostcta" href="#schools">לבתי ספר</a></div>
-   <p class="ctasub">למורים, חינם בשלב הזה.</p>
+ <div class="wrap hx">
+  <h1 class="disp"><span class="ln">לא בונים.</span><span class="ln">לא בודקים.</span><span class="ln">לא רודפים.</span></h1>
+  <p class="h2">אתם מלמדים. כל השאר קורה לבד.</p>
+  <div class="hz">
+   <div class="hz-i" style="--d:.35s"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path pathLength="1" d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg><b>נבנה עם AI</b><small>אתם רק מאשרים</small></div>
+   <div class="hz-i" style="--d:.75s"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M21.5 12a9.5 9.5 0 1 1-19 0a9.5 9.5 0 1 1 19 0"/><path pathLength="1" d="M7.5 12.3l3 3 6-6.3"/></svg><b>נבדק לבד</b><small>ברגע ההגשה</small></div>
+   <div class="hz-i" style="--d:1.15s"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path pathLength="1" d="M10 21a2 2 0 0 0 4 0"/></svg><b>תזכורת לבד</b><small>במייל ובטלפון</small></div>
   </div>
-  <div class="builder" aria-label="הדגמה: מקלידים נושא וכיתה, והשאלות נבנות ונבדקות לבד">
-   <div class="bsteps" aria-hidden="true"><span class="s1"><b>1</b>מקלידים נושא</span><span class="s2"><b>2</b>ה-AI כותב</span><span class="s3"><b>3</b>נבדק לבד</span></div>
-   <div class="pbar"><span class="q">טרפז, כיתה ט, 12 שאלות<i></i></span><span class="b">בנייה ✦</span></div>
-   <div class="qs">
-    <div class="qi"><span class="n">1</span><svg class="fig" viewBox="0 0 58 34" aria-hidden="true"><polygon points="4,30 54,30 42,6 16,6" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2"/></svg><span class="t">בטרפז ABCD נתון ∠A = 65°. מה גודל ∠D?<small>מספר, עם שרטוט</small></span><span class="ok">✓ נבדק</span></div>
-    <div class="qi"><span class="n">2</span><span class="t">בסיסים 6 ו-12, גובה 4. מה השטח?<small>מספרים שונים לכל תלמיד</small></span><span class="ok">✓ נבדק</span></div>
-    <div class="qi"><span class="n">3</span><span class="t">מה תמיד נכון בטרפז שווה שוקיים?<small>אמריקאית</small></span><span class="ok">✓ נבדק</span></div>
-    <div class="qi"><span class="n">4</span><span class="t">איך נקרא טרפז שבו זוויות הבסיס שוות?<small>תשובה במילים</small></span><span class="ok">✓ נבדק</span></div>
-   </div>
-   <div class="engines"><span>ChatGPT</span><span>Claude</span><span>Gemini</span></div>
-  </div>
- </div>
- <div class="marq" aria-label="מה מקבלים"><div class="mtrack"><div class="mi"><span class="ic" aria-hidden="true">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi"><span class="ic" aria-hidden="true">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi"><span class="ic" aria-hidden="true">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi"><span class="ic" aria-hidden="true">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi"><span class="ic" aria-hidden="true">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div></div></div>
-</section>
-
-<section class="ba" id="how" data-pn>
- <div class="wrap">
-  <h2 class="disp">ההוראה של פעם נגמרה.</h2>
-  <p class="basub">מה שגזל לכם ערבים שלמים, קורה עכשיו לבד.</p>
-  <div class="barows"><div class="barow" style="--i:0"><div class="old"><span class="lbl">פעם</span><s>בודקים ערימות דפים בלילה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>נבדק לבד, ברגע ההגשה</b></div></div><div class="barow" style="--i:1"><div class="old"><span class="lbl">פעם</span><s>רודפים אחרי מי לא הגיש</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>רואים מי הגיש, ותזכורת נשלחת לבד</b></div></div><div class="barow" style="--i:2"><div class="old"><span class="lbl">פעם</span><s>מנחשים איפה הכיתה נתקעה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>ניתוח לכל שאלה ולכל תלמיד</b></div></div><div class="barow" style="--i:3"><div class="old"><span class="lbl">פעם</span><s>שעות על כל דף עבודה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>משימה שלמה בדקה, עם AI</b></div></div></div>
+  <div class="hacts"><a class="bigcta enter-link" href="/app#/login">כניסה / הרשמה<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a><a class="ghostcta" href="#schools">לבתי ספר</a></div>
+  <p class="ctasub">שיעורי בית במתמטיקה ובפיזיקה. למורים, חינם בשלב הזה.</p>
  </div>
 </section>
 
-<section class="deck" id="features" aria-label="היתרונות">
+<section class="deck" id="product" aria-label="המוצר">
  <div class="wrap dtop">
-  <h2 class="disp">שדרגו את ההוראה שלכם.</h2>
-  <div class="dtabs" role="tablist" aria-label="יתרונות"><button type="button" role="tab" data-i="0" aria-controls="ds0" aria-selected="true"><b>1</b>בונים</button><button type="button" role="tab" data-i="1" aria-controls="ds1" aria-selected="false"><b>2</b>הוגן</button><button type="button" role="tab" data-i="2" aria-controls="ds2" aria-selected="false"><b>3</b>התלמידים</button><button type="button" role="tab" data-i="3" aria-controls="ds3" aria-selected="false"><b>4</b>מעקב</button><button type="button" role="tab" data-i="4" aria-controls="ds4" aria-selected="false"><b>5</b>ציונים</button><button type="button" role="tab" data-i="5" aria-controls="ds5" aria-selected="false"><b>6</b>ניתוח</button></div>
+  <h2 class="disp">ככה זה עובד.</h2>
+  <p class="dsub">צילומי מסך מהמערכת עצמה, עם כיתה לדוגמה.</p>
+  <div class="dtabs" role="tablist" aria-label="חלקי המוצר"><button type="button" role="tab" data-i="0" aria-controls="ds0" aria-selected="true"><b>1</b>בניית שאלות</button><button type="button" role="tab" data-i="1" aria-controls="ds1" aria-selected="false"><b>2</b>מספרים לכל תלמיד</button><button type="button" role="tab" data-i="2" aria-controls="ds2" aria-selected="false"><b>3</b>מסך התלמיד</button><button type="button" role="tab" data-i="3" aria-controls="ds3" aria-selected="false"><b>4</b>מעקב הגשות</button><button type="button" role="tab" data-i="4" aria-controls="ds4" aria-selected="false"><b>5</b>גיליון ציונים</button><button type="button" role="tab" data-i="5" aria-controls="ds5" aria-selected="false"><b>6</b>ניתוח הכיתה</button></div>
  </div>
  <div class="drail" id="drail" tabindex="0">
-  <div class="dslide pn p1" role="tabpanel" id="ds0" aria-label="בונים"><div class="dwrap">
-  <div class="ptext"><span class="k">בונים</span><h2 class="disp">משימה שלמה בדקה.</h2><p>מקלידים נושא וכיתה, ה-AI כותב את השאלות עם שרטוטים ונוסחאות, ואתם מאשרים לפני שזה עולה. עובד עם כל מנוע AI שאתם כבר משתמשים בו.</p></div>
-  <div class="pv">
-   <div class="pbar"><span class="q">מעגל, כיתה י, 8 שאלות, רמה בינונית</span><span class="b">בנייה ✦</span></div>
-   <div class="row" style="--i:0"><span class="n">1</span><span class="t">מצאו את רדיוס המעגל שמשוואתו x² + y² = 49<small>מספר</small></span><span class="tag">מוכן</span></div>
-   <div class="row" style="--i:1"><span class="n">2</span><span class="t">זווית היקפית של 35°. מה הזווית המרכזית?<small>עם שרטוט</small></span><span class="tag">מוכן</span></div>
-   <div class="row" style="--i:2"><span class="n">3</span><span class="t">מה אורך מיתר במרחק 3 מהמרכז, ברדיוס 5?<small>מספרים שונים לכל תלמיד</small></span><span class="tag">מוכן</span></div>
-   <div class="eng"><span class="on">ChatGPT</span><span>Claude</span><span>Gemini</span></div>
-  </div>
-  </div></div>
-  <div class="dslide pn p2" role="tabpanel" id="ds1" aria-label="הוגן"><div class="dwrap">
-  <div class="ptext"><span class="k">הוגן</span><h2 class="disp">כל תלמיד, מספרים אחרים.</h2><p>אותה שאלה, ערכים שונים לכל תלמיד. להעתיק מחבר פשוט לא עוזר, וכל ניסיון נוסף מקבל מספרים חדשים.</p></div>
-  <div class="pv"><div class="mph a"><div class="sc"><span class="who">מאיה</span><div class="qq">בסיסים <b>8</b> ו-<b>14</b>, גובה <b>5</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">8</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">14</text></svg><div class="in"></div></div></div><div class="mph c"><div class="sc"><span class="who">איתי</span><div class="qq">בסיסים <b>5</b> ו-<b>11</b>, גובה <b>3</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">5</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">11</text></svg><div class="in"></div></div></div><div class="mph b"><div class="sc"><span class="who">נועה</span><div class="qq">בסיסים <b>6</b> ו-<b>12</b>, גובה <b>4</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">6</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">12</text></svg><div class="in"></div></div></div></div>
-  </div></div>
-  <div class="dslide pn p3" role="tabpanel" id="ds2" aria-label="התלמידים"><div class="dwrap">
-  <div class="ptext"><span class="k">התלמידים</span><h2 class="disp">ככה התלמידים שלכם יראו את זה.</h2><p>פותרים מהטלפון, בלי התקנה. הציון, מה נכון ומה לא, והפתרון, מופיעים ברגע ההגשה. טעויות חוזרות לתרגול עד שזה יושב.</p></div>
-  <div class="pv"><div class="sph"><div class="sc">
-   <div class="hd2"><b>טרפז – תרגול</b><span>הוגש עכשיו</span></div>
-   <div class="gr"><small>הציון שלכם</small><br><span class="g">100<svg viewBox="0 0 100 60" preserveAspectRatio="none"><ellipse cx="50" cy="30" rx="47" ry="27"/></svg></span></div>
-   <ul><li><i>✓</i>שאלה 1: ‎115°</li><li><i>✓</i>שאלה 2: 36 סמ״ר</li><li><i>✓</i>שאלה 3: אלכסונים שווים</li></ul>
-   <div class="sol">פתרון שאלה 1: זוויות צמודות לשוק, ‎180 − 65 = 115</div>
-  </div></div></div>
-  </div></div>
-  <div class="dslide pn p4" role="tabpanel" id="ds3" aria-label="מעקב"><div class="dwrap">
-  <div class="ptext"><span class="k">מעקב</span><h2 class="disp">המעקב נגמר.</h2><p>רואים בדיוק מי הגיש ומי לא, בלי לאסוף מחברות. תזכורות נשלחות לבד, במייל ובהתראה לטלפון, לפני שהמשימה נסגרת.</p></div>
-  <div class="pv">
-   <div class="card trk"><div class="top"><span class="lb">משוואות – תרגול, ט3</span><span class="cnt" data-count="26">26<small> / 28 הגישו</small></span></div><div class="dots"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11" class=no></i><i style="--i:12"></i><i style="--i:13"></i><i style="--i:14"></i><i style="--i:15"></i><i style="--i:16"></i><i style="--i:17"></i><i style="--i:18"></i><i style="--i:19"></i><i style="--i:20"></i><i style="--i:21"></i><i style="--i:22"></i><i style="--i:23" class=no></i><i style="--i:24"></i><i style="--i:25"></i><i style="--i:26"></i><i style="--i:27"></i></div></div>
-   <div class="bell"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F1E3D" stroke-width="2.2" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg></span><div><b>תזכורת נשלחה ל-2 תלמידים</b><span>המשימה נסגרת מחר ב-20:00</span></div></div>
-  </div>
-  </div></div>
-  <div class="dslide pn p5" role="tabpanel" id="ds4" aria-label="ציונים"><div class="dwrap">
-  <div class="ptext"><span class="k">ציונים</span><h2 class="disp">כל הציונים במקום אחד.</h2><p>גיליון ציונים משוקלל לכל כיתה: שיעורי בית, תרגולים ומבחנים. הערה אישית, תיקון ידני ויצוא לאקסל בלחיצה.</p></div>
-  <div class="pv"><div class="card gb"><div class="gh"><b>ט3 מתמטיקה</b><span class="xl">⇩ יצוא לאקסל</span></div>
-   <table><thead><tr><th>תלמיד/ה</th><th>ציון</th><th class="m">נכונות</th></tr></thead><tbody><tr class="r" style="--i:0"><td>נועה לוי</td><td><span class="bd hi">100</span></td><td class="m">5/5</td></tr><tr class="r" style="--i:1"><td>איתי כהן</td><td><span class="bd lo">60</span></td><td class="m">3/5</td></tr><tr class="r" style="--i:2"><td>מאיה דהן</td><td><span class="bd md">80</span></td><td class="m">4/5</td></tr><tr class="r" style="--i:3"><td>עומר ביטון</td><td><span class="bd hi">100</span></td><td class="m">5/5</td></tr><tr class="r" style="--i:4"><td>שירה אברהם</td><td><span class="bd hi">90</span></td><td class="m">4.5/5</td></tr><tr class="r" style="--i:5"><td>דניאל סויסה</td><td><span class="bd md">80</span></td><td class="m">4/5</td></tr></tbody></table></div></div>
-  </div></div>
-  <div class="dslide pn p6" role="tabpanel" id="ds5" aria-label="ניתוח"><div class="dwrap">
-  <div class="ptext"><span class="k">ניתוח</span><h2 class="disp">יודעים מה ללמד מחר.</h2><p>אחוז הצלחה לכל שאלה, והתשובה השגויה שחזרה הכי הרבה. נכנסים לשיעור הבא כשכבר יודעים על מה לחזור.</p></div>
-  <div class="pv"><div class="card an"><h3>ניתוח שאלות: טרפז – תרגול</h3>
-   <div class="ar"><div class="l"><span>שאלה 1: זוויות בטרפז</span><span>92%</span></div><s><i style="--w:92%;--c:#0E9F6E"></i></s></div>
-   <div class="ar"><div class="l"><span>שאלה 2: שטח טרפז</span><span>78%</span></div><s><i style="--w:78%;--c:#1F49D6"></i></s></div>
-   <div class="ar"><div class="l"><span>שאלה 3: טרפז שווה שוקיים</span><span>41%</span></div><s><i style="--w:41%;--c:#E23B3B"></i></s></div>
-   <div class="call"><b>!</b><span><b>שאלה 3:</b> שישה תלמידים ענו "אלכסונים מאונכים". כדאי לחזור על זה בשיעור.</span></div>
-  </div></div>
-  </div></div>
+  <div class="dslide" role="tabpanel" id="ds0" aria-label="בניית שאלות"><div class="dwrap"><div class="dtext"><h3 class="disp">משימה שלמה בדקה.</h3><p>ממלאים נושא וכיתה, ה-AI כותב את השאלות, ואתם בוחרים מה להוסיף. עובד עם ChatGPT, Claude ו-Gemini.</p></div><div class="dmedia"><div class="shot bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><div class="imgw"><picture><source media="(max-width:700px)" srcset="/homework/shots/rm-ai.webp" width="390" height="760"><img src="/homework/shots/rd-ai.webp" width="1440" height="900" alt="חלון הבנייה עם AI: השאלות שנקלטו מוכנות להוספה" loading="lazy"></picture><span class="mark md" style="left:30.56%;top:89.12%;width:18.59%;height:9.19%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div>
+  <div class="dslide" role="tabpanel" id="ds1" aria-label="מספרים לכל תלמיד"><div class="dwrap"><div class="dtext"><h3 class="disp">כל תלמיד, מספרים אחרים.</h3><p>אותה שאלה אצל שני תלמידים, כל אחד עם ערכים משלו. להעתיק מחבר פשוט לא עוזר.</p></div><div class="dmedia"><div class="duo"><div class="shot ph"><span class="ptag">תלמיד א</span><div class="imgw"><img src="/homework/shots/rs-param-a.webp" width="390" height="760" alt="השאלה אצל תלמיד אחד" loading="lazy"><span class="mark ma" style="left:15.75%;top:17.38%;width:70.54%;height:5.03%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div><div class="shot ph"><span class="ptag">תלמיד ב</span><div class="imgw"><img src="/homework/shots/rs-param-b.webp" width="390" height="760" alt="אותה שאלה אצל תלמיד אחר, עם מספרים אחרים" loading="lazy"><span class="mark ma" style="left:15.91%;top:17.38%;width:70.37%;height:5.03%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div></div>
+  <div class="dslide" role="tabpanel" id="ds2" aria-label="מסך התלמיד"><div class="dwrap"><div class="dtext"><h3 class="disp">פותרים בטלפון. ציון מיד.</h3><p>מקלדת מתמטית, שרטוטים ונוסחאות. אחרי ההגשה רואים ציון, מה נכון ומה לא, ופתרון.</p></div><div class="dmedia"><div class="duo"><div class="shot ph"><span class="ptag">פותרים</span><div class="imgw"><img src="/homework/shots/rs-solve.webp" width="390" height="760" alt="מסך הפתרון בטלפון" loading="lazy"><span class="mark ma" style="left:12.27%;top:45.28%;width:74.01%;height:10.08%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div><div class="shot ph"><span class="ptag">מגישים</span><div class="imgw"><img src="/homework/shots/rs-grade.webp" width="390" height="760" alt="מסך הציון אחרי ההגשה" loading="lazy"><span class="mark ma" style="left:2.95%;top:35.32%;width:62.31%;height:5.77%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div></div>
+  <div class="dslide" role="tabpanel" id="ds3" aria-label="מעקב הגשות"><div class="dwrap"><div class="dtext"><h3 class="disp">רואים מי הגיש. בלי לרדוף.</h3><p>כמה הגישו ומי עוד לא, במבט אחד. תזכורות נשלחות לבד במייל ובטלפון, ואפשר לשלוח לכיתה בוואטסאפ.</p></div><div class="dmedia"><div class="shot bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><div class="imgw"><picture><source media="(max-width:700px)" srcset="/homework/shots/rm-track.webp" width="390" height="760"><img src="/homework/shots/rd-track.webp" width="1440" height="900" alt="מסך המשימה אצל המורה: כמה הגישו ותזכורת לכיתה" loading="lazy"></picture><span class="mark md" style="left:60.48%;top:35.39%;width:34.97%;height:11.75%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span><span class="mark md" style="left:62.26%;top:48.14%;width:17.50%;height:7.94%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span><span class="mark mm" style="left:58.02%;top:39.80%;width:40.03%;height:9.69%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span><span class="mark mm" style="left:51.58%;top:57.82%;width:46.48%;height:6.55%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div>
+  <div class="dslide" role="tabpanel" id="ds4" aria-label="גיליון ציונים"><div class="dwrap"><div class="dtext"><h3 class="disp">כל הציונים במקום אחד.</h3><p>כל תלמיד, כל שאלה, נכון או לא. הערה אישית, הארכה ויצוא לאקסל בלחיצה.</p></div><div class="dmedia"><div class="shot bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><div class="imgw"><picture><source media="(max-width:700px)" srcset="/homework/shots/rm-grades.webp" width="390" height="760"><img src="/homework/shots/rd-grades.webp" width="1440" height="900" alt="גיליון הציונים של המשימה" loading="lazy"></picture><span class="mark md" style="left:4.55%;top:10.22%;width:11.76%;height:7.94%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span><span class="mark mm" style="left:1.95%;top:7.72%;width:27.62%;height:6.55%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div>
+  <div class="dslide" role="tabpanel" id="ds5" aria-label="ניתוח הכיתה"><div class="dwrap"><div class="dtext"><h3 class="disp">יודעים מה ללמד מחר.</h3><p>אחוז הצלחה לכל שאלה, והתשובה השגויה שחזרה הכי הרבה פעמים.</p></div><div class="dmedia"><div class="shot bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><div class="imgw"><picture><source media="(max-width:700px)" srcset="/homework/shots/rm-analysis.webp" width="390" height="760"><img src="/homework/shots/rd-analysis.webp" width="1440" height="900" alt="ניתוח שאלות: אחוז הצלחה והטעויות הנפוצות" loading="lazy"></picture><span class="mark md" style="left:64.35%;top:51.79%;width:18.50%;height:7.50%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span><span class="mark mm" style="left:5.93%;top:60.16%;width:49.76%;height:6.08%"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse pathLength="1" cx="50" cy="50" rx="48" ry="46"/></svg></span></div></div></div></div></div>
  </div>
  <div class="wrap dctl"><button type="button" class="arr" id="dprv" aria-label="הקודם"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button><div class="ddots" id="ddots"></div><button type="button" class="arr" id="dnxt" aria-label="הבא"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button></div>
 </section>
 
-<section class="wrap shots" id="look" aria-label="הצצה לאתר">
- <div class="top">
-  <h2 class="disp">ככה זה נראה באמת.</h2><p class="sub">מסכים מהמערכת עצמה, עם כיתה לדוגמה. גוררים הצידה לעוד.</p>
-  <div class="rsw" role="tablist" aria-label="מסכים של" data-on="t"><button role="tab" aria-selected="false" data-r="s">תלמיד/ה</button><button role="tab" aria-selected="true" data-r="t">מורה</button></div>
+<section class="ba" id="why">
+ <div class="wrap">
+  <h2 class="disp">ההוראה של פעם נגמרה.</h2>
+  <div class="flips" id="flips"><button type="button" class="flip" style="--i:0" aria-label="פעם: בודקים ערימות דפים בלילה. היום: נבדק לבד, ברגע ההגשה"><span class="face old"><span class="fl">פעם</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M8 3h9l3 3v13H8z"/><path pathLength="1" d="M5 6v15h12"/><path pathLength="1" d="M11 9h6M11 12h6M11 15h4"/></svg><s>בודקים ערימות דפים בלילה</s></span><span class="face new"><span class="fl">היום</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M21.5 12a9.5 9.5 0 1 1-19 0a9.5 9.5 0 1 1 19 0"/><path pathLength="1" d="M7.5 12.3l3 3 6-6.3"/></svg><b>נבדק לבד, ברגע ההגשה</b></span></button><button type="button" class="flip" style="--i:1" aria-label="פעם: רודפים אחרי מי לא הגיש. היום: תזכורת נשלחת לבד"><span class="face old"><span class="fl">פעם</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M16 10a6 6 0 1 1-12 0a6 6 0 1 1 12 0"/><path pathLength="1" d="M14.5 14.5L20 20"/></svg><s>רודפים אחרי מי לא הגיש</s></span><span class="face new"><span class="fl">היום</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path pathLength="1" d="M10 21a2 2 0 0 0 4 0"/></svg><b>תזכורת נשלחת לבד</b></span></button><button type="button" class="flip" style="--i:2" aria-label="פעם: מנחשים איפה הכיתה נתקעה. היום: ניתוח לכל שאלה"><span class="face old"><span class="fl">פעם</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M9 9a3 3 0 1 1 4.2 2.8c-.8.4-1.2 1-1.2 1.9V15"/><path pathLength="1" d="M12 18.5v.5"/></svg><s>מנחשים איפה הכיתה נתקעה</s></span><span class="face new"><span class="fl">היום</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M4 20h16"/><path pathLength="1" d="M7 16v-5"/><path pathLength="1" d="M12 16V7"/><path pathLength="1" d="M17 16v-8"/></svg><b>ניתוח לכל שאלה</b></span></button><button type="button" class="flip" style="--i:3" aria-label="פעם: שעות על כל דף עבודה. היום: משימה שלמה בדקה"><span class="face old"><span class="fl">פעם</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M6 3h12M6 21h12"/><path pathLength="1" d="M7 3c0 5 10 5 10 9s-10 4-10 9"/><path pathLength="1" d="M17 3c0 5-10 5-10 9s10 4 10 9"/></svg><s>שעות על כל דף עבודה</s></span><span class="face new"><span class="fl">היום</span><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path pathLength="1" d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><b>משימה שלמה בדקה</b></span></button></div>
+  <p class="bahint">נוגעים בכרטיס כדי להפוך אותו.</p>
  </div>
- <div class="rail t" id="rail-t" tabindex="0" aria-label="מסכים של מורה">
-   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-analysis.webp" width="390" height="760"><img src="/homework/shots/t-analysis.webp" width="1440" height="900" loading="eager" alt="ניתוח לכל שאלה"></picture></div><figcaption><b>ניתוח לכל שאלה</b><span>איזו שאלה הכשילה את הכיתה, ואיזו טעות חזרה הכי הרבה. יודעים מה להסביר שוב בשיעור.</span></figcaption></figure>
-   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-ai.webp" width="390" height="760"><img src="/homework/shots/t-ai.webp" width="1440" height="900" loading="lazy" alt="שאלות מ-AI, בלי להקליד"></picture></div><figcaption><b>שאלות מ-AI, בלי להקליד</b><span>מדביקים את מה ש-ChatGPT או Claude החזירו, בודקים ומוסיפים למשימה. כולל שרטוטים ונוסחאות.</span></figcaption></figure>
-   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-grades.webp" width="390" height="760"><img src="/homework/shots/t-grades.webp" width="1440" height="900" loading="lazy" alt="גיליון ציונים"></picture></div><figcaption><b>גיליון ציונים</b><span>כל תלמיד, כל שאלה, נכון או לא. הערה אישית, הארכה ויצוא לאקסל.</span></figcaption></figure>
-   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-overview.webp" width="390" height="760"><img src="/homework/shots/t-overview.webp" width="1440" height="900" loading="lazy" alt="מה דורש טיפול היום"></picture></div><figcaption><b>מה דורש טיפול היום</b><span>מי לא הגיש משימה שנסגרת מחר, מי בירידה, ומה נסגר השבוע.</span></figcaption></figure>
-   <figure class="slide"><div class="bw"><div class="bar2" aria-hidden="true"><i></i><i></i><i></i><em>alfamath.co.il</em></div><picture><source media="(max-width:700px)" srcset="/homework/shots/tm-class.webp" width="390" height="760"><img src="/homework/shots/t-class.webp" width="1440" height="900" loading="lazy" alt="כיתה בתוך דקה"></picture></div><figcaption><b>כיתה בתוך דקה</b><span>פותחים כיתה ושולחים קוד אחד בוואטסאפ. התלמידים נכנסים לבד.</span></figcaption></figure>
- </div>
- <div class="rail s" id="rail-s" tabindex="0" aria-label="מסכים של תלמיד" hidden>
-   <figure class="slide"><div class="ph"><img src="/homework/shots/s-home.webp" width="390" height="760" loading="eager" alt="מה עושים עכשיו"></div><figcaption><b>מה עושים עכשיו</b><span>המשימה הקרובה מחכה למעלה, עם המועד וכפתור אחד להתחלה.</span></figcaption></figure>
-   <figure class="slide"><div class="ph"><img src="/homework/shots/s-question.webp" width="390" height="760" loading="lazy" alt="פותרים מהטלפון"></div><figcaption><b>פותרים מהטלפון</b><span>שרטוטים, נוסחאות ומקלדת מתמטית שנוחה לאצבע.</span></figcaption></figure>
-   <figure class="slide"><div class="ph"><img src="/homework/shots/s-grade.webp" width="390" height="760" loading="lazy" alt="ציון מיד"></div><figcaption><b>ציון מיד</b><span>ברגע ההגשה: ציון, מה נכון ומה לא, ופתרון.</span></figcaption></figure>
-   <figure class="slide"><div class="ph"><img src="/homework/shots/s-mistakes.webp" width="390" height="760" loading="lazy" alt="מחברת טעויות"></div><figcaption><b>מחברת טעויות</b><span>כל שאלה שטעו בה חוזרת לתרגול, בלי ציון, עד שזה יושב.</span></figcaption></figure>
-   <figure class="slide"><div class="ph"><img src="/homework/shots/s-progress.webp" width="390" height="760" loading="lazy" alt="רואים את ההתקדמות"></div><figcaption><b>רואים את ההתקדמות</b><span>ממוצע, גרף לאורך זמן והנושאים שכדאי לחזק.</span></figcaption></figure>
- </div>
- <div class="ctl"><button type="button" class="arr" id="prv" aria-label="הקודם"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button><div class="dots" id="dots"></div><button type="button" class="arr" id="nxt" aria-label="הבא"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button></div>
 </section>
 
 <section class="schools" id="schools">
@@ -557,42 +317,31 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 <script>document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};</script>
 <script>
 (function(){
-  var cur="t", sw=document.querySelector(".rsw"), rails={t:document.getElementById("rail-t"),s:document.getElementById("rail-s")}, dots=document.getElementById("dots"), prv=document.getElementById("prv"), nxt=document.getElementById("nxt");
-  function slides(){return [].slice.call(rails[cur].querySelectorAll(".slide"))}
-  function idx(){var r=rails[cur]; return Math.round(Math.abs(r.scrollLeft)/r.clientWidth)}
-  function to(i){var r=rails[cur], n=slides().length; i=Math.max(0,Math.min(n-1,i)); var dir=getComputedStyle(r).direction==="rtl"?-1:1; r.scrollTo({left:dir*i*r.clientWidth,behavior:"smooth"})}
-  function paint(){var i=idx(), n=slides().length; [].forEach.call(dots.children,function(b,k){b.classList.toggle("on",k===i); b.setAttribute("aria-current",k===i?"true":"false")}); prv.disabled=i<=0; nxt.disabled=i>=n-1}
-  function build(){dots.innerHTML=""; slides().forEach(function(e,k){var b=document.createElement("button"); b.type="button"; b.setAttribute("aria-label","מסך "+(k+1)+" מתוך "+slides().length); b.onclick=function(){to(k)}; dots.appendChild(b)}); paint()}
-  [].forEach.call(sw.querySelectorAll("button"),function(b){b.onclick=function(){ if(b.dataset.r===cur) return; var y=scrollY; cur=b.dataset.r; sw.dataset.on=cur; [].forEach.call(sw.querySelectorAll("button"),function(x){x.setAttribute("aria-selected",String(x===b))}); rails.t.hidden=cur!=="t"; rails.s.hidden=cur!=="s"; rails[cur].scrollLeft=0; build(); scrollTo(0,y)}});
-  var tm; ["t","s"].forEach(function(k){rails[k].addEventListener("scroll",function(){clearTimeout(tm); tm=setTimeout(paint,50)},{passive:true}); rails[k].addEventListener("keydown",function(e){if(e.key==="ArrowLeft"){e.preventDefault();to(idx()+1)} if(e.key==="ArrowRight"){e.preventDefault();to(idx()-1)}})});
-  prv.onclick=function(){to(idx()-1)}; nxt.onclick=function(){to(idx()+1)};
-  addEventListener("resize",paint); build();
-})();
-</script>
-<script>
-(function(){
   var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // before/after: the red strike follows the scroll
-  var ba=document.querySelector(".ba");
-  if(ba && !reduce){ var tk=false; function u(){ tk=false; var r=ba.getBoundingClientRect(), h=innerHeight; var p=Math.max(0,Math.min(1,(h - r.top)/(h*.9))); ba.style.setProperty("--p",p.toFixed(3)); }
-    addEventListener("scroll",function(){ if(!tk){ tk=true; requestAnimationFrame(u); } },{passive:true}); addEventListener("resize",u); u(); }
-  // deck: tabs + swipe; the active slide plays its build-up once
   var rail=document.getElementById("drail"); if(!rail) return;
-  var slides=[].slice.call(rail.querySelectorAll(".dslide")), tabs=[].slice.call(document.querySelectorAll(".dtabs button")), dots=document.getElementById("ddots"), prv=document.getElementById("dprv"), nxt=document.getElementById("dnxt"), cur=-1;
-  slides.forEach(function(e,k){ var b=document.createElement("button"); b.type="button"; b.setAttribute("aria-label","יתרון "+(k+1)+" מתוך "+slides.length); b.onclick=function(){go(k)}; dots.appendChild(b); e.style.setProperty("--p",reduce?1:0); });
-  function play(e){ if(reduce){ e.style.setProperty("--p",1); return; } var t0=null, cnt=e.querySelector("[data-count]"); e.style.setProperty("--p",0);
-    function f(t){ if(!t0) t0=t; var x=Math.min(1,(t-t0)/1100), p=1-Math.pow(1-x,3); e.style.setProperty("--p",p.toFixed(3)); if(cnt) cnt.firstChild.nodeValue=Math.round(p*(+cnt.dataset.count)); if(x<1) requestAnimationFrame(f); } requestAnimationFrame(f); }
+  var slides=[].slice.call(rail.querySelectorAll(".dslide")), tabs=[].slice.call(document.querySelectorAll(".dtabs button")), dots=document.getElementById("ddots"), prv=document.getElementById("dprv"), nxt=document.getElementById("dnxt"), cur=-1, seen=false;
+  slides.forEach(function(e,k){ var b=document.createElement("button"); b.type="button"; b.setAttribute("aria-label","מסך "+(k+1)+" מתוך "+slides.length); b.onclick=function(){go(k)}; dots.appendChild(b); });
   function idx(){ return Math.round(Math.abs(rail.scrollLeft)/rail.clientWidth); }
-  function set(i){ if(i===cur) return; cur=i; tabs.forEach(function(b,k){ b.setAttribute("aria-selected",String(k===i)); if(k===i && b.scrollIntoView) b.parentNode.scrollTo({left:b.offsetLeft - b.parentNode.clientWidth/2 + b.offsetWidth/2,behavior:"smooth"}); });
-    [].forEach.call(dots.children,function(b,k){ b.classList.toggle("on",k===i); }); prv.disabled=i<=0; nxt.disabled=i>=slides.length-1; if(seen) play(slides[i]); }
+  function set(i){ if(i===cur) return; cur=i;
+    tabs.forEach(function(b,k){ b.setAttribute("aria-selected",String(k===i)); if(k===i){ var p=b.parentNode; p.scrollTo({left:b.offsetLeft - p.clientWidth/2 + b.offsetWidth/2,behavior:"smooth"}); } });
+    [].forEach.call(dots.children,function(b,k){ b.classList.toggle("on",k===i); });
+    prv.disabled=i<=0; nxt.disabled=i>=slides.length-1;
+    slides.forEach(function(s,k){ if(k!==i) s.classList.remove("on"); }); if(seen) slides[i].classList.add("on"); }
   function go(i){ i=Math.max(0,Math.min(slides.length-1,i)); var dir=getComputedStyle(rail).direction==="rtl"?-1:1; rail.scrollTo({left:dir*i*rail.clientWidth,behavior:reduce?"auto":"smooth"}); }
   tabs.forEach(function(b){ b.onclick=function(){ go(+b.dataset.i); }; });
   prv.onclick=function(){go(cur-1)}; nxt.onclick=function(){go(cur+1)};
   rail.addEventListener("keydown",function(e){ if(e.key==="ArrowLeft"){e.preventDefault();go(cur+1)} if(e.key==="ArrowRight"){e.preventDefault();go(cur-1)} });
   var tm; rail.addEventListener("scroll",function(){ clearTimeout(tm); tm=setTimeout(function(){ set(idx()); },60); },{passive:true});
-  var seen=false;
-  if("IntersectionObserver" in window){ new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting && !seen){ seen=true; play(slides[cur]); } }); },{threshold:.35}).observe(rail); } else seen=true;
-  set(0);
+  addEventListener("resize",function(){ go(cur); });
+  if("IntersectionObserver" in window) new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting && !seen){ seen=true; slides[cur].classList.add("on"); } }); },{threshold:.3}).observe(rail); else { seen=true; }
+  set(0); if(seen) slides[0].classList.add("on");
+})();
+(function(){
+  var cards=[].slice.call(document.querySelectorAll(".flip")); if(!cards.length) return;
+  cards.forEach(function(c){ c.addEventListener("click",function(){ c.classList.toggle("on"); }); });
+  var done=false;
+  function flipAll(){ if(done) return; done=true; cards.forEach(function(c,k){ setTimeout(function(){ c.classList.add("on"); }, matchMedia("(prefers-reduced-motion: reduce)").matches?0:500+k*350); }); }
+  if("IntersectionObserver" in window) new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting) flipAll(); }); },{threshold:.5}).observe(document.getElementById("flips")); else flipAll();
 })();
 (function(){
   var f=document.getElementById("leadf"); if(!f) return;
