@@ -60,72 +60,101 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 
 /* hero */
 .hero{position:relative;overflow:hidden;isolation:isolate;background:#0B1530;color:#fff}
-.hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 30%,transparent 80%);mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 30%,transparent 80%)}
-.hero::after{content:"";position:absolute;z-index:-1;left:50%;bottom:-18%;width:min(1100px,140%);aspect-ratio:2/1;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(47,91,240,.55),rgba(47,91,240,0))}
-.hero .wrap{text-align:center;padding-top:64px}
-.hero h1{margin:0;font-size:clamp(40px,7.4vw,92px);line-height:.98;letter-spacing:-.02em;color:#fff}
-.hero .lead{margin:24px auto 0;font-size:clamp(17px,1.9vw,21px);line-height:1.55;color:#B7C4E6;max-width:36ch}
-/* entry console */
-.console{--ink:#0F1E3D;--ink-2:#3A4766;--card:#fff;--paper:#FBFCFE;--muted:#5D6B85;--pen:#1F49D6;--grid:#DCE5F3;
-  position:relative;margin:38px auto 0;width:min(520px,100%);background:#fff;color:#0F1E3D;border:2px solid #0F1E3D;box-shadow:10px 10px 0 var(--hl);padding:20px;text-align:start}
-.console .ctop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.console .ctitle{font:800 17px Rubik,sans-serif}
-.console .rsw{margin:0;width:220px}
-.console .rsw button{min-height:40px;font-size:15px}
-.cform{display:flex;gap:10px;margin-top:16px}
-.cform[hidden]{display:none}
-.codein{flex:1;display:flex;gap:6px;direction:ltr;min-width:0}
-.codein input{flex:1;min-width:0;height:60px;padding:0;text-align:center;font:700 26px Rubik,sans-serif;text-transform:uppercase;color:#0F1E3D;background:#F2F5FB;border:2px solid #C9D3E6;caret-color:#1F49D6;transition:border-color .15s,background .15s}
-.codein input:focus{outline:none;border-color:#1F49D6;background:#fff;box-shadow:inset 0 -3px 0 #1F49D6}
-.codein input.on{background:#fff;border-color:#0F1E3D}
-.emailin{flex:1;min-width:0;height:60px;padding:0 16px;font:500 17px Rubik,sans-serif;direction:ltr;text-align:left;color:#0F1E3D;background:#F2F5FB;border:2px solid #C9D3E6}
-.emailin:focus{outline:none;border-color:#1F49D6;background:#fff;box-shadow:inset 0 -3px 0 #1F49D6}
-.go{flex:none;height:60px;padding:0 22px;display:inline-flex;align-items:center;gap:10px;font:800 17px Rubik,sans-serif;color:#fff;background:#1F49D6;border:2px solid #0F1E3D;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
-.go svg{transition:transform .2s}
-.go:not(:disabled):hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 #0F1E3D}.go:not(:disabled):hover svg{transform:translateX(-4px)}
-.go.ready{background:var(--hl);color:#0F1E3D}
-.chint{margin:12px 2px 0;font-size:14px;color:#5D6B85;min-height:1.4em}
-.chint.err{color:#C42B2B;font-weight:600}
-.console .welcome{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap}
-.console .welcome b{font-size:19px}
-.console a.go{text-decoration:none}
-/* device stage */
-.stage{position:relative;width:min(1000px,100%);margin:64px auto 0;padding-bottom:0}
-.lap{width:84%;margin-inline:auto;transform:translateY(calc(var(--p,0) * -30px))}
-.lap .scr{background:#05080F;border:12px solid #1A2238;border-bottom-width:16px;border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.75)}
-.lap .scr img{display:block;width:100%;height:auto}
-.lap .base{height:16px;width:112%;margin-inline:-6%;background:linear-gradient(#D6DEEE,#8E9AB6);border-radius:0 0 18px 18px;position:relative}
-.lap .base::before{content:"";position:absolute;top:0;left:50%;width:16%;height:6px;transform:translateX(-50%);background:#7C88A4;border-radius:0 0 8px 8px}
-.hph{position:absolute;inset-inline-start:0;bottom:-4%;width:24%;min-width:150px;border-radius:34px;padding:8px;background:#05080F;border:2px solid #2A3550;box-shadow:0 30px 60px -20px rgba(0,0,0,.8),10px 10px 0 var(--hl);transform:translateY(calc(var(--p,0) * -80px)) rotate(-3deg)}
-.hph img{display:block;width:100%;height:auto;border-radius:26px}
-/* the one orchestrated entrance */
-.hero .in{animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
-.hero .in.d1{animation-delay:.08s}.hero .in.d2{animation-delay:.18s}.hero .in.d3{animation-delay:.32s}
-.hph.in{animation:land 1.1s .55s cubic-bezier(.2,.8,.2,1) both}
-@keyframes rise{from{opacity:0;transform:translateY(26px)}}
-@keyframes land{from{opacity:0;transform:translateY(90px) rotate(8deg)}}
-@media (prefers-reduced-motion:reduce){.hero .in,.hph.in{animation:none}.lap,.hph{transform:none!important}.hph{transform:rotate(-3deg)!important}}
-@media (max-width:700px){
-  .hero .wrap{padding-top:40px}
-  .hero h1{font-size:clamp(34px,10.4vw,46px);line-height:1.05}
-  .console{padding:16px;box-shadow:6px 6px 0 var(--hl);margin-top:30px}
-  .console .ctop{flex-direction:column;align-items:stretch}
-  .console .rsw{width:100%}
-  .cform{flex-direction:column}
-  .codein input{height:56px;font-size:24px}
-  .go{justify-content:center;height:56px}
-  .stage{margin-top:44px}
-  .lap{width:100%}.lap .scr{border-width:7px;border-bottom-width:10px;border-radius:10px 10px 0 0}.lap .base{height:10px}
-  .hph{width:34%;min-width:0;border-radius:22px;padding:5px;bottom:-8%;box-shadow:0 20px 40px -14px rgba(0,0,0,.8),6px 6px 0 var(--hl)}.hph img{border-radius:17px}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,#000 35%,transparent 85%);mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,#000 35%,transparent 85%)}
+.hero::after{content:"";position:absolute;z-index:-1;inset-inline-end:-10%;top:10%;width:min(760px,90vw);aspect-ratio:1;background:radial-gradient(closest-side,rgba(47,91,240,.5),rgba(47,91,240,0))}
+.hgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:72px;align-items:center;padding-top:72px;padding-bottom:56px}
+.hero h1{margin:0;font-size:clamp(40px,5.3vw,80px);line-height:1.02;letter-spacing:-.02em;color:#fff}
+.hero .lead{margin:22px 0 0;font-size:clamp(17px,1.7vw,21px);line-height:1.55;color:#B7C4E6;max-width:30ch}
+.bigcta{margin-top:34px;display:inline-flex;align-items:center;gap:14px;min-height:66px;padding:0 30px;font:800 21px Rubik,sans-serif;text-decoration:none;color:#0F1E3D;background:var(--hl);border:2px solid #0F1E3D;box-shadow:6px 6px 0 #fff;transition:transform .18s,box-shadow .18s}
+.bigcta svg{transition:transform .25s}
+.bigcta:hover{color:#0F1E3D;transform:translate(-3px,-3px);box-shadow:9px 9px 0 #fff}.bigcta:hover svg{transform:translateX(-6px)}
+.bigcta:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.ctasub{margin:16px 0 0;font-size:14.5px;color:#97A3C0}
+.ctasub a{color:#C9D6FB;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(201,214,251,.4);margin-inline-start:6px}
+.ctasub a:hover{color:#fff}
+/* live scene */
+.hero h1 .ln{display:block;white-space:nowrap}
+.scene{position:relative;display:flex;justify-content:center;padding:10px 0 20px}
+.phone{position:relative;width:300px;height:600px;border-radius:44px;background:#05080F;padding:12px;border:2px solid #2A3550;box-shadow:0 40px 90px -30px rgba(0,0,0,.85),12px 12px 0 var(--hl);direction:rtl;color:#0F1E3D}
+.screen{position:relative;height:100%;border-radius:33px;overflow:hidden;background:#F4F7FC;font-family:Rubik,sans-serif}
+.screen .bar{height:30px;display:flex;align-items:center;justify-content:center}.screen .bar i{width:88px;height:22px;border-radius:12px;background:#05080F;margin-top:6px}
+.screen .top{padding:10px 18px 12px;background:#fff;border-bottom:1px solid #E1E7F2}
+.screen .top b{display:block;font-size:17px}.screen .top span{font-size:12.5px;color:#5D6B85}
+.screen .prog{height:6px;background:#E1E7F2;margin:10px 0 0;position:relative;overflow:hidden}.screen .prog i{position:absolute;inset-block:0;inset-inline-start:0;width:40%;background:#1F49D6}
+.qcard{margin:16px 14px 0;background:#fff;border:1.5px solid #D5DDEB;padding:16px}
+.qcard .qn{display:inline-grid;place-items:center;width:24px;height:24px;background:#0F1E3D;color:#fff;font-size:13px;font-weight:700}
+.qcard p{margin:10px 0 0;font-size:17px;font-weight:600;line-height:1.45}
+.qcard .eq{direction:ltr;display:block;text-align:center;font:600 26px "Times New Roman",serif;font-style:italic;margin:14px 0 4px;color:#0F1E3D}
+.ansrow{display:flex;gap:8px;margin-top:14px;direction:rtl}
+.abox{flex:1;height:50px;border:2px solid #C9D3E6;background:#F4F7FC;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;direction:ltr;font:700 24px Rubik,sans-serif;position:relative}
+.abox .t{opacity:0}.abox .car{width:2px;height:24px;background:#1F49D6;margin-left:3px}
+.chk{height:50px;padding:0 16px;display:grid;place-items:center;background:#1F49D6;color:#fff;font-weight:700;font-size:15px;border:2px solid #0F1E3D}
+.verd{margin-top:12px;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#E6F7EF;border-inline-start:4px solid #0E9F6E;color:#0B7A55;font-weight:800;font-size:15px;opacity:0;transform:translateY(6px)}
+.sheet{position:absolute;inset-inline:0;bottom:0;height:62%;background:#fff;border-top:2px solid #0F1E3D;border-radius:22px 22px 0 0;padding:22px 20px;transform:translateY(105%);box-shadow:0 -20px 40px -20px rgba(15,30,61,.35)}
+.sheet small{font-size:13px;color:#5D6B85;letter-spacing:.02em}
+.sheet .g{position:relative;display:inline-block;margin-top:6px;font:700 88px/1 Caveat,"Secular One",cursive;color:#0E9F6E;padding:6px 22px 0}
+.sheet .g svg{position:absolute;inset:-8px -12px -10px;width:calc(100% + 24px);height:calc(100% + 18px);overflow:visible}
+.sheet .g ellipse{fill:none;stroke:#E23B3B;stroke-width:4;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:420;transform-origin:center;transform:rotate(-6deg)}
+.sheet .rows{margin-top:14px;display:grid;gap:7px}
+.sheet .rows div{display:flex;align-items:center;gap:8px;font-size:13.5px;color:#3A4766}
+.sheet .rows i{width:18px;height:18px;display:grid;place-items:center;background:#0E9F6E;color:#fff;font-style:normal;font-size:11px;font-weight:800}
+.tcard{position:absolute;z-index:2;inset-inline-end:-28px;bottom:70px;width:224px;background:#fff;color:#0F1E3D;border:2px solid #0F1E3D;box-shadow:8px 8px 0 rgba(5,8,15,.55);padding:14px 16px;font-family:Rubik,sans-serif;transform:rotate(2.5deg)}
+.tcard .lbl{font-size:12px;font-weight:700;color:#1F49D6}
+.tcard b{display:block;font-size:15px;margin-top:2px}
+.tcard .sub{display:flex;justify-content:space-between;font-size:12.5px;color:#5D6B85;margin-top:8px}
+.tcard .bars{display:grid;gap:7px;margin-top:10px}
+.tcard .br{display:grid;grid-template-columns:44px 1fr 32px;align-items:center;gap:8px;font-size:12px}
+.tcard .br s{display:block;height:8px;background:#E6ECF6;position:relative;overflow:hidden;text-decoration:none}
+.tcard .br s i{position:absolute;inset-block:0;inset-inline-start:0;width:var(--w);background:var(--c);transform-origin:right;transform:scaleX(0)}
+.tcard .note{margin-top:10px;font-size:12px;color:#C42B2B;font-weight:600}
+.slbl{position:absolute;font:700 13px Rubik,sans-serif;color:#C9D6FB;display:flex;align-items:center;gap:6px}
+.slbl.s{inset-inline-start:calc(50% - 150px);bottom:-14px}
+/* one timeline, 10s loop */
+.play .abox .t{animation:ty 10s infinite}
+.play .abox .car{animation:car 10s infinite}
+.play .chk{animation:press 10s infinite}
+.play .abox{animation:ok 10s infinite}
+.play .verd{animation:verd 10s infinite}
+.play .screen .prog i{animation:prog 10s infinite}
+.play .sheet{animation:sheet 10s infinite cubic-bezier(.2,.8,.2,1)}
+.play .sheet ellipse{animation:circ 10s infinite}
+.play .tcard .br s i{animation:bar 10s infinite cubic-bezier(.2,.8,.2,1)}
+.play .tcard .br:nth-child(2) s i{animation-delay:.12s}.play .tcard .br:nth-child(3) s i{animation-delay:.24s}
+@keyframes ty{0%,14%{opacity:0}16%,92%{opacity:1}100%{opacity:0}}
+@keyframes car{0%,15%{opacity:1}16%,100%{opacity:0}}
+@keyframes press{0%,24%{transform:none}26%{transform:scale(.94)}28%,100%{transform:none}}
+@keyframes ok{0%,29%{border-color:#C9D3E6;background:#F4F7FC}31%,92%{border-color:#0E9F6E;background:#fff}100%{border-color:#C9D3E6}}
+@keyframes verd{0%,29%{opacity:0;transform:translateY(6px)}33%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes prog{0%,30%{width:40%}38%,92%{width:100%}100%{width:40%}}
+@keyframes sheet{0%,46%{transform:translateY(105%)}54%,90%{transform:none}97%,100%{transform:translateY(105%)}}
+@keyframes circ{0%,56%{stroke-dashoffset:420}66%,90%{stroke-dashoffset:0}97%,100%{stroke-dashoffset:420}}
+@keyframes bar{0%,34%{transform:scaleX(0)}46%,92%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){.play *{animation:none!important}.abox .t,.verd{opacity:1!important;transform:none!important}.abox .car{display:none}.tcard .br s i{transform:none}}
+/* features strip, part of the hero */
+.marq{position:relative;border-top:1px solid rgba(255,255,255,.1);padding:22px 0 26px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mtrack{display:flex;gap:14px;width:max-content;animation:marq 48s linear infinite}
+.marq:hover .mtrack{animation-play-state:paused}
+.mi{display:flex;align-items:center;gap:12px;padding:12px 18px 12px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);white-space:nowrap}
+.mi .ic{width:34px;height:34px;display:grid;place-items:center;background:var(--hl);color:#0F1E3D;font-weight:800;font-size:16px;flex:none}
+.mi b{display:block;font-size:15.5px;color:#fff}.mi span{display:block;font-size:13px;color:#97A3C0}
+@keyframes marq{to{transform:translateX(50%)}}
+@media (prefers-reduced-motion:reduce){.mtrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}.mtrack .dup{display:none}.marq{-webkit-mask-image:none;mask-image:none}}
+@media (max-width:900px){
+  .hgrid{grid-template-columns:minmax(0,1fr);gap:40px;padding-top:44px;padding-bottom:40px;text-align:center}
+  .hero .lead{margin-inline:auto}
+  .scene{justify-content:center}
+  .tcard{inset-inline-end:calc(50% - 300px)}
 }
-
-/* features */
-.feat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--grid)}
-.feat div{padding:34px 26px 34px 26px;border-inline-start:1px solid var(--grid)}
-.feat div:first-child{border-inline-start:none;padding-inline-start:0}
-.feat h3{margin:0;font-size:19px;font-weight:800}
-.feat h3::before{content:"";display:block;width:34px;height:4px;background:var(--pen);margin-bottom:14px}
-.feat p{margin:8px 0 0;color:var(--ink-2);font-size:15.5px;line-height:1.55}
+@media (max-width:600px){
+  .hero h1{font-size:clamp(36px,10.6vw,48px)}
+  .bigcta{width:100%;justify-content:center;min-height:62px;font-size:20px;box-shadow:5px 5px 0 #fff}
+  .phone{width:250px;height:500px;border-radius:38px;padding:10px}.screen{border-radius:29px}
+  .qcard p{font-size:15.5px}.qcard .eq{font-size:22px}
+  .scene{flex-direction:column;align-items:center}
+  .tcard{position:relative;inset:auto;margin-top:-70px;width:250px;padding:12px 14px}
+  .tcard b{font-size:13.5px}.tcard .br{grid-template-columns:38px 1fr 28px;font-size:11px}
+  .scene{padding-bottom:12px}
+}
 
 /* how */
 .shots{padding-bottom:96px;scroll-margin-top:84px}
@@ -181,9 +210,6 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 
 
 @media (max-width:900px){
-  .feat{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .feat div:nth-child(3){border-inline-start:none;padding-inline-start:0}
-  .feat div{border-top:1px solid var(--grid)}
   .steps{grid-template-columns:minmax(0,1fr);gap:44px}
   .how{padding-top:64px;padding-bottom:64px}
   .how h2{font-size:34px}
@@ -191,8 +217,6 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 @media (max-width:620px){
   .wrap{padding-inline:18px}
   nav.links{display:none}
-  .feat{grid-template-columns:minmax(0,1fr)}
-  .feat div{border-inline-start:none!important;padding-inline-start:0;padding-block:24px}
 }
 .endcta{padding-bottom:72px}
 .endcta .box{position:relative;overflow:hidden;display:flex;align-items:center;gap:32px;padding:48px 52px;background:#0F1E3D;color:#fff;border:2px solid #0F1E3D;box-shadow:8px 8px 0 var(--hl);
@@ -211,8 +235,6 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .flinks a{color:var(--ink-2);text-decoration:none;font-size:14.5px;font-weight:500}.flinks a:hover{color:var(--pen)}
 .fcopy{grid-column:1/-1;font-size:13px;color:var(--muted);border-top:1px solid var(--grid);padding-top:16px}
 @media (max-width:700px){.sitefoot .wrap{grid-template-columns:1fr}}
-.console.ping{animation:ping .7s ease-out}
-@keyframes ping{30%{box-shadow:14px 14px 0 var(--hl),0 0 0 8px rgba(255,227,71,.35)}}
 </style>
 </head>
 <body>
@@ -237,39 +259,29 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 
 <main>
 <section class="hero" id="top">
- <div class="wrap">
-  <h1 class="disp in">שיעורי בית<br>שבודקים את עצמם.</h1>
-  <p class="lead in d1">פותרים בטלפון, מקבלים ציון ברגע ההגשה. והמורה רואה בדיוק איפה הכיתה נתקעה.</p>
-
-  <div class="console in d2" id="console">
-   <div id="cin">
-    <div class="ctop"><span class="ctitle">כניסה / הרשמה</span>
-     <div class="rsw" role="tablist" aria-label="מי נכנס?" data-on="s"><button type="button" role="tab" data-r="s" aria-selected="true">תלמיד/ה</button><button type="button" role="tab" data-r="t" aria-selected="false">מורה</button></div></div>
-    <form class="cform" id="fs" autocomplete="off" novalidate>
-     <div class="codein" id="code" aria-label="קוד כיתה, 6 תווים"><input inputmode="text" maxlength="1" aria-label="תו 1" autocapitalize="characters" spellcheck="false"><input inputmode="text" maxlength="1" aria-label="תו 2" autocapitalize="characters" spellcheck="false"><input inputmode="text" maxlength="1" aria-label="תו 3" autocapitalize="characters" spellcheck="false"><input inputmode="text" maxlength="1" aria-label="תו 4" autocapitalize="characters" spellcheck="false"><input inputmode="text" maxlength="1" aria-label="תו 5" autocapitalize="characters" spellcheck="false"><input inputmode="text" maxlength="1" aria-label="תו 6" autocapitalize="characters" spellcheck="false"></div>
-     <button class="go" type="submit" id="gos">כניסה<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-    </form>
-    <form class="cform" id="ft" hidden novalidate>
-     <input class="emailin" id="temail" type="email" placeholder="name@school.org.il" autocomplete="email" autocapitalize="none" spellcheck="false" aria-label="מייל">
-     <button class="go" type="submit" id="got">שליחת קוד<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-    </form>
-    <p class="chint" id="chint" aria-live="polite">מקלידים את קוד הכיתה שקיבלתם מהמורה.</p>
-   </div>
-   <div class="welcome" id="cwel" hidden><div><b>ברוכים השבים</b><p class="chint" style="margin:4px 0 0">אתם כבר מחוברים.</p></div><a class="go" id="cgo" href="/app#/">לאזור האישי<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a></div>
+ <div class="wrap hgrid">
+  <div class="htext">
+   <h1 class="disp"><span class="ln">שיעורי בית</span><span class="ln">שבודקים את עצמם.</span></h1>
+   <p class="lead">התלמידים פותרים בטלפון, הציון מוכן ברגע ההגשה, והמורה רואה בדיוק איפה הכיתה נתקעה.</p>
+   <a class="bigcta enter-link" href="/app#/login">כניסה / הרשמה<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+   <p class="ctasub">תלמידים עם קוד כיתה, מורים עם מייל. חינם בשלב הזה.<a href="#look">הצצה פנימה</a></p>
   </div>
-
-  <div class="stage in d3" aria-hidden="true">
-   <div class="lap"><div class="scr"><img src="/homework/shots/t-grades.webp" width="1440" height="900" alt="" fetchpriority="high"></div><div class="base"></div></div>
-   <div class="hph in"><img src="/homework/shots/s-grade.webp" width="390" height="760" alt=""></div>
+  <div class="scene" id="scene" role="img" aria-label="הדגמה: תלמיד פותר משוואה בטלפון, התשובה נבדקת ומקבלת ציון 100, והמורה רואה את התוצאות">
+   <div class="phone"><div class="screen">
+    <div class="bar"><i></i></div>
+    <div class="top"><b>משוואות – תרגול</b><span>שאלה 5 מתוך 5</span><div class="prog"><i></i></div></div>
+    <div class="qcard"><span class="qn">5</span><p>פתרו את המשוואה. מה ערכו של x?</p><span class="eq">3x + 5 = 26</span>
+     <div class="ansrow"><div class="abox"><span class="t">7</span><span class="car"></span></div><div class="chk">בדיקה</div></div>
+     <div class="verd">✓ נכון!</div></div>
+    <div class="sheet"><small>הוגש! הציון שלכם</small><br><span class="g">100<svg viewBox="0 0 100 60" preserveAspectRatio="none"><ellipse cx="50" cy="30" rx="47" ry="27"/></svg></span>
+     <div class="rows"><div><i>✓</i>5 מתוך 5 נכונות</div><div><i>✓</i>נשמר במחברת ההתקדמות</div></div></div>
+   </div></div>
+   <div class="tcard"><span class="lbl">אצל המורה</span><b>משוואות – תרגול</b><div class="sub"><span>הגישו 26 מתוך 28</span><span>ממוצע 86</span></div>
+    <div class="bars"><div class="br"><span>שאלה 1</span><s><i style="--w:92%;--c:#0E9F6E"></i></s><span>92%</span></div><div class="br"><span>שאלה 3</span><s><i style="--w:71%;--c:#1F49D6"></i></s><span>71%</span></div><div class="br"><span>שאלה 4</span><s><i style="--w:38%;--c:#E23B3B"></i></s><span>38%</span></div></div>
+    <div class="note">שאלה 4: כדאי לחזור עליה בשיעור</div></div>
   </div>
  </div>
-</section>
-
-<section class="wrap feat" aria-label="מה מקבלים">
- <div><h3>מספרים שונים לכל תלמיד</h3><p>להעתיק מחבר פשוט לא עוזר.</p></div>
- <div><h3>בדיקה הוגנת</h3><p>עשרוני בטווח סביר, שלם במדויק.</p></div>
- <div><h3>שרטוטים ונוסחאות</h3><p>כמו בדף עבודה, רק בטלפון.</p></div>
- <div><h3>בלי התקנה</h3><p>עובד מהדפדפן, בכל מכשיר.</p></div>
+ <div class="marq" aria-label="מה מקבלים"><div class="mtrack"><div class="mi"><span class="ic" aria-hidden="true">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi"><span class="ic" aria-hidden="true">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi"><span class="ic" aria-hidden="true">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi"><span class="ic" aria-hidden="true">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi"><span class="ic" aria-hidden="true">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div></div></div>
 </section>
 
 <section class="wrap how" id="how">
@@ -363,34 +375,9 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 </script>
 <script>
 (function(){
-  var store=function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}, read=function(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
-  var signed=false; try{ signed=!!read("hw-token") || Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)}); }catch(e){}
-  var con=document.getElementById("console"), sw=con.querySelector(".rsw"), fs=document.getElementById("fs"), ft=document.getElementById("ft"), hint=document.getElementById("chint"),
-      boxes=[].slice.call(document.querySelectorAll("#code input")), gos=document.getElementById("gos"), em=document.getElementById("temail");
-  var HINT={s:"מקלידים את קוד הכיתה שקיבלתם מהמורה.",t:"נשלח קוד חד-פעמי למייל. מורה חדש? נרשמים באותה דרך."};
-  if(signed){ document.getElementById("cin").hidden=true; var w=document.getElementById("cwel"); w.hidden=false; document.getElementById("cgo").href=read("hw-token")?"/app#/":"/app#/teacher"; }
-  var role=read("hw-role")==="t"?"t":"s";
-  function setRole(r,focus){ role=r; sw.dataset.on=r; [].forEach.call(sw.querySelectorAll("button"),function(b){b.setAttribute("aria-selected",String(b.dataset.r===r))}); fs.hidden=r!=="s"; ft.hidden=r!=="t"; msg(HINT[r]); if(focus) (r==="s"?firstEmpty():em).focus(); }
-  function msg(t,err){ hint.textContent=t; hint.classList.toggle("err",!!err); }
-  [].forEach.call(sw.querySelectorAll("button"),function(b){ b.onclick=function(){ if(b.dataset.r!==role) setRole(b.dataset.r,true); }; });
-  function val(){ return boxes.map(function(i){return i.value}).join("").toUpperCase(); }
-  function firstEmpty(){ return boxes.find(function(i){return !i.value})||boxes[5]; }
-  function paint(){ boxes.forEach(function(i){i.classList.toggle("on",!!i.value)}); gos.classList.toggle("ready",val().length===6); }
-  function fill(str,from){ str=str.toUpperCase().replace(/[^A-Z0-9]/g,""); var k=from; for(var c=0;c<str.length&&k<6;c++,k++) boxes[k].value=str[c]; paint(); (boxes[Math.min(k,5)]).focus(); if(val().length===6) msg("מעולה. לוחצים כניסה.",false); }
-  boxes.forEach(function(inp,i){
-    inp.addEventListener("input",function(){ var v=inp.value; inp.value=""; if(v) fill(v,i); else paint(); });
-    inp.addEventListener("keydown",function(e){ if(e.key==="Backspace"&&!inp.value&&i>0){ boxes[i-1].value=""; boxes[i-1].focus(); paint(); e.preventDefault(); } else if(e.key==="ArrowLeft"&&i<5){boxes[i+1].focus();e.preventDefault()} else if(e.key==="ArrowRight"&&i>0){boxes[i-1].focus();e.preventDefault()} });
-    inp.addEventListener("paste",function(e){ e.preventDefault(); fill((e.clipboardData||window.clipboardData).getData("text"),i); });
-    inp.addEventListener("focus",function(){ inp.select(); });
-  });
-  fs.addEventListener("submit",function(e){ e.preventDefault(); var c=val(); if(c.length!==6){ msg("קוד הכיתה הוא 6 תווים.",true); firstEmpty().focus(); return; } store("hw-class",c); store("hw-role","s"); location.href="/app#/"; });
-  ft.addEventListener("submit",function(e){ e.preventDefault(); var v=em.value.trim().toLowerCase(); if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ msg("בדקו את כתובת המייל.",true); em.focus(); return; } store("hw-teacher-email",v); store("hw-role","t"); store("hw-autosend",true); location.href="/app#/teacher"; });
-  var saved=read("hw-teacher-email"); if(saved) em.value=saved;
-  setRole(role,false);
-  // every entry button on this page leads to the console
-  if(!signed) [].forEach.call(document.querySelectorAll(".enter-link"),function(a){ a.addEventListener("click",function(e){ e.preventDefault(); window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); setTimeout(function(){ con.classList.remove("ping"); void con.offsetWidth; con.classList.add("ping"); (role==="s"?firstEmpty():em).focus({preventScroll:true}); },450); }); });
-  // gentle parallax on the devices
-  var stage=document.querySelector(".stage"); if(stage && !matchMedia("(prefers-reduced-motion: reduce)").matches){ var tick=false; addEventListener("scroll",function(){ if(tick) return; tick=true; requestAnimationFrame(function(){ var r=stage.getBoundingClientRect(), p=Math.max(0,Math.min(1,1-r.top/innerHeight)); stage.style.setProperty("--p",p.toFixed(3)); tick=false; }); },{passive:true}); }
+  var sc=document.getElementById("scene"); if(!sc) return;
+  if(!("IntersectionObserver" in window)){ sc.classList.add("play"); return; }
+  new IntersectionObserver(function(es){ es.forEach(function(e){ sc.classList.toggle("play", e.isIntersecting); }); },{threshold:.2}).observe(sc);
 })();
 </script>
 </body>
