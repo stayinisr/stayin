@@ -22,12 +22,11 @@
   --card:#fff; --shadow:#0F1E3D; --pgrid:#E3EAF6;
 }
 [data-theme=dark]{--paper:#0B1324;--grid:#16213B;--ink:#E8EEFA;--ink-2:#C3CDE3;--muted:#97A3C0;--pen:#86A2FF;--pen-2:#A9BDFF;--card:#121C33;--shadow:#050A16;--pgrid:#1C2944;--red:#FF6B6B;--ok:#34D399;color-scheme:dark}
-[data-theme=dark] .band{--ink:#0F1E3D;--ink-2:#3A4766;--shadow:#0F1E3D;color:#0F1E3D}
 [data-theme=dark] .page .top{background:#1F49D6}
 [data-theme=dark] .btn.pri{background:#2F5BF0;border-color:#E8EEFA}
 [data-theme=dark] .hero h1 .mk{background:linear-gradient(transparent 58%,rgba(255,227,71,.35) 58%,rgba(255,227,71,.35) 92%,transparent 92%)}
 [data-theme=dark] .menu a:hover,[data-theme=dark] .menu a:focus-visible{color:#0F1E3D}
-.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:38px;height:38px;display:grid;place-items:center;cursor:pointer;flex:none}
 .tbtn:hover{background:var(--hl);color:#0F1E3D}
 .tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
 *{box-sizing:border-box;border-radius:0}
@@ -46,11 +45,11 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset
 
 /* header */
 header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
-.hd{display:flex;align-items:center;gap:28px;height:64px}
+.hd{display:flex;align-items:center;gap:28px;height:56px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-.logo i{width:38px;height:38px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 25px Georgia,serif;position:relative}
-.logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid var(--ink)}
-.logo b{direction:ltr;font-weight:800;font-size:21px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
+.logo i{width:32px;height:32px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 21px Georgia,serif;position:relative}
+.logo i::after{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;background:var(--hl);border:2px solid var(--ink)}
+.logo b{direction:ltr;font-weight:800;font-size:19px;letter-spacing:-.02em}.logo b span{color:var(--pen)}
 nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{color:var(--ink);text-decoration:none}nav.links a:hover{color:var(--pen)}
 .cta{margin-inline-start:auto;display:flex;gap:14px;align-items:center}
 [hidden]{display:none!important}
@@ -59,7 +58,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 .menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:210px;background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--shadow);z-index:20;display:flex;flex-direction:column}
 .menu a{padding:13px 16px;color:var(--ink);text-decoration:none;font-weight:600;border-bottom:1px solid var(--grid)}
 .menu a:last-child{border-bottom:none;color:var(--red)}
-.menu a:hover,.menu a:focus-visible{background:var(--hl)}.cta .btn{min-height:44px;font-size:15px;padding:0 18px;white-space:nowrap}
+.menu a:hover,.menu a:focus-visible{background:var(--hl)}.cta .btn{min-height:38px;font-size:14.5px;padding:0 16px;white-space:nowrap}
 
 /* hero */
 .hero{position:relative;overflow:hidden;border-bottom:2px solid var(--ink)}
@@ -170,7 +169,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 @media (max-width:700px){.acts .btn{width:100%}.cta{gap:10px}.cta .btn{padding:0 14px}.hd{gap:12px}.ctl .arr{display:none}.ph{width:236px}
   .bw{width:236px;border:none;border-radius:34px;padding:9px;background:#0F1E3D;box-shadow:7px 7px 0 var(--hl)}.bw .bar2{display:none}.bw img{border-radius:26px}}
 .how{padding-top:96px;padding-bottom:96px}
-.how h2,.band h2{margin:0;font-size:44px;line-height:1.1}
+.how h2{margin:0;font-size:44px;line-height:1.1}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px;counter-reset:s}
 .step{position:relative;background:var(--card);border:2px solid var(--ink);padding:30px 28px 28px}
 .step .n{position:absolute;top:-30px;inset-inline-start:20px;font:700 64px/1 Caveat,cursive;color:var(--red);background:var(--paper);padding:0 8px}
@@ -180,11 +179,6 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 /* teachers / students */
 
 /* band */
-.band{background:var(--hl);border-block:2px solid var(--ink)}
-.band .wrap{display:flex;align-items:center;gap:24px;padding-top:52px;padding-bottom:52px}
-.band h2{font-size:36px}
-.band p{margin:8px 0 0;font-size:17px;color:var(--ink-2)}
-.band .btn{margin-inline-start:auto}
 
 
 @media (max-width:900px){
@@ -199,9 +193,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
   .feat div{border-top:1px solid var(--grid)}
   .steps{grid-template-columns:minmax(0,1fr);gap:44px}
   .how{padding-top:64px;padding-bottom:64px}
-  .how h2,.band h2{font-size:34px}
-  .band .wrap{flex-direction:column;align-items:flex-start}
-  .band .btn{margin-inline-start:0}
+  .how h2{font-size:34px}
 }
 @media (max-width:620px){
   .wrap{padding-inline:18px}
@@ -213,8 +205,23 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
   .page .body{padding-inline-start:52px}
   .page::before{inset-inline-start:38px}
 }
-.foot{border-top:1px solid var(--grid);display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;padding-top:30px;padding-bottom:44px;font-size:14.5px}
-.foot a{color:var(--muted)}.foot a:hover{color:var(--pen)}
+.endcta{padding-bottom:72px}
+.endcta .box{position:relative;overflow:hidden;display:flex;align-items:center;gap:32px;padding:48px 52px;background:#0F1E3D;color:#fff;border:2px solid #0F1E3D;box-shadow:8px 8px 0 var(--hl);
+  background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px}
+.endcta h2{margin:0;font-size:38px;line-height:1.1;color:#fff}
+.endcta p{margin:12px 0 0;font-size:17px;color:#C9D6FB;max-width:52ch}
+.endcta p.small{font-size:15px;color:#97A3C0;margin-top:8px}
+.endcta .btn{margin-inline-start:auto;flex:none}
+.btn.sunb{background:var(--hl);color:#0F1E3D;border-color:#0F1E3D}.btn.sunb:hover{color:#0F1E3D;box-shadow:4px 4px 0 #fff}
+[data-theme=dark] .endcta .box{background-color:#16213B;border-color:#2A3A5E;box-shadow:8px 8px 0 #050A16}
+@media (max-width:700px){.endcta{padding-bottom:48px}.endcta .box{flex-direction:column;align-items:stretch;padding:32px 22px;box-shadow:5px 5px 0 var(--hl)}.endcta h2{font-size:30px}.endcta .btn{margin:0;width:100%}}
+.sitefoot{border-top:1px solid var(--grid);background:color-mix(in srgb,var(--paper) 94%,transparent)}
+.sitefoot .wrap{display:grid;grid-template-columns:1fr auto;gap:18px 32px;align-items:center;padding-top:32px;padding-bottom:36px}
+.sitefoot .fbrand p{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.flinks{display:flex;flex-wrap:wrap;gap:8px 24px}
+.flinks a{color:var(--ink-2);text-decoration:none;font-size:14.5px;font-weight:500}.flinks a:hover{color:var(--pen)}
+.fcopy{grid-column:1/-1;font-size:13px;color:var(--muted);border-top:1px solid var(--grid);padding-top:16px}
+@media (max-width:700px){.sitefoot .wrap{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -320,22 +327,24 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
  <div class="ctl"><button type="button" class="arr" id="prv" aria-label="הקודם"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button><div class="dots" id="dots"></div><button type="button" class="arr" id="nxt" aria-label="הבא"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button></div>
 </section>
 
-<section class="band">
- <div class="wrap">
+<section class="wrap endcta">
+ <div class="box">
   <div>
    <h2 class="disp">רוצים לנסות עם הכיתה שלכם?</h2>
-   <p>נרשמים עם המייל, ממלאים כמה פרטים, ואנחנו מאשרים את החשבון.</p>
+   <p>נרשמים עם המייל, ממלאים כמה פרטים, ואנחנו מאשרים את החשבון. בשלב הזה זה חינם.</p>
+   <p class="small">תלמידים? נכנסים עם קוד הכיתה שקיבלתם מהמורה.</p>
   </div>
-  <a class="btn pri big enter-link" href="/app#/login">כניסה / הרשמה</a>
+  <a class="btn big sunb enter-link" href="/app#/login">כניסה / הרשמה</a>
  </div>
 </section>
 </main>
 
-<footer class="wrap foot">
- <a href="/guide">איך זה עובד</a>
- <a href="/terms">תנאי שימוש</a>
- <a href="/privacy">פרטיות</a>
- <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
+<footer class="sitefoot">
+ <div class="wrap">
+  <div class="fbrand"><a class="logo" href="/" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a><p>שיעורי בית במתמטיקה ובפיזיקה שנבדקים מעצמם.</p></div>
+  <nav class="flinks" aria-label="קישורים"><a href="/guide">איך זה עובד</a><a href="/terms">תנאי שימוש</a><a href="/privacy">פרטיות</a><a href="mailto:hello@alfamath.co.il">יצירת קשר</a></nav>
+  <div class="fcopy"><span dir="ltr">© 2026 AlfaMath</span></div>
+ </div>
 </footer>
 
 <script>

@@ -33,12 +33,12 @@
   ::selection{background:var(--ink);color:#fff}
   /* ---------- header ---------- */
   header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  header .in{max-width:1160px;margin:auto;padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;min-width:0}
+  header .in{max-width:1160px;margin:auto;padding:0 32px;height:56px;display:flex;align-items:center;gap:12px;min-width:0}
   .brand{flex:none}
   .brand{display:flex;align-items:center;gap:10px;background:none;border:none;padding:0;cursor:pointer;color:var(--ink)}
-  .logo{width:38px;height:38px;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:900;font-size:25px;line-height:1;flex:none;position:relative;font-family:Georgia,"Times New Roman",serif;font-style:italic}
-  .logo::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--sun);border:2px solid var(--ink)}
-  .brand b{font-weight:800;font-size:21px;letter-spacing:-.02em;line-height:1;direction:ltr;display:block;text-align:right}
+  .logo{width:32px;height:32px;background:var(--pri);color:#fff;display:grid;place-items:center;font-weight:900;font-size:21px;line-height:1;flex:none;position:relative;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .logo::after{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;background:var(--sun);border:2px solid var(--ink)}
+  .brand b{font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1;direction:ltr;display:block;text-align:right}
   .brand b span{color:var(--pri)}
   .brand small{display:none;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
   header .sp{flex:1}
@@ -244,6 +244,10 @@
   .bigcode{font-size:40px;font-weight:900;letter-spacing:.18em;direction:ltr;display:inline-block;line-height:1;color:var(--pri)}
   .empty{text-align:center;padding:30px 16px;color:var(--muted)}
   .empty b{display:block;color:var(--ink);font-size:17px;font-weight:800;margin-bottom:4px}
+  .toast.act{display:flex;align-items:center;gap:16px;padding-block:8px;width:max-content}.toast.act span{white-space:nowrap}
+  .toast.act button{border:none;background:none;color:var(--sun);font-weight:800;padding:6px 4px;text-decoration:underline;text-underline-offset:3px}
+  .fbi{transition:opacity .3s,transform .3s}.fbi.gone{opacity:0;transform:translateX(-24px)}
+  .fbdone{border-top:1px solid var(--line)}.fbdone > summary{cursor:pointer;padding:14px 20px;font-weight:700;color:var(--ink-2)}.fbdone .ann{opacity:.7}
   .toast{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;z-index:60;font-size:15px;font-weight:700;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px)}
   .qedit{border:1px solid var(--line-2);background:#fff;margin:14px 0}
   .qedit .head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--pri-wash);border-bottom:1px solid var(--line)}
@@ -332,15 +336,15 @@
   @keyframes circle{from{clip-path:inset(0 0 0 100%)}to{clip-path:inset(0 0 0 0)}}
   .cells i.f{background:var(--ink)}
   .meter{background:#E3E9F3} .meter i{background:var(--ink)}
-  .bnav{border-top:2px solid var(--ink)}
-  .bnav button{gap:3px;padding:6px 2px 6px;font-size:12px;font-weight:600;min-height:62px}
-  .bnav button:hover{background:transparent}
-  .bnav button svg{box-sizing:content-box;width:22px;height:22px;padding:4px 18px;border:1.5px solid transparent;transition:background .15s,border-color .15s}
-  .bnav button.on{color:var(--ink);font-weight:800}
+  .bnav{background:color-mix(in srgb,var(--card) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border-top:1px solid var(--line);box-shadow:0 -8px 24px -16px rgba(15,30,61,.25)}
+  .bnav button{gap:3px;padding:7px 2px 6px;font-size:11.5px;font-weight:600;min-height:60px;color:var(--muted)}
+  .bnav button:hover{background:transparent;color:var(--ink)}
+  .bnav button svg{box-sizing:content-box;width:22px;height:22px;padding:4px 20px;border-radius:999px;transition:background .2s,color .2s}
+  .bnav button.on{color:var(--pri);font-weight:700}
   .bnav button.on::before{display:none}
-  .bnav button.on svg{background:var(--sun);border-color:var(--ink);color:var(--ink)}
+  .bnav button.on svg{background:var(--pri-wash);color:var(--pri)}
   .bnav button:not(.on):active svg{background:var(--soft)}
-  .bnav .dot{top:3px;inset-inline-start:calc(50% + 10px);border:2px solid var(--card)}
+  .bnav .dot{top:3px;inset-inline-start:calc(50% + 10px);border-radius:999px;border:2px solid var(--card)}
   .dock{border-top:2px solid var(--ink)}
   dialog{border:2px solid var(--ink);border-top:8px solid var(--pri);box-shadow:8px 8px 0 var(--ink)}
   .toast{box-shadow:5px 5px 0 var(--sun);border:2px solid var(--ink)}
@@ -399,8 +403,10 @@
   }
   [data-theme=dark] body{background-color:#0B1324;background-image:linear-gradient(#141F38 1px,transparent 1px),linear-gradient(90deg,#141F38 1px,transparent 1px)}
   [data-theme=dark] header{background:rgba(11,19,36,.92);border-bottom-color:#36486F}
-  [data-theme=dark] .bnav,[data-theme=dark] .dock{background:rgba(18,28,51,.97);border-top-color:#36486F}
-  [data-theme=dark] .bnav button.on svg{color:#0B1324;border-color:#0B1324}
+  [data-theme=dark] .dock{background:rgba(18,28,51,.97);border-top-color:#36486F}
+  [data-theme=dark] .bnav{background:rgba(18,28,51,.86);border-top-color:#2A3A5E;box-shadow:none}
+  [data-theme=dark] .bnav button.on svg{background:rgba(134,162,255,.18);color:#A9BDFF}
+  [data-theme=dark] .bnav button.on{color:#A9BDFF}
   :where([data-theme=dark]) :is(input,select,textarea,.codebox input,.ans input,.keys button,.choice,.qedit,.preview,.tile,.light,.date,.chip,.badge.locked){background:var(--card);color:var(--ink)}
   :where([data-theme=dark]) .date.late{background:var(--bad-wash)}
   [data-theme=dark] .hero{background:#2F5BF0}
@@ -412,6 +418,7 @@
   [data-theme=dark] :is(.primary:hover,.tile:hover){box-shadow:4px 4px 0 #050A16}
   [data-theme=dark] .primary{background:#2F5BF0;color:#fff;border-color:#86A2FF}
   [data-theme=dark] :is(.toast,.seg button.on,.qn,.choice.sel .let,.chip.ink,.cells i.f){color:#0B1324}
+  [data-theme=dark] .toast.act button{color:#1F49D6}
   [data-theme=dark] .choice.sel{background:var(--sun-wash);box-shadow:inset -5px 0 0 var(--sun)}
   [data-theme=dark] th{background:#172240;color:var(--ink-2)}
   [data-theme=dark] .meter{background:#25324F}
@@ -442,7 +449,7 @@
     .cols > aside{position:sticky;top:130px}
     .cols > aside .card:first-child{margin-top:0}
     .cols > div > .card:first-child{margin-top:0}
-    .bnav{top:64px;bottom:auto;grid-template-columns:repeat(var(--n,3),auto);justify-content:center;gap:8px;border-top:none;border-bottom:1px solid var(--line-2);padding:0;background:rgba(255,255,255,.96)}
+    .bnav{top:56px;bottom:auto;box-shadow:none;grid-template-columns:repeat(var(--n,3),auto);justify-content:center;gap:8px;border-top:none;border-bottom:1px solid var(--line-2);padding:0;background:rgba(255,255,255,.96)}
     .bnav button{flex-direction:row;gap:8px;padding:12px 22px;font-size:14.5px}
     .bnav button svg{width:18px;height:18px;padding:0;border:none;background:none!important}
     .bnav button.on::before{display:block}
@@ -465,7 +472,7 @@
     /* keep logo + help + theme + exit on one line on small phones */
     header .in{gap:4px;padding:0 14px}
     .brand small{display:none}
-    .brand b{font-size:20px}
+    .brand b{font-size:18px}
     .themebtn{padding:6px;min-height:36px}
     #hdr .ghost{padding:6px 8px;font-size:13.5px;white-space:nowrap}
     h1{font-size:26px}
@@ -507,6 +514,7 @@ const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const app = () => $("#app");
 function go(h){ if(location.hash===h) route(); else location.hash=h; }
+function toastAction(msg, label, fn, ms=7000){ $$(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast act"; t.setAttribute("role","status"); t.innerHTML=`<span></span><button type="button"></button>`; t.firstChild.textContent=msg; const b=t.lastChild; b.textContent=label; b.onclick=()=>{ t.remove(); fn(); }; document.body.appendChild(t); setTimeout(()=>t.remove(),ms); }
 function toast(msg){ $$(".toast").forEach(x=>x.remove()); const t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
 function math(el){ if(!el || !window.renderMathInElement) return; try{ renderMathInElement(el,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"$",right:"$",display:false},{left:"\\(",right:"\\)",display:false}],throwOnError:false}); }catch(e){} }
 function store(k,v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||"null"); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; } }
@@ -1459,10 +1467,12 @@ async function tabTeachers(){
     toast(b.dataset.s==="approved" ? "המורה אושר" : "המורה נחסם"); tabTeachers();
   });
   const fb = (await sb.rpc("hw_admin_feedback")).data || [];
-  const open = fb.filter(f=>!f.done).length;
-  box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>הצעות לשיפור מתלמידים</h2>${open?`<span class="chip warn">${open} חדשות</span>`:""}</div>
-    ${fb.length ? `<div>${fb.map(f=>`<div class="ann" style="${f.done?"opacity:.55":""}"><div class="row"><b class="grow">${esc(f.author||"תלמיד")}</b><span class="tiny">${esc(f.class_name||"")} · ${fmtDate(f.created_at)}</span>
-      <button class="ghost sm" data-fb="${f.id}" data-done="${f.done?0:1}">${f.done?"החזרה":"טופל"}</button></div><div class="prompt" style="margin-top:4px">${esc(f.body)}</div></div>`).join("")}</div>` : `<div class="empty"><b>עוד אין הצעות</b>התלמידים שולחים הצעות מהאזור האישי.</div>`}</div>`);
+  const fbOpen = fb.filter(f=>!f.done), fbDone = fb.filter(f=>f.done);
+  const fbRow = f => `<div class="ann fbi" data-id="${f.id}"><div class="row"><b class="grow">${esc(f.author||"תלמיד")}</b><span class="tiny muted">${esc(f.class_name||"")}, ${fmtDate(f.created_at)}</span>
+      <button class="${f.done?"ghost":"light"} sm" data-fb="${f.id}" data-done="${f.done?0:1}">${f.done?"החזרה לרשימה":"טופל"}</button></div><div class="prompt" style="margin-top:4px">${esc(f.body)}</div></div>`;
+  box.insertAdjacentHTML("beforeend", `<div class="card" id="fbc"><div class="hd"><h2>הצעות לשיפור מתלמידים</h2>${fbOpen.length?`<span class="chip warn">${fbOpen.length} פתוחות</span>`:""}</div>
+    <div id="fbl">${fbOpen.length ? fbOpen.map(fbRow).join("") : `<div class="empty"><b>אין הצעות פתוחות</b>${fb.length?"כל ההצעות טופלו.":"התלמידים שולחים הצעות מהאזור האישי."}</div>`}</div>
+    ${fbDone.length?`<details class="fbdone"><summary>שטופלו (${fbDone.length}) <span class="muted tiny">נמחקות אוטומטית אחרי 30 יום</span></summary>${fbDone.map(fbRow).join("")}</details>`:""}</div>`);
   const [{ data:flg }, { data:bpend }] = await Promise.all([sb.rpc("hw_admin_bank", { p_status:"flagged" }), sb.rpc("hw_admin_bank", { p_status:"pending" })]);
   box.insertAdjacentHTML("beforeend", `<div class="card"><div class="hd"><h2>מאגר משותף: מחכות לבדיקה</h2><span class="muted small">${(bpend||[]).length} ממתינות לבדיקה השבועית</span></div>
     ${(flg||[]).length ? `<div>${flg.map(x=>{ const sq = toStudentQ({ ...x, answer:x.answer||{} }); return `<div class="ann"><div class="row tiny" style="gap:6px"><span class="chip acc">${esc(x.subtopic||x.topic)}</span><span class="chip">${esc(x.grade)}</span><span class="muted">${esc(x.teacher_name||"")}</span></div>
@@ -1473,7 +1483,14 @@ async function tabTeachers(){
   $$("#tab button[data-bk]").forEach(b => b.onclick = async () => {
     let note = null; if(b.dataset.st === "rejected"){ note = prompt("סיבת הדחייה (המורה יראה אותה):", ""); if(note === null) return; }
     const { error } = await sb.rpc("hw_admin_bank_set", { p_id:b.dataset.bk, p_status:b.dataset.st, p_note:note }); if(error) return toast(errMsg(error)); toast(b.dataset.st==="approved"?"השאלה נכנסה למאגר":"השאלה נדחתה"); tabTeachers(); });
-  $$("#tab button[data-fb]").forEach(b => b.onclick = async () => { const { error } = await sb.rpc("hw_admin_feedback_done", { p_id:b.dataset.fb, p_done:b.dataset.done==="1" }); if(error) return toast(errMsg(error)); tabTeachers(); });
+  const setFb = async (id, done) => { const { error } = await sb.rpc("hw_admin_feedback_done", { p_id:id, p_done:done }); if(error){ toast(errMsg(error)); return false; } return true; };
+  $$("#tab button[data-fb]").forEach(b => b.onclick = async () => {
+    const id = b.dataset.fb, done = b.dataset.done==="1", row = b.closest(".fbi");
+    b.disabled = true; if(!(await setFb(id, done))){ b.disabled = false; return; }
+    row.classList.add("gone"); setTimeout(() => tabTeachers(), 320);
+    if(done) toastAction("ההצעה סומנה כטופלה", "ביטול", async () => { if(await setFb(id, false)){ toast("ההצעה חזרה לרשימה"); tabTeachers(); } });
+    else toast("ההצעה חזרה לרשימה");
+  });
 }
 /* shared teacher data */
 async function loadAll(){

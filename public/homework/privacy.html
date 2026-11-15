@@ -20,11 +20,11 @@ a{color:var(--pen)}
 a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
 .wrap{max-width:860px;margin:0 auto;padding-inline:24px}
 header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
-.hd{display:flex;align-items:center;gap:16px;height:64px}
+.hd{display:flex;align-items:center;gap:16px;height:56px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
-.logo i{width:38px;height:38px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 25px Georgia,serif;position:relative;font-style:italic}
-.logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid #0F1E3D}
-.logo b{direction:ltr;font-weight:800;font-size:21px}.logo b span{color:var(--pen)}
+.logo i{width:32px;height:32px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 21px Georgia,serif;position:relative;font-style:italic}
+.logo i::after{content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;background:var(--hl);border:2px solid #0F1E3D}
+.logo b{direction:ltr;font-weight:800;font-size:19px}.logo b span{color:var(--pen)}
 main.doc{max-width:780px;background:var(--card);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);margin:40px auto 48px;padding:40px 44px}
 h1,h2{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em}
 h1{font-size:40px;line-height:1.1;margin:0 0 8px}
@@ -35,15 +35,20 @@ li{margin:4px 0}
 .muted{color:var(--muted);font-size:14px}
 @media (max-width:700px){.wrap{padding-inline:18px}main.doc{margin:20px 12px 32px;padding:26px 20px;box-shadow:5px 5px 0 var(--shadow)}h1{font-size:32px}}
 .hcta{margin-inline-start:auto;display:flex;gap:12px;align-items:center}
-.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:38px;height:38px;display:grid;place-items:center;cursor:pointer;flex:none}
 .tbtn:hover{background:var(--hl);color:#0F1E3D}
 .tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
-.hbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font:700 15px Rubik,sans-serif;white-space:nowrap;text-decoration:none;background:#1F49D6;color:#fff;border:2px solid var(--ink)}
+.hbtn{display:inline-flex;align-items:center;min-height:38px;padding:0 16px;font:700 14.5px Rubik,sans-serif;white-space:nowrap;text-decoration:none;background:#1F49D6;color:#fff;border:2px solid var(--ink)}
 .hbtn:hover{color:#fff;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow,#0F1E3D)}
 [data-theme=dark] .hbtn{background:#2F5BF0;border-color:#E8EEFA}
 @media (max-width:700px){.hbtn{padding:0 14px}.hcta{gap:10px}}
-.foot{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;padding-top:36px;padding-bottom:44px;font-size:14.5px}
-.foot a{color:var(--muted)}.foot a:hover{color:var(--pen)}
+.sitefoot{border-top:1px solid var(--grid);background:color-mix(in srgb,var(--paper) 94%,transparent)}
+.sitefoot .wrap{display:grid;grid-template-columns:1fr auto;gap:18px 32px;align-items:center;padding-top:32px;padding-bottom:36px}
+.sitefoot .fbrand p{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.flinks{display:flex;flex-wrap:wrap;gap:8px 24px}
+.flinks a{color:var(--ink-2);text-decoration:none;font-size:14.5px;font-weight:500}.flinks a:hover{color:var(--pen)}
+.fcopy{grid-column:1/-1;font-size:13px;color:var(--muted);border-top:1px solid var(--grid);padding-top:16px}
+@media (max-width:700px){.sitefoot .wrap{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -92,12 +97,12 @@ li{margin:4px 0}
 <p>אם נשנה את המדיניות, נעדכן את התאריך בראש העמוד, ועל שינוי מהותי נודיע למורים במייל.</p>
 
 </main>
-<footer class="wrap foot">
- <a href="/">דף הבית</a>
- <a href="/guide">איך זה עובד</a>
- <a href="/terms">תנאי שימוש</a>
- <a href="/privacy">פרטיות</a>
- <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
+<footer class="sitefoot">
+ <div class="wrap">
+  <div class="fbrand"><a class="logo" href="/" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a><p>שיעורי בית במתמטיקה ובפיזיקה שנבדקים מעצמם.</p></div>
+  <nav class="flinks" aria-label="קישורים"><a href="/guide">איך זה עובד</a><a href="/terms">תנאי שימוש</a><a href="/privacy">פרטיות</a><a href="mailto:hello@alfamath.co.il">יצירת קשר</a></nav>
+  <div class="fcopy"><span dir="ltr">© 2026 AlfaMath</span></div>
+ </div>
 </footer>
 <script>(function(){
   document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};
