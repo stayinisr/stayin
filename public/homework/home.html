@@ -241,13 +241,69 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 }
 @media (max-width:600px){
   .p2 .pv{height:380px}.mph{width:170px;height:330px;border-radius:26px}.mph .sc{border-radius:20px;padding:26px 10px 10px}.mph .qq{font-size:13px}.mph svg{width:120px;height:64px}
-  .mph.a{transform:translateX(calc(var(--p) * 110px)) rotate(calc(var(--p) * 8deg)) scale(.86)}.mph.c{transform:translateX(calc(var(--p) * -110px)) rotate(calc(var(--p) * -8deg)) scale(.86)}
+  .mph.a{transform:translateX(calc(var(--p) * 84px)) rotate(calc(var(--p) * 7deg)) scale(.84)}.mph.c{transform:translateX(calc(var(--p) * -84px)) rotate(calc(var(--p) * -7deg)) scale(.84)}
   .sph{width:240px;height:480px}
   .trk{padding:18px}.trk .cnt{font-size:52px}.dots{gap:7px}
   .gb td,.gb th{padding:9px 10px}.gb .m{display:none}
   .lead-form{padding:22px;box-shadow:6px 6px 0 var(--pen)}.lead-form .two{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){.pn{--p:1!important}}
+/* hero steps */
+.bsteps{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.bsteps span{display:flex;align-items:center;gap:8px;padding:7px 12px 7px 14px;font-size:14px;font-weight:700;color:#97A3C0;border:1.5px solid rgba(255,255,255,.18);animation:stepon .5s both}
+.bsteps b{width:22px;height:22px;display:grid;place-items:center;background:rgba(255,255,255,.12);color:#fff;font-size:12.5px}
+.bsteps .s1{animation-delay:0s}.bsteps .s2{animation-delay:.5s}.bsteps .s3{animation-delay:1.4s}
+@keyframes stepon{from{color:#97A3C0}to{color:#fff;border-color:var(--hl)}}
+.bsteps span{animation-name:stepon;animation-fill-mode:both}
+.bsteps span b{animation:stepb .5s both}.bsteps .s1 b{animation-delay:0s}.bsteps .s2 b{animation-delay:.5s}.bsteps .s3 b{animation-delay:1.4s}
+@keyframes stepb{to{background:var(--hl);color:#0F1E3D}}
+@media (prefers-reduced-motion:reduce){.bsteps span,.bsteps b{animation-duration:0s}}
+/* before / after */
+.ba{padding:110px 0 90px;--p:0}
+.ba h2{margin:0;font-size:clamp(36px,5vw,68px);line-height:1.04;text-align:center}
+.basub{margin:16px auto 0;text-align:center;font-size:clamp(17px,1.6vw,20px);color:var(--ink-2);max-width:40ch}
+.barows{display:grid;gap:14px;margin:48px auto 0;max-width:980px}
+.barow{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:16px}
+.barow .old,.barow .new{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:18px 22px}
+.barow .old{background:transparent;border:1.5px dashed var(--grid)}
+.barow .new{background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--hl);opacity:clamp(0,calc(var(--p) * 6 - var(--i) - 1.5),1);transform:translateX(calc(clamp(0,1 - (var(--p) * 6 - var(--i) - 1.5),1) * -24px))}
+.barow .lbl{font-size:12px;font-weight:800;color:var(--muted)}
+.barow .new .lbl{color:#0E9F6E}
+.barow s{position:relative;text-decoration:none;font-size:18px;color:var(--muted);align-self:flex-start}
+.barow s::after{content:"";position:absolute;inset-inline:-4px;top:55%;height:3px;background:var(--red);transform-origin:right;transform:scaleX(clamp(0,calc(var(--p) * 6 - var(--i) - 1),1));border-radius:2px}
+.barow b{font-size:19px;color:var(--ink)}
+.barow .arr{align-self:center;font-size:26px;color:var(--pen);font-weight:700}
+@media (max-width:700px){.ba{padding:72px 0 56px}.barows{margin-top:32px}.barow{grid-template-columns:1fr;gap:0}.barow .arr{display:none}.barow .old{border-bottom:none;padding:12px 16px}.barow .new{padding:14px 16px;box-shadow:5px 5px 0 var(--hl)}.barow s{font-size:16px}.barow b{font-size:17px}}
+@media (prefers-reduced-motion:reduce){.ba{--p:1!important}}
+/* features deck */
+.deck{position:relative;background:#0B1530;color:#fff;padding:96px 0 72px;overflow:hidden}
+.deck::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:32px 32px}
+.dtop{position:relative;text-align:center}
+.deck h2{margin:0;font-size:clamp(36px,5vw,68px);line-height:1.04;color:#fff}
+.dtabs{display:flex;justify-content:center;gap:8px;margin-top:30px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
+.dtabs::-webkit-scrollbar{display:none}
+.dtabs button{flex:none;display:flex;align-items:center;gap:8px;padding:10px 16px;font:700 15.5px Rubik,sans-serif;color:#B7C4E6;background:transparent;border:1.5px solid rgba(255,255,255,.2);cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.dtabs button b{width:22px;height:22px;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.12);color:#fff}
+.dtabs button:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.dtabs button[aria-selected=true]{background:var(--hl);color:#0F1E3D;border-color:var(--hl)}
+.dtabs button[aria-selected=true] b{background:#0F1E3D;color:#fff}
+.drail{position:relative;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;margin-top:24px}
+.drail::-webkit-scrollbar{display:none}
+.dslide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:40px 0 30px;overflow:visible}
+.dslide.pn{background:none}
+.dslide.pn::before{display:none}
+.dwrap{max-width:1160px;margin:0 auto;padding-inline:32px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:center}
+.dslide .ptext h2{color:#fff}.dslide .ptext p{color:#B7C4E6}.dslide .ptext .k{color:var(--hl)}
+.dslide .ptext h2{font-size:clamp(32px,4vw,54px)}
+.dctl{position:relative;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:10px}
+.ddots{display:flex;gap:8px}
+.ddots button{width:26px;height:6px;padding:0;border:none;background:rgba(255,255,255,.22);cursor:pointer;transition:width .2s,background .2s}
+.ddots button.on{width:40px;background:var(--hl)}
+.dctl .arr{width:46px;height:46px;display:grid;place-items:center;border:2px solid rgba(255,255,255,.5);background:transparent;color:#fff;cursor:pointer}
+.dctl .arr:hover{background:var(--hl);color:#0F1E3D;border-color:var(--hl)}
+.dctl .arr:disabled{opacity:.3;cursor:default;background:transparent;color:#fff}
+@media (max-width:900px){.deck{padding:72px 0 56px}.dtabs{justify-content:flex-start;margin-inline:-18px;padding-inline:18px}.dwrap{grid-template-columns:minmax(0,1fr);gap:36px;padding-inline:18px}.dslide{padding:24px 0}}
+@media (max-width:700px){.dctl .arr{display:none}}
 /* how */
 .shots{padding-top:110px;padding-bottom:96px;scroll-margin-top:84px}
 #how{scroll-margin-top:84px}
@@ -315,7 +371,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
  <div class="wrap hd">
   <a class="logo" href="#top" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
   <nav class="links" aria-label="ניווט">
-   <a href="#how">יתרונות</a>
+   <a href="#features">יתרונות</a>
    <a href="#look">מסכים</a>
    <a href="#schools">לבתי ספר</a>
    <a href="/guide">איך זה עובד</a>
@@ -342,6 +398,7 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
    <p class="ctasub">למורים, חינם בשלב הזה.</p>
   </div>
   <div class="builder" aria-label="הדגמה: מקלידים נושא וכיתה, והשאלות נבנות ונבדקות לבד">
+   <div class="bsteps" aria-hidden="true"><span class="s1"><b>1</b>מקלידים נושא</span><span class="s2"><b>2</b>ה-AI כותב</span><span class="s3"><b>3</b>נבדק לבד</span></div>
    <div class="pbar"><span class="q">טרפז, כיתה ט, 12 שאלות<i></i></span><span class="b">בנייה ✦</span></div>
    <div class="qs">
     <div class="qi"><span class="n">1</span><svg class="fig" viewBox="0 0 58 34" aria-hidden="true"><polygon points="4,30 54,30 42,6 16,6" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2"/></svg><span class="t">בטרפז ABCD נתון ∠A = 65°. מה גודל ∠D?<small>מספר, עם שרטוט</small></span><span class="ok">✓ נבדק</span></div>
@@ -355,8 +412,21 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
  <div class="marq" aria-label="מה מקבלים"><div class="mtrack"><div class="mi"><span class="ic" aria-hidden="true">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi"><span class="ic" aria-hidden="true">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi"><span class="ic" aria-hidden="true">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi"><span class="ic" aria-hidden="true">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi"><span class="ic" aria-hidden="true">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi"><span class="ic" aria-hidden="true">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi"><span class="ic" aria-hidden="true">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">Σ</span><div><b>מספרים שונים לכל תלמיד</b><span>להעתיק מחבר פשוט לא עוזר</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">✓</span><div><b>ציון ברגע ההגשה</b><span>בלי לבדוק ערימות דפים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">%</span><div><b>ניתוח לכל שאלה</b><span>רואים איפה הכיתה נתקעה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">AI</span><div><b>שאלות מ-ChatGPT ו-Claude</b><span>מדביקים, בודקים, מפרסמים</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">△</span><div><b>שרטוטים ונוסחאות</b><span>כמו בדף עבודה, רק בטלפון</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">↺</span><div><b>מחברת טעויות</b><span>תרגול חוזר עד שזה יושב</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">±</span><div><b>בדיקה הוגנת</b><span>עשרוני בטווח סביר, שלם במדויק</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">⇩</span><div><b>יצוא לאקסל</b><span>גיליון ציונים בלחיצה</span></div></div><div class="mi dup" aria-hidden="true"><span class="ic">◎</span><div><b>בלי התקנה</b><span>עובד מהדפדפן, בכל מכשיר</span></div></div></div></div>
 </section>
 
-<section class="pn p1" id="how" data-pn>
+<section class="ba" id="how" data-pn>
  <div class="wrap">
+  <h2 class="disp">ההוראה של פעם נגמרה.</h2>
+  <p class="basub">מה שגזל לכם ערבים שלמים, קורה עכשיו לבד.</p>
+  <div class="barows"><div class="barow" style="--i:0"><div class="old"><span class="lbl">פעם</span><s>בודקים ערימות דפים בלילה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>נבדק לבד, ברגע ההגשה</b></div></div><div class="barow" style="--i:1"><div class="old"><span class="lbl">פעם</span><s>רודפים אחרי מי לא הגיש</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>רואים מי הגיש, ותזכורת נשלחת לבד</b></div></div><div class="barow" style="--i:2"><div class="old"><span class="lbl">פעם</span><s>מנחשים איפה הכיתה נתקעה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>ניתוח לכל שאלה ולכל תלמיד</b></div></div><div class="barow" style="--i:3"><div class="old"><span class="lbl">פעם</span><s>שעות על כל דף עבודה</s></div><span class="arr" aria-hidden="true">←</span><div class="new"><span class="lbl">היום</span><b>משימה שלמה בדקה, עם AI</b></div></div></div>
+ </div>
+</section>
+
+<section class="deck" id="features" aria-label="היתרונות">
+ <div class="wrap dtop">
+  <h2 class="disp">שדרגו את ההוראה שלכם.</h2>
+  <div class="dtabs" role="tablist" aria-label="יתרונות"><button type="button" role="tab" data-i="0" aria-controls="ds0" aria-selected="true"><b>1</b>בונים</button><button type="button" role="tab" data-i="1" aria-controls="ds1" aria-selected="false"><b>2</b>הוגן</button><button type="button" role="tab" data-i="2" aria-controls="ds2" aria-selected="false"><b>3</b>התלמידים</button><button type="button" role="tab" data-i="3" aria-controls="ds3" aria-selected="false"><b>4</b>מעקב</button><button type="button" role="tab" data-i="4" aria-controls="ds4" aria-selected="false"><b>5</b>ציונים</button><button type="button" role="tab" data-i="5" aria-controls="ds5" aria-selected="false"><b>6</b>ניתוח</button></div>
+ </div>
+ <div class="drail" id="drail" tabindex="0">
+  <div class="dslide pn p1" role="tabpanel" id="ds0" aria-label="בונים"><div class="dwrap">
   <div class="ptext"><span class="k">בונים</span><h2 class="disp">משימה שלמה בדקה.</h2><p>מקלידים נושא וכיתה, ה-AI כותב את השאלות עם שרטוטים ונוסחאות, ואתם מאשרים לפני שזה עולה. עובד עם כל מנוע AI שאתם כבר משתמשים בו.</p></div>
   <div class="pv">
    <div class="pbar"><span class="q">מעגל, כיתה י, 8 שאלות, רמה בינונית</span><span class="b">בנייה ✦</span></div>
@@ -365,18 +435,12 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
    <div class="row" style="--i:2"><span class="n">3</span><span class="t">מה אורך מיתר במרחק 3 מהמרכז, ברדיוס 5?<small>מספרים שונים לכל תלמיד</small></span><span class="tag">מוכן</span></div>
    <div class="eng"><span class="on">ChatGPT</span><span>Claude</span><span>Gemini</span></div>
   </div>
- </div>
-</section>
-
-<section class="pn p2 dk flip" data-pn>
- <div class="wrap">
+  </div></div>
+  <div class="dslide pn p2" role="tabpanel" id="ds1" aria-label="הוגן"><div class="dwrap">
   <div class="ptext"><span class="k">הוגן</span><h2 class="disp">כל תלמיד, מספרים אחרים.</h2><p>אותה שאלה, ערכים שונים לכל תלמיד. להעתיק מחבר פשוט לא עוזר, וכל ניסיון נוסף מקבל מספרים חדשים.</p></div>
   <div class="pv"><div class="mph a"><div class="sc"><span class="who">מאיה</span><div class="qq">בסיסים <b>8</b> ו-<b>14</b>, גובה <b>5</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">8</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">14</text></svg><div class="in"></div></div></div><div class="mph c"><div class="sc"><span class="who">איתי</span><div class="qq">בסיסים <b>5</b> ו-<b>11</b>, גובה <b>3</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">5</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">11</text></svg><div class="in"></div></div></div><div class="mph b"><div class="sc"><span class="who">נועה</span><div class="qq">בסיסים <b>6</b> ו-<b>12</b>, גובה <b>4</b>. מה השטח?</div><svg viewBox="0 0 150 80" aria-hidden="true"><polygon points="10,72 140,72 108,12 42,12" fill="#EEF2FF" stroke="#0F1E3D" stroke-width="2.5"/><text x="75" y="9" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">6</text><text x="75" y="79" font-size="12" text-anchor="middle" fill="#1F49D6" font-family="Rubik" font-weight="700">12</text></svg><div class="in"></div></div></div></div>
- </div>
-</section>
-
-<section class="pn p3" data-pn>
- <div class="wrap">
+  </div></div>
+  <div class="dslide pn p3" role="tabpanel" id="ds2" aria-label="התלמידים"><div class="dwrap">
   <div class="ptext"><span class="k">התלמידים</span><h2 class="disp">ככה התלמידים שלכם יראו את זה.</h2><p>פותרים מהטלפון, בלי התקנה. הציון, מה נכון ומה לא, והפתרון, מופיעים ברגע ההגשה. טעויות חוזרות לתרגול עד שזה יושב.</p></div>
   <div class="pv"><div class="sph"><div class="sc">
    <div class="hd2"><b>טרפז – תרגול</b><span>הוגש עכשיו</span></div>
@@ -384,29 +448,20 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
    <ul><li><i>✓</i>שאלה 1: ‎115°</li><li><i>✓</i>שאלה 2: 36 סמ״ר</li><li><i>✓</i>שאלה 3: אלכסונים שווים</li></ul>
    <div class="sol">פתרון שאלה 1: זוויות צמודות לשוק, ‎180 − 65 = 115</div>
   </div></div></div>
- </div>
-</section>
-
-<section class="pn p4 dk flip" data-pn>
- <div class="wrap">
+  </div></div>
+  <div class="dslide pn p4" role="tabpanel" id="ds3" aria-label="מעקב"><div class="dwrap">
   <div class="ptext"><span class="k">מעקב</span><h2 class="disp">המעקב נגמר.</h2><p>רואים בדיוק מי הגיש ומי לא, בלי לאסוף מחברות. תזכורות נשלחות לבד, במייל ובהתראה לטלפון, לפני שהמשימה נסגרת.</p></div>
   <div class="pv">
    <div class="card trk"><div class="top"><span class="lb">משוואות – תרגול, ט3</span><span class="cnt" data-count="26">26<small> / 28 הגישו</small></span></div><div class="dots"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11" class=no></i><i style="--i:12"></i><i style="--i:13"></i><i style="--i:14"></i><i style="--i:15"></i><i style="--i:16"></i><i style="--i:17"></i><i style="--i:18"></i><i style="--i:19"></i><i style="--i:20"></i><i style="--i:21"></i><i style="--i:22"></i><i style="--i:23" class=no></i><i style="--i:24"></i><i style="--i:25"></i><i style="--i:26"></i><i style="--i:27"></i></div></div>
    <div class="bell"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F1E3D" stroke-width="2.2" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg></span><div><b>תזכורת נשלחה ל-2 תלמידים</b><span>המשימה נסגרת מחר ב-20:00</span></div></div>
   </div>
- </div>
-</section>
-
-<section class="pn p5" data-pn>
- <div class="wrap">
+  </div></div>
+  <div class="dslide pn p5" role="tabpanel" id="ds4" aria-label="ציונים"><div class="dwrap">
   <div class="ptext"><span class="k">ציונים</span><h2 class="disp">כל הציונים במקום אחד.</h2><p>גיליון ציונים משוקלל לכל כיתה: שיעורי בית, תרגולים ומבחנים. הערה אישית, תיקון ידני ויצוא לאקסל בלחיצה.</p></div>
   <div class="pv"><div class="card gb"><div class="gh"><b>ט3 מתמטיקה</b><span class="xl">⇩ יצוא לאקסל</span></div>
    <table><thead><tr><th>תלמיד/ה</th><th>ציון</th><th class="m">נכונות</th></tr></thead><tbody><tr class="r" style="--i:0"><td>נועה לוי</td><td><span class="bd hi">100</span></td><td class="m">5/5</td></tr><tr class="r" style="--i:1"><td>איתי כהן</td><td><span class="bd lo">60</span></td><td class="m">3/5</td></tr><tr class="r" style="--i:2"><td>מאיה דהן</td><td><span class="bd md">80</span></td><td class="m">4/5</td></tr><tr class="r" style="--i:3"><td>עומר ביטון</td><td><span class="bd hi">100</span></td><td class="m">5/5</td></tr><tr class="r" style="--i:4"><td>שירה אברהם</td><td><span class="bd hi">90</span></td><td class="m">4.5/5</td></tr><tr class="r" style="--i:5"><td>דניאל סויסה</td><td><span class="bd md">80</span></td><td class="m">4/5</td></tr></tbody></table></div></div>
- </div>
-</section>
-
-<section class="pn p6 dk flip" data-pn>
- <div class="wrap">
+  </div></div>
+  <div class="dslide pn p6" role="tabpanel" id="ds5" aria-label="ניתוח"><div class="dwrap">
   <div class="ptext"><span class="k">ניתוח</span><h2 class="disp">יודעים מה ללמד מחר.</h2><p>אחוז הצלחה לכל שאלה, והתשובה השגויה שחזרה הכי הרבה. נכנסים לשיעור הבא כשכבר יודעים על מה לחזור.</p></div>
   <div class="pv"><div class="card an"><h3>ניתוח שאלות: טרפז – תרגול</h3>
    <div class="ar"><div class="l"><span>שאלה 1: זוויות בטרפז</span><span>92%</span></div><s><i style="--w:92%;--c:#0E9F6E"></i></s></div>
@@ -414,7 +469,9 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
    <div class="ar"><div class="l"><span>שאלה 3: טרפז שווה שוקיים</span><span>41%</span></div><s><i style="--w:41%;--c:#E23B3B"></i></s></div>
    <div class="call"><b>!</b><span><b>שאלה 3:</b> שישה תלמידים ענו "אלכסונים מאונכים". כדאי לחזור על זה בשיעור.</span></div>
   </div></div>
+  </div></div>
  </div>
+ <div class="wrap dctl"><button type="button" class="arr" id="dprv" aria-label="הקודם"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button><div class="ddots" id="ddots"></div><button type="button" class="arr" id="dnxt" aria-label="הבא"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg></button></div>
 </section>
 
 <section class="wrap shots" id="look" aria-label="הצצה לאתר">
@@ -514,11 +571,28 @@ nav.links{display:flex;gap:26px;font-weight:600;font-size:15.5px}nav.links a{col
 </script>
 <script>
 (function(){
-  // each panel gets --p (0..1) as it scrolls into view; motion follows the finger, nothing loops
-  var pns=[].slice.call(document.querySelectorAll("[data-pn]"));
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ pns.forEach(function(e){e.style.setProperty("--p",1)}); }
-  else { var tick=false; function upd(){ tick=false; var h=innerHeight; pns.forEach(function(e){ var r=e.getBoundingClientRect(); var p=(h - r.top)/(h*.75); p=Math.max(0,Math.min(1,p)); e.style.setProperty("--p",p.toFixed(3)); var c=e.querySelector("[data-count]"); if(c){ c.firstChild.nodeValue=Math.round(p*(+c.dataset.count)); } }); }
-    addEventListener("scroll",function(){ if(!tick){ tick=true; requestAnimationFrame(upd); } },{passive:true}); addEventListener("resize",upd); upd(); }
+  var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // before/after: the red strike follows the scroll
+  var ba=document.querySelector(".ba");
+  if(ba && !reduce){ var tk=false; function u(){ tk=false; var r=ba.getBoundingClientRect(), h=innerHeight; var p=Math.max(0,Math.min(1,(h - r.top)/(h*.9))); ba.style.setProperty("--p",p.toFixed(3)); }
+    addEventListener("scroll",function(){ if(!tk){ tk=true; requestAnimationFrame(u); } },{passive:true}); addEventListener("resize",u); u(); }
+  // deck: tabs + swipe; the active slide plays its build-up once
+  var rail=document.getElementById("drail"); if(!rail) return;
+  var slides=[].slice.call(rail.querySelectorAll(".dslide")), tabs=[].slice.call(document.querySelectorAll(".dtabs button")), dots=document.getElementById("ddots"), prv=document.getElementById("dprv"), nxt=document.getElementById("dnxt"), cur=-1;
+  slides.forEach(function(e,k){ var b=document.createElement("button"); b.type="button"; b.setAttribute("aria-label","יתרון "+(k+1)+" מתוך "+slides.length); b.onclick=function(){go(k)}; dots.appendChild(b); e.style.setProperty("--p",reduce?1:0); });
+  function play(e){ if(reduce){ e.style.setProperty("--p",1); return; } var t0=null, cnt=e.querySelector("[data-count]"); e.style.setProperty("--p",0);
+    function f(t){ if(!t0) t0=t; var x=Math.min(1,(t-t0)/1100), p=1-Math.pow(1-x,3); e.style.setProperty("--p",p.toFixed(3)); if(cnt) cnt.firstChild.nodeValue=Math.round(p*(+cnt.dataset.count)); if(x<1) requestAnimationFrame(f); } requestAnimationFrame(f); }
+  function idx(){ return Math.round(Math.abs(rail.scrollLeft)/rail.clientWidth); }
+  function set(i){ if(i===cur) return; cur=i; tabs.forEach(function(b,k){ b.setAttribute("aria-selected",String(k===i)); if(k===i && b.scrollIntoView) b.parentNode.scrollTo({left:b.offsetLeft - b.parentNode.clientWidth/2 + b.offsetWidth/2,behavior:"smooth"}); });
+    [].forEach.call(dots.children,function(b,k){ b.classList.toggle("on",k===i); }); prv.disabled=i<=0; nxt.disabled=i>=slides.length-1; if(seen) play(slides[i]); }
+  function go(i){ i=Math.max(0,Math.min(slides.length-1,i)); var dir=getComputedStyle(rail).direction==="rtl"?-1:1; rail.scrollTo({left:dir*i*rail.clientWidth,behavior:reduce?"auto":"smooth"}); }
+  tabs.forEach(function(b){ b.onclick=function(){ go(+b.dataset.i); }; });
+  prv.onclick=function(){go(cur-1)}; nxt.onclick=function(){go(cur+1)};
+  rail.addEventListener("keydown",function(e){ if(e.key==="ArrowLeft"){e.preventDefault();go(cur+1)} if(e.key==="ArrowRight"){e.preventDefault();go(cur-1)} });
+  var tm; rail.addEventListener("scroll",function(){ clearTimeout(tm); tm=setTimeout(function(){ set(idx()); },60); },{passive:true});
+  var seen=false;
+  if("IntersectionObserver" in window){ new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting && !seen){ seen=true; play(slides[cur]); } }); },{threshold:.35}).observe(rail); } else seen=true;
+  set(0);
 })();
 (function(){
   var f=document.getElementById("leadf"); if(!f) return;
