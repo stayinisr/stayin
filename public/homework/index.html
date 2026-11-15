@@ -378,8 +378,14 @@
   .welcome{display:flex;gap:14px;align-items:center;border:1.5px dashed var(--ink);background:var(--sun-wash);padding:14px 16px;margin-bottom:16px}
   .welcome b{display:block}
   .dock[hidden]{display:none}
-  .roleseg{max-width:340px;margin:0 auto 22px;display:flex}
-  .roleseg button{flex:1;min-height:46px;font-size:16px}
+  .roleseg{max-width:340px;margin:0 auto 22px;display:flex;position:relative;isolation:isolate}
+  .roleseg::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:50%;background:var(--ink);z-index:-1;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .roleseg[data-on=t]::before{transform:translateX(-100%)}
+  .roleseg button{flex:1;min-height:46px;font-size:16px;background:transparent!important;transition:color .25s}
+  .roleseg button.on{color:#fff}
+  [data-theme=dark] .roleseg button.on{color:#0B1324}
+  #app.swap .auth > :not(.roleseg){animation:swapin .28s ease-out both}
+  @keyframes swapin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   /* ================= dark mode ("notebook at night") ================= */
   .themebtn{background:none;border:none;padding:8px;color:var(--ink);cursor:pointer;display:grid;place-items:center;min-height:40px}
   .themebtn .sun{display:none} [data-theme=dark] .themebtn .sun{display:inline} [data-theme=dark] .themebtn .moon{display:none}
@@ -858,10 +864,12 @@ async function studentMe(){
 
 /* one login page with a student / teacher switch; the choice is remembered on this device */
 function roleSwitch(active){
-  return `<div class="seg roleseg" role="tablist" aria-label="מי נכנס?"><button type="button" role="tab" data-role="s" class="${active==="s"?"on":""}" aria-selected="${active==="s"}">תלמיד/ה</button><button type="button" role="tab" data-role="t" class="${active==="t"?"on":""}" aria-selected="${active==="t"}">מורה</button></div>`;
+  return `<div class="seg roleseg" role="tablist" aria-label="מי נכנס?" data-on="${window.__rsFrom||active}"><button type="button" role="tab" data-role="s" class="${active==="s"?"on":""}" aria-selected="${active==="s"}">תלמיד/ה</button><button type="button" role="tab" data-role="t" class="${active==="t"?"on":""}" aria-selected="${active==="t"}">מורה</button></div>`;
 }
 function bindRoleSwitch(){
-  $$(".roleseg [data-role]").forEach(b => b.onclick = () => { store("hw-role", b.dataset.role); go(b.dataset.role === "t" ? "#/teacher" : "#/"); });
+  const seg = $(".roleseg");
+  if(seg && window.__rsFrom){ window.__rsFrom = null; const on = $(".roleseg button.on")?.dataset.role; requestAnimationFrame(() => requestAnimationFrame(() => seg.dataset.on = on)); }
+  $$(".roleseg [data-role]").forEach(b => b.onclick = () => { if(b.classList.contains("on")) return; window.__rsFrom = seg?.dataset.on; window.__swap = true; store("hw-role", b.dataset.role); go(b.dataset.role === "t" ? "#/teacher" : "#/"); });
 }
 function studentAuth(mode, code=""){
   if(mode !== "register") store("hw-role", "s");
@@ -870,8 +878,8 @@ function studentAuth(mode, code=""){
   app().innerHTML = `
     <div class="auth">
       ${mode === "register" ? "" : roleSwitch("s")}
-      <h1 style="text-align:center">כניסה</h1>
-      <p class="muted" style="text-align:center">קוד כיתה, שם וקוד סודי.</p>
+      <h1 style="text-align:center">כניסה / הרשמה</h1>
+      <p class="muted" style="text-align:center">קוד כיתה, שם וקוד סודי. בפעם הראשונה נרשמים באותה דרך.</p>
       <div class="card"><div class="bd" id="af"></div></div>
     </div>`;
   bindRoleSwitch();
@@ -1340,7 +1348,7 @@ function loginPage(){
   app().innerHTML = `
     <div class="auth">
       ${roleSwitch("t")}
-      <h1 style="text-align:center">כניסה למורים</h1>
+      <h1 style="text-align:center">כניסה / הרשמה</h1>
       <p class="muted" style="text-align:center">נשלח קוד למייל. מורה חדש? נרשמים באותה דרך.</p>
       <div class="card"><div class="bd">
         <form id="lf">
@@ -2576,7 +2584,8 @@ async function teacherPrint(id){
 window.addEventListener("hashchange", route);
 { let seenNav = -1; const appEl = $("#app");
   new MutationObserver(() => { if(seenNav === navSeq || !appEl.querySelector(".card,.hero,h1,.auth")) return; seenNav = navSeq;
-    appEl.classList.remove("enter"); void appEl.offsetWidth; appEl.classList.add("enter"); }).observe(appEl, { childList:true }); }
+    appEl.classList.remove("enter", "swap"); void appEl.offsetWidth;
+    if(window.__swap){ window.__swap = false; appEl.classList.add("swap"); setTimeout(() => appEl.classList.remove("swap"), 400); } else appEl.classList.add("enter"); }).observe(appEl, { childList:true }); }
 window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue=""; } });
 window.addEventListener("load", async () => {
   if(!window.supabase){ app().innerHTML = `<div class="card"><div class="bd"><p class="err">האתר לא נטען עד הסוף. בדקו את החיבור לאינטרנט ורעננו.</p></div></div>`; return; }

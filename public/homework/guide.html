@@ -27,7 +27,6 @@ header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper
 .logo i{width:38px;height:38px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 25px Georgia,serif;position:relative}
 .logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid #0F1E3D}
 .logo b{direction:ltr;font-weight:800;font-size:21px}.logo b span{color:var(--pen)}
-.hd nav{margin-inline-start:auto;display:flex;gap:6px}
 .tab{font:700 15px Rubik,sans-serif;padding:9px 16px;border:2px solid var(--ink);background:var(--card);color:var(--ink);text-decoration:none}
 .tab:hover{background:var(--hl);color:#0F1E3D}
 h1,h2{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em;margin:0}
@@ -55,8 +54,7 @@ section.part{padding:48px 0 8px;scroll-margin-top:72px}
 .cta b{font-size:20px;flex:1 1 260px}
 .btn{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;font:700 16px Rubik,sans-serif;text-decoration:none;border:2px solid #0F1E3D;background:#1F49D6;color:#fff}
 .btn.lt{background:#fff;color:#0F1E3D}
-footer{padding:34px 0 48px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:16px}
-@media (max-width:620px){h1{font-size:36px}.part > h2{font-size:30px}.block{padding:18px 18px}.hd nav .tab{padding:8px 11px;font-size:14px}.logo b{display:none}}
+@media (max-width:620px){h1{font-size:36px}.part > h2{font-size:30px}.block{padding:18px 18px}}
 
 /* accordion */
 details.block{padding:0}
@@ -85,22 +83,35 @@ body.one section.part{display:none} body.one section.part.show{display:block;ani
 .tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:40px;height:40px;display:grid;place-items:center;cursor:pointer}
 .tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
 [data-theme=dark] .jump a,[data-theme=dark] .tab{border-color:#4A5D88}[data-theme=dark] .jump a{box-shadow:6px 6px 0 #050A16}
+.hcta{margin-inline-start:auto;display:flex;gap:12px;align-items:center}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn:hover{background:var(--hl);color:#0F1E3D}
+.tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
+.hbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font:700 15px Rubik,sans-serif;white-space:nowrap;text-decoration:none;background:#1F49D6;color:#fff;border:2px solid var(--ink)}
+.hbtn:hover{color:#fff;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow,#0F1E3D)}
+[data-theme=dark] .hbtn{background:#2F5BF0;border-color:#E8EEFA}
+@media (max-width:700px){.hbtn{padding:0 14px}.hcta{gap:10px}}
+.rsw{position:relative;isolation:isolate;display:grid;grid-template-columns:1fr 1fr;width:min(340px,100%);margin-top:26px;border:2px solid var(--ink);background:var(--card)}
+.rsw::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:50%;background:var(--ink);z-index:-1;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.rsw[data-on=teachers]::before{transform:translateX(-100%)}
+.rsw button{font:700 16px Rubik,sans-serif;border:none;background:none;color:var(--ink);cursor:pointer;min-height:48px;transition:color .25s}
+.rsw button[aria-selected=true]{color:var(--paper)}
+.intro{position:relative}
+.foot{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;padding-top:36px;padding-bottom:44px;font-size:14.5px}
+.foot a{color:var(--muted)}.foot a:hover{color:var(--pen)}
 </style>
 </head>
 <body>
 <header><div class="wrap hd">
  <a class="logo" href="/" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
- <nav aria-label="חלקי ההסבר"><button class="tbtn" id="tbtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button><a class="tab" href="#students">לתלמידים</a><a class="tab" href="#teachers">למורים</a></nav>
+ <div class="hcta"><button class="tbtn" id="tbtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button><a class="hbtn" id="enter" href="/app#/login">כניסה / הרשמה</a></div>
 </div></header>
 
 <main class="wrap">
 <div class="intro">
  <h1>איך זה עובד</h1>
- <p>כל מה שאפשר לעשות ב-AlfaMath, צעד אחרי צעד. בחרו את החלק שלכם.</p>
- <div class="jump">
-  <a href="#students" data-role="students"><b>אני תלמיד/ה</b><span>כניסה, משימות, ציונים, תרגול והתראות</span></a>
-  <a href="#teachers" data-role="teachers"><b>אני מורה</b><span>כיתות, משימות, בניית שאלות, ציונים וניתוח</span></a>
- </div>
+ <p>כל מה שאפשר לעשות ב-AlfaMath, צעד אחרי צעד.</p>
+ <div class="rsw" role="tablist" aria-label="מדריך עבור" data-on="students"><button type="button" role="tab" data-role="students" aria-selected="true">תלמיד/ה</button><button type="button" role="tab" data-role="teachers" aria-selected="false">מורה</button></div>
 </div>
 
 <!-- ======================= students ======================= -->
@@ -111,7 +122,7 @@ body.one section.part{display:none} body.one section.part.show{display:block;ani
 
  <details class="block" open><summary><span class="n">1</span><span class="tt"><b>כניסה בפעם הראשונה</b><small>קוד כיתה, שם, אימות מייל וקוד סודי</small></span><svg class="chev" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"/></svg></summary><div class="body">
   <ol>
-   <li>נכנסים לקישור שהמורה שלח, או לוחצים <a href="/app#/">"כניסה"</a> באתר ובוחרים <b>תלמיד/ה</b>, ומקלידים את <b>קוד הכיתה</b> (6 תווים).</li>
+   <li>נכנסים לקישור שהמורה שלח, או לוחצים <a href="/app#/">"כניסה / הרשמה"</a> באתר ובוחרים <b>תלמיד/ה</b>, ומקלידים את <b>קוד הכיתה</b> (6 תווים).</li>
    <li>כותבים <b>שם פרטי ושם משפחה</b>. לא צריך לדייק באיות, האתר ימצא אתכם.</li>
    <li>כותבים <b>מייל</b>, מאשרים את תנאי השימוש ומקלידים את הקוד בן 6 הספרות שמגיע למייל.</li>
    <li>בוחרים <b>קוד סודי של 4 ספרות</b>. איתו נכנסים מעכשיו, בלי מייל.</li>
@@ -176,7 +187,7 @@ body.one section.part{display:none} body.one section.part.show{display:block;ani
 
  <details class="block" open><summary><span class="n">1</span><span class="tt"><b>הרשמה</b><small>מייל, קוד ופרטים</small></span><svg class="chev" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"/></svg></summary><div class="body">
   <ul>
-   <li>לוחצים <a href="/app#/teacher">"כניסה"</a> ובוחרים <b>מורה</b>, כותבים מייל ומקלידים את הקוד בן 6 הספרות שמגיע.</li>
+   <li>לוחצים <a href="/app#/teacher">"כניסה / הרשמה"</a> ובוחרים <b>מורה</b>, כותבים מייל ומקלידים את הקוד בן 6 הספרות שמגיע.</li>
    <li>בפעם הראשונה ממלאים שם, בית ספר ומקצועות, ומאשרים את תנאי השימוש. החשבון נפתח אחרי אישור.</li>
   </ul></div></details>
 
@@ -229,29 +240,35 @@ body.one section.part{display:none} body.one section.part.show{display:block;ani
    <li><b>גיבוי:</b> כפתור בלוח הניהול שמוריד קובץ עם כל הנתונים שלכם.</li>
   </ul></div></details>
 
- <div class="cta"><b>רוצים לנסות עם הכיתה שלכם?</b><a class="btn" href="/app#/teacher">הרשמה למורים</a><a class="btn lt" href="/app#/login">כניסה</a></div>
+ <div class="cta"><b>רוצים לנסות עם הכיתה שלכם?</b><a class="btn" href="/app#/login">כניסה / הרשמה</a></div>
 </section>
 </main>
 
-<footer class="wrap">
- <a href="/">דף הבית</a><a href="/terms">תנאי שימוש</a><a href="/privacy">פרטיות</a><a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
+<footer class="wrap foot">
+ <a href="/">דף הבית</a>
+ <a href="/guide">איך זה עובד</a>
+ <a href="/terms">תנאי שימוש</a>
+ <a href="/privacy">פרטיות</a>
+ <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
 </footer>
+<script>(function(){
+  document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};
+  try{ var t=localStorage.getItem("hw-token"), s=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)}); if(t||s){ var e=document.getElementById("enter"); e.textContent="אזור אישי"; e.href=t?"/app#/":"/app#/teacher"; } }catch(e){}
+})();</script>
 <script>
 (function(){
-  document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};
-  var parts=document.querySelectorAll("section.part"), cards=document.querySelectorAll(".jump a[data-role]"), tabs=document.querySelectorAll(".hd .tab");
+  var parts=document.querySelectorAll("section.part"), sw=document.querySelector(".rsw"), btns=sw.querySelectorAll("button");
   function show(role, scroll){
-    document.body.classList.add("one");
+    document.body.classList.add("one"); sw.dataset.on=role;
     parts.forEach(function(p){ p.classList.toggle("show", p.id===role); });
-    cards.forEach(function(c){ c.classList.toggle("on", c.dataset.role===role); });
+    btns.forEach(function(b){ b.setAttribute("aria-selected", String(b.dataset.role===role)); });
     try{ localStorage.setItem("guide-role", role); }catch(e){}
-    if(scroll){ var t=document.getElementById(role); window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 70, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+    if(scroll){ var t=document.getElementById(role); window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 76, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
   }
-  function onLink(e){ var r=this.getAttribute("href").slice(1); if(r!=="students"&&r!=="teachers") return; e.preventDefault(); history.replaceState(null,"","#"+r); show(r,true); }
-  cards.forEach(function(c){ c.addEventListener("click", onLink); }); tabs.forEach(function(c){ c.addEventListener("click", onLink); });
+  btns.forEach(function(b){ b.addEventListener("click", function(){ history.replaceState(null,"","#"+b.dataset.role); show(b.dataset.role,false); }); });
   document.querySelectorAll(".tools button").forEach(function(b){ b.addEventListener("click", function(){ var open=b.dataset.all==="1"; b.closest("section").querySelectorAll("details").forEach(function(d){ d.open=open; }); }); });
-  var h=location.hash.slice(1), saved; try{ saved=localStorage.getItem("guide-role"); }catch(e){}
-  if(h==="students"||h==="teachers") show(h,true); else if(saved) show(saved,false);
+  var h=location.hash.slice(1), saved; try{ saved=localStorage.getItem("guide-role")||localStorage.getItem("hw-role")&&({s:"students",t:"teachers"})[localStorage.getItem("hw-role")]; }catch(e){}
+  show(h==="students"||h==="teachers" ? h : (saved==="teachers"?"teachers":"students"), h==="students"||h==="teachers");
 })();
 </script>
 </body>

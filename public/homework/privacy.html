@@ -4,34 +4,54 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>מדיניות פרטיות – AlfaMath</title>
-<meta name="theme-color" content="#4F3BFF">
+<meta name="theme-color" content="#1F49D6">
+<script>(function(){var t;try{t=localStorage.getItem("hw-theme")}catch(e){}var d=t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=d?"dark":"light"})()</script>
 <link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Secular+One&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;border-radius:0}
-body{margin:0;background:#F5F4FF;color:#15123B;font-family:Heebo,sans-serif;line-height:1.7}
-header{background:#fff;border-bottom:1px solid #E6E3F5}
-.w{max-width:780px;margin:0 auto;padding:0 20px}
-header .w{display:flex;align-items:center;gap:12px;height:64px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#15123B}
-.a{width:36px;height:36px;background:#4F3BFF;color:#fff;display:grid;place-items:center;font:italic 900 24px Georgia,serif;position:relative}
-.a i{position:absolute;top:-4px;left:-4px;width:10px;height:10px;background:#FF5C39}
-.wm{direction:ltr;font-weight:900;font-size:21px}.wm b{color:#4F3BFF}
-main{background:#fff;border:2px solid #15123B;margin:32px auto;padding:32px}
-h1{font-size:34px;line-height:1.15;margin:0 0 6px}
-h2{font-size:20px;margin:28px 0 6px}
-p,li{font-size:16px}
-ul{padding-inline-start:20px}
-.muted{color:#6B6890;font-size:14px}
-a{color:#4F3BFF}
-footer{text-align:center;padding:0 20px 40px;font-size:14px;color:#5C5880}
-@media (max-width:600px){main{padding:22px 18px;margin:18px 12px}h1{font-size:28px}}
+:root{--paper:#FBFCFE;--grid:#DCE5F3;--ink:#0F1E3D;--ink-2:#3A4766;--muted:#5D6B85;--pen:#1F49D6;--hl:#FFE347;--red:#E23B3B;--card:#fff;--shadow:#0F1E3D}
+[data-theme=dark]{--paper:#0B1324;--grid:#16213B;--ink:#E8EEFA;--ink-2:#C3CDE3;--muted:#97A3C0;--pen:#86A2FF;--card:#121C33;--shadow:#050A16;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.7 Rubik,Heebo,system-ui,sans-serif;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;background-attachment:fixed}
+a{color:var(--pen)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding-inline:24px}
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:2px solid var(--ink)}
+.hd{display:flex;align-items:center;gap:16px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.logo i{width:38px;height:38px;background:#1F49D6;color:#fff;display:grid;place-items:center;font:italic 700 25px Georgia,serif;position:relative;font-style:italic}
+.logo i::after{content:"";position:absolute;top:-5px;left:-5px;width:12px;height:12px;background:var(--hl);border:2px solid #0F1E3D}
+.logo b{direction:ltr;font-weight:800;font-size:21px}.logo b span{color:var(--pen)}
+main.doc{max-width:780px;background:var(--card);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--shadow);margin:40px auto 48px;padding:40px 44px}
+h1,h2{font-family:"Secular One",Rubik,sans-serif;font-weight:400;letter-spacing:-.01em}
+h1{font-size:40px;line-height:1.1;margin:0 0 8px}
+h2{font-size:23px;margin:32px 0 6px}
+p,li{font-size:16.5px;color:var(--ink-2)}
+ul{padding-inline-start:22px}
+li{margin:4px 0}
+.muted{color:var(--muted);font-size:14px}
+@media (max-width:700px){.wrap{padding-inline:18px}main.doc{margin:20px 12px 32px;padding:26px 20px;box-shadow:5px 5px 0 var(--shadow)}h1{font-size:32px}}
+.hcta{margin-inline-start:auto;display:flex;gap:12px;align-items:center}
+.tbtn{background:none;border:2px solid var(--ink);color:var(--ink);width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none}
+.tbtn:hover{background:var(--hl);color:#0F1E3D}
+.tbtn .sun{display:none}[data-theme=dark] .tbtn .sun{display:inline}[data-theme=dark] .tbtn .moon{display:none}
+.hbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;font:700 15px Rubik,sans-serif;white-space:nowrap;text-decoration:none;background:#1F49D6;color:#fff;border:2px solid var(--ink)}
+.hbtn:hover{color:#fff;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--shadow,#0F1E3D)}
+[data-theme=dark] .hbtn{background:#2F5BF0;border-color:#E8EEFA}
+@media (max-width:700px){.hbtn{padding:0 14px}.hcta{gap:10px}}
+.foot{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;padding-top:36px;padding-bottom:44px;font-size:14.5px}
+.foot a{color:var(--muted)}.foot a:hover{color:var(--pen)}
 </style>
 </head>
 <body>
-<header><div class="w"><a class="logo" href="/"><span class="a">α<i></i></span><span class="wm">Alfa<b>Math</b></span></a></div></header>
-<main class="w">
+<header><div class="wrap hd">
+ <a class="logo" href="/" aria-label="AlfaMath, דף הבית"><i>α</i><b>Alfa<span>Math</span></b></a>
+ <div class="hcta"><button class="tbtn" id="tbtn" type="button" aria-label="מצב כהה או בהיר"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path class="moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g></svg></button><a class="hbtn" id="enter" href="/app#/login">כניסה / הרשמה</a></div>
+</div></header>
+<main class="doc">
 <h1>מדיניות פרטיות</h1>
 <p class="muted">עודכן לאחרונה: נובמבר 2026</p>
 <p>AlfaMath היא מערכת לשיעורי בית במתמטיקה ובפיזיקה. המסמך מסביר איזה מידע נשמר במערכת, למה, מי רואה אותו ואיך מבקשים לתקן או למחוק אותו. המערכת משמשת גם תלמידים קטינים, ולכן אנחנו אוספים רק את המידע שנדרש כדי שהמערכת תעבוד.</p>
@@ -72,6 +92,16 @@ footer{text-align:center;padding:0 20px 40px;font-size:14px;color:#5C5880}
 <p>אם נשנה את המדיניות, נעדכן את התאריך בראש העמוד, ועל שינוי מהותי נודיע למורים במייל.</p>
 
 </main>
-<footer><a href="/">עמוד הבית</a> · <a href="/terms">תנאי שימוש</a> · <a href="/privacy">מדיניות פרטיות</a> · <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a></footer>
+<footer class="wrap foot">
+ <a href="/">דף הבית</a>
+ <a href="/guide">איך זה עובד</a>
+ <a href="/terms">תנאי שימוש</a>
+ <a href="/privacy">פרטיות</a>
+ <a href="mailto:hello@alfamath.co.il">hello@alfamath.co.il</a>
+</footer>
+<script>(function(){
+  document.getElementById("tbtn").onclick=function(){var d=document.documentElement.dataset.theme!=="dark";document.documentElement.dataset.theme=d?"dark":"light";try{localStorage.setItem("hw-theme",d?"dark":"light")}catch(e){}};
+  try{ var t=localStorage.getItem("hw-token"), s=Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)}); if(t||s){ var e=document.getElementById("enter"); e.textContent="אזור אישי"; e.href=t?"/app#/":"/app#/teacher"; } }catch(e){}
+})();</script>
 </body>
 </html>
