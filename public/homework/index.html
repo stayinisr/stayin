@@ -1592,16 +1592,43 @@ function tabOverview(D){
         return `<div class="tile" data-href="#/teacher/c/${c.id}"><div class="row"><div class="t grow">${esc(c.name)}</div>${avg!=null?gbadge(avg):""}</div>
           <div class="tiny muted" style="margin-top:6px">${sts.length} תלמידים, ${D.asgFor(c.id).filter(a=>a.is_open).length} משימות פתוחות</div></div>`; }).join("") || `<p class="muted">עוד אין כיתות.</p>`}
     </div></div></div>
-    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>הנתונים שלכם</b><div class="tiny muted">קובץ אחד עם כל הכיתות, התלמידים, המשימות, השאלות וההגשות. כדאי לשמור עותק פעם בכמה שבועות.</div></div><button class="light sm" id="bkp">הורדת הנתונים שלי</button></div></div>`;
+    <div class="card"><div class="bd row" style="flex-wrap:wrap;gap:12px"><div class="grow" style="min-width:220px"><b>הנתונים שלכם</b><div class="tiny muted">קובץ אקסל עם גיליון ציונים לכל כיתה ורשימת המשימות. טוב לתעודות, לישיבות ולשמירת עותק.</div></div><button class="light sm" id="bkp">הורדת הנתונים שלי</button></div></div>`;
   $$("[data-href]", $("#tab")).forEach(el => el.onclick = () => go(el.dataset.href));
   $$("[data-jump]", $("#tab")).forEach(el => el.onclick = () => $("#"+el.dataset.jump)?.scrollIntoView({ behavior:"smooth", block:"start" }));
-  $("#bkp").onclick = backupAll;
+  $("#bkp").onclick = () => exportMyData(D);
   if(TEACHER?.is_admin) Promise.all([sb.rpc("hw_admin_bank", { p_status:"pending" }), sb.rpc("hw_admin_bank", { p_status:"flagged" })]).then(([p, f]) => {
     const n = (p.data?.length||0) + (f.data?.length||0), box = $("#todol"); if(!n || !box) return;
     const row = `<div class="alert-row" data-go="t"><span class="sq" style="background:var(--pri)"></span><div class="grow"><div style="font-weight:800">${n} שאלות במאגר המשותף מחכות לבדיקה</div><div class="tiny muted">בלשונית מורים</div></div>${IC.chev}</div>`;
     if(box.querySelector(".empty")) box.innerHTML = row; else box.insertAdjacentHTML("beforeend", row);
     box.querySelector("[data-go]").onclick = () => document.querySelector('.tabs [data-t="t"]')?.click();
   }).catch(()=>{});
+}
+function loadXlsx(){ return window.XLSX ? Promise.resolve(window.XLSX) : new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"; sc.onload = () => ok(window.XLSX); sc.onerror = () => bad(new Error("לא הצלחנו לטעון את רכיב האקסל. בדקו את החיבור ונסו שוב.")); document.head.appendChild(sc); }); }
+async function exportMyData(D){
+  const b = $("#bkp"); if(b){ b.disabled = true; b.textContent = "מכין…"; }
+  try{
+    const X = await loadXlsx(), wb = X.utils.book_new(), used = new Set();
+    const sheetName = n => { let base = String(n||"כיתה").replace(/[\[\]\*\?\/\\:]/g," ").trim().slice(0,28) || "כיתה", k = base, i = 2; while(used.has(k)) k = base.slice(0,26)+" "+(i++); used.add(k); return k; };
+    const day = d => d ? new Date(d).toLocaleDateString("he-IL") : "";
+    const kind = a => a.mode==="exam" ? "מבחן" : a.mode==="practice" ? "תרגול" : "שיעורי בית";
+    D.classes.forEach(c => {
+      const sts = D.studentsOf(c.id), asg = D.asgFor(c.id).filter(a=>a.mode!=="practice");
+      const head = ["תלמיד/ה", "ממוצע משוקלל", ...asg.map(a => a.title + (+a.weight!==1 ? ` (משקל ${+a.weight})` : ""))];
+      const rows = sts.map(st => [st.display_name, D.studentAvg(st) ?? "", ...asg.map(a => { const x = D.last[st.id+"|"+a.id]; return x ? D.eff(x) : (a.due_at && isPast(a.due_at) ? "לא הוגש" : ""); })]);
+      const avgRow = ["ממוצע הכיתה", "", ...asg.map(a => { const v = sts.map(st => D.last[st.id+"|"+a.id]).filter(Boolean).map(D.eff); return v.length ? Math.round(v.reduce((p,q)=>p+q,0)/v.length) : ""; })];
+      const ws = X.utils.aoa_to_sheet([head, ...rows, [], avgRow]);
+      ws["!cols"] = [{ wch: 22 }, { wch: 14 }, ...asg.map(a => ({ wch: Math.min(28, Math.max(10, a.title.length + 2)) }))];
+      X.utils.book_append_sheet(wb, ws, sheetName(c.name));
+    });
+    const cname = Object.fromEntries(D.classes.map(c=>[c.id,c.name]));
+    const list = [["משימה", "סוג", "כיתות", "מועד הגשה", "משקל", "הגישו"], ...D.assignments.map(a => { const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); return [a.title, kind(a), a.hw_assignment_classes.map(x=>cname[x.class_id]).filter(Boolean).join(", "), day(a.due_at), +a.weight||1, `${sts.filter(s=>D.last[s.id+"|"+a.id]).length} מתוך ${sts.length}`]; })];
+    const wl = X.utils.aoa_to_sheet(list); wl["!cols"] = [{wch:30},{wch:12},{wch:26},{wch:12},{wch:8},{wch:12}];
+    X.utils.book_append_sheet(wb, wl, sheetName("כל המשימות"));
+    wb.Workbook = { Views: [{ RTL: true }] };
+    X.writeFile(wb, `AlfaMath-ציונים-${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast(`הקובץ ירד: ${D.classes.length} כיתות, ${D.assignments.length} משימות`);
+  }catch(e){ toast(errMsg(e)); }
+  if(b){ b.disabled = false; b.textContent = "הורדת הנתונים שלי"; }
 }
 async function backupAll(){
   const b = $("#bkp"); if(b){ b.disabled = true; b.textContent = "מכין…"; }
