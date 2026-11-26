@@ -1483,8 +1483,6 @@ const orLine = t => `<div class="orline"><span>${t||"או"}</span></div>`;
 /* Google sign-in. `next` says what to do on return: {kind:"teacher"} or {kind:"student", purpose, code, pick:{id,name}} */
 const gLog = (ev, info) => { try{ sb.rpc("hw_track", { p_path: String(info||"").slice(0,80), p_ref: navigator.userAgent.slice(0,80), p_src: "google", p_dev: innerWidth < 760 ? "m" : "d", p_ev: ev, p_sid: "" }).then(()=>{}, ()=>{}); }catch(_){} };
 async function googleStart(next, btn){
-  const h = location.hostname;
-  if(/(^|\.)alfamath\.co\.il$/.test(h) && h !== "alfamath.co.il"){ location.href = "https://alfamath.co.il/app?gstart=" + encodeURIComponent(JSON.stringify(next)) + location.hash; return; }
   const lab = btn?.querySelector("span"), was = lab?.textContent;
   const reset = m => { if(btn){ btn.disabled = false; if(lab) lab.textContent = was; } if(m) toast(m); };
   if(btn){ btn.disabled = true; if(lab) lab.textContent = "פותחים את Google…"; }
