@@ -136,6 +136,11 @@
   .tabs button.on{color:var(--ink)}
   .tabs button.on{color:var(--pri)}
   .tabs button.on::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:3px;background:var(--pri)}
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1.5px solid #747775;font:600 16px/1 inherit;min-height:48px;padding:0 16px;cursor:pointer}
+  .gbtn:hover{background:#F7F8F8} .gbtn span{font-family:inherit}
+  [data-theme=dark] .gbtn{background:#131314;color:#E3E3E3;border-color:#8E918F}
+  .orline{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:14px}
+  .orline::before,.orline::after{content:"";flex:1;border-top:1px solid var(--line)}
   .sumlist{margin:16px 0 0;padding:0 18px 0 0;display:grid;gap:6px;font-size:15px;line-height:1.5}
   .miss-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-top:1px solid var(--line)}
   .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--pri);margin-bottom:6px}
@@ -1023,16 +1028,18 @@ function studentAuth(mode, code=""){
     box().innerHTML = `
       ${top("פעם ראשונה · אימות מייל", true, "זה לא אני")}
       <h2 style="text-align:center">${esc(pick.name)}</h2>
-      <p class="muted" style="text-align:center;margin:6px 0 4px">נשלח לך קוד למייל, רק בפעם הראשונה. אחר כך נכנסים עם קוד סודי.</p>
+      <p class="muted" style="text-align:center;margin:6px 0 4px">מאמתים את המייל פעם אחת, ואחר כך נכנסים עם קוד סודי.</p>
+        <label class="chk" style="margin:14px 0 14px"><input type="checkbox" id="tok"><span>קראתי ואני מסכים/ה ל<a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></span></label>
+      ${googleBtn("sgo", "אימות עם Google")}${orLine("או עם קוד למייל")}
       <form id="ef">
         <label class="f" for="em">מייל</label>
         <input id="em" type="email" class="ltr" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@gmail.com">
-        <label class="chk" style="margin:14px 0 0"><input type="checkbox" id="tok"><span>קראתי ואני מסכים/ה ל<a href="https://www.alfamath.co.il/terms" target="_blank" rel="noopener">תנאי השימוש</a> ול<a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></span></label>
         <button class="primary big wide" id="snd" style="margin-top:16px">שליחת קוד למייל</button>
       </form>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
       <p class="muted small" style="text-align:center;margin:12px 0 0">המייל משמש רק לכניסה ולשחזור הקוד, והמורה רואה אותו. <a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></p>`;
     $("#bk").onclick = () => stepName();
+    $("#sgo").onclick = () => { if(!$("#tok").checked) return err("צריך לאשר את תנאי השימוש ואת מדיניות הפרטיות"); googleStart({ kind:"student", purpose:"claim", code, pick:{ id:pick.id, name:pick.name } }); };
     $("#ef").onsubmit = async e => {
       e.preventDefault(); err(); const em = $("#em").value.trim();
       if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) return err("כתובת המייל לא תקינה");
@@ -1043,7 +1050,18 @@ function studentAuth(mode, code=""){
     };
     setTimeout(()=>$("#em")?.focus(),30);
   };
-  const stepReset = async () => {
+  const stepReset = () => {
+    box().innerHTML = `${top("שחזור קוד", true)}
+      <h2 style="text-align:center">${esc(pick.name)}</h2>
+      <p class="muted" style="text-align:center;margin:6px 0 14px">המייל של החשבון: <bdi class="ltr" style="font-weight:800">${esc(pick.email_hint||"")}</bdi></p>
+      ${googleBtn("rgo", "שחזור עם Google")}${orLine()}
+      <button class="light wide" id="rml">שליחת קוד למייל</button>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
+    $("#bk").onclick = stepPin;
+    $("#rgo").onclick = () => googleStart({ kind:"student", purpose:"reset", code, pick:{ id:pick.id, name:pick.name } });
+    $("#rml").onclick = stepResetMail;
+  };
+  const stepResetMail = async () => {
     box().innerHTML = `${top("שחזור קוד", true)}<p class="muted" style="text-align:center">שולחים קוד למייל <bdi class="ltr" style="font-weight:800">${esc(pick.email_hint||"")}</bdi>…</p><p class="err" id="ae" role="alert" style="text-align:center"></p>`;
     $("#bk").onclick = stepPin;
     const r = await mail("reset");
@@ -1063,7 +1081,7 @@ function studentAuth(mode, code=""){
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
       <p class="muted small" style="text-align:center;margin:14px 0 0">לא הגיע? בדקו בתיקיית הספאם. <button class="ghost sm" id="again">שליחה מחדש</button></p>`;
     $("#bk").onclick = purpose==="claim" ? stepEmail : stepPin;
-    $("#again").onclick = purpose==="claim" ? stepEmail : stepReset;
+    $("#again").onclick = purpose==="claim" ? stepEmail : stepResetMail;
     let ecode = "", firstPin = "";
     bindCode($("#ec .codebox"), v => { ecode = v; err(); $("#pw").style.display = "block"; $("#p1 input").focus(); }, true);
     bindCode($("#p1 .codebox"), v => { firstPin = v; $("#p2w").style.display = "block"; $("#p2 input").focus(); }, true);
@@ -1459,6 +1477,43 @@ async function openSolution(body, a){
 
 /* ================= TEACHER ================= */
 async function logout(){ await sb.auth.signOut(); session=null; TEACHER=null; go("#/teacher"); }
+const GOOGLE_G = `<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>`;
+const googleBtn = (id, label) => `<button type="button" class="gbtn wide" id="${id}">${GOOGLE_G}<span>${label||"המשך עם Google"}</span></button>`;
+const orLine = t => `<div class="orline"><span>${t||"או"}</span></div>`;
+/* Google sign-in. `next` says what to do on return: {kind:"teacher"} or {kind:"student", purpose, code, pick:{id,name}} */
+async function googleStart(next){
+  const h = location.hostname;
+  if(/(^|\.)alfamath\.co\.il$/.test(h) && h !== "alfamath.co.il"){ location.href = "https://alfamath.co.il/app?gstart=" + encodeURIComponent(JSON.stringify(next)) + location.hash; return; }
+  try{ sessionStorage.setItem("hw-oauth", JSON.stringify({ ...next, t: Date.now() })); }catch(_){}
+  const { error } = await sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:"select_account" } } });
+  if(error){ sessionStorage.removeItem("hw-oauth"); toast("ההתחברות עם Google לא זמינה כרגע. אפשר להמשיך עם מייל"); }
+}
+/* back from Google as a student: choose a 4-digit PIN, then drop the Google session (students sign in with class code + PIN) */
+function studentGoogleFinish(oa){
+  const reset = oa.purpose === "reset";
+  app().innerHTML = `<div class="auth"><h1 style="text-align:center">${reset?"שחזור קוד":"כמעט סיימנו"}</h1>
+    <div class="card"><div class="bd" id="af">
+      <h2 style="text-align:center">${esc(oa.pick.name||"")}</h2>
+      <p class="muted" style="text-align:center;margin:6px 0 14px">${reset?"המייל אומת עם Google. בחרו קוד סודי חדש.":"המייל אומת עם Google. בחרו קוד סודי של 4 ספרות לכניסות הבאות."}</p>
+      <div id="p1">${codeBoxes(4, "", true)}</div>
+      <div id="p2w" style="display:none"><p class="muted small" style="text-align:center;margin:16px 0 8px">עוד פעם, לאישור</p><div id="p2">${codeBoxes(4, "", true)}</div></div>
+      <p class="err" id="ae" role="alert" style="text-align:center"></p>
+      <p style="text-align:center;margin:14px 0 0"><button class="ghost sm" id="gbk">חזרה</button></p>
+    </div></div></div>`;
+  const err = m => $("#ae").textContent = m || "";
+  const leave = async () => { try{ await sb.auth.signOut(); }catch(_){} session = null; };
+  $("#gbk").onclick = async () => { await leave(); studentAuth("login", oa.code); };
+  let first = "";
+  bindCode($("#p1 .codebox"), v => { first = v; $("#p2w").style.display = "block"; $("#p2 input").focus(); }, true);
+  bindCode($("#p2 .codebox"), async v => {
+    if(v !== first){ err("הקודים לא תואמים. נסו שוב."); $$("#p2 input").forEach(i=>{i.value="";i.classList.remove("on");}); $("#p2 input").focus(); return; }
+    err(); const { data, error } = await sb.rpc("hw_student_google", { p_code:oa.code, p_student:oa.pick.id, p_pin:v });
+    if(error || data?.error){ err(error ? errMsg(error) : data.error); return; }
+    await leave(); store("hw-class", oa.code); store("hw-token", data.token);
+    toast(reset ? "הקוד החדש נשמר" : "ברוכים הבאים! מעכשיו נכנסים עם הקוד הסודי"); go("#/");
+  }, true);
+  setTimeout(()=>$("#p1 input")?.focus(), 30);
+}
 function loginPage(){
   store("hw-role", "t");
   app().innerHTML = `
@@ -1467,6 +1522,7 @@ function loginPage(){
       <h1 style="text-align:center">כניסה / הרשמה</h1>
       <p class="muted" style="text-align:center">נשלח קוד למייל. מורה חדש? נרשמים באותה דרך.</p>
       <div class="card"><div class="bd">
+        <div id="tg">${googleBtn("tgo")}${orLine("או עם קוד למייל")}</div>
         <form id="lf">
           <label class="f" for="em">אימייל</label><input id="em" type="email" class="ltr" autocomplete="email" autocapitalize="none" spellcheck="false" required value="${esc(store("hw-teacher-email")||"")}">
           <button class="primary big wide" id="lsend" style="margin-top:20px">שליחת קוד</button>
@@ -1483,6 +1539,7 @@ function loginPage(){
     </div>`;
   bindRoleSwitch();
   const err = m => $("#le").textContent = m || "";
+  $("#tgo").onclick = () => googleStart({ kind:"teacher" });
   $("#lf").onsubmit = async e => {
     e.preventDefault(); err(); const b = $("#lsend"); b.disabled = true;
     const email = $("#em").value.trim().toLowerCase();
@@ -1491,9 +1548,9 @@ function loginPage(){
     if(r?.error) return err(r.error);
     store("hw-teacher-email", email);
     $("#sentto").innerHTML = `שלחנו קוד למייל <bdi class="ltr" style="font-weight:800">${esc(r.sent_to||email)}</bdi>`;
-    $("#lf").style.display = "none"; $("#vf").style.display = "block"; $(".codebox input").focus();
+    $("#lf").style.display = "none"; $("#tg").style.display = "none"; $("#vf").style.display = "block"; $(".codebox input").focus();
   };
-  $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; err(); };
+  $("#back").onclick = () => { $("#vf").style.display = "none"; $("#lf").style.display = "block"; $("#tg").style.display = "block"; err(); };
   if(store("hw-autosend")){ store("hw-autosend", null); if($("#em").value) setTimeout(() => $("#lf").requestSubmit(), 50); }
   bindCode($(".codebox"), async code => {
     err();
@@ -1538,6 +1595,7 @@ async function requireTeacher(){
       <p style="text-align:center"><button class="ghost sm" id="lo">יציאה</button></p>
     </div>`;
   $("#lo").onclick = out;
+  { const gn = session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name; if(gn && !$("#a_n").value) $("#a_n").value = gn; }
   $("#af").onsubmit = async e => {
     e.preventDefault(); $("#a_go").disabled = true;
     const { error } = await sb.rpc("hw_teacher_apply", { p_name:$("#a_n").value, p_school:$("#a_s").value, p_subjects:$("#a_m").value, p_phone:$("#a_p").value });
@@ -2807,9 +2865,18 @@ window.addEventListener("hashchange", route);
 window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue=""; } });
 window.addEventListener("load", async () => {
   if(!window.supabase){ app().innerHTML = `<div class="card"><div class="bd"><p class="err">האתר לא נטען עד הסוף. בדקו את החיבור לאינטרנט ורעננו.</p></div></div>`; return; }
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: "pkce" } });
+  const qp = new URLSearchParams(location.search);
   const { data } = await sb.auth.getSession(); session = data.session;
   sb.auth.onAuthStateChange((_e, s) => { session = s; });
+  if(qp.has("gstart")){ let st = null; try{ st = JSON.parse(qp.get("gstart")); }catch(_){} history.replaceState(null, "", location.pathname + location.hash); if(st) return googleStart(st); }
+  if(qp.has("code") || qp.has("error") || qp.has("error_description")) history.replaceState(null, "", location.pathname + location.hash);
+  let oa = null; try{ oa = JSON.parse(sessionStorage.getItem("hw-oauth") || "null"); }catch(_){} sessionStorage.removeItem("hw-oauth");
+  if(oa){
+    if(!session){ toast(qp.has("error") ? "ההתחברות עם Google בוטלה. אפשר לנסות שוב או להמשיך עם מייל" : "ההתחברות עם Google לא הושלמה. נסו שוב"); }
+    else if(oa.kind === "student" && oa.pick?.id) return studentGoogleFinish(oa);
+    else if(oa.kind === "teacher"){ TEACHER = null; if(!location.hash.startsWith("#/teacher")){ history.replaceState(null, "", location.pathname + "#/teacher"); } }
+  }
   route();
 });
 </script>
