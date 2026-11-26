@@ -136,6 +136,8 @@
   .tabs button.on{color:var(--ink)}
   .tabs button.on{color:var(--pri)}
   .tabs button.on::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:3px;background:var(--pri)}
+  .sumlist{margin:16px 0 0;padding:0 18px 0 0;display:grid;gap:6px;font-size:15px;line-height:1.5}
+  .miss-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-top:1px solid var(--line)}
   .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--pri);margin-bottom:6px}
   .seg button{border:none;padding:11px;font-weight:800;color:var(--ink)}
   .seg button.on{background:var(--pri);color:#fff}
@@ -688,15 +690,48 @@ function givenText(q, g){
   if(q.kind==="multi") return multiNorm(g).split(",").filter(Boolean).map(i=>(q.choices||[])[+i] ?? i).join(" + ");
   return g;
 }
+function parseAnswer(s){ /* mirrors hw_parse_answer on the server */
+  let t = String(s||"").trim().replace(/[−–—]/g,"-").replace(/÷/g,"/").replace(/[×·⋅]/g,"*")
+    .replace(/½/g," 1/2").replace(/¼/g," 1/4").replace(/¾/g," 3/4").replace(/⅓/g," 1/3").replace(/⅔/g," 2/3").replace(/[≈~∼]/g,"")
+    .replace(/^\s*[A-Za-zα-ωΑ-Ω_]{1,6}(\([^)]*\))?\s*=\s*/,"").replace(/\s*([°%₪$]|[א-ת].*)$/,"").trim();
+  if(/^-?[1-9]\d{0,2}(,\d{3})+(\.\d+)?$/.test(t)) t = t.replace(/,/g,"");
+  let m = t.match(/^(-?)(\d+)\s+(\d+)\s*\/\s*(\d+)$/); if(m && +m[4]){ const r = +m[2] + +m[3]/ +m[4]; return m[1]==="-" ? -r : r; }
+  let r = parseNum(t); if(r!=null) return r;
+  m = t.match(/^(.*[0-9)])\s*(?:cm|mm|km|m|kg|g|mg|s|sec|min|h|n|j|kj|w|kw|v|a|ma|ohm|Ω|hz|pa|l|ml|deg)(?:\s*\/\s*(?:s|h|min))?(?:\^?[23²³])?$/i);
+  if(m){ r = parseNum(m[1]); if(r!=null) return r; t = m[1]; }
+  t = t.replace(/ /g,"").toLowerCase().replace(/π/g,"pi").replace(/²/g,"^2").replace(/³/g,"^3").replace(/√\(/g,"sqrt(").replace(/√(\d+\.?\d*)/g,"sqrt($1)");
+  if(/^-?\d+,\d+$/.test(t)) t = t.replace(",",".");
+  t = t.replace(/(\d|\))(sqrt|pi|\()/g,"$1*$2").replace(/(pi|\))(\d)/g,"$1*$2");
+  if(!/[0-9pi]/.test(t) || t.length > 60) return null;
+  return evalFormula(t, {});
+}
+const normWords = s => String(s||"").toLowerCase().replace(/[֑-ׇ]/g,"").replace(/[ךםןףץ]/g, c => "כמנפצ"["ךםןףץ".indexOf(c)])
+  .replace(/[.,;:!?"'״׳`־()\[\]{}–—-]/g," ").replace(/(ו)ו+|(י)י+/g,"$1$2").replace(/\s+/g," ").trim();
+function lev(a, b){ const d = Array.from({length:a.length+1}, (_, i) => [i]); for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++) d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); return d[a.length][b.length]; }
+function textOk(given, acc){ /* mirrors hw_text_ok */
+  const n = x => { let t = String(x).replace(/−/g,"-").replace(/·/g,"*").replace(/[\s"'״׳`־]/g,"").toLowerCase(); return /[א-ת]/.test(t) ? t.replace(/[-–]/g,"") : t; };
+  if(n(given) === n(acc)) return true;
+  const g = normWords(given), a = normWords(acc); if(!g || !a) return false;
+  const gc = g.replace(/ /g,""), ac = a.replace(/ /g,""); if(gc === ac) return true;
+  if(/[0-9=+*/^<>]/.test(acc) || /[0-9=+*/^<>]/.test(given)) return false;
+  const gw = g.split(" "), aw = a.split(" "), ini = w => w.map(x=>x[0]).join("");
+  if(aw.length >= 2 && aw.every(w=>w.length===1) && ini(gw) === ac) return true;
+  if(gw.length >= 2 && gw.every(w=>w.length===1) && ini(aw) === gc) return true;
+  if(gw.length <= 3 && gw.includes(a) && !gw.includes("לא")) return true;
+  return ac.length >= 4 && lev(gc, ac) <= (ac.length >= 9 ? 2 : 1);
+}
 function checkLocal(q, given){
   if(given==null || String(given).trim()==="") return false;
-  if(q.kind==="number"){ const g=parseNum(given), v=qValue(q); if(g==null || v==null) return false;
-    const p = q.answer.tol_pct==null || q.answer.tol_pct==="" ? (Number.isInteger(v) ? 0 : 1) : Number(q.answer.tol_pct);
-    return Math.abs(g-v) <= Math.max(Number(q.answer.tol_abs||0), Math.abs(v)*p/100) + 1e-12; }
+  if(q.kind==="number"){ const g=parseAnswer(given), v=qValue(q); if(g==null || v==null) return false;
+    const custom = !(q.answer.tol_pct==null || q.answer.tol_pct==="") || !!Number(q.answer.tol_abs||0);
+    const p = q.answer.tol_pct==null || q.answer.tol_pct==="" ? (Number.isInteger(v) ? 0 : 2) : Number(q.answer.tol_pct);
+    if(Math.abs(g-v) <= Math.max(Number(q.answer.tol_abs||0), Math.abs(v)*p/100) + 1e-9) return true;
+    const dec = String(given).replace(",",".").match(/\d+\.(\d+)/);
+    return !custom && !Number.isInteger(v) && !!dec && Math.abs(g-v) <= 0.5*Math.pow(10,-dec[1].length) + 1e-9 && Math.abs(g-v) <= Math.abs(v)*0.05; }
   if(q.kind==="choice") return String(given).trim() === String(q.answer.index);
   if(q.kind==="multi"){ const g = multiNorm(given); return g !== "" && g === multiNorm((q.answer.indices||[]).join(",")); }
-  const n = x => { let t = String(x).replace(/−/g,"-").replace(/·/g,"*").replace(/[\s"'״׳`־]/g,"").toLowerCase(); return /[א-ת]/.test(t) ? t.replace(/[-–]/g,"") : t; };
-  return (q.answer.accepted||[]).some(a => n(a) === n(given));
+  return (q.answer.accepted||[]).some(a => textOk(given, a));
 }
 function answerText(q){
   if(q.kind==="number"){ const v = qValue(q); return (v==null?"?":+v.toFixed(6)) + (q.answer.unit ? " "+q.answer.unit : ""); }
@@ -1653,6 +1688,12 @@ function tabOverview(D){
   const todoL = D.reports.map(r=>{ const st = D.students.find(x=>x.id===r.student_id); if(!st) return ""; return `<div class="alert-row" data-href="#/teacher/st/${st.id}"><span class="sq" style="background:var(--bad)"></span><div class="grow">${r.kind==="lock" ? `<div style="font-weight:800">החשבון של ${esc(st.display_name)} ננעל</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: ${esc(r.note||"הרבה ניסיונות שגויים לקוד הסודי")}. התלמיד יכול לאפס דרך המייל, או שתאפסו לו בדף התלמיד.</div>` : `<div style="font-weight:800">${esc(st.display_name)} דיווח שמישהו אחר נכנס לחשבון</div><div class="tiny muted">${esc(cname[st.class_id]||"")}: נרשם עם <span class="ltr">${esc(st.email||"ללא מייל")}</span>${r.note?`, "${esc(r.note)}"`:""}</div>`}</div>${IC.chev}</div>`; }).filter(Boolean);
   const urgent = soon.filter(a=>new Date(a.due_at)-new Date() < 2*864e5).map(a=>{ const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); return { a, miss: sts.filter(s=>!D.last[s.id+"|"+a.id]) }; }).filter(x=>x.miss.length)[0];
   if(urgent) todoL.push(`<div class="alert-row" data-href="#/teacher/a/${urgent.a.id}"><span class="sq" style="background:var(--warn,#E8A10B)"></span><div class="grow"><div style="font-weight:800">${urgent.miss.length} עוד לא הגישו את "${esc(urgent.a.title)}"</div><div class="tiny muted">נסגרת ${relDue(urgent.a.due_at).replace(/^נסגר[תה]? ?/,"")}: ${urgent.miss.slice(0,3).map(s=>esc(s.display_name)).join(", ")}${urgent.miss.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
+  D.assignments.filter(a => a.mode!=="practice" && a.due_at && isPast(a.due_at) && Date.now()-new Date(a.due_at) < 7*864e5)
+    .sort((x,y)=>new Date(y.due_at)-new Date(x.due_at)).slice(0,3).forEach(a => {
+      const sts = a.hw_assignment_classes.flatMap(x=>D.studentsOf(x.class_id)); if(!sts.length) return;
+      const subs = sts.map(s=>D.last[s.id+"|"+a.id]).filter(Boolean), miss = sts.length - subs.length;
+      const av = subs.length ? Math.round(subs.reduce((t,x)=>t+pct(x.manual_score ?? x.score, x.max_score),0)/subs.length) : null;
+      todoL.push(`<div class="alert-row" data-href="#/teacher/a/${a.id}?tab=results"><span class="sq" style="background:${miss?"var(--warn,#E8A10B)":"var(--ok)"}"></span><div class="grow"><div style="font-weight:800">"${esc(a.title)}" הסתיימה: סיכום מוכן</div><div class="tiny muted">הגישו ${subs.length} מתוך ${sts.length}${av!=null?` · ממוצע ${av}`:""}${miss?` · ${miss} לא הגישו`:""}</div></div>${IC.chev||""}</div>`); });
   if(risk.length) todoL.push(`<div class="alert-row" data-jump="riskc"><span class="sq" style="background:var(--bad)"></span><div class="grow"><div style="font-weight:800">${risk.length===1?"תלמיד אחד צריך":`${risk.length} תלמידים צריכים`} תשומת לב</div><div class="tiny muted">${risk.slice(0,3).map(x=>esc(x.st.display_name)).join(", ")}${risk.length>3?" ועוד":""}</div></div>${IC.chev}</div>`);
   $("#tab").innerHTML = `
     <div class="card key" id="todoc"><div class="hd"><h2>דורש טיפול</h2></div><div id="todol">${todoL.join("") || `<div class="empty" style="padding:18px 20px"><b>הכול בשליטה</b>אין משימה שנסגרת בקרוב בלי הגשות, ואין תלמידים בסיכון.</div>`}</div></div>
@@ -2081,12 +2122,15 @@ function drawAssignHeader(){
 let sortBy = "name";
 async function tabResults(){
   const el = $("#tab"); el.innerHTML = `<p class="muted" style="margin-top:16px">טוען…</p>`; const seq = navSeq;
-  const [{ data:subs, error }, { data:students }, { data:exts }] = await Promise.all([
+  const [{ data:subs, error }, { data:students }, { data:exts }, { data:extras }] = await Promise.all([
     sb.from("hw_submissions").select("*").eq("assignment_id",A.id).order("created_at"),
     ACL.length ? sb.from("hw_students").select("id,display_name,class_id").in("class_id",ACL).order("display_name") : Promise.resolve({data:[]}),
-    A.due_at ? sb.rpc("hw_teacher_extensions", { p_assignment:A.id }) : Promise.resolve({data:[]})
+    A.due_at ? sb.rpc("hw_teacher_extensions", { p_assignment:A.id }) : Promise.resolve({data:[]}),
+    A.max_attempts ? sb.rpc("hw_teacher_extras", { p_assignment:A.id }) : Promise.resolve({data:[]})
   ]);
   const EXT = Object.fromEntries((exts||[]).map(e=>[e.student_id, e.until]));
+  const XTR = Object.fromEntries((extras||[]).map(e=>[e.student_id, e.extra]));
+  const attCell = r => !A.max_attempts || !r.sid || !r.subs.length ? "" : `${XTR[r.sid]?`<span class="chip acc" title="ניסיונות נוספים">+${XTR[r.sid]}</span> `:""}${r.subs.length >= A.max_attempts + (XTR[r.sid]||0) ? `<button class="ghost sm" data-att="${r.sid}" data-name="${esc(r.name)}">ניסיון נוסף</button>` : ""}`;
   const extCell = r => !A.due_at || !r.sid ? "" : `${EXT[r.sid]?`<span class="chip warn" title="הארכה">עד ${dm(EXT[r.sid])}</span> `:""}<button class="ghost sm" data-ext="${r.sid}" data-name="${esc(r.name)}">${EXT[r.sid]?"שינוי":"הארכה"}</button>`;
   if(seq!==navSeq || !el.isConnected) return;
   if(error){ el.innerHTML = `<p class="err">${esc(error.message)}</p>`; return; }
@@ -2103,13 +2147,28 @@ async function tabResults(){
   const qstat = Q.map(q => { let ok=0,t=0; const wrong = {}; done.forEach(r=>{ const x=(lastOf(r).results||[]).find(z=>z.question_id===q.id); if(x){t++; if(x.correct) ok++; else if(x.given) { const g = q.kind==="choice"||q.kind==="multi" ? givenText(q, x.given) : String(x.given).trim(); wrong[g] = (wrong[g]||0)+1; } } });
     return { q, p: t? pct(ok,t):0, t, wrong: Object.entries(wrong).sort((a,b)=>b[1]-a[1]).slice(0,3) }; });
   const multi = ACL.length > 1;
+  const ended = (A.due_at && isPast(A.due_at)) || (!A.is_open && subs.length > 0);
+  const hardest = qstat.map((x,i)=>({...x,i})).filter(x=>x.t).sort((a,b)=>a.p-b.p)[0];
+  const low = done.filter(r => sc(r) < 55).sort((a,b)=>sc(a)-sc(b));
+  const solv = done.filter(r => r.subs.some(x=>x.solution_viewed_at)).length;
+  const solImproved = done.filter(r => { const i = r.subs.findIndex(x=>x.solution_viewed_at); return i >= 0 && r.subs[i+1] && eff(r.subs[i+1]) > eff(r.subs[i]); }).length;
   const sorted = [...rows].sort((x,y) => sortBy==="score" ? sc(y)-sc(x) : sortBy==="low" ? (sc(x)<0?999:sc(x))-(sc(y)<0?999:sc(y)) : x.name.localeCompare(y.name,"he"));
   el.innerHTML = `
     <div class="card"><div class="bd">
-      <div class="stats"><div><div class="v">${done.length}<span class="muted" style="font-size:16px;font-weight:500"> / ${rows.length}</span></div><div class="k">הגישו</div></div><div><div class="v">${avg ?? "–"}</div><div class="k">ממוצע</div></div><div><div class="v">${missing.length}</div><div class="k">עוד לא הגישו</div></div></div>
+      <div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:12px"><h2 style="margin:0">${ended?"סיכום המשימה":"מצב ההגשות"}</h2><span class="muted small">${ended ? (A.due_at && isPast(A.due_at) ? `ההגשה נסגרה ${fmtDate(A.due_at)}` : "המשימה סגורה") : A.due_at ? `להגשה ${relDue(A.due_at)}` : "בלי תאריך הגשה"}</span></div>
+      <div class="stats"><div><div class="v">${done.length}<span class="muted" style="font-size:16px;font-weight:500"> / ${rows.length}</span></div><div class="k">הגישו</div></div><div><div class="v">${avg ?? "–"}</div><div class="k">ממוצע</div></div><div><div class="v ${missing.length?"no":""}">${missing.length}</div><div class="k">${ended?"לא הגישו":"עוד לא הגישו"}</div></div></div>
       ${rows.length?`<div class="segbar" style="margin-top:16px">${rows.map(r=>`<i class="${r.subs.length?"f":""}"></i>`).join("")}</div>`:""}
-      ${missing.length && A.is_open ? `<div class="row" style="margin-top:16px"><button class="light sm" id="cpmiss">העתקת שמות מי שלא הגיש</button><a class="btn wa sm" href="${waShare(`תזכורת: "${A.title}"${A.due_at?` להגשה ${relDue(A.due_at)}`:""}.\n${siteBase()}`)}" target="_blank" rel="noopener">${IC.wa}תזכורת לכיתה</a></div>` : ""}
+      ${done.length ? `<ul class="sumlist">
+        ${hardest ? `<li><b>השאלה שהכי הכשילה:</b> שאלה ${hardest.i+1}, רק ${hardest.p}% ענו נכון${hardest.wrong[0]?`. הטעות הנפוצה: <bdi>${esc(hardest.wrong[0][0])}</bdi>`:""}</li>` : ""}
+        ${low.length ? `<li><b>צריכים תשומת לב (מתחת ל-55):</b> ${low.map(r=>esc(r.name)).join(", ")}</li>` : `<li>כל מי שהגיש קיבל 55 ומעלה.</li>`}
+        ${solv ? `<li><b>${solv}</b> תלמידים צפו בפתרון המלא${solImproved?`, ו-${solImproved} מהם השתפרו בניסיון שאחרי`:""}.</li>` : ""}
+      </ul>${ended ? `<div class="row" style="margin-top:12px"><button class="light sm" id="cpsum">העתקת הסיכום</button></div>` : ""}` : ""}
     </div></div>
+    ${missing.length ? `<div class="card"><div class="hd" style="flex-wrap:wrap;gap:10px"><h2 style="white-space:nowrap">${ended?"לא הגישו":"עוד לא הגישו"} (${missing.length})</h2>
+        <div class="row" style="gap:8px"><button class="light sm" id="cpmiss">העתקת השמות</button>${A.is_open ? `<a class="btn wa sm" href="${waShare(`תזכורת: "${A.title}"${A.due_at?` להגשה ${relDue(A.due_at)}`:""}.\n${siteBase()}`)}" target="_blank" rel="noopener">${IC.wa}תזכורת לכיתה</a>` : ""}</div></div>
+      ${missing.map(r=>`<div class="miss-row"><div class="grow"><b>${esc(r.name)}</b>${multi&&r.cls?` <span class="muted tiny">${esc(r.cls)}</span>`:""}</div>${extCell(r)}</div>`).join("")}
+      ${ended && A.due_at ? `<div class="bd" style="padding-top:8px"><p class="muted tiny" style="margin:0">"הארכה" נותנת לתלמיד אחד להגיש גם אחרי המועד, בלי לפתוח את המשימה לכל הכיתה.</p></div>` : ""}
+    </div>` : ""}
     ${done.length && Q.length ? `<div class="card"><div class="hd"><h2>ניתוח שאלות</h2><span class="muted small">הטעויות הנפוצות</span></div>
       ${qstat.map((s,i)=>`<div style="padding:14px 20px;border-top:1px solid var(--line)"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><span class="qn" style="width:26px;height:26px;font-size:13px">${i+1}</span><div class="grow small prompt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(s.q.prompt)}</div><b class="num ${s.p<50?"no":""}" style="width:46px;text-align:end">${s.t?s.p+"%":"–"}</b></div>
         <div class="meter ${s.p<50?"lo":s.p>=85?"hi":""}" style="margin:8px 0 0 0;margin-inline-start:38px"><i style="width:${s.p}%"></i></div>
@@ -2124,14 +2183,21 @@ async function tabResults(){
           const s=lastOf(r);
           return `<tr class="click" data-sub="${s.id}"><td><span style="font-weight:800">${esc(r.name)}</span>${r.subs.length>1?` <span class="muted tiny">(${r.subs.length} ניסיונות)</span>`:""}${s.teacher_note?` <span class="chip acc">הערה</span>`:""}</td>${multi?`<td>${esc(r.cls)}</td>`:""}<td class="c">${gbadge(eff(s))}${s.manual_score!=null?'<div class="tiny muted">ידני</div>':""}</td>
           ${Q.map(q=>{ const x=(s.results||[]).find(z=>z.question_id===q.id); return `<td class="c" title="${esc(x?.given??"")}">${!x?"–":x.correct?'<span class="yes">✓</span>':'<span class="no">✗</span>'}</td>`; }).join("")}
-          <td class="muted tiny">${fmtDate(s.created_at)}</td><td style="white-space:nowrap">${extCell(r)}<button class="ghost danger sm" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
+          <td class="muted tiny">${fmtDate(s.created_at)}</td><td style="white-space:nowrap">${attCell(r)}${extCell(r)}<button class="ghost danger sm" data-del="${esc(r.key)}">איפוס</button></td></tr>`; }).join("")}</tbody>
       </table></div>
       <div class="bd" style="padding-top:10px"><p class="muted tiny" style="margin:0">לחיצה על שורה פותחת את ההגשה: תשובות, תיקון ציון והערה לתלמיד. "איפוס" מוחק את ההגשה כדי שהתלמיד יוכל להגיש מחדש.</p></div>
     </div>`;
   math(el);
   $("#sort").value = sortBy; $("#sort").onchange = e => { sortBy = e.target.value; tabResults(); };
   const cm = $("#cpmiss"); if(cm) cm.onclick = () => copy(missing.map(r=>r.name).join("\n"), `הועתקו ${missing.length} שמות`);
-  $$("tr[data-sub]", el).forEach(tr => tr.onclick = e => { if(e.target.closest("[data-del],[data-ext]")) return; openSubmission(tr.dataset.sub, tabResults); });
+  const cs = $("#cpsum"); if(cs) cs.onclick = () => copy([`סיכום: ${A.title}`, `הגישו ${done.length} מתוך ${rows.length}. ממוצע ${avg ?? "–"}.`,
+    hardest ? `השאלה שהכי הכשילה: שאלה ${hardest.i+1} (${hardest.p}% ענו נכון).` : "", low.length ? `צריכים תשומת לב: ${low.map(r=>r.name).join(", ")}.` : "",
+    missing.length ? `לא הגישו: ${missing.map(r=>r.name).join(", ")}.` : "כולם הגישו."].filter(Boolean).join("\n"), "הסיכום הועתק");
+  $$("[data-att]", el).forEach(b => b.onclick = async e => { e.stopPropagation();
+    if(!(await ask(`<h2>ניסיון נוסף ל${esc(b.dataset.name)}?</h2><p class="muted">התלמיד יוכל להגיש את המשימה פעם נוספת. ${A.reroll?"השאלות יגיעו עם מספרים חדשים.":""}</p>`, "הוספת ניסיון", "ביטול"))) return;
+    const { error } = await sb.rpc("hw_teacher_extra_attempt", { p_assignment:A.id, p_student:b.dataset.att, p_add:1 }); if(error) return toast(errMsg(error));
+    toast(`נוסף ניסיון ל${b.dataset.name}`); tabResults(); });
+  $$("tr[data-sub]", el).forEach(tr => tr.onclick = e => { if(e.target.closest("[data-del],[data-ext],[data-att]")) return; openSubmission(tr.dataset.sub, tabResults); });
   $$("[data-ext]", el).forEach(b => b.onclick = async e => {
     e.stopPropagation(); const sid = b.dataset.ext, cur = EXT[sid] ? new Date(EXT[sid]) : new Date(Math.max(Date.now(), new Date(A.due_at).getTime()) + 2*864e5);
     const local = new Date(cur.getTime() - cur.getTimezoneOffset()*60000).toISOString().slice(0,16);
@@ -2162,7 +2228,7 @@ function aiPrompt(o){
   const mix = { number:"רוב השאלות עם תשובה מספרית, מעט אמריקאיות לשאלות הבנה, ותשובה במילים רק כשהתשובה היא מושג", choice:"רוב השאלות אמריקאיות עם 4 אפשרויות", text:"רוב השאלות עם תשובה של מילה או מושג", mixed:"שילוב שווה של מספרי, אמריקאי ומילולי", understand:"שאלות הבנה: אמריקאיות שהמסיחים בהן הם טעויות נפוצות, שאלות של סימון כמה תשובות נכונות, וטענות נכון / לא נכון" }[o.mix];
   const task = o.source==="sheet"
     ? `הפוך את דף העבודה שאצרף (צילום, PDF או טקסט) לשאלות לאתר. שמור על סדר השאלות ועל המספרים שבדף.`
-    : `כתוב בדיוק ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" לכיתה ${o.grade||"___"}, ברמת קושי ${o.level}. במערך questions חייבות להיות ${o.count} שאלות – ספור לפני שאתה מחזיר.`;
+    : `כתוב בדיוק ${o.count} שאלות ב${o.subject} בנושא "${o.topic||"___"}" ${o.college ? "לקבוצת" : "לכיתה"} ${o.grade||"___"}, ברמת קושי ${o.level}. במערך questions חייבות להיות ${o.count} שאלות – ספור לפני שאתה מחזיר.`;
   return `אתה עוזר למורה ליצור שאלות לאתר שיעורי הבית AlfaMath. האתר בודק רק תשובה סופית, בלי דרך פתרון.
 
 המשימה: ${task}
@@ -2171,6 +2237,7 @@ ${o.figures ? "הוסף שרטוט לכל שאלה שצריך בה שרטוט (�
 ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מספרים אחרים: כתוב משתנים בסוגריים מסולסלים בתוך השאלה, הגדר להם טווח ב-params, וכתוב את התשובה כנוסחה ב-formula." : ""}
 
 לפני שאתה כותב: פתור כל שאלה בעצמך פעמיים ובדוק שהתשובה נכונה.
+${o.source==="sheet" ? "" : `אם הנושא לא נלמד בדרך כלל ${o.college ? "בקבוצה כזו" : "בכיתה הזו"} (למשל מספרים מרוכבים בכיתה ט): אל תחליף נושא. כתוב את השאלות ברמה הבסיסית ביותר של הנושא, והוסף ל-JSON שדה "note" עם משפט אחד למורה שמסביר את זה. אם הנושא מתאים, אל תכתוב note.`}
 
 שאלות בלי תשובה מספרית (הסבר, הוכח, נמק, תאר, השווה): ${{
     convert: `אל תשמיט אותן. הפוך כל אחת לשאלות שבודקות הבנה: אמריקאית שבה המסיחים הם טעויות נפוצות של תלמידים, שאלת "סמנו את כל הנכונות" (multi), או סדרה של 2–4 טענות "נכון / לא נכון" (kind: "truefalse") שמכסות את הרעיון המרכזי. בשאלת הוכחה – שאל על השלבים: איזה משפט מצדיק צעד, מה נובע ממה, איזו טענה שגויה.`,
@@ -2195,7 +2262,7 @@ ${o.params ? "בשאלות מספריות שאפשר, תן לכל תלמיד מ�
 - choice: 4 אפשרויות, index של התשובה הנכונה מתחיל מ-0, מסיחים הגיוניים.
 - multi: 4–6 אפשרויות, ב-indices כל התשובות הנכונות (מתחיל מ-0), לפחות 2 נכונות ולפחות 1 שגויה. show_count: true – התלמיד יודע כמה לסמן (קל יותר), false – לא אומרים לו (קשה יותר). בחר לפי רמת הקושי. אל תכתוב בנוסח השאלה כמה תשובות לסמן, האתר מוסיף את זה לבד.
 - truefalse: טענה אחת ב-prompt, ו-"answer": {"value": true} או {"value": false}. למשל: {"kind": "truefalse", "prompt": "נכון או לא נכון: בכל טרפז האלכסונים שווים.", "answer": {"value": false}, "topic": "טרפז"}
-- text: ב-accepted כל הצורות המקובלות של התשובה.
+- text: ב-accepted כל הצורות שתלמיד עשוי לכתוב ונכונות: המונח המלא, קיצור מקובל (למשל "ז.צ.ז" וגם "זווית צלע זווית"), וכתיב מלא וחסר. עדיף שאלה שהתשובה עליה מילה אחת או שתיים.
 - ניסוח: עברית תקנית, פשוטה וברורה לתלמיד, משפטים קצרים. כל הנתונים הדרושים כתובים בשאלה.
 - שילוב עברית עם אנגלית ומספרים (כדי שהטקסט לא יתהפך): כל ביטוי באנגלית או נוסחה עטופים ב-$...$, גם סימון של נקודה או צלע בודדת ($AB$). אל תצמיד אות עברית לנוסחה ("ו-$BO$", "ב-$5$") – כתוב "וגם $BO$", "במשך $5$ שניות". אל תתחיל משפט או תסיים משפט בנוסחה – תמיד מילה בעברית לפני ואחרי. ערך ויחידה כך: $5$ ס"מ.
 - נוסחאות בתוך $...$ בכתיב LaTeX, תמיד סימן $ בודד (לא $$). בתוך JSON כל \\ נכתב פעמיים. בתוך $...$ רק מתמטיקה: בלי מילים בעברית, בלי \\text בעברית. יחידות בעברית נכתבות מחוץ ל-$, למשל: $5$ מ'. אל תשים סימני $ סביב מילים.
@@ -2246,7 +2313,9 @@ function parseAIQuestions(raw){
   // the site shows inline math only: "$$" (a common AI slip, e.g. "$${p}$") becomes "$"
   const one$ = v => typeof v === "string" ? v.replace(/\${2,}/g, "$") : v;
   arr.forEach(x => { if(!x || typeof x !== "object") return; for(const k of ["prompt","hint","solution"]) x[k] = one$(x[k]); if(Array.isArray(x.choices)) x.choices = x.choices.map(one$); });
-  return arr.map((x, i) => { try{ const q = normalizeQ(x); return { q, err:null }; }catch(e){ return { q:null, err:`שאלה ${i+1}: ${e.message}` }; } });
+  const out = arr.map((x, i) => { try{ const q = normalizeQ(x); return { q, err:null }; }catch(e){ return { q:null, err:`שאלה ${i+1}: ${e.message}` }; } });
+  out.note = !Array.isArray(data) && typeof data.note === "string" ? data.note.trim().slice(0, 400) : "";
+  return out;
 }
 function aiAnswerText(q){
   if(q.kind==="number") return q.answer.formula ? `נוסחה: ${q.answer.formula}${q.answer.unit?" "+q.answer.unit:""}` : `${q.answer.value}${q.answer.unit?" "+q.answer.unit:""}`;
@@ -2291,33 +2360,45 @@ function guessTax(topic){
   return { subj: Object.keys(TAX)[0], g:"", sub:"" };
 }
 /* classes carry school / grade / subject / units / group; the name is built from them */
-const CL_COLS = "id,name,join_code,join_open,created_at,school,grade,subject,units,grp,allow_share";
-function classTitle(c){ return [c.grade, c.subject, c.units ? `${c.units} יח"ל` : "", c.grp].filter(Boolean).join(" ") + (c.school ? ` – ${c.school}` : ""); }
+const CL_COLS = "id,name,join_code,join_open,created_at,school,grade,subject,units,grp,allow_share,inst,level";
+const isCollege = c => c?.inst === "college";
+function classTitle(c){ return (isCollege(c) ? [c.level, c.subject, c.grp] : [c.grade, c.subject, c.units ? `${c.units} יח"ל` : "", c.grp]).filter(Boolean).join(" ") + (c.school ? ` – ${c.school}` : ""); }
 function classMeta(ids, classes){
   const cs = (classes||[]).filter(c => ids.includes(c.id)); if(!cs.length) return null;
   const one = k => { const v = [...new Set(cs.map(c=>c[k]||""))]; return v.length===1 ? v[0] : ""; };
-  return { subj: one("subject") || "", grade: one("grade"), units: one("units") };
+  const lv = [...new Set(cs.map(c => (isCollege(c) ? c.level : c.grade) || ""))];
+  return { subj: one("subject") || "", grade: lv.length===1 ? lv[0] : "", units: one("units"), college: cs.every(isCollege) };
 }
 function classForm(c, schools){
-  c = c || {}; const hi = ["י","יא","יב"].includes(c.grade);
-  return `<div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap">
-      <div style="flex:2 1 200px"><label class="f" for="cf_school">בית הספר</label><input id="cf_school" type="text" list="cf_schools" value="${esc(c.school||"")}" placeholder="שם בית הספר"><datalist id="cf_schools">${(schools||[]).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
-      <div style="flex:1 1 90px"><label class="f" for="cf_grade">שכבה</label><select id="cf_grade"><option value="">בחרו</option>${GRADES.map(x=>`<option ${x===c.grade?"selected":""}>${x}</option>`).join("")}</select></div>
+  c = c || {}; const col = isCollege(c), hi = !col && ["י","יא","יב"].includes(c.grade);
+  return `<div class="seg" role="radiogroup" aria-label="סוג המוסד" id="cf_inst" style="margin-bottom:12px"><button type="button" role="radio" data-inst="school" class="${col?"":"on"}" aria-checked="${!col}">בית ספר</button><button type="button" role="radio" data-inst="college" class="${col?"on":""}" aria-checked="${col}">מכללה</button></div>
+    <div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:2 1 200px"><label class="f" for="cf_school" id="cf_schl">${col?"שם המכללה":"בית הספר"}</label><input id="cf_school" type="text" list="cf_schools" value="${esc(c.school||"")}" placeholder="${col?"שם המכללה":"שם בית הספר"}"><datalist id="cf_schools">${(schools||[]).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
+      <div style="flex:1 1 90px" class="cf-sch" ${col?"hidden":""}><label class="f" for="cf_grade">שכבה</label><select id="cf_grade"><option value="">בחרו</option>${GRADES.map(x=>`<option ${x===c.grade?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="flex:2 1 180px" class="cf-col" ${col?"":"hidden"}><label class="f" for="cf_level">סוג הקבוצה</label><input id="cf_level" type="text" maxlength="60" value="${esc(c.level||"")}" placeholder="למשל מכינה, הנדסאים שנה א"></div>
       <div style="flex:1 1 120px"><label class="f" for="cf_subj">מקצוע</label><select id="cf_subj">${Object.keys(TAX).map(x=>`<option ${x===c.subject?"selected":""}>${x}</option>`).join("")}</select></div>
-      <div style="flex:1 1 90px"><label class="f" for="cf_units">יחידות</label><select id="cf_units" ${hi?"":"disabled"}><option value="">—</option>${["3","4","5"].map(x=>`<option ${x===c.units?"selected":""}>${x}</option>`).join("")}</select></div>
-      <div style="flex:1 1 150px"><label class="f" for="cf_grp">קבוצה <span class="muted">(לא חובה)</span></label><input id="cf_grp" type="text" value="${esc(c.grp||"")}" placeholder="למשל יב4-5"></div>
+      <div style="flex:1 1 90px" class="cf-sch" ${col?"hidden":""}><label class="f" for="cf_units">יחידות</label><select id="cf_units" ${hi?"":"disabled"}><option value="">—</option>${["3","4","5"].map(x=>`<option ${x===c.units?"selected":""}>${x}</option>`).join("")}</select></div>
+      <div style="flex:1 1 150px"><label class="f" for="cf_grp">קבוצה <span class="muted">(לא חובה)</span></label><input id="cf_grp" type="text" value="${esc(c.grp||"")}" placeholder="${col?"למשל קבוצה 2":"למשל יב4-5"}"></div>
     </div>
     <p class="muted small" style="margin:10px 0 0">שם הכיתה: <b id="cf_name">${esc(classTitle(c)||"—")}</b></p>
     <label class="chk" style="margin-top:14px"><input type="checkbox" id="cf_share" ${c.allow_share===false?"":"checked"}><span>התלמידים יכולים לשתף הישגים<br><span class="muted small">רק תג ההישג וקישור לאתר. בלי שם מלא ובלי ציון.</span></span></label>`;
 }
 function bindClassForm(root){
   const $r = x => root.querySelector(x);
-  const read = () => ({ school:$r("#cf_school").value.trim(), grade:$r("#cf_grade").value, subject:$r("#cf_subj").value, units:$r("#cf_units").disabled ? "" : $r("#cf_units").value, grp:$r("#cf_grp").value.trim() });
-  const upd = () => { const hi = ["י","יא","יב"].includes($r("#cf_grade").value); $r("#cf_units").disabled = !hi; if(!hi) $r("#cf_units").value = ""; $r("#cf_name").textContent = classTitle(read()) || "—"; };
-  root.querySelectorAll("#cf_school,#cf_grade,#cf_subj,#cf_units,#cf_grp").forEach(x => x.addEventListener("input", upd));
+  const inst = () => root.querySelector("#cf_inst .on")?.dataset.inst || "school";
+  const read = () => { const col = inst()==="college";
+    return { inst:inst(), school:$r("#cf_school").value.trim(), grade:col ? "" : $r("#cf_grade").value, level:col ? $r("#cf_level").value.trim() : "", subject:$r("#cf_subj").value, units:col || $r("#cf_units").disabled ? "" : $r("#cf_units").value, grp:$r("#cf_grp").value.trim() }; };
+  const upd = () => { const col = inst()==="college", hi = !col && ["י","יא","יב"].includes($r("#cf_grade").value); $r("#cf_units").disabled = !hi; if(!hi) $r("#cf_units").value = "";
+    root.querySelectorAll(".cf-sch").forEach(x => x.hidden = col); root.querySelectorAll(".cf-col").forEach(x => x.hidden = !col);
+    $r("#cf_schl").textContent = col ? "שם המכללה" : "בית הספר"; $r("#cf_school").placeholder = col ? "שם המכללה" : "שם בית הספר"; $r("#cf_grp").placeholder = col ? "למשל קבוצה 2" : "למשל יב4-5";
+    $r("#cf_name").textContent = classTitle(read()) || "—"; };
+  root.querySelectorAll("#cf_inst button").forEach(b => b.onclick = () => { root.querySelectorAll("#cf_inst button").forEach(x => { x.classList.toggle("on", x===b); x.setAttribute("aria-checked", x===b); }); upd(); });
+  root.querySelectorAll("#cf_school,#cf_grade,#cf_level,#cf_subj,#cf_units,#cf_grp").forEach(x => x.addEventListener("input", upd));
   root.querySelectorAll("select").forEach(x => x.addEventListener("change", upd));
-  return () => { const v = read(); if(!v.school) return { error:"כתבו את שם בית הספר" }; if(!v.grade) return { error:"בחרו שכבה" };
-    const sh = $r("#cf_share"); return { name:classTitle(v), school:v.school, grade:v.grade, subject:v.subject, units:v.units||null, grp:v.grp||null, ...(sh ? { allow_share: sh.checked } : {}) }; };
+  return () => { const v = read(), col = v.inst==="college";
+    if(!v.school) return { error: col ? "כתבו את שם המכללה" : "כתבו את שם בית הספר" };
+    if(!col && !v.grade) return { error:"בחרו שכבה" }; if(col && !v.level) return { error:"כתבו את סוג הקבוצה, למשל מכינה" };
+    const sh = $r("#cf_share"); return { name:classTitle(v), inst:v.inst, school:v.school, grade:v.grade||null, level:v.level||null, subject:v.subject, units:v.units||null, grp:v.grp||null, ...(sh ? { allow_share: sh.checked } : {}) }; };
 }
 const schoolsOf = classes => [...new Set([...(classes||[]).map(c=>c.school), TEACHER?.school].filter(Boolean))];
 function taxPicker(pre, guess){
@@ -2376,7 +2457,7 @@ function openAIGenerator(onAdd, meta){
     <div id="g_topic">
       <div class="row" style="margin-top:4px">
         <div class="grow" style="min-width:140px"><label class="f" for="g_t">נושא</label><input id="g_t" type="text" placeholder="למשל: טרפז, חוק שני של ניוטון"></div>
-        <div style="width:110px"><label class="f" for="g_g">כיתה</label><input id="g_g" type="text" placeholder="ט׳" value="${esc(meta?.grade ? meta.grade + (meta.units ? ` (${meta.units} יח"ל)` : "") : "")}"></div>
+        <div style="width:110px"><label class="f" for="g_g">${meta?.college?"קבוצה":"כיתה"}</label><input id="g_g" type="text" placeholder="${meta?.college?"מכינה":"ט׳"}" value="${esc(meta?.grade ? meta.grade + (meta.units ? ` (${meta.units} יח"ל)` : "") : "")}"></div>
       </div>
       <div class="row">
         <div style="width:110px"><label class="f" for="g_n">כמה שאלות</label><input id="g_n" type="number" min="1" max="30" value="8" class="ltr"></div>
@@ -2413,7 +2494,7 @@ function openAIGenerator(onAdd, meta){
   let src = "topic", parsed = [];
   d.querySelectorAll("#g_src button").forEach(b => b.onclick = () => { src = b.dataset.v; d.querySelectorAll("#g_src button").forEach(x=>x.classList.toggle("on", x===b)); $d("#g_topic").style.display = src==="topic"?"block":"none"; $d("#g_sheetbox").style.display = src==="sheet"?"block":"none"; });
   const P = () => { const sh = src==="sheet" ? $d("#g_sheet").value.trim() : ""; return aiPrompt0() + (sh ? "\n\nטקסט הדף:\n" + sh.slice(0, 6000) : ""); };
-  const aiPrompt0 = () => aiPrompt({ source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, open:$d("#g_o").value, notes:$d("#g_x").value.trim() });
+  const aiPrompt0 = () => aiPrompt({ college:!!meta?.college, source:src, topic:$d("#g_t").value.trim(), grade:$d("#g_g").value.trim(), count:Math.max(1,Math.min(30,+$d("#g_n").value||8)), subject:$d("#g_s").value, level:$d("#g_l").value, mix:$d("#g_m").value, figures:$d("#g_f").checked, params:$d("#g_p").checked, open:$d("#g_o").value, notes:$d("#g_x").value.trim() });
   // real links (not window.open): on phones the AI app opens directly and no blank tab is left behind
   const aiLinks = () => { const q = encodeURIComponent(P()); $d("#g_cgpt").href = "https://chatgpt.com/?q=" + q; $d("#g_claude").href = "https://claude.ai/new?q=" + q; };
   d.addEventListener("input", aiLinks); d.addEventListener("change", aiLinks); d.addEventListener("click", e => { if(e.target.closest("#g_src button")) setTimeout(aiLinks); }, true);
@@ -2433,7 +2514,7 @@ function openAIGenerator(onAdd, meta){
   $d("#g_x2").onclick = () => d.close();
   const drawPrev = () => {
     const ok = parsed.filter(p=>p.q), bad = parsed.filter(p=>p.err);
-    $d("#g_prev").innerHTML = (bad.length?`<p class="err">${bad.map(b=>esc(b.err)).join("<br>")}</p>`:"") + (ok.length ? `<p class="small" style="margin:12px 0 6px"><b>${ok.length}</b> שאלות מוכנות. בדקו את התשובות והורידו סימון ממה שלא מתאים.</p>` + parsed.map((p,i)=>!p.q?"":`
+    $d("#g_prev").innerHTML = (parsed.note ? `<div class="info" style="margin-top:12px"><b>הערה מה-AI:</b> ${esc(parsed.note)}</div>` : "") + (bad.length?`<p class="err">${bad.map(b=>esc(b.err)).join("<br>")}</p>`:"") + (ok.length ? `<p class="small" style="margin:12px 0 6px"><b>${ok.length}</b> שאלות מוכנות. בדקו את התשובות והורידו סימון ממה שלא מתאים.</p>` + parsed.map((p,i)=>!p.q?"":`
       <label class="q" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);cursor:pointer">
         <input type="checkbox" data-i="${i}" ${p.on!==false?"checked":""} style="margin-top:4px">
         <div class="grow" style="min-width:0"><div class="prompt">${esc(p.q.prompt)}</div>${figHtml(p.q.figure)}
@@ -2602,7 +2683,7 @@ function qEditor(q,i){
       <label class="f">התשובות הנכונות <span class="muted">סמנו את כולן</span></label>
       <div style="display:grid;gap:4px">${(q.choices||[]).map((c,j)=>`<label class="chk" style="margin:0"><input type="checkbox" data-f="mcorrect" value="${j}" ${(q.answer.indices||[]).includes(j)?"checked":""}><span>${HEB[j]||j+1}. ${esc(c.slice(0,60))}</span></label>`).join("")}</div>
       <label class="chk" style="margin:12px 0 0"><input type="checkbox" data-f="showcount" ${q.answer.show_count!==false?"checked":""}><span>להגיד לתלמיד כמה תשובות לסמן <span class="muted">(בלי זה השאלה קשה יותר)</span></span></label>`;
-  else ans = `<label class="f">תשובות שמתקבלות <span class="muted">כל אחת בשורה. רווחים, מקפים ואותיות גדולות לא משנים</span></label><textarea data-f="accepted" style="min-height:64px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
+  else ans = `<label class="f">תשובות שמתקבלות <span class="muted">כל אחת בשורה. המערכת מקבלת גם כתיב מלא או חסר, קיצורים כמו ז.צ.ז, וטעות הקלדה קטנה</span></label><textarea data-f="accepted" style="min-height:64px">${esc((q.answer.accepted||[]).join("\n"))}</textarea>`;
   return `<div class="qedit" data-i="${i}">
     <div class="head"><span class="qn">${i+1}</span>
       <select data-f="kind" style="width:auto;padding:7px 10px 7px 32px" aria-label="סוג תשובה"><option value="number" ${k==="number"?"selected":""}>תשובה מספרית</option><option value="choice" ${k==="choice"?"selected":""}>אמריקאית</option><option value="multi" ${k==="multi"?"selected":""}>כמה תשובות נכונות</option><option value="text" ${k==="text"?"selected":""}>מילה או ביטוי</option></select>
