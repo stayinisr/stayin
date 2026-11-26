@@ -1481,23 +1481,20 @@ const GOOGLE_G = `<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="t
 const googleBtn = (id, label) => `<button type="button" class="gbtn wide" id="${id}">${GOOGLE_G}<span>${label||"המשך עם Google"}</span></button>`;
 const orLine = t => `<div class="orline"><span>${t||"או"}</span></div>`;
 /* Google sign-in. `next` says what to do on return: {kind:"teacher"} or {kind:"student", purpose, code, pick:{id,name}} */
-const gLog = (ev, info) => { try{ sb.rpc("hw_track", { p_path: String(info||"").slice(0,80), p_ref: navigator.userAgent.slice(0,80), p_src: "google", p_dev: innerWidth < 760 ? "m" : "d", p_ev: ev, p_sid: "" }).then(()=>{}, ()=>{}); }catch(_){} };
 async function googleStart(next, btn){
   const lab = btn?.querySelector("span"), was = lab?.textContent;
   const reset = m => { if(btn){ btn.disabled = false; if(lab) lab.textContent = was; } if(m) toast(m); };
   if(btn){ btn.disabled = true; if(lab) lab.textContent = "פותחים את Google…"; }
-  gLog("g_click", next.kind + "/" + (next.purpose||"") + " " + location.pathname);
   try{
-    try{ sessionStorage.setItem("hw-oauth", JSON.stringify({ ...next, t: Date.now() })); }catch(e){ gLog("g_err", "ss " + e.message); }
+    try{ sessionStorage.setItem("hw-oauth", JSON.stringify({ ...next, t: Date.now() })); }catch(_){}
     const res = await Promise.race([
       sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:"select_account" }, skipBrowserRedirect: true } }),
       new Promise(r => setTimeout(() => r({ error: { message: "timeout" } }), 8000))
     ]);
-    if(res.error || !res.data?.url){ gLog("g_err", res.error?.message || "no url"); sessionStorage.removeItem("hw-oauth"); return reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
-    gLog("g_go", res.data.url.slice(0, 80));
+    if(res.error || !res.data?.url){ sessionStorage.removeItem("hw-oauth"); return reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
     location.href = res.data.url;
     setTimeout(() => { if(document.visibilityState === "visible") reset(); }, 10000);
-  }catch(e){ gLog("g_err", "ex " + (e?.message || e)); sessionStorage.removeItem("hw-oauth"); reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
+  }catch(e){ sessionStorage.removeItem("hw-oauth"); reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
 }
 /* back from Google as a student: choose a 4-digit PIN, then drop the Google session (students sign in with class code + PIN) */
 function studentGoogleFinish(oa){
@@ -2884,7 +2881,6 @@ window.addEventListener("load", async () => {
   if(qp.has("code") || qp.has("error") || qp.has("error_description")) history.replaceState(null, "", location.pathname + location.hash);
   let oa = null; try{ oa = JSON.parse(sessionStorage.getItem("hw-oauth") || "null"); }catch(_){} sessionStorage.removeItem("hw-oauth");
   if(oa){
-    gLog(session ? "g_back" : "g_noses", (qp.get("error_description")||qp.get("error")||"") + (qp.has("code")?" code":""));
     if(!session){ toast(qp.has("error") ? "ההתחברות עם Google בוטלה. אפשר לנסות שוב או להמשיך עם מייל" : "ההתחברות עם Google לא הושלמה. נסו שוב"); }
     else if(oa.kind === "student" && oa.pick?.id) return studentGoogleFinish(oa);
     else if(oa.kind === "teacher"){ TEACHER = null; if(!location.hash.startsWith("#/teacher")){ history.replaceState(null, "", location.pathname + "#/teacher"); } }
