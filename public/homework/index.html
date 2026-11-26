@@ -141,6 +141,7 @@
   [data-theme=dark] .gbtn{background:#131314;color:#E3E3E3;border-color:#8E918F}
   .orline{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:14px}
   .orline::before,.orline::after{content:"";flex:1;border-top:1px solid var(--line)}
+  #qs .q.fixed .prompt,#qs .q.fixed .fig{opacity:.55}
   .sumlist{margin:16px 0 0;padding:0 18px 0 0;display:grid;gap:6px;font-size:15px;line-height:1.5}
   .miss-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-top:1px solid var(--line)}
   .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--pri);margin-bottom:6px}
@@ -640,7 +641,7 @@ function ask(html, okLabel="אישור", cancelLabel="ביטול", danger=false)
 function sheet(html, wide){ const d = $("#dlg"); d.className = wide ? "wide" : ""; d.innerHTML = html; math(d); d.showModal(); return d; }
 /* code boxes (class code, email code) */
 function codeBoxes(n, value="", numeric=false){
-  return `<div class="codebox" data-n="${n}">${Array.from({length:n},(_,i)=>`<input ${numeric?'inputmode="numeric"':'autocapitalize="characters"'} autocomplete="${i===0&&numeric?"one-time-code":"off"}" spellcheck="false" maxlength="${i===0?n:1}" aria-label="תו ${i+1}" value="${esc((value||"")[i]||"")}" class="${(value||"")[i]?"on":""}">`).join("")}</div>`;
+  return `<div class="codebox" data-n="${n}">${Array.from({length:n},(_,i)=>`<input ${numeric?'inputmode="numeric"':'autocapitalize="characters"'} autocomplete="${i===0&&numeric?"one-time-code":"off"}" spellcheck="false" maxlength="${n}" aria-label="תו ${i+1}" value="${esc((value||"")[i]||"")}" class="${(value||"")[i]?"on":""}">`).join("")}</div>`;
 }
 function bindCode(box, onFull, numeric=false){
   const ins = $$("input", box), clean = s => (numeric ? s.replace(/\D/g,"") : s.replace(/[^0-9a-z]/gi,"")).toUpperCase();
@@ -1168,8 +1169,8 @@ async function studentHome(){
       : `<div class="hero"><h1>שלום ${hi}</h1><div class="muted">${esc(d.class)}</div>
         <div class="nsub" style="margin-top:12px"><b>אין משימות פתוחות.</b> משימה חדשה תופיע כאן ברגע שהמורה יפרסם אותה.</div>${st.submitted?statLine:""}</div>`; })()}
     <div class="cols"><div>
-    ${todo.length>1?`<div class="card"><div class="hd"><h2>עוד לביצוע</h2><span class="muted small">${todo.length-1}</span></div>
-      <div class="rows">${todo.slice(1).map(todoRow).join("")}</div></div>`:""}
+    ${todo.length?`<div class="card"><div class="hd"><h2>לביצוע</h2><span class="muted small">${todo.length}</span></div>
+      <div class="rows">${todo.map(todoRow).join("")}</div></div>`:""}
     ${practice.length?`<div class="card"><div class="hd"><h2>תרגול חופשי</h2><span class="muted small">בלי ציון, כמה פעמים שרוצים</span></div><div class="rows">${practice.map(a=>`<div class="r" data-id="${a.id}"><div class="date none"><b>∞</b><span>תרגול</span></div><div class="grow"><div class="t">${esc(a.title)}</div><div class="sub">${a.questions} שאלות${a.attempts?`, תורגל ${a.attempts} פעמים`:""}</div></div><div class="end">${a.last&&a.last.score!=null?gbadge(pct(a.last.score,a.last.max)):""}${IC.chev}</div></div>`).join("")}</div></div>`:""}
     ${rest.length ? `<div class="card"><div class="hd"><h2>הוגשו וציונים</h2></div><div class="rows">${rest.map(doneRow).join("")}</div></div>` : ""}
     </div><aside>
@@ -1298,7 +1299,8 @@ async function studentMistakes(){
     if(!ans) return toast("כתבו תשובה קודם");
     b.disabled = true;
     try{ const r = q.dataset.sim ? await rpcS("hw_student_similar", { p_qid:q.dataset.id, p_n:+q.dataset.sim, p_given:ans }) : await rpcS("hw_student_try", { p_qid:q.dataset.id, p_given:ans });
-      q.querySelector(".slot").innerHTML = r.correct ? `<div class="mark ok"><b>נכון.</b> עכשיו זה יושב.</div>` : `<div class="mark bad"><b>עדיין לא.</b>&nbsp;${r.answer!=null?`התשובה: <bdi class="ltr">${esc(r.answer)}</bdi>`:"נסו שוב. התשובה תיפתח כשייגמרו הניסיונות במשימה."}</div>${r.solution?`<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(r.solution)}</div></div>`:""}`;
+      if(r.correct && !q.dataset.fixed){ q.dataset.fixed = 1; q.classList.add("fixed"); const left = $$("#qs .q:not(.fixed)").length; if(HOME) HOME.mistakes = left; studentNav("mistakes", left); }
+      q.querySelector(".slot").innerHTML = r.correct ? `<div class="mark ok"><b>נכון.</b> השאלה יצאה מהמחברת.</div>` : `<div class="mark bad"><b>עדיין לא.</b>&nbsp;${r.answer!=null?`התשובה: <bdi class="ltr">${esc(r.answer)}</bdi>`:"נסו שוב. התשובה תיפתח כשייגמרו הניסיונות במשימה."}</div>${r.solution?`<div class="sol"><span class="label">פתרון</span><div class="prompt">${esc(r.solution)}</div></div>`:""}`;
       math(q);
     }catch(e){ toast(errMsg(e)); }
     b.disabled = false;
