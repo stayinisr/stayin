@@ -137,7 +137,7 @@
   .tabs button.on{color:var(--pri)}
   .tabs button.on::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:3px;background:var(--pri)}
   .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1.5px solid #747775;font:600 16px/1 inherit;min-height:48px;padding:0 16px;cursor:pointer}
-  .gbtn:hover{background:#F7F8F8} .gbtn span{font-family:inherit}
+  .gbtn:hover{background:#F7F8F8} .gbtn:disabled{opacity:.7;cursor:wait} .gbtn span{font-family:inherit}
   [data-theme=dark] .gbtn{background:#131314;color:#E3E3E3;border-color:#8E918F}
   .orline{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:14px}
   .orline::before,.orline::after{content:"";flex:1;border-top:1px solid var(--line)}
@@ -1039,7 +1039,7 @@ function studentAuth(mode, code=""){
       <p class="err" id="ae" role="alert" style="text-align:center"></p>
       <p class="muted small" style="text-align:center;margin:12px 0 0">המייל משמש רק לכניסה ולשחזור הקוד, והמורה רואה אותו. <a href="https://www.alfamath.co.il/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></p>`;
     $("#bk").onclick = () => stepName();
-    $("#sgo").onclick = () => { if(!$("#tok").checked) return err("צריך לאשר את תנאי השימוש ואת מדיניות הפרטיות"); googleStart({ kind:"student", purpose:"claim", code, pick:{ id:pick.id, name:pick.name } }); };
+    $("#sgo").onclick = () => { if(!$("#tok").checked) return err("צריך לאשר את תנאי השימוש ואת מדיניות הפרטיות"); googleStart({ kind:"student", purpose:"claim", code, pick:{ id:pick.id, name:pick.name } }, $("#sgo")); };
     $("#ef").onsubmit = async e => {
       e.preventDefault(); err(); const em = $("#em").value.trim();
       if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) return err("כתובת המייל לא תקינה");
@@ -1058,7 +1058,7 @@ function studentAuth(mode, code=""){
       <button class="light wide" id="rml">שליחת קוד למייל</button>
       <p class="err" id="ae" role="alert" style="text-align:center"></p>`;
     $("#bk").onclick = stepPin;
-    $("#rgo").onclick = () => googleStart({ kind:"student", purpose:"reset", code, pick:{ id:pick.id, name:pick.name } });
+    $("#rgo").onclick = e => googleStart({ kind:"student", purpose:"reset", code, pick:{ id:pick.id, name:pick.name } }, e.currentTarget);
     $("#rml").onclick = stepResetMail;
   };
   const stepResetMail = async () => {
@@ -1481,12 +1481,25 @@ const GOOGLE_G = `<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="t
 const googleBtn = (id, label) => `<button type="button" class="gbtn wide" id="${id}">${GOOGLE_G}<span>${label||"המשך עם Google"}</span></button>`;
 const orLine = t => `<div class="orline"><span>${t||"או"}</span></div>`;
 /* Google sign-in. `next` says what to do on return: {kind:"teacher"} or {kind:"student", purpose, code, pick:{id,name}} */
-async function googleStart(next){
+const gLog = (ev, info) => { try{ sb.rpc("hw_track", { p_path: String(info||"").slice(0,80), p_ref: navigator.userAgent.slice(0,80), p_src: "google", p_dev: innerWidth < 760 ? "m" : "d", p_ev: ev, p_sid: "" }); }catch(_){} };
+async function googleStart(next, btn){
   const h = location.hostname;
   if(/(^|\.)alfamath\.co\.il$/.test(h) && h !== "alfamath.co.il"){ location.href = "https://alfamath.co.il/app?gstart=" + encodeURIComponent(JSON.stringify(next)) + location.hash; return; }
-  try{ sessionStorage.setItem("hw-oauth", JSON.stringify({ ...next, t: Date.now() })); }catch(_){}
-  const { error } = await sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:"select_account" } } });
-  if(error){ sessionStorage.removeItem("hw-oauth"); toast("ההתחברות עם Google לא זמינה כרגע. אפשר להמשיך עם מייל"); }
+  const lab = btn?.querySelector("span"), was = lab?.textContent;
+  const reset = m => { if(btn){ btn.disabled = false; if(lab) lab.textContent = was; } if(m) toast(m); };
+  if(btn){ btn.disabled = true; if(lab) lab.textContent = "פותחים את Google…"; }
+  gLog("g_click", next.kind + "/" + (next.purpose||"") + " " + location.pathname);
+  try{
+    try{ sessionStorage.setItem("hw-oauth", JSON.stringify({ ...next, t: Date.now() })); }catch(e){ gLog("g_err", "ss " + e.message); }
+    const res = await Promise.race([
+      sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:"select_account" }, skipBrowserRedirect: true } }),
+      new Promise(r => setTimeout(() => r({ error: { message: "timeout" } }), 8000))
+    ]);
+    if(res.error || !res.data?.url){ gLog("g_err", res.error?.message || "no url"); sessionStorage.removeItem("hw-oauth"); return reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
+    gLog("g_go", res.data.url.slice(0, 80));
+    location.href = res.data.url;
+    setTimeout(() => { if(document.visibilityState === "visible") reset(); }, 10000);
+  }catch(e){ gLog("g_err", "ex " + (e?.message || e)); sessionStorage.removeItem("hw-oauth"); reset("לא הצלחנו לפתוח את Google. אפשר להמשיך עם קוד למייל"); }
 }
 /* back from Google as a student: choose a 4-digit PIN, then drop the Google session (students sign in with class code + PIN) */
 function studentGoogleFinish(oa){
@@ -1539,7 +1552,7 @@ function loginPage(){
     </div>`;
   bindRoleSwitch();
   const err = m => $("#le").textContent = m || "";
-  $("#tgo").onclick = () => googleStart({ kind:"teacher" });
+  $("#tgo").onclick = e => googleStart({ kind:"teacher" }, e.currentTarget);
   $("#lf").onsubmit = async e => {
     e.preventDefault(); err(); const b = $("#lsend"); b.disabled = true;
     const email = $("#em").value.trim().toLowerCase();
@@ -2873,6 +2886,7 @@ window.addEventListener("load", async () => {
   if(qp.has("code") || qp.has("error") || qp.has("error_description")) history.replaceState(null, "", location.pathname + location.hash);
   let oa = null; try{ oa = JSON.parse(sessionStorage.getItem("hw-oauth") || "null"); }catch(_){} sessionStorage.removeItem("hw-oauth");
   if(oa){
+    gLog(session ? "g_back" : "g_noses", (qp.get("error_description")||qp.get("error")||"") + (qp.has("code")?" code":""));
     if(!session){ toast(qp.has("error") ? "ההתחברות עם Google בוטלה. אפשר לנסות שוב או להמשיך עם מייל" : "ההתחברות עם Google לא הושלמה. נסו שוב"); }
     else if(oa.kind === "student" && oa.pick?.id) return studentGoogleFinish(oa);
     else if(oa.kind === "teacher"){ TEACHER = null; if(!location.hash.startsWith("#/teacher")){ history.replaceState(null, "", location.pathname + "#/teacher"); } }
