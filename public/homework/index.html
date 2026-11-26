@@ -1481,7 +1481,7 @@ const GOOGLE_G = `<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="t
 const googleBtn = (id, label) => `<button type="button" class="gbtn wide" id="${id}">${GOOGLE_G}<span>${label||"המשך עם Google"}</span></button>`;
 const orLine = t => `<div class="orline"><span>${t||"או"}</span></div>`;
 /* Google sign-in. `next` says what to do on return: {kind:"teacher"} or {kind:"student", purpose, code, pick:{id,name}} */
-const gLog = (ev, info) => { try{ sb.rpc("hw_track", { p_path: String(info||"").slice(0,80), p_ref: navigator.userAgent.slice(0,80), p_src: "google", p_dev: innerWidth < 760 ? "m" : "d", p_ev: ev, p_sid: "" }); }catch(_){} };
+const gLog = (ev, info) => { try{ sb.rpc("hw_track", { p_path: String(info||"").slice(0,80), p_ref: navigator.userAgent.slice(0,80), p_src: "google", p_dev: innerWidth < 760 ? "m" : "d", p_ev: ev, p_sid: "" }).then(()=>{}, ()=>{}); }catch(_){} };
 async function googleStart(next, btn){
   const h = location.hostname;
   if(/(^|\.)alfamath\.co\.il$/.test(h) && h !== "alfamath.co.il"){ location.href = "https://alfamath.co.il/app?gstart=" + encodeURIComponent(JSON.stringify(next)) + location.hash; return; }
